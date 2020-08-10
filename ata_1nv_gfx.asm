@@ -1,3 +1,205 @@
+; ==========================================================================
+; Screen Graphics
+; --------------------------------------------------------------------------
+
+; ==========================================================================
+; Title Screen C64
+; --------------------------------------------------------------------------
+
+;    ------------------------------------------
+; 00 | 000000          000000          000000 | P1 score, High score, P2 score
+; 01 |                                        | 
+; 02 |                                        | 
+; 03 |                                        | 
+; 04 |                   3                    | 3, 2, 1, GO line 
+; 05 |                                        | 
+; 06 |           1NNNVVVAADDDEEERRR           | Animated Gfx
+; 07 |           1NNNVVVAADDDEEERRR           | Animated Gfx
+; 08 |           1NNNVVVAADDDEEERRR           | Animated Gfx
+; 09 |                                        | 
+; 10 |           2019 Darren Foulds           | Credit line
+; 11 |                                        | 
+; 12 |                  ****                  | Mothership graphic
+; 13 |                  ****                  | Mothership graphic
+; 14 |                                        | 
+; 15 |Scrolling docs and scrolling docs.......| Fine scrolling docs
+; 16 |                                        | 
+; 17 |                                        | 
+; 18 |                                        | 
+; 19 |             Mountains                  | Mountains
+; 20 |             Mountains                  | Mountains
+; 21 |             Mountains                  | Mountains
+; 22 |             Mountains                  | Mountains
+; 23 |B   Solid ground and bumpers           B| Ground and bumpers, 
+; 24 |]]]]]]]]]]]]]]]          [[[[[[[[[[[[[[[| Ground, gun parking area
+;    ------------------------------------------
+
+
+; ==========================================================================
+; Game Screen C64
+; Alien travels line progression 0 to 21.  22 is end of game.
+; --------------------------------------------------------------------------
+
+;    ------------------------------------------
+; 00 | 000000          000000          000000 |  P1 score, High score, P2 score
+; 01 |                                        | 
+; 02 |                                        | 
+; 03 |                                        | 
+; 04 |                                        | 
+; 05 |                                        | 
+; 06 |                                        | 
+; 07 |                                        | 
+; 08 |                                        | 
+; 09 |                                        | 
+; 10 |                                        | 
+; 11 |                                        | 
+; 12 |                                        | 
+; 13 |                                        | 
+; 14 |                                        | 
+; 15 |                                        | 
+; 16 |                                        | 
+; 17 |                                        | 
+; 18 |                                        | 
+; 19 |             Mountains                  | Mountains
+; 20 |             Mountains                  | Mountains
+; 21 |             Mountains                  | Mountains
+; 22 |             Mountains                  | Mountains
+; 23 |B   Solid ground and bumpers           B| Ground and bumpers, guns operational
+; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left
+;    ------------------------------------------
+
+
+; ==========================================================================
+; Game Over Screen C64
+; --------------------------------------------------------------------------
+
+;    ------------------------------------------
+; 00 | 000000          000000          000000 |  P1 score, High score, P2 score
+; 01 |                                        | 
+; 02 |                                        | 
+; 03 |                                        | 
+; 04 |                                        |  
+; 05 |                                        | 
+; 06 |                                        | 
+; 07 |               GAME  OVER               | Animated Gfx
+; 08 |                                        | 
+; 09 |                                        | 
+; 10 |                                        |  
+; 11 |                                        | 
+; 12 |                                        |  
+; 13 |                                        |  
+; 14 |                                        | 
+; 15 |                                        |   
+; 16 |                                        | 
+; 17 |                                        | 
+; 18 |                                        | 
+; 19 |             Mountains                  | Mountains
+; 20 |             Mountains                  | Mountains
+; 21 |             Mountains                  | Mountains
+; 22 |             Mountains                  | Mountains
+; 23 |B   Solid ground and bumpers           B| Ground and bumpers, guns operational
+; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left
+;    ------------------------------------------
+
+
+; ==========================================================================
+; Title Screen Atari
+; --------------------------------------------------------------------------
+;
+;    ------------------------------------------ (000 - 019) Blank scan lines. 8+8+4
+; 00 | 000000          000000          000000 | (020 - 027) (2) P1 score, High score, P2 score
+; 01 |                                        | (028 - 035) Blank 8
+; 02 |                                        | (036 - 043) Blank 8
+; 03 |                   3                    | (044 - 051) (6) 3, 2, 1, GO line animation
+; 04 |                   3                    | (052 - 059) (6) 3, 2, 1, GO line animation
+; 05 |                                        | (060 - 067) Blank 8  (DLI vscroll hack) 
+; 06 |           1NNNVVVAADDDEEERRR           | Animated Gfx 
+; 07 |           1NNNVVVAADDDEEERRR           | Animated Gfx
+; 08 |           1NNNVVVAADDDEEERRR           | Animated Gfx
+; 09 |                                        | 
+; 10 |           2019 Darren Foulds           | Credit line
+; 11 |                                        | 
+; 12 |                  ****                  | Mothership graphic
+; 13 |                  ****                  | Mothership graphic
+; 14 |                                        | 
+; 15 |Scrolling docs and scrolling docs.......| Fine scrolling docs
+; 16 |                                        | 
+; 17 |                                        | 
+; 18 |                                        | 
+; 19 |             Mountains                  | Mountains
+; 20 |             Mountains                  | Mountains
+; 21 |             Mountains                  | Mountains
+; 22 |             Mountains                  | Mountains
+; 23 |B   Solid ground and bumpers           B| Ground and bumpers, 
+; 24 |]]]]]]]]]]]]]]]          [[[[[[[[[[[[[[[| Ground, gun parking area
+;    ------------------------------------------
+
+
+; ==========================================================================
+; Game Screen Atari
+; Alien travels line progression 0 to 21.  22 is end of game.
+; --------------------------------------------------------------------------
+
+;    ------------------------------------------
+; 00 | 000000          000000          000000 |  P1 score, High score, P2 score
+; 01 |                                        | 
+; 02 |                                        | 
+; 03 |                                        | 
+; 04 |                                        | 
+; 05 |                                        | 
+; 06 |                                        | 
+; 07 |                                        | 
+; 08 |                                        | 
+; 09 |                                        | 
+; 10 |                                        | 
+; 11 |                                        | 
+; 12 |                                        | 
+; 13 |                                        | 
+; 14 |                                        | 
+; 15 |                                        | 
+; 16 |                                        | 
+; 17 |                                        | 
+; 18 |                                        | 
+; 19 |             Mountains                  | Mountains
+; 20 |             Mountains                  | Mountains
+; 21 |             Mountains                  | Mountains
+; 22 |             Mountains                  | Mountains
+; 23 |B   Solid ground and bumpers           B| Ground and bumpers, guns operational
+; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left
+;    ------------------------------------------
+
+
+; ==========================================================================
+; Game Over Screen Atari
+; --------------------------------------------------------------------------
+
+;    ------------------------------------------
+; 00 | 000000          000000          000000 |  P1 score, High score, P2 score
+; 01 |                                        | 
+; 02 |                                        | 
+; 03 |                                        | 
+; 04 |                                        |  
+; 05 |                                        | 
+; 06 |                                        | 
+; 07 |               GAME  OVER               | Animated Gfx
+; 08 |                                        | 
+; 09 |                                        | 
+; 10 |                                        |  
+; 11 |                                        | 
+; 12 |                                        |  
+; 13 |                                        |  
+; 14 |                                        | 
+; 15 |                                        |   
+; 16 |                                        | 
+; 17 |                                        | 
+; 18 |                                        | 
+; 19 |             Mountains                  | Mountains
+; 20 |             Mountains                  | Mountains
+; 21 |             Mountains                  | Mountains
+; 22 |             Mountains                  | Mountains
+; 23 |B   Solid ground and bumpers           B| Ground and bumpers, guns operational
+; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left
+;    ------------------------------------------
 
 
 
