@@ -50,7 +50,7 @@ OutputPointer  .word $0000 ; Pointer to memory to generate RLE codes.
 	.by "semiconductor chemistry and physics making all this fun possible. "
 	.by "** Atari 1NVADER "
 	.by "** Atari 8-bit computer systems. "
-	.by "** Ken Jennings - 15 May 2020 **"
+	.by "** Ken Jennings - August 2020 **"
 
 
 ;*******************************************************************************
