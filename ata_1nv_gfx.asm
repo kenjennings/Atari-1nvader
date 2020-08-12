@@ -107,22 +107,22 @@
 ; --------------------------------------------------------------------------
 ;
 ;    ------------------------------------------ (000 - 019) Blank scan lines. 8+8+4
-; 00 | 000000          000000          000000 | (020 - 027) (2) P1 score, High score, P2 score
+; 00 | 000000 P1      HI 000000     P2 000000 | (020 - 027) (2) P1 score, High score, P2 score
 ; 01 |                                        | (028 - 035) Blank 8
 ; 02 |                                        | (036 - 043) Blank 8
 ; 03 |                   3                    | (044 - 051) (6) 3, 2, 1, GO line animation
 ; 04 |                   3                    | (052 - 059) (6) 3, 2, 1, GO line animation
-; 05 |                                        | (060 - 067) Blank 8  (DLI vscroll hack) 
-; 06 |           1NNNVVVAADDDEEERRR           | (068 - 071) (072 - 075) Mode F * 4 Animated Gfx 
-; 07 |           1NNNVVVAADDDEEERRR           | (076 - 079) (080 - 083) Mode F * 4 Animated Gfx
-; 08 |           1NNNVVVAADDDEEERRR           | (084 - 087) (088 - 091) Mode F * 4 Animated Gfx
-; 09 |                                        | (092 - 099) Blank 8
-; 10 |           2019 Darren Foulds           | (100 - 107) (2) Credit line
+; 05 |                                        | (060 - 070) Blank 8 + Blank 3  (DLI vscroll hack) 
+; 06 |           1NNNVVVAADDDEEERRR           | (071 - 073) (074 - 076) Mode F * 3 Animated Gfx 
+; 07 |           1NNNVVVAADDDEEERRR           | (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
+; 08 |           1NNNVVVAADDDEEERRR           | (083 - 085) (086 - 088) Mode F * 3 Animated Gfx
+; 09 |                                        | (089 - 099) Blank 8 + Blank 3 
+; 10 |           2019 Darren Foulds           | (100 - 107) (6) Credit line
 ; 11 |                                        | (108 - 115) Blank 8
 ; 12 |                  ****                  | (116 - 123) Blank 8 Mothership graphic (PMG)
 ; 13 |                  ****                  | (124 - 131) Blank 8 Mothership graphic (PMG)
 ; 14 |                                        | (132 - 139) Blank 8
-; 15 |Scrolling docs and scrolling docs.......| (140 - 147) (2) Fine scrolling docs
+; 15 |Scrolling docs and scrolling docs.......| (140 - 147) (6) Fine scrolling docs
 ; 16 |                                        | (148 - 155) Blank 8
 ; 17 |                                        | (156 - 163) Blank 8
 ; 18 |                                        | (164 - 171) Blank 8
@@ -131,7 +131,7 @@
 ; 21 |             Mountains                  | (188 - 195) (4) Mountains
 ; 22 |             Mountains                  | (196 - 203) (4) Mountains
 ; 23 |B   Solid ground and bumpers           B| (204 - 211) (4) Ground and bumpers, 
-; 24 |]]]]]]]]]]]]]]]          [[[[[[[[[[[[[[[| (212 - 219) (4) Ground, gun parking area
+; 24 |]]]]]]]]]]]]]]]          [[[[[[[[[[[[[[[| (212 - 219) (2) Ground, gun parking area
 ;    ------------------------------------------
 
 
@@ -141,7 +141,7 @@
 ; --------------------------------------------------------------------------
 
 ;    ------------------------------------------ (000 - 019) Blank scan lines. 8+8+4
-; 00 | 000000          000000          000000 | (020 - 027) (2) P1 score, High score, P2 score
+; 00 | 000000 P1      HI 000000     P2 000000 | (020 - 027) (2) P1 score, High score, P2 score
 ; 01 |                                        | (028 - 035) (2) Stars
 ; 02 |                                        | (036 - 043) (2) Stars
 ; 03 |                                        | (044 - 051) (2) Stars
@@ -174,7 +174,7 @@
 ; --------------------------------------------------------------------------
 
 ;    ------------------------------------------ (000 - 019) Blank scan lines. 8+8+4
-; 00 | 000000          000000          000000 | (020 - 027) (2) P1 score, High score, P2 score
+; 00 | 000000 P1      HI 000000     P2 000000 | (020 - 027) (2) P1 score, High score, P2 score
 ; 01 |                                        | (028 - 035) Blank 8 
 ; 02 |                                        | (036 - 043) Blank 8
 ; 03 |                                        | (044 - 051) Blank 8
