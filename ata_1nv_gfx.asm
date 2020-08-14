@@ -103,6 +103,19 @@
 
 
 ; ==========================================================================
+; Display Lists.
+;
+; ANTIC has a 1K boundary limit for Display Lists.  We do not need to align
+; to 1K, because display lists are ordinarily short, and several will 
+; easily fit in one page of memory.  So, the code can make due with 
+; aligning to a page.  If they all stay in the page then they can't cross
+; a 1K boundary.
+; --------------------------------------------------------------------------
+
+	.align $0100
+
+
+; ==========================================================================
 ; Title Screen Atari
 ; --------------------------------------------------------------------------
 ;
@@ -133,6 +146,20 @@
 ; 23 |B   Solid ground and bumpers           B| (204 - 211) (4) Ground and bumpers, 
 ; 24 |]]]]]]]]]]]]]]]          [[[[[[[[[[[[[[[| (212 - 219) (2) Ground, gun parking area
 ;    ------------------------------------------
+
+DISPLAY_LIST_TITLE
+	.byte DL_BLANK_8, DL_BLANK_8, DL_BLANK_4|DL_DLI 
+
+BOTTOM_OF_DISPLAY                                 ; Prior to this DLI SPC1 set colors and HSCROL
+	mDL_LMS DL_TEXT_2,ANYBUTTON_MEM               ; (190-197) (+0 to +7)   Prompt to start game.
+	.by DL_BLANK_1|DL_DLI                         ; (198)     (+8)         DLI SPC2, set COLBK/COLPF2/COLPF1 for scrolling text.
+DL_SCROLLING_CREDIT
+SCROLL_CREDIT_LMS = [* + 1]
+	mDL_LMS DL_TEXT_2|DL_HSCROLL,SCROLLING_CREDIT ; (199-206) (+9 to +16)  The perpetrators identified
+; Note that as long as the system VBI is functioning the address 
+; provided for JVB does not matter at all.  The system VBI will update
+; ANTIC after this using the address in the shadow registers (SDLST)
+	mDL_JVB TITLE_DISPLAYLIST        ; Restart display.
 
 
 ; ==========================================================================
