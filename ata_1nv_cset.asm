@@ -1,11 +1,74 @@
-;*******************************************************************************
-;* 1nvader Custom Character set
-;*
-;* May 2020 Ken Jennings
-;*                                 
-;*******************************************************************************
+; ==========================================================================
+; 1nvader Custom Character set
+; 
+; custom characters - 64 characters defined
+; 
+; Oddly, this character set defines most values in the same order as the
+; Atari.   I thought the blank for C64 was at $20 position.   Maybe this 
+; is the shifted character set?
+;
+; This defines a stylized space font -- characters A-Z with a few other 
+; other symbol characters for text.  There are some special characters 
+; for the ground, the bumpers, the mountains, and the stars.
+;
+; However, this font has problems.  The minimum horizontal pixel size on 
+; a NTSC composite display that can accurately render color is a color 
+; clock.  The font uses single-pixel width lines.  In the usual ANTIC
+; text mode 2 (40 colums) each pixel is only one half color clock wide.  
+; Real Atari hardware using a composite or TV display will render text 
+; in this font with artifact colors scattered throughout.  
+;
+; On the C64 this is even worse as its single-pixel width lines are not 
+; even a correct fraction of a color clock.  Artifact colors vary by 
+; characcter position.  So far, all the videos I've seen of the game 
+; were shot on emulators that don't accurately simulate the C64's 
+; pixels' low correlation to the NTSC color clock.  But back to the 
+; immediate problems on the Atari.....
+;
+; The correct solution for the characters that will be displayed in ANTIC
+; mode 2 is to use two, adjacent horizontal pixels to cover an entire 
+; color clock.  However, I'm far toooo lazy to redefine the entire 
+; character set for the limited text in the game.
+;
+; The next choice is to use a different text mode that displays color
+; clock-sized pixels.   ANTIC Mode 6 and 7 use 8-bit wide glyph images
+; like ANTIC mode 2, but each pixel is a color clock wide.  Excluding
+; the score and line status information ANTIC mode 6 will be used where 
+; text is displayed.  
+;
+; ANTIC Mode 6 characters are twice the width of Mode 2 characters. 
+; However, Mode 6 also provides other benefits that can be applied to 
+; additional bells and whistles.   This mode has full color indirection
+; unlike Mode 2.   This mode requires much less DMA than Mode 2 and so 
+; provides more CPU time for Display List Interrupts.
+;
+; The mountains and ground can be displayed using the Mode 6 characters 
+; with some modifications to use different color registers which will 
+; allow mixing the white snow with the grey mountains on the same 
+; line.  (In fact, Display List Interrupts will be used to apply several
+; shades of gray to the mountains.)
+;
+; The score line at the top and the current alien line value information 
+; at the bottom of the screen will still use the Mode 2 character text mode.
+; These lines use the numbers and not text, so only the number glyphs will 
+; be edited to double the pixel width for consistent rendering.
+;
+; Converting integer values (the score) into readable text on screen 
+; involves a lot of extra coding work.  Rather than handling the score 
+; as an integer, the score will be directly generated as individual bytes
+; per each digit.  This will take a little extra coding to manage the 
+; score as base 10 values per each byte, but the conversion to display 
+; these bytes on screen will be quick and easy.   Basically, just add 
+; the appropriate offset value to the decimal digits 0 through 9 and this 
+; directly provides the internal character value to write to the screen.
+;
+; --------------------------------------------------------------------------
 
-	; custom characters - 64 characters defined
+; ==========================================================================
+; 
+; --------------------------------------------------------------------------
+
+
 
 cdat1 ; the first 32 characters
 ; $00
