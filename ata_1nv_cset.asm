@@ -65,18 +65,36 @@
 ; --------------------------------------------------------------------------
 
 ; ==========================================================================
+; For reference, some changes....
+; Character codes 0 to 63 are assumed to be primarily for Mode 6 text.
+; Character codes 64+ are for Mode 2 text.
+;
+; C64       ==   Atari
+; $07  @    ==   '  ; The natural position for apostrophe on Atari.
+; $20       ==   @  ; This is the natural position for "at" on Atari
+; The bumper at $20 on the C64 will be done with P5 missiles.
+; $01  "1"  ==   !  ; Restore exclamation to its correct position on Atari.
 ; 
+; $01 - $06 ==  
+; These are for the animated 3, 2, 1 game start counter.  On the C64 this 
+; was two characters put together to make a wide character.  The Atari 
+; Mode 6 characters are already "double width", so the game could use
+; just 3 characters to immitate the C64 start.  Buuuut, looking for a 
+; little bit of amping up the bass here.  The Atari version does an
+; animation growing a tiny number into a large, double-height number 
+; using Player/Missile Graphic.
+;
 ; --------------------------------------------------------------------------
 
-
+CHARACTER_SET
 
 cdat1 ; the first 32 characters
 ; $00
 	.byte $00,$00,$00,$00 ; [спаце].  blank space
 	.byte $00,$00,$00,$00
 ; $01
-	.byte $00,$01,$06,$01 ; ! ; thick left 1.  double size 1, left
-	.byte $01,$01,$01,$00
+;	.byte $00,$01,$06,$01 ; ! ; thick left 1.  double size 1, left
+;	.byte $01,$01,$01,$00
 		; ........
 		; .......*
 		; .....**.
@@ -85,24 +103,38 @@ cdat1 ; the first 32 characters
 		; .......*
 		; .......*
 		; ........
+	.byte $00,$10,$10,$10 ; ! ;    Atari uses as exclamation point. 
+	.byte $10,$00,$10,$00
+	; $00 ........
+	; $10 ...*....
+	; $10 ...*....
+	; $10 ...*....
+	; $10 ...*....
+	; $00 ........
+	; $10 ...*....
+	; $00 ........
+
 ; $02
-	.byte $00,$1f,$00,$07 ; " ; thick left 2.  double size 2, left
-	.byte $18,$18,$1f,$00
+;	.byte $00,$1f,$00,$07 ; " ; thick left 2.  double size 2, left
+;	.byte $18,$18,$1f,$00
 ; $03
-	.byte $00,$1f,$00,$01 ; # ; thick left 3.  double size 3, left
-	.byte $00,$00,$1f,$00
+;	.byte $00,$1f,$00,$01 ; # ; thick left 3.  double size 3, left
+;	.byte $00,$00,$1f,$00
 ; $04
-	.byte $00,$80,$00,$80 ; $ ; thick right 1.  double size 1, right
-	.byte $80,$80,$80,$00
+;	.byte $00,$80,$00,$80 ; $ ; thick right 1.  double size 1, right
+;	.byte $80,$80,$80,$00
 ; $05
-	.byte $00,$e0,$18,$e0 ; % ; thick right 2.  double size 2, right
-	.byte $00,$00,$f8,$00
+;	.byte $00,$e0,$18,$e0 ; % ; thick right 2.  double size 2, right
+;	.byte $00,$00,$f8,$00
 ; $06
-	.byte $00,$e0,$18,$e0 ; & ; thick right 3.  double size 3, right
-	.byte $18,$18,$e0,$00
-; $07 C64 == $20 Atari
-	.byte $00,$38,$44,$54 ; ' ; new "at" sign
-	.byte $5c,$40,$3c,$00
+;	.byte $00,$e0,$18,$e0 ; & ; thick right 3.  double size 3, right
+;	.byte $18,$18,$e0,$00
+
+	ORG CHARACTER_SET + [ $07 * 8 ]
+	
+; $07  - This was the C64 at sign.  
+;	.byte $00,$38,$44,$54 ; ' ; new "at" sign
+;	.byte $5c,$40,$3c,$00
 	; $00 ........
 	; $38 ..***...
 	; $44 .*...*..
@@ -111,13 +143,43 @@ cdat1 ; the first 32 characters
 	; $40 .*......
 	; $3C ..****..
 	; $00 ........
+	; On the Atari this is the single tick/apostrophe for Mode 6
+	.byte $00,$08,$08,$10
+	.byte $00,$00,$00,$00
+	; $00 ........
+	; $08 ....*...
+	; $08 ....*...
+	; $10 ...*....
+	; $00 ........
+	; $00 ........
+	; $00 ........
+	; $00 ........
 	
 ; $08
-	.byte $ff,$38,$44,$38 ; ( ;   8 with bars above, below?
-	.byte $44,$44,$38,$ff
+;	.byte $ff,$38,$44,$38 ; ( ;   8 with bars above, below?
+;	.byte $44,$44,$38,$ff
+	; $ff ********
+	; $38 ..***...
+	; $44 .*...*..
+	; $38 ..***...
+	; $44 .*...*..
+	; $44 .*...*..
+	; $38 ..***...
+	; $ff ********
+	
 ; $09
-	.byte $ff,$38,$44,$44 ; ) ;   9 with bars above, below?
-	.byte $34,$04,$04,$ff
+;	.byte $ff,$38,$44,$44 ; ) ;   9 with bars above, below?
+;	.byte $34,$04,$04,$ff
+	; $ff ********
+	; $38 ..***...
+	; $44 .*...*..
+	; $44 .*...*..
+	; $34 ..**.*..
+	; $04 .....*..
+	; $38 ..*..
+	; $ff ********
+
+		ORG CHARACTER_SET + [ $0A * 8 ]
 ; $0A
 ;	.byte $10,$00,$10,$ba ; * ; [star] .  Star shape
 ;	.byte $10,$00,$10,$00
@@ -157,6 +219,7 @@ cdat1 ; the first 32 characters
 ; $0B
 	.byte $00,$01,$02,$03 ; + ;     ? Placeholder?  Unused?
 	.byte $04,$05,$06,$07
+	
 ; $0C
 	.byte $00,$00,$00,$00 ; , ;     comma
 	.byte $00,$00,$10,$20
@@ -167,10 +230,12 @@ cdat1 ; the first 32 characters
 	.byte $00,$00,$00,$00 ; . ;     period.
 	.byte $00,$00,$10,$00
 ; $0F
-	.byte $00,$10,$10,$10 ; / ;    new exclamation point. !
-	.byte $10,$00,$10,$00
+;	.byte $00,$10,$10,$10 ; / ;    new exclamation point. !
+;	.byte $10,$00,$10,$00
 
 
+		ORG CHARACTER_SET + [ $10 * 8 ]
+		
 ; These are the 0 to 9 digits displayed in the Mode 6 text.
 ; See the $40 characters for the Mode 2 versions.
 
@@ -295,39 +360,75 @@ cdat1 ; the first 32 characters
 	; $00 ........
 	
 ; $1A
-	.byte $00,$01,$02,$03 ; : ;        ? Placeholder?  Unused?
-	.byte $04,$05,$06,$07
+;	.byte $00,$01,$02,$03 ; : ;        ? Placeholder?  Unused?
+;	.byte $04,$05,$06,$07
 ; $1B
-	.byte $00,$01,$02,$03 ; ; ;        ? Placeholder?  Unused?
-	.byte $04,$05,$06,$07
+;	.byte $00,$01,$02,$03 ; ; ;        ? Placeholder?  Unused?
+;	.byte $04,$05,$06,$07
 ; $1C
-	.byte $00,$01,$02,$03 ; < ;        ? Placeholder?  Unused?
-	.byte $04,$05,$06,$07
+;	.byte $00,$01,$02,$03 ; < ;        ? Placeholder?  Unused?
+;	.byte $04,$05,$06,$07
 ; $1D
-	.byte $00,$01,$02,$03 ; = ;        ? Placeholder?  Unused?
-	.byte $04,$05,$06,$07
+;	.byte $00,$01,$02,$03 ; = ;        ? Placeholder?  Unused?
+;	.byte $04,$05,$06,$07
 ; $1E
-	.byte $00,$01,$02,$03 ; > ;        ? Placeholder?  Unused?
-	.byte $04,$05,$06,$07
+;	.byte $00,$01,$02,$03 ; > ;        ? Placeholder?  Unused?
+;	.byte $04,$05,$06,$07
 ; $1F
-	.byte $00,$01,$02,$03 ; ? ;        ? Placeholder?  Unused?
-	.byte $04,$05,$06,$07
+;	.byte $00,$01,$02,$03 ; ? ;        ? Placeholder?  Unused?
+;	.byte $04,$05,$06,$07
+
+
+		ORG CHARACTER_SET + [ $20 * 8 ]
+		
+; This is the image originally at $20
+; On the Atari I the bouncer image is displayed as Missiles (P5 parts)
+; This allows accommodating the single tick (') and the at (@) at the 
+; correct positions in the Atari font.
+;	.byte $ff,$76,$2c,$34 ; @ ;     bouncer.   Left/Right line end.
+;	.byte $2c,$76,$ff,$00
+	
 
 cdat2 ; next 32 characters.
 ; $20
-	.byte $ff,$76,$2c,$34 ; @ ;     bouncer.   Left/Right line end.
-	.byte $2c,$76,$ff,$00
+;	.byte $ff,$76,$2c,$34 ; @ ;     bouncer.   Left/Right line end.
+;	.byte $2c,$76,$ff,$00
+
+; On the Atari the @ sign is move to its normal position here, so 
+; that the single tick (apostrophe) can be used at its normal place
+; for text.
+;	.byte $00,$38,$44,$54 ; ' ; new "at" sign
+;	.byte $5c,$40,$3c,$00
+	; $00 ........
+	; $38 ..***...
+	; $44 .*...*..
+	; $54 .*.*.*..
+	; $5C .*.***..
+	; $40 .*......
+	; $3C ..****..
+	; $00 ........
+	.byte $00,$38,$c6,$d6	; Revised @ for Atari Mode 6
+	.byte $dc,$c0,$3c,$00
+	; $00 ........
+	; $38 ..***...
+	; $c6 **...**.
+	; $d6 **.*.**.
+	; $dc **.***..
+	; $c0 **......
+	; $3C ..****..
+	; $00 ........
+
 ; $21
 	.byte $00,$04,$0c,$14 ; а ; A
 	.byte $24,$5c,$44,$00
-; ........
-; .....*..
-; ....**..
-; ...*.*..
-; ..*..*..
-; .*.***..
-; .*...*..
-; ........
+	; ........
+	; .....*..
+	; ....**..
+	; ...*.*..
+	; ..*..*..
+	; .*.***..
+	; .*...*..
+	; ........
 ; $22
 	.byte $00,$78,$44,$58 ; б ; B
 	.byte $44,$44,$5c,$00
