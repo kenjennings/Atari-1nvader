@@ -4,8 +4,10 @@
 ; custom characters - 64 characters defined
 ; 
 ; Oddly, this character set defines most values in the same order as the
-; Atari.   I thought the blank for C64 was at $20 position.   Maybe this 
-; is the shifted character set?
+; Atari.  The C64 program offsets this data at +$20.  For Atari purposes
+; this can stay at the $00 offset position.   In the C64 code the 
+; references to character values need to be offset by -$20 to show 
+; correctly on the Atari. 
 ;
 ; This defines a stylized space font -- characters A-Z with a few other 
 ; other symbol characters for text.  There are some special characters 
@@ -232,7 +234,15 @@ cdat1 ; the first 32 characters
 ; $0F
 ;	.byte $00,$10,$10,$10 ; / ;    new exclamation point. !
 ;	.byte $10,$00,$10,$00
-
+; On the Atari we still need this for a URL in the credits.
+	.by $00, 
+	.by $00,
+	; $00 ........
+	; $02 ......*.
+	; $04 .....*..
+	; $08 ....*...
+	; $
+	; $00 ........
 
 		ORG CHARACTER_SET + [ $10 * 8 ]
 		

@@ -139,11 +139,11 @@
 ; 16 |                                        | (148 - 155) Blank 8
 ; 17 |                                        | (156 - 163) Blank 8
 ; 18 |                                        | (164 - 171) Blank 8
-; 19 |             Mountains                  | (172 - 179) (4) Mountains
-; 20 |             Mountains                  | (180 - 187) (4) Mountains
-; 21 |             Mountains                  | (188 - 195) (4) Mountains
-; 22 |             Mountains                  | (196 - 203) (4) Mountains
-; 23 |B   Solid ground and bumpers           B| (204 - 211) (4) Ground and bumpers, 
+; 19 |             Mountains                  | (172 - 179) (6) Mountains
+; 20 |             Mountains                  | (180 - 187) (6) Mountains
+; 21 |             Mountains                  | (188 - 195) (6) Mountains
+; 22 |             Mountains                  | (196 - 203) (6) Mountains
+; 23 |B   Solid ground and bumpers           B| (204 - 211) (6) Ground and bumpers, 
 ; 24 |]]]]]]]]]]]]]]]          [[[[[[[[[[[[[[[| (212 - 219) (2) Ground, gun parking area
 ;    ------------------------------------------
 
@@ -232,13 +232,25 @@ SCROLL_CREDIT_LMS = [* + 1]
 
 
 
-; Title graphics are ANTIC mode 9 with a Player/missile color overlay.
-; pixel values 3, 6, 9, 12 are used for the animated image.
-; Narrow playfield is used to reduce the memory needed for each line.
-; Pixel values are shifted in each bitmap image to create the 
-; illusion of motion.  Rather than being clever the images are just 
+; Title graphics are ANTIC F+GTIA $4 (aka BASIC mode 9, 16-grey scale) 
+; with a Player 5 (the missile) used as color overlay.
+;
+; Pixel values 3, 6, 9, 12 are used for the animated pixels.
+;
+; Since a large part of the left and right side of the title is just 
+; blank space the Narrow playfield DMA is used to reduce the memory 
+; needed for each line to 32 bytes (instead of 40).
+;
+; Pixel values are different in each bitmap image to create the 
+; illusion of motion.  Rather than being clever, the images are just 
 ; pre-rendered and the code will just page flip between them by
 ; changing a pointer in the display list.
+;
+; ANTIC F is one scan line tall.  To make each line 3 scan lines tall
+; a DLI will abuse the vertical fine scroll to make an illegal vertical
+; shift.  This method could just have easily made 4 (or more) scan lines
+; for each row, but 3 is used, since this is closer to being square on 
+; real hardware.
 ;
 ; 36 pixels title image.   
 ; Narrow width screen 64 pixels - 36 image pixels = 28 pixels padding needed.  
@@ -283,5 +295,41 @@ TITLE_FRAME4
 	.by $00 $00 $00 $00 $00 $00 $00 $03 $06 $00 $C9 $06 $06 $00 $C0 $03 $09 $00 $0C $03 $00 $00 $06 $0C $90 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $06 $03 $00 $06 $09 $30 $09 $03 $C6 $06 $00 $03 $06 $00 $00 $03 $00 $03 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $09 $0C $00 $03 $0C $00 $06 $00 $09 $03 $0C $96 $09 $C3 $69 $0C $00 $06 $00 $00 $00 $00 $00 $00 $00
+
+
+; Scrolling text for the directions, credits, etc.
+; Since this is in Mode 6 it only needs 
+; 20 blank characters for padding.
+scrtxt   
+	.sb "                    PRESS FIRE TO PLAY"
+	.sb "     FIRE SHOOTS AND CHANGES CANNON DIRECTION"
+	.sb "     MORE POINTS WHEN 1NVADER IS HIGH UP"
+	.sb "     1NVADER SLOWS DOWN AFTER EIGHTY HITS"
+	.sb "     C64 VERSION 2019 - DARREN FOULDS  @DARRENTHEFOULDS"
+	.sb "     THX @BEDFORDLVLEXP     HI NATE AND TBONE!"
+	.sb "     ATARI VERSION 2020 - KEN JENNINGS HTTPS://GITHUB.COM/KENJENNINGS/ATARI-1NVADER"
+	.sb "                    "
+
+
+; " ]              ]           ]         ] "
+; "[^\[        [  [^\       [\[^\]     ][^\"
+; "]  \\    [\[^\[   \     [  \ [^\   [^\ ]"
+; "_\   \  [  \ [     \   [        \ [   [_"
+; "*______________________________________*" <- Bumpers
+; "^^^^^^^^^^^^^^^          ^^^^^^^^^^^^^^^"
+
+mountc   ; mountain screen view chars
+	.byte $20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20
+
+	.byte $5b,$5e,$5c,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$5b,$5e,$5c,$20,$20,$20,$20,$20,$20,$20,$5b,$5c,$5b,$5e,$5c,$5d,$20,$20,$20,$20,$20,$5d,$5b,$5e,$5c
+
+	.byte $5d,$20,$20,$5c,$5c,$20,$20,$20,$20,$5b,$5c,$5b,$5e,$5c,$5b,$20,$20,$20,$5c,$20,$20,$20,$20,$20,$5b,$20,$20,$5c,$20,$5b,$5e,$5c,$20,$20,$20,$5b,$5e,$5c,$20,$5d
+
+	.byte $5f,$5c,$20,$20,$20,$5c,$20,$20,$5b,$20,$20,$5c,$20,$5b,$20,$20,$20,$20,$20,$5c,$20,$20,$20,$5b,$20,$20,$20,$20,$20,$20,$20,$20,$5c,$20,$5b,$20,$20,$20,$5b,$5f
+
+	.byte $40,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$40
+
+	.byte $5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e
+
 
 

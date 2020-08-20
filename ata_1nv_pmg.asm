@@ -1,18 +1,20 @@
+;*******************************************************************************
+;*
+;* 1NVADER - Atari parody of C64 1NVADER game.
+;*
+;*******************************************************************************
 
+; ==========================================================================
+; PLAYER/MISSILE GRAPHICS
+;
+; --------------------------------------------------------------------------
+; VBI manages moving everything around, so there's never any visible tearing.
+; Also, its best to evaluate the P/M collisions when the display is not active.
 
 
 
 
 spr1     ; mothership sprite
-         .byte 0,126,0
-         .byte 1,255,128
-         .byte 3,255,192
-         .byte 6,219,96
-         .byte 15,255,240
-         .byte 15,255,240
-         .byte 3,153,192
-         .byte 1,0,128
-		 
 ;         .BYTE 0,126,0                  ; 00000000 01111110 00000000
 ;         .BYTE 1,255,128                ; 00000001 11111111 10000000
 ;         .BYTE 3,255,192                ; 00000011 11111111 11000000
@@ -21,21 +23,13 @@ spr1     ; mothership sprite
 ;         .BYTE 15,255,240               ; 00001111 11111111 11110000
 ;         .BYTE 3,153,192                ; 00000011 11111111 11000000
 ;         .BYTE 1,0,128                  ; 00000001 00000000 10000000
-         .byte 0,0,0,0,0,0,0,0,0,0,0,0
-         .byte 0,0,0,0,0,0,0,0,0,0,0,0
-         .byte 0,0,0,0,0,0,0,0,0,0,0,0
-         .byte 0,0,0,255
+;         .byte 0,0,0,0,0,0,0,0,0,0,0,0
+;         .byte 0,0,0,0,0,0,0,0,0,0,0,0
+;         .byte 0,0,0,0,0,0,0,0,0,0,0,0
+;         .byte 0,0,0,255
+
 
 spr2     ; cannon sprite
-         .byte 0,8,0
-         .byte 0,28,0
-         .byte 0,28,0
-         .byte 3,255,224
-         .byte 7,255,240
-         .byte 7,255,240
-         .byte 7,255,240
-         .byte 7,255,240
-		 
 ;         .BYTE 0,8,0                    ; 00000000 00001000 00000000
 ;         .BYTE 0,28,0                   ; 00000000 00011100 00000000
 ;         .BYTE 0,28,0                   ; 00000000 00011100 00000000
@@ -44,10 +38,10 @@ spr2     ; cannon sprite
 ;         .BYTE 7,255,240                ; 00000111 11111111 11110000
 ;         .BYTE 7,255,240                ; 00000111 11111111 11110000 
 ;         .BYTE 7,255,240                ; 00000111 11111111 11110000  
-         .byte 0,0,0,0,0,0,0,0,0,0,0,0
-         .byte 0,0,0,0,0,0,0,0,0,0,0,0
-         .byte 0,0,0,0,0,0,0,0,0,0,0,0
-         .byte 0,0,0,255
+;         .byte 0,0,0,0,0,0,0,0,0,0,0,0
+;         .byte 0,0,0,0,0,0,0,0,0,0,0,0
+;         .byte 0,0,0,0,0,0,0,0,0,0,0,0
+;         .byte 0,0,0,255
 
 spr3     ; laser sprite
          .byte 0,8,0
@@ -166,6 +160,12 @@ PM_TITLE_BITMAP
 ;	........1.1...1.1...1...1.1.111.11111.1...1..... ..
 
 ; We are trying for only 44 bits shifted 5 * 8 = 40 + 4
+
+; The data declarations below were considerably more grotesque.
+; See the bitmap shifting discussion above.  Imagine that applied
+; to the bitmap.  After hand-typing the first row I got fed up 
+; and wrote the bitmap-Left and bitmap-Right macros to generate 
+; pre-shifted bitmap values.
 
 PM_TITLE_BITMAP_LINE1 ;	.by 00000000 10100010 10001000 10111000 11111011 11000000 00
 	mBitmap16Left %0000000010100010
