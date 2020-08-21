@@ -148,11 +148,30 @@
 ;    ------------------------------------------
 
 DISPLAY_LIST_TITLE
-	.byte DL_BLANK_8, DL_BLANK_8, DL_BLANK_4|DL_DLI   ; (000 - 019) Blank scan lines. 8+8+4 
-	mDL_LMS DL_TEXT_2|DL_DLI,GFX_SCORE_LINE           ; (020 - 027) (2) P1 score, High score, P2 score
-	.byte DL_BLANK_8
-
-
+	mDL_BLANK DL_BLANK_8                                  ; (000 - 019) Blank scan lines. 8+8+4 
+	mDL_BLANK DL_BLANK_8
+	mDL_BLANK DL_BLANK_4|DL_DLI   
+	mDL_LMS DL_TEXT_2|DL_DLI,GFX_SCORE_LINE               ; (020 - 027) (2) P1 score, High score, P2 score
+	mDL_BLANK DL_BLANK_8                                  ; (028 - 035) Blank 8
+	mDL_BLANK DL_BLANK_8                                  ; (036 - 043) Blank 8
+	mDL_BLANK DL_BLANK_8                                  ; (044 - 051) Blank 8   3, 2, 1, GO P/M animation
+	mDL_BLANK DL_BLANK_8                                  ; (052 - 059) Blank 8   3, 2, 1, GO P/M animation
+	mDL_BLANK DL_BLANK_8                                  ; (060 - 070) Blank 8 
+	mDL_BLANK DL_BLANK_3 ;                                             + Blank 3  (DLI vscroll hack) 
+	mDL_LMS DL_MAP_F|DL_VSCROLL|DL_DLI,GFX_TITLE_FRAME1   ; (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
+	mDL DL_MAP_F|DL_VSCROLL|DL_DLI 
+	mDL DL_MAP_F|DL_VSCROLL|DL_DLI                        ; (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
+	mDL DL_MAP_F|DL_VSCROLL|DL_DLI 
+	mDL DL_MAP_F|DL_VSCROLL|DL_DLI                        ; (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
+	mDL DL_MAP_F|DL_VSCROLL|DL_DLI 
+	mDL_BLANK DL_BLANK_8                                  ; (089 - 099) Blank 8 
+	mDL_BLANK DL_BLANK_3 ;                                             + Blank 3  (DLI vscroll hack) 
+	mDL_LMS DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_SCROLL_CREDIT ; (100 - 107) (6) Credit line
+	
+	
+	
+	
+	
 BOTTOM_OF_DISPLAY                                 ; Prior to this DLI SPC1 set colors and HSCROL
 	mDL_LMS DL_TEXT_2,ANYBUTTON_MEM               ; (190-197) (+0 to +7)   Prompt to start game.
 	.by DL_BLANK_1|DL_DLI                         ; (198)     (+8)         DLI SPC2, set COLBK/COLPF2/COLPF1 for scrolling text.
