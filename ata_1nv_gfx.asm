@@ -147,30 +147,45 @@
 ; 24 |]]]]]]]]]]]]]]]          [[[[[[[[[[[[[[[| (212 - 219) (2) Ground, gun parking area
 ;    ------------------------------------------
 
-DISPLAY_LIST_TITLE
-	mDL_BLANK DL_BLANK_8                                  ; (000 - 019) Blank scan lines. 8+8+4 
+DISPLAY_LIST_TITLE                                          ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
+	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
-	mDL_BLANK DL_BLANK_4|DL_DLI   
-	mDL_LMS DL_TEXT_2|DL_DLI,GFX_SCORE_LINE               ; (020 - 027) (2) P1 score, High score, P2 score
-	mDL_BLANK DL_BLANK_8                                  ; (028 - 035) Blank 8
-	mDL_BLANK DL_BLANK_8                                  ; (036 - 043) Blank 8
-	mDL_BLANK DL_BLANK_8                                  ; (044 - 051) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK DL_BLANK_8                                  ; (052 - 059) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK DL_BLANK_8                                  ; (060 - 070) Blank 8 
-	mDL_BLANK DL_BLANK_3 ;                                             + Blank 3  (DLI vscroll hack) 
-	mDL_LMS DL_MAP_F|DL_VSCROLL|DL_DLI,GFX_TITLE_FRAME1   ; (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
-	mDL DL_MAP_F|DL_VSCROLL|DL_DLI 
-	mDL DL_MAP_F|DL_VSCROLL|DL_DLI                        ; (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
-	mDL DL_MAP_F|DL_VSCROLL|DL_DLI 
-	mDL DL_MAP_F|DL_VSCROLL|DL_DLI                        ; (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
-	mDL DL_MAP_F|DL_VSCROLL|DL_DLI 
-	mDL_BLANK DL_BLANK_8                                  ; (089 - 099) Blank 8 
-	mDL_BLANK DL_BLANK_3 ;                                             + Blank 3  (DLI vscroll hack) 
-	mDL_LMS DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_SCROLL_CREDIT ; (100 - 107) (6) Credit line
-	
-	
-	
-	
+	mDL_BLANK DL_BLANK_4   
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; (020 - 027) (2) P1 score, High score, P2 score
+	mDL_BLANK DL_BLANK_8                                    ; (028 - 035) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; (036 - 043) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; (044 - 051) Blank 8   3, 2, 1, GO P/M animation
+	mDL_BLANK DL_BLANK_8                                    ; (052 - 059) Blank 8   3, 2, 1, GO P/M animation
+	mDL_BLANK DL_BLANK_8                                    ; (060 - 070) Blank 8 
+	mDL_BLANK DL_BLANK_3|DL_DLI ;                                       + Blank 3  (DLI vscroll hack) 
+	mDL_LMS   DL_MAP_F|DL_VSCROLL|DL_DLI,GFX_TITLE_FRAME1   ; (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI 
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ; (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI 
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ; (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
+	mDL       DL_MAP_F|DL_VSCROLL 
+	mDL_BLANK DL_BLANK_8                                    ; (089 - 099) Blank 8 
+	mDL_BLANK DL_BLANK_3|DL_DLI                             ;           + Blank 3  (Hscroll authors, run colors) 
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT        ; (100 - 107) (6) Author(s) Credit line
+	mDL_BLANK DL_BLANK_8                                    ; (108 - 115) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; (116 - 123) Blank 8 Mothership graphic (PMG)
+	mDL_BLANK DL_BLANK_8                                    ; (124 - 131) Blank 8 Mothership graphic (PMG)
+	mDL_BLANK DL_BLANK_8|DL_DLI                             ; (132 - 139) Blank 8
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; (140 - 147) (6) Fine scrolling docs
+	mDL_BLANK DL_BLANK_8                                    ; (148 - 155) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; (156 - 163) Blank 8
+	mDL_BLANK DL_BLANK_8|DLI                                ; (164 - 171) Blank 8
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; (172 - 179) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; (180 - 187) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; (188 - 195) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; (196 - 203) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; (204 - 211) (6) Fine scrolling mountains to random position.
+	mDL       DL_TEXT_6|DL_DLI,GFX_STATSLINE                ; (212 - 219) (6) Stats line follows bumper line in memory.
+; Note that as long as the system VBI is functioning the address 
+; provided for JVB does not matter at all.  The system VBI will update
+; ANTIC after this using the address in the shadow registers (SDLST)
+	mDL_JVB DISPLAY_LIST_TITLE        ; Restart display.
+
 	
 BOTTOM_OF_DISPLAY                                 ; Prior to this DLI SPC1 set colors and HSCROL
 	mDL_LMS DL_TEXT_2,ANYBUTTON_MEM               ; (190-197) (+0 to +7)   Prompt to start game.
@@ -184,9 +199,58 @@ SCROLL_CREDIT_LMS = [* + 1]
 	mDL_JVB TITLE_DISPLAYLIST        ; Restart display.
 
 
+
 ; ==========================================================================
 ; Game Screen Atari
 ; Alien travels line progression 0 to 21.  22 is end of game.
+;
+; At any time there are 4 stars on screen.
+; Each star lasts 10 frames until it fades out.
+; When the star fades out a new star is added.
+; There is one line of data for a star.
+; On the Atari this fade out will be a little more animated.
+; The star has a little gradient applied where the top and bottom
+; sparkle pixels fade out faster than the center line pixels.
+; 
+; Frame:  Top/Bot:   Middle:  (colors for fading)
+;    1      $0E        $0E
+;    2      $0E        $0E
+;    3      $*E        $0E
+;    4      $*E        $0E
+;    5      $*C        $*E
+;    6      $*A        $*E
+;    7      $*8        $*C
+;    8      $*6        $*C
+;    9      $*4        $*A
+;   10      $*2        $*8
+;
+; Positioning the stars is different.   Every mode 6 line on the screen for
+; the stars refers to (LMS) the same line of screen data.  LMS and horizontal
+; fine scrolling will be used to position the stars on the row where they 
+; appear.
+; The first 21 bytes of data are blank which is used to show no star. 
+; That is, LMS=Line+0, and HSCROLL=15.  
+; The star character is at position 22 on the line.
+; The star will be displayed by varying the horizontal scroll offset 
+; and fine-scroll (HSCROL) value.  This allows per pixel positioning,
+; but uses the memory for only the one line of text characters. 
+; Where a star appears the starting position for the LMS will be 
+; random from 2 to 22 (Or LMS+1 to LMS+21).   Do this by choosing a
+; random number, then mask it (bitwise AND) with %3F.  The resulting 
+; value, 0 to 63, is used as the index to a lookup table to convert it 
+; to the value divided by 3.  The zero equivalants (0, 1, 2) will map
+; to 4, 11, 1.
+; Horizontal fine scrolling will be a random number from 0 to 15. 
+;
+; The custom VBI will keep track of the four lines showing the stars.
+; It will transition the color for each star fading per each frame. 
+; When the  transition reaches frame 11, the star is removed from 
+; the screen (fade color table lookups = 0, LMS offset = +0 and HSCROL=15).
+; A new random line is chosen for the star.  Pick a random number from 
+; 0 to 31 (mask random value with binary AND $1F).  
+; If greater than 17, then subtract 16. (31 - 16 == 15.   18 - 16 = 2).
+; If this row is in use then use the next row and continue incrementing
+; until an unused row is found.
 ; --------------------------------------------------------------------------
 
 ;    ------------------------------------------ (000 - 019) Blank scan lines. 8+8+4
@@ -216,6 +280,61 @@ SCROLL_CREDIT_LMS = [* + 1]
 ; 23 |B   Solid ground and bumpers           B| (204 - 211) (6) Ground and bumpers, guns operational
 ; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| (212 - 219) (2) Ground, stats - line, score value, hits left
 ;    ------------------------------------------
+
+
+
+
+DISPLAY_LIST_GAME                                           ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
+	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
+	mDL_BLANK DL_BLANK_8
+	mDL_BLANK DL_BLANK_4   
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; (020 - 027) (2) P1 score, High score, P2 score
+	mDL_BLANK DL_BLANK_8                                    ; (028 - 035) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; (036 - 043) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; (044 - 051) Blank 8   3, 2, 1, GO P/M animation
+	mDL_BLANK DL_BLANK_8                                    ; (052 - 059) Blank 8   3, 2, 1, GO P/M animation
+	mDL_BLANK DL_BLANK_8                                    ; (060 - 070) Blank 8 
+	mDL_BLANK DL_BLANK_3|DL_DLI ;                                       + Blank 3  (DLI vscroll hack) 
+	mDL_LMS   DL_MAP_F|DL_VSCROLL|DL_DLI,GFX_TITLE_FRAME1   ; (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI 
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ; (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI 
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ; (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
+	mDL       DL_MAP_F|DL_VSCROLL 
+	mDL_BLANK DL_BLANK_8                                    ; (089 - 099) Blank 8 
+	mDL_BLANK DL_BLANK_3|DL_DLI                             ;           + Blank 3  (Hscroll authors, run colors) 
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT        ; (100 - 107) (6) Author(s) Credit line
+	mDL_BLANK DL_BLANK_8                                    ; (108 - 115) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; (116 - 123) Blank 8 Mothership graphic (PMG)
+	mDL_BLANK DL_BLANK_8                                    ; (124 - 131) Blank 8 Mothership graphic (PMG)
+	mDL_BLANK DL_BLANK_8|DL_DLI                             ; (132 - 139) Blank 8
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; (140 - 147) (6) Fine scrolling docs
+	mDL_BLANK DL_BLANK_8                                    ; (148 - 155) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; (156 - 163) Blank 8
+	mDL_BLANK DL_BLANK_8|DLI                                ; (164 - 171) Blank 8
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; (172 - 179) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; (180 - 187) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; (188 - 195) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; (196 - 203) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; (204 - 211) (6) Fine scrolling mountains to random position.
+	mDL       DL_TEXT_6|DL_DLI,GFX_STATSLINE                ; (212 - 219) (6) Stats line follows bumper line in memory.
+; Note that as long as the system VBI is functioning the address 
+; provided for JVB does not matter at all.  The system VBI will update
+; ANTIC after this using the address in the shadow registers (SDLST)
+	mDL_JVB DISPLAY_LIST_TITLE        ; Restart display.
+
+	
+BOTTOM_OF_DISPLAY                                 ; Prior to this DLI SPC1 set colors and HSCROL
+	mDL_LMS DL_TEXT_2,ANYBUTTON_MEM               ; (190-197) (+0 to +7)   Prompt to start game.
+	.by DL_BLANK_1|DL_DLI                         ; (198)     (+8)         DLI SPC2, set COLBK/COLPF2/COLPF1 for scrolling text.
+DL_SCROLLING_CREDIT
+SCROLL_CREDIT_LMS = [* + 1]
+	mDL_LMS DL_TEXT_2|DL_HSCROLL,SCROLLING_CREDIT ; (199-206) (+9 to +16)  The perpetrators identified
+; Note that as long as the system VBI is functioning the address 
+; provided for JVB does not matter at all.  The system VBI will update
+; ANTIC after this using the address in the shadow registers (SDLST)
+	mDL_JVB TITLE_DISPLAYLIST        ; Restart display.
+
 
 
 ; ==========================================================================
@@ -325,12 +444,13 @@ GFX_TITLE_FRAME4
 	.by $00 $00 $00 $00 $00 $00 $00 $06 $03 $00 $06 $09 $30 $09 $03 $C6 $06 $00 $03 $06 $00 $00 $03 $00 $03 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $09 $0C $00 $03 $0C $00 $06 $00 $09 $03 $0C $96 $09 $C3 $69 $0C $00 $06 $00 $00 $00 $00 $00 $00 $00
 
+GFX_SCROLL_CREDIT
 
 ; Scrolling text for the directions, credits, etc.
 ; Since this is in Mode 6 it only needs 
 ; 20 blank characters for padding.
 
-GFX_SCROLL_CREDIT
+GFX_SCROLL_DOCS
 scrtxt   
 	.sb "                    PRESS FIRE TO PLAY"
 	.sb "     FIRE SHOOTS AND CHANGES CANNON DIRECTION"
@@ -385,11 +505,11 @@ GFX_MOUNTAINS1
 	.byte $00,$3d,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$3d,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$3d,$00,$00,$00,$00,$00,$00,$00,$00,$00,$3d,$00
 
-GFX_MOUNTAIN2
+GFX_MOUNTAINS2
 	.byte $3b,$3e,$3c,$3d,$00,$00,$00,$00,$00,$00,$00,$00,$3d,$00,$00,$3b,$3e,$3c,$00,$00
 	.byte $00,$00,$00,$00,$00,$3b,$3c,$3b,$3e,$3c,$3d,$00,$00,$00,$00,$00,$3d,$3b,$3e,$3c
 
-GFX_MOUNTAIN3
+GFX_MOUNTAINS3
 	.byte $3d,$00,$00,$3c,$3c,$00,$00,$00,$00,$3b,$3c,$3b,$3e,$3c,$3b,$00,$00,$00,$3c,$00
 	.byte $00,$00,$00,$00,$3b,$00,$00,$3c,$00,$3b,$3e,$3c,$00,$00,$00,$3b,$3e,$3c,$00,$3d
 
