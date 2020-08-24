@@ -144,60 +144,64 @@
 ; 21 |             Mountains                  | (188 - 195) (6) Mountains
 ; 22 |             Mountains                  | (196 - 203) (6) Mountains
 ; 23 |B   Solid ground and bumpers           B| (204 - 211) (6) Ground and bumpers, 
-; 24 |]]]]]]]]]]]]]]]          [[[[[[[[[[[[[[[| (212 - 219) (2) Ground, gun parking area
+; 24 |]]]]]]]]]]]]]]]          [[[[[[[[[[[[[[[| (212 - 219) (2) Ground, stats, gun parking area
 ;    ------------------------------------------
+
+; The top of the screen (blank lines and score line) is the same on 
+; all displays.  In theory, there could be one version of the start
+; shared by all diaplays and then a JMP in the Diaply list to the 
+; correct version of the screen.  However, this section is a mere 
+; 6 bytes long for four instructions.   A JMP would add three more 
+; to essentially save a couple bytes.   So, copy/paste the same 
+; lines for the top of screen.
+
+; The end of the display is something else.  There are fpur lines
+; of text characters for the mountains the ground line for the 
+; players, and the stats line under that.  That's 16 bytes each
+; each time, so we can end each display list by a JMP to one
+; common ending.
+
 
 DISPLAY_LIST_TITLE                                          ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
 	mDL_BLANK DL_BLANK_4   
-	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; (020 - 027) (2) P1 score, High score, P2 score
-	mDL_BLANK DL_BLANK_8                                    ; (028 - 035) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; (036 - 043) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; (044 - 051) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK DL_BLANK_8                                    ; (052 - 059) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK DL_BLANK_8                                    ; (060 - 070) Blank 8 
-	mDL_BLANK DL_BLANK_3|DL_DLI ;                                       + Blank 3  (DLI vscroll hack) 
-	mDL_LMS   DL_MAP_F|DL_VSCROLL|DL_DLI,GFX_TITLE_FRAME1   ; (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI 
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ; (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI 
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ; (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
-	mDL       DL_MAP_F|DL_VSCROLL 
-	mDL_BLANK DL_BLANK_8                                    ; (089 - 099) Blank 8 
-	mDL_BLANK DL_BLANK_3|DL_DLI                             ;           + Blank 3  (Hscroll authors, run colors) 
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT        ; (100 - 107) (6) Author(s) Credit line
-	mDL_BLANK DL_BLANK_8                                    ; (108 - 115) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; (116 - 123) Blank 8 Mothership graphic (PMG)
-	mDL_BLANK DL_BLANK_8                                    ; (124 - 131) Blank 8 Mothership graphic (PMG)
-	mDL_BLANK DL_BLANK_8|DL_DLI                             ; (132 - 139) Blank 8
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; (140 - 147) (6) Fine scrolling docs
-	mDL_BLANK DL_BLANK_8                                    ; (148 - 155) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; (156 - 163) Blank 8
-	mDL_BLANK DL_BLANK_8|DLI                                ; (164 - 171) Blank 8
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; (172 - 179) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; (180 - 187) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; (188 - 195) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; (196 - 203) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; (204 - 211) (6) Fine scrolling mountains to random position.
-	mDL       DL_TEXT_6|DL_DLI,GFX_STATSLINE                ; (212 - 219) (6) Stats line follows bumper line in memory.
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00 (020 - 027) (2) P1 score, High score, P2 score
+	mDL_BLANK DL_BLANK_8                                    ; 01 (028 - 035) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; 02 (036 - 043) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; 03 (044 - 051) Blank 8   3, 2, 1, GO P/M animation
+	mDL_BLANK DL_BLANK_8                                    ; 04 (052 - 059) Blank 8   3, 2, 1, GO P/M animation
+	mDL_BLANK DL_BLANK_8                                    ;    (060 - 070) Blank 8 
+	mDL_BLANK DL_BLANK_3|DL_DLI ;                                           + Blank 3  (DLI vscroll hack) 
+	mDL_LMS   DL_MAP_F|DL_VSCROLL|DL_DLI,GFX_TITLE_FRAME1   ;    (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;  
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;    (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ; 
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;    (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
+	mDL       DL_MAP_F|DL_VSCROLL                           ;  
+	mDL_BLANK DL_BLANK_8                                    ;    (089 - 099) Blank 8 
+	mDL_BLANK DL_BLANK_3|DL_DLI                             ;              + Blank 3  (Hscroll authors, run colors) 
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT        ; 10 (100 - 107) (6) Author(s) Credit line
+	mDL_BLANK DL_BLANK_8                                    ; 11 (108 - 115) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; 12 (116 - 123) Blank 8 Mothership graphic (PMG)
+	mDL_BLANK DL_BLANK_8                                    ; 13 (124 - 131) Blank 8 Mothership graphic (PMG)
+	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 14 (132 - 139) Blank 8
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (140 - 147) (6) Fine scrolling docs
+	mDL_BLANK DL_BLANK_8                                    ; 16 (148 - 155) Blank 8
+	mDL_BLANK DL_BLANK_8                                    ; 17 (156 - 163) Blank 8
+	mDL_BLANK DL_BLANK_8|DLI                                ; 18 (164 - 171) Blank 8
+
+BOTTOM_OF_DISPLAY                                 
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; 19 (172 - 179) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; 20 (180 - 187) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; 21 (188 - 195) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; 22 (196 - 203) (6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; 23 (204 - 211) (6) ground and bumpers
+	mDL       DL_TEXT_6,GFX_STATSLINE                       ; 24 (212 - 219) (6) Stats line follows bumper line in memory.
 ; Note that as long as the system VBI is functioning the address 
 ; provided for JVB does not matter at all.  The system VBI will update
 ; ANTIC after this using the address in the shadow registers (SDLST)
 	mDL_JVB DISPLAY_LIST_TITLE        ; Restart display.
-
-	
-BOTTOM_OF_DISPLAY                                 ; Prior to this DLI SPC1 set colors and HSCROL
-	mDL_LMS DL_TEXT_2,ANYBUTTON_MEM               ; (190-197) (+0 to +7)   Prompt to start game.
-	.by DL_BLANK_1|DL_DLI                         ; (198)     (+8)         DLI SPC2, set COLBK/COLPF2/COLPF1 for scrolling text.
-DL_SCROLLING_CREDIT
-SCROLL_CREDIT_LMS = [* + 1]
-	mDL_LMS DL_TEXT_2|DL_HSCROLL,SCROLLING_CREDIT ; (199-206) (+9 to +16)  The perpetrators identified
-; Note that as long as the system VBI is functioning the address 
-; provided for JVB does not matter at all.  The system VBI will update
-; ANTIC after this using the address in the shadow registers (SDLST)
-	mDL_JVB TITLE_DISPLAYLIST        ; Restart display.
-
 
 
 ; ==========================================================================
@@ -281,60 +285,19 @@ SCROLL_CREDIT_LMS = [* + 1]
 ; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| (212 - 219) (2) Ground, stats - line, score value, hits left
 ;    ------------------------------------------
 
-
-
-
 DISPLAY_LIST_GAME                                           ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
-	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
+	mDL_BLANK DL_BLANK_8                                    ;         (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
 	mDL_BLANK DL_BLANK_4   
-	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; (020 - 027) (2) P1 score, High score, P2 score
-	mDL_BLANK DL_BLANK_8                                    ; (028 - 035) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; (036 - 043) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; (044 - 051) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK DL_BLANK_8                                    ; (052 - 059) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK DL_BLANK_8                                    ; (060 - 070) Blank 8 
-	mDL_BLANK DL_BLANK_3|DL_DLI ;                                       + Blank 3  (DLI vscroll hack) 
-	mDL_LMS   DL_MAP_F|DL_VSCROLL|DL_DLI,GFX_TITLE_FRAME1   ; (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI 
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ; (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI 
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ; (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
-	mDL       DL_MAP_F|DL_VSCROLL 
-	mDL_BLANK DL_BLANK_8                                    ; (089 - 099) Blank 8 
-	mDL_BLANK DL_BLANK_3|DL_DLI                             ;           + Blank 3  (Hscroll authors, run colors) 
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT        ; (100 - 107) (6) Author(s) Credit line
-	mDL_BLANK DL_BLANK_8                                    ; (108 - 115) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; (116 - 123) Blank 8 Mothership graphic (PMG)
-	mDL_BLANK DL_BLANK_8                                    ; (124 - 131) Blank 8 Mothership graphic (PMG)
-	mDL_BLANK DL_BLANK_8|DL_DLI                             ; (132 - 139) Blank 8
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; (140 - 147) (6) Fine scrolling docs
-	mDL_BLANK DL_BLANK_8                                    ; (148 - 155) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; (156 - 163) Blank 8
-	mDL_BLANK DL_BLANK_8|DLI                                ; (164 - 171) Blank 8
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; (172 - 179) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; (180 - 187) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; (188 - 195) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; (196 - 203) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; (204 - 211) (6) Fine scrolling mountains to random position.
-	mDL       DL_TEXT_6|DL_DLI,GFX_STATSLINE                ; (212 - 219) (6) Stats line follows bumper line in memory.
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
+	.rept 18
+		mDL_LMS   DL_TEXT_6|DL_DLI,GFX_STARS_LINE           ; 01 - 18 (028 - 171) (6) Stars
+	.endr
+
 ; Note that as long as the system VBI is functioning the address 
 ; provided for JVB does not matter at all.  The system VBI will update
 ; ANTIC after this using the address in the shadow registers (SDLST)
-	mDL_JVB DISPLAY_LIST_TITLE        ; Restart display.
-
-	
-BOTTOM_OF_DISPLAY                                 ; Prior to this DLI SPC1 set colors and HSCROL
-	mDL_LMS DL_TEXT_2,ANYBUTTON_MEM               ; (190-197) (+0 to +7)   Prompt to start game.
-	.by DL_BLANK_1|DL_DLI                         ; (198)     (+8)         DLI SPC2, set COLBK/COLPF2/COLPF1 for scrolling text.
-DL_SCROLLING_CREDIT
-SCROLL_CREDIT_LMS = [* + 1]
-	mDL_LMS DL_TEXT_2|DL_HSCROLL,SCROLLING_CREDIT ; (199-206) (+9 to +16)  The perpetrators identified
-; Note that as long as the system VBI is functioning the address 
-; provided for JVB does not matter at all.  The system VBI will update
-; ANTIC after this using the address in the shadow registers (SDLST)
-	mDL_JVB TITLE_DISPLAYLIST        ; Restart display.
-
+	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
 
 
 ; ==========================================================================
@@ -368,6 +331,25 @@ SCROLL_CREDIT_LMS = [* + 1]
 ; 23 |B   Solid ground and bumpers           B| (204 - 211) (4) Ground and bumpers, guns operational
 ; 24 |]]]]]]]]]]]]]]]Looooosers[[[[[[[[[[[[[[[| (212 - 219) (2) Looosers.
 ;    ------------------------------------------
+
+DISPLAY_LIST_GAMEOVER                                       ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
+	mDL_BLANK DL_BLANK_8                                    ;         (000 - 019) Blank scan lines. 8 + 8 + 4 
+	mDL_BLANK DL_BLANK_8
+	mDL_BLANK DL_BLANK_4   
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
+	.rept 18
+		mDL_LMS   DL_TEXT_6|DL_DLI,GFX_STARS_LINE           ; 01 - 18 (028 - 171) (6) Stars
+	.endr
+
+; Note that as long as the system VBI is functioning the address 
+; provided for JVB does not matter at all.  The system VBI will update
+; ANTIC after this using the address in the shadow registers (SDLST)
+	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
+
+
+; ==========================================================================
+; SCREEN MEMORY
+; --------------------------------------------------------------------------
 
 
 GFX_SCORE_LINE ; | 000000 P1      HI 000000     P2 000000 | 
@@ -531,5 +513,6 @@ GFX_STAT_POINTS
 GFX_STAT_HITS
 	.sb "00         " 
 
-
-
+GFX_STARS_LINE
+	.sb "                    "
+	.sb "*                       "
