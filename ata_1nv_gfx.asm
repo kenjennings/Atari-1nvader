@@ -105,14 +105,12 @@
 ; ==========================================================================
 ; Display Lists.
 ;
-; ANTIC has a 1K boundary limit for Display Lists.  We do not need to align
-; to 1K, because display lists are ordinarily short, and several will 
-; easily fit in one page of memory.  So, the code can make due with 
-; aligning to a page.  If they all stay in the page then they can't cross
-; a 1K boundary.
+; ANTIC has a 1K boundary limit for Display Lists.  It has a 4K boundary 
+; for screen memory.   There is less than 1K of data below, so if we 
+; align to 1K then we know nothing will run over the 1K or the 4K boundary.
 ; --------------------------------------------------------------------------
 
-	.align $0100
+	.align $0400
 
 
 ; ==========================================================================
@@ -161,6 +159,7 @@
 ; each time, so we can end each display list by a JMP to one
 ; common ending.
 
+; 53 bytes.
 
 DISPLAY_LIST_TITLE                                          ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
@@ -198,6 +197,7 @@ BOTTOM_OF_DISPLAY
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; 22 (196 - 203) (6) Fine scrolling mountains to random position.
 	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; 23 (204 - 211) (6) ground and bumpers
 	mDL       DL_TEXT_6,GFX_STATSLINE                       ; 24 (212 - 219) (6) Stats line follows bumper line in memory.
+
 ; Note that as long as the system VBI is functioning the address 
 ; provided for JVB does not matter at all.  The system VBI will update
 ; ANTIC after this using the address in the shadow registers (SDLST)
@@ -285,6 +285,8 @@ BOTTOM_OF_DISPLAY
 ; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| (212 - 219) (2) Ground, stats - line, score value, hits left
 ;    ------------------------------------------
 
+; 27 bytes 
+
 DISPLAY_LIST_GAME                                           ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 	mDL_BLANK DL_BLANK_8                                    ;         (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
@@ -312,7 +314,7 @@ DISPLAY_LIST_GAME                                           ; System VBI sets co
 ; 04 |                                        | (052 - 059) Blank 8
 ; 05 |                                        | (060 - 067) Blank 8
 ; 06 |                                        | (068 - 075) Blank 8
-; 07 |               GAME  OVER               | (076 - 083) (6) Animated Gfx
+; 07 |               GAME  OVER               | (076 - 083) (6) Animated? Gfx
 ; 08 |                                        | (084 - 091) Blank 8
 ; 09 |                                        | (092 - 099) Blank 8
 ; 10 |                                        | (100 - 107) Blank 8
@@ -332,25 +334,33 @@ DISPLAY_LIST_GAME                                           ; System VBI sets co
 ; 24 |]]]]]]]]]]]]]]]Looooosers[[[[[[[[[[[[[[[| (212 - 219) (2) Looosers.
 ;    ------------------------------------------
 
+; 24 bytes
+
 DISPLAY_LIST_GAMEOVER                                       ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 	mDL_BLANK DL_BLANK_8                                    ;         (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
 	mDL_BLANK DL_BLANK_4   
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
-	.rept 18
-		mDL_LMS   DL_TEXT_6|DL_DLI,GFX_STARS_LINE           ; 01 - 18 (028 - 171) (6) Stars
+	.rept 6
+		mDL_BLANK DL_BLANK_8                                ; 01 - 06 (028 - 075) Blank 8 * 6
 	.endr
-
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 07      (076 - 083) (6) End of Game Text 
+	.rept 6
+		mDL_BLANK DL_BLANK_8                                ; 08 - 18 (084 - 171) Blank 8 * 6
+	.endr
+	
 ; Note that as long as the system VBI is functioning the address 
 ; provided for JVB does not matter at all.  The system VBI will update
 ; ANTIC after this using the address in the shadow registers (SDLST)
 	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
 
 
+
 ; ==========================================================================
 ; SCREEN MEMORY
 ; --------------------------------------------------------------------------
 
+; 40 bytes
 
 GFX_SCORE_LINE ; | 000000 P1      HI 000000     P2 000000 | 
 	.sb " "
@@ -394,6 +404,8 @@ GFX_SCORE_P2
 	; ...............X.X...X.XX..X.XXX.X...X.X.....X...X..............
 	; ...............X.X...X.X...X...X.X.XXX.XXXXX.X...X..............
 
+; 768 bytes
+
 GFX_TITLE_FRAME1 ; 32 * 6 = 192
 	.by $00 $00 $00 $00 $00 $00 $00 $03 $0C $00 $03 $06 $00 $0C $00 $03 $06 $9C $00 $03 $69 $C3 $0C $36 $90 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $60 $09 $30 $0C $09 $00 $09 $00 $36 $0C $00 $30 $06 $00 $00 $09 $00 $0C $00 $00 $00 $00 $00 $00 $00
@@ -426,7 +438,10 @@ GFX_TITLE_FRAME4
 	.by $00 $00 $00 $00 $00 $00 $00 $06 $03 $00 $06 $09 $30 $09 $03 $C6 $06 $00 $03 $06 $00 $00 $03 $00 $03 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $09 $0C $00 $03 $0C $00 $06 $00 $09 $03 $0C $96 $09 $C3 $69 $0C $00 $06 $00 $00 $00 $00 $00 $00 $00
 
+; Text line for the two major authors, C64, Atari.
+
 GFX_SCROLL_CREDIT
+	.sb "
 
 ; Scrolling text for the directions, credits, etc.
 ; Since this is in Mode 6 it only needs 
@@ -513,6 +528,50 @@ GFX_STAT_POINTS
 GFX_STAT_HITS
 	.sb "00         " 
 
+; The first 21 bytes of data are blank which is used to show no star. 
+; That is, LMS=Line+0, and HSCROLL=15.  
+; The star character is at position 21 on the line.
+; The star will be displayed by varying the horizontal scroll offset 
+; and fine-scroll (HSCROL) value.  This allows per pixel positioning,
+; but uses the memory for only the one line of text characters. 
+; Where a star appears the starting position for the LMS will be 
+; random from 1 to 20.
+; This can't be a full divide by three.   This may occur during the 
+; VBI, so needs to complete as fast as possible.
+; Read a byte from the RANDOM register, then mask it (bitwise AND) 
+; with %3F.  
+; The resulting value, 0 to 63, is used as the index to a lookup 
+; table to convert it. 
+; The 21 value equivalent (random number 63) will map to 11
+; Horizontal fine scrolling will be a random number from 0 to 15. 
+
 GFX_STARS_LINE
-	.sb "                    "
-	.sb "*                       "
+	;    0123456789 123456789 123456789
+	.sb "                    *                        "
+	;     ^^^^================^^^^
+
+STARS_DIVIDE_THREE
+	.by <[GFX_STARS_LINE+1],[<GFX_STARS_LINE+1],<[GFX_STARS_LINE+1]    ; (00) (0   1  2)
+	.by <[GFX_STARS_LINE+2],<[GFX_STARS_LINE+2],<[GFX_STARS_LINE+2]    ; (01) (3   4  5)
+	.by <[GFX_STARS_LINE+3],<[GFX_STARS_LINE+3],<[GFX_STARS_LINE+3]    ; (02) (6   7  8)
+	.by <[GFX_STARS_LINE+4],<[GFX_STARS_LINE+4],<[GFX_STARS_LINE+4]    ; (03) (9  10 11)
+	.by <[GFX_STARS_LINE+5],<[GFX_STARS_LINE+5],<[GFX_STARS_LINE+5]    ; (04) (12 13 14)
+	.by <[GFX_STARS_LINE+6],<[GFX_STARS_LINE+6],<[GFX_STARS_LINE+6]    ; (05) (15 16 17)
+	.by <[GFX_STARS_LINE+7],<[GFX_STARS_LINE+7],<[GFX_STARS_LINE+7]    ; (06) (18 19 20)
+	.by <[GFX_STARS_LINE+8],<[GFX_STARS_LINE+8],<[GFX_STARS_LINE+8]    ; (07) (21 22 23)
+	.by <[GFX_STARS_LINE+9],<[GFX_STARS_LINE+9],<[GFX_STARS_LINE+9]    ; (08) (24 25 26)
+	.by <[GFX_STARS_LINE+10],<[GFX_STARS_LINE+10],<[GFX_STARS_LINE+10] ; (09) (27 28 29)
+	.by <[GFX_STARS_LINE+11],<[GFX_STARS_LINE+11],<[GFX_STARS_LINE+11] ; (10) (30 31 32)
+	.by <[GFX_STARS_LINE+12],<[GFX_STARS_LINE+12],<[GFX_STARS_LINE+12] ; (11) (33 34 35)
+	.by <[GFX_STARS_LINE+13],<[GFX_STARS_LINE+13],<[GFX_STARS_LINE+13] ; (12) (36 37 38)
+	.by <[GFX_STARS_LINE+14],<[GFX_STARS_LINE+14],<[GFX_STARS_LINE+14] ; (13) (39 40 41)
+	.by <[GFX_STARS_LINE+15],<[GFX_STARS_LINE+15],<[GFX_STARS_LINE+15] ; (14) (42 43 44)
+	.by <[GFX_STARS_LINE+16],<[GFX_STARS_LINE+16],<[GFX_STARS_LINE+16] ; (15) (45 46 47)
+	.by <[GFX_STARS_LINE+17],<[GFX_STARS_LINE+17],<[GFX_STARS_LINE+17] ; (16) (48 49 50)
+	.by <[GFX_STARS_LINE+18],<[GFX_STARS_LINE+18],<[GFX_STARS_LINE+18] ; (17) (51 52 53)
+	.by <[GFX_STARS_LINE+19],<[GFX_STARS_LINE+19],<[GFX_STARS_LINE+19] ; (18) (54 55 56)
+	.by <[GFX_STARS_LINE+20],<[GFX_STARS_LINE+20],<[GFX_STARS_LINE+20] ; (19) (57 58 59)
+	.by <[GFX_STARS_LINE+21],<[GFX_STARS_LINE+21],<[GFX_STARS_LINE+21] ; (20) (60 61 62)
+	.by <[GFX_STARS_LINE+11]                                           ; (21) (63)
+	
+		
