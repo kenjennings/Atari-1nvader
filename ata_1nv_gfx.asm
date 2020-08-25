@@ -344,7 +344,7 @@ DISPLAY_LIST_GAMEOVER                                       ; System VBI sets co
 	.rept 6
 		mDL_BLANK DL_BLANK_8                                ; 01 - 06 (028 - 075) Blank 8 * 6
 	.endr
-	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 07      (076 - 083) (6) End of Game Text 
+	mDL_LMS   DL_TEXT_2,GFX_GAME_OVER_LINE                  ; 07      (076 - 083) (6) End of Game Text 
 	.rept 6
 		mDL_BLANK DL_BLANK_8                                ; 08 - 18 (084 - 171) Blank 8 * 6
 	.endr
@@ -573,5 +573,66 @@ STARS_DIVIDE_THREE
 	.by <[GFX_STARS_LINE+20],<[GFX_STARS_LINE+20],<[GFX_STARS_LINE+20] ; (19) (57 58 59)
 	.by <[GFX_STARS_LINE+21],<[GFX_STARS_LINE+21],<[GFX_STARS_LINE+21] ; (20) (60 61 62)
 	.by <[GFX_STARS_LINE+11]                                           ; (21) (63)
+
+
+	.align $0100 ; Align to page will keep all the Game over text in the same page.
+
+
+; For Game over there is a display line, and then various 
+; source lines of text.  
+
+GFX_GAME_OVER_LINE		
+	.ds 20
 	
-		
+; I want Game Over to be the "normal" end game response.  
+; A fraction of the time a different value should appear.
+; Easter-eggly-like.  How to do the randomization:
+; Get a random number.
+; 0 (or failure to meet the mask requirements is GAME OVER)
+; Mask the bits we do not want.  If ANY bit is set in 
+; the masked set, then use 0.
+; If all bits in the mask are 0, then the Easter Egg event
+; occurs.
+; For the Easter Egg Game End, use the random number
+; chosem and reduce to 0 to 7, then add 2.  
+; If the result is 2, and the game is for 1 player, then 
+; decrement.  This will result in choosing the 
+; grammatically correct insult for the number of players.
+
+; This works out to a 7 in 256 chance to trigger the 
+; alternate end game text.  Or 1 in 36.571 chance.  
+; Rare enough to be surprising when it occurs.
+
+GAME_OVER_KEEP=%00000111
+GAME_OVER_MASK=%11111000
+
+GFX_GAME_OVER_TEXT0
+	.sb "     GAME  OVER     "
+GFX_GAME_OVER_TEXT1
+	.sb "     LOOOOOSER!     "
+GFX_GAME_OVER_TEXT2
+	.sb "    LOOOOOOSERS!    "
+GFX_GAME_OVER_TEXT3
+	.sb "KLAATU BARADA NIKTO "
+GFX_GAME_OVER_TEXT4
+	.sb "  IT'S A COOKBOOK!  "
+GFX_GAME_OVER_TEXT5
+	.sb "RESISTANCE IS FUTILE"	
+GFX_GAME_OVER_TEXT6
+	.sb "U BASE R BELONG 2 US"	
+GFX_GAME_OVER_TEXT7
+	.sb "  PWNED EARTHLING!  "
+GFX_GAME_OVER_TEXT8
+	.sb "GRANDMA DID BETTER! "
+GFX_GAME_OVER_TEXT9
+	.sb " ARE YOU GONNA CRY? "
+
+GFX_GAMEOVER_TABLE_LO
+		.by <GFX_GAME_OVER_TEXT0,<GFX_GAME_OVER_TEXT1
+		.by <GFX_GAME_OVER_TEXT2,<GFX_GAME_OVER_TEXT3
+		.by <GFX_GAME_OVER_TEXT4,<GFX_GAME_OVER_TEXT5
+		.by <GFX_GAME_OVER_TEXT6,<GFX_GAME_OVER_TEXT7
+		.by <GFX_GAME_OVER_TEX8,<GFX_GAME_OVER_TEXT9
+
+
+
