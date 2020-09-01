@@ -159,7 +159,7 @@
 ; each time, so we can end each display list by a JMP to one
 ; common ending.
 
-; 53 bytes.
+; 55 bytes.
 
 DISPLAY_LIST_TITLE                                          ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
@@ -285,9 +285,11 @@ BOTTOM_OF_DISPLAY
 ; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| (212 - 219) (2) Ground, stats - line, score value, hits left
 ;    ------------------------------------------
 
-; 27 bytes 
+; 63 bytes 
 
 DISPLAY_LIST_GAME                                           ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
+DISPLAY_LIST_GAMEOVER                                       ; Main Game and Game over are 95% the same.
+
 	mDL_BLANK DL_BLANK_8                                    ;         (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
 	mDL_BLANK DL_BLANK_4   
@@ -334,25 +336,32 @@ DISPLAY_LIST_GAME                                           ; System VBI sets co
 ; 24 |]]]]]]]]]]]]]]]Looooosers[[[[[[[[[[[[[[[| (212 - 219) (2) Looosers.
 ;    ------------------------------------------
 
-; 24 bytes
+; 63 bytes 
 
-DISPLAY_LIST_GAMEOVER                                       ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
-	mDL_BLANK DL_BLANK_8                                    ;         (000 - 019) Blank scan lines. 8 + 8 + 4 
-	mDL_BLANK DL_BLANK_8
-	mDL_BLANK DL_BLANK_4   
-	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
-	.rept 6
-		mDL_BLANK DL_BLANK_8                                ; 01 - 06 (028 - 075) Blank 8 * 6
-	.endr
-	mDL_LMS   DL_TEXT_2,GFX_GAME_OVER_LINE                  ; 07      (076 - 083) (6) End of Game Text 
-	.rept 6
-		mDL_BLANK DL_BLANK_8                                ; 08 - 18 (084 - 171) Blank 8 * 6
-	.endr
+; The Game Over screen is 95% the same as the Game screen.  
+; The program will update the LMS for line 7 to read the 
+; End Of Game Text at GFX_GAME_OVER_LINE.
+; The DLI chain for this line will be updated to point to a different 
+; routine that sets HSCROL and runs a color gradient appropriate for 
+; thie mode line.
+
+;DISPLAY_LIST_GAMEOVER                                       ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
+;	mDL_BLANK DL_BLANK_8                                    ;         (000 - 019) Blank scan lines. 8 + 8 + 4 
+;	mDL_BLANK DL_BLANK_8
+;	mDL_BLANK DL_BLANK_4   
+;	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
+;	.rept 6
+;		mDL_BLANK DL_BLANK_8                                ; 01 - 06 (028 - 075) Blank 8 * 6
+;	.endr
+;	mDL_LMS   DL_TEXT_2,GFX_GAME_OVER_LINE                  ; 07      (076 - 083) (6) End of Game Text 
+;	.rept 6
+;		mDL_BLANK DL_BLANK_8                                ; 08 - 18 (084 - 171) Blank 8 * 6
+;	.endr
 	
 ; Note that as long as the system VBI is functioning the address 
 ; provided for JVB does not matter at all.  The system VBI will update
 ; ANTIC after this using the address in the shadow registers (SDLST)
-	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
+;	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
 
 
 
@@ -514,8 +523,11 @@ GFX_MOUNTAINS4
 	.byte $3f,$3c,$00,$00,$00,$3c,$00,$00,$3b,$00,$00,$3c,$00,$3b,$00,$00,$00,$00,$00,$3c
 	.byte $00,$00,$00,$3b,$00,$00,$00,$00,$00,$00,$00,$00,$3c,$00,$3b,$00,$00,$00,$3b,$3f
 
+
+; This is not 40 chars, because it won't "move" by LMS changes.
 GFX_BUMPERLINE
-	.byte $3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f
+	.byte $00,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$00
+	
 
 ; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left
 
@@ -632,7 +644,7 @@ GFX_GAMEOVER_TABLE_LO
 		.by <GFX_GAME_OVER_TEXT2,<GFX_GAME_OVER_TEXT3
 		.by <GFX_GAME_OVER_TEXT4,<GFX_GAME_OVER_TEXT5
 		.by <GFX_GAME_OVER_TEXT6,<GFX_GAME_OVER_TEXT7
-		.by <GFX_GAME_OVER_TEX8,<GFX_GAME_OVER_TEXT9
+		.by <GFX_GAME_OVER_TEXT8,<GFX_GAME_OVER_TEXT9
 
 
 
