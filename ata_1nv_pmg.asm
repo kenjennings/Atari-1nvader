@@ -1,21 +1,26 @@
 ;*******************************************************************************
 ;*
-;* 1NVADER - Atari parody of C64 1NVADER game.
+;* 1NVADER - Atari parody of C64 1NVADER game - 2020 Ken Jennings
 ;*
 ;*******************************************************************************
 
 ; ==========================================================================
-; PLAYER/MISSILE GRAPHICS
+; PLAYER/MISSILE GRAPHICS MEMORY
 ;
 ; ANTIC has a 2K boundary limit for Single line resolution Player/Missile 
-; Graphics.  However, since the first three pages are unused we can 
-; just leave all the image declareations in this area, and copy them 
-; where needed to the working Player or Missile memory.
+; Graphics.  However, since the first three pages are unused that leaves 
+; enough space to keep the image declarations here.
+; Code will copy them when needed to the working Player or Missile memory.
 ; --------------------------------------------------------------------------
 
 	.align $0800
 
 PMADR ; Declare the base address locations for each player bitmap.
+
+; Define the begining location for each Player/Missile bitmap.
+; Defining without declaring space will not create 256 bytes for 
+; each bitmap, so it will not be allocated/created as part of the 
+; assembly and so save space in the executable.
 
 MISSILEADR = PMADR+$300
 PLAYERADR0 = PMADR+$400
@@ -28,8 +33,6 @@ PLAYERADR3 = PMADR+$700
 ; VBI manages moving everything around, so there's never any visible tearing.
 ; Also, its best to evaluate the P/M collisions after the screen has been 
 ; drawn, and before the next movement occurs.
-
-
 
 spr1     ; mothership sprite
 ;	.BYTE 0,126,0                  ; ........ .111111. ........
@@ -45,6 +48,7 @@ spr1     ; mothership sprite
 ;	.byte 0,0,0,0,0,0,0,0,0,0,0,0
 ;	.byte 0,0,0,255
 
+PMG_MOTHERSHIP
 	.BYTE $00  ; ...11...
 	.BYTE $00  ; ..1111..
 	.BYTE $00  ; .111111.
@@ -68,6 +72,7 @@ spr2     ; cannon sprite
 ;	.byte 0,0,0,0,0,0,0,0,0,0,0,0
 ;	.byte 0,0,0,255
 
+PMG_CANNON
 	.BYTE $18  ; ...11...
 	.BYTE $18  ; ...11...
 	.BYTE $7e  ; .111111.
@@ -92,6 +97,7 @@ spr3     ; laser sprite
 ;	.byte 0,0,0,0,0,0,0,0,0,0,0,0
 ;	.byte 0,0,0,255
 
+PMG_LASER
 	.BYTE $40  ; .1......
 	.BYTE $20  ; ..1.....
 	.BYTE $40  ; .1......
@@ -115,6 +121,7 @@ spr4     ; explosion
 ;	.byte 0,0,0,0,0,0,0,0,0,0,0,0
 ;	.byte 0,0,0,255
 
+PMG_EXPLOSION
 	.BYTE $24  ; ..1..1..
 	.BYTE $5a  ; .1.11.1.
 	.BYTE $24  ; ..1..1..
@@ -123,6 +130,9 @@ spr4     ; explosion
 	.BYTE $5a  ; .1.11.1.
 	.BYTE $24  ; ..1..1..
 
+
+; ==========================================================================
+; TITLE SCREEN SHENANIGANS
 
 ; The color overlay is done by shifting missile positions right at
 ; the same rate that this image bitmap is shifted left through the 
@@ -191,7 +201,7 @@ PM_TITLE_BITMAP
 ;	........1.1...1.11..1.111.1...1.1.....1...1..... ..
 ;	........1.1...1.1...1...1.1.111.11111.1...1..... ..
 
-; We are trying for only 44 bits shifted 5 * 8 = 40 + 4
+; We are trying for only 44 bits shifted (5 * 8 = 40 + 4)
 
 ; The data declarations below were considerably more grotesque.
 ; See the bitmap shifting discussion above.  Imagine that applied
@@ -281,4 +291,15 @@ PM_TITLE_BITMAP_LINE6 ; .by 00000000 10100010 10001000 10101110 11111010 0010000
 	mBitmap16Left %1111101000100000 
 
 	mBitmap16LeftShift %0010000000000000,0,3 ; 0, 1, 2, 3
-	
+
+
+; ==========================================================================
+; Here force alignment to the next 2K boundary.
+; Because no space was actually declared for each Player/Missile bitmap, 
+; the end of Player/Missile space needs to be specified, to make the 
+; Assembler NOT overwrite this memory with whatever comes next.  
+; (Saves space in the Atari's structure executable file format.)
+; --------------------------------------------------------------------------
+
+	.align $0800
+

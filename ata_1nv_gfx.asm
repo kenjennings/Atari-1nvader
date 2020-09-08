@@ -1,7 +1,20 @@
+;*******************************************************************************
+;*
+;* 1NVADER - Atari parody of C64 1NVADER game - 2020 Ken Jennings
+;*
+;*******************************************************************************
+
 ; ==========================================================================
-; Screen Graphics
+; SCREEN GRAPHICS MEMORY
+;
+; Display Lists have a 1K boundary.
+; ANTIC screen RAM automatic memeory scan has a 4K boundary.
+; The sum of everything here is less than 2K, so using 2K alignment 
+; should make a safe space, since the Display Lists are declared first.
 ; --------------------------------------------------------------------------
 
+	.align $0800 ; Align graphics data to 2K boundary.
+	
 ; ==========================================================================
 ; Title Screen C64
 ; --------------------------------------------------------------------------

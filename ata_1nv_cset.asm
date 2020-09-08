@@ -1,5 +1,11 @@
+;*******************************************************************************
+;*
+;* 1NVADER - Atari parody of C64 1NVADER game - 2020 Ken Jennings
+;*
+;*******************************************************************************
+
 ; ==========================================================================
-; 1nvader Custom Character set
+; ATARI CUSTOM CHARACTER SET
 ; 
 ; custom characters - 64 characters defined
 ; 
@@ -87,6 +93,13 @@
 ; using Player/Missile Graphic.
 ;
 ; --------------------------------------------------------------------------
+
+; NOTE that a full 1K character set is NOT defined.
+; Therefore, anything else declared AFTER this file cannot 
+; automatically assume it starts at a 1K boundary.   
+; Be aware.
+
+	.align $0400 ; Align character set to 1K boundary.
 
 CHARACTER_SET
 
@@ -716,4 +729,8 @@ cda3 ; next 32 characters.
 	; $06 .....**.
 	; $00 ........
 
+; NOTE that a full 1K character set is NOT defined.
+; Therefore, anything else declared AFTER this point cannot 
+; automatically assume it starts at a 1K boundary.   
+; Be aware.
 

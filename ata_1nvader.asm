@@ -1,12 +1,10 @@
 ;*******************************************************************************
 ;*
-;* 1NVADER - Atari parody of C64 1NVADER game.
-;*
 ;* C64 1NVADER - 2019 Darren Foulds
 ;*
 ;*******************************************************************************
 ;*
-;* Atari 8-bit computer 1NVADER - 2020 Ken Jennings                         
+;* 1NVADER - Atari parody of C64 1NVADER game - 2020 Ken Jennings                        
 ;*                                                                             
 ;*******************************************************************************
 
@@ -63,8 +61,6 @@ OutputPointer  .word $0000 ; Pointer to memory to generate RLE codes.
 ;*                                                                             *
 ;*******************************************************************************
 
-
-
 ;         *= $4000
 
 ;v        = 53248
@@ -108,6 +104,21 @@ sprmem3  = $3280
 sprmem4  = $32c0
 
 ;-- inv516a ----------------------------
+
+; ==========================================================================
+; Include all the code parts . . .
+
+	icl "ata_1nv_gfx.asm"  ; Data for Display Lists and Screen Memory (2K)
+
+	icl "ata_1nv_cset.asm" ; Data for custom character set (1K space)
+
+	icl "ata_1nv_pmg.asm"  ; Data for Player/Missile graphics (and reserve the bitmap).
+
+; --------------------------------------------------------------------------
+
+
+
+
 
 ;-- setup ------------------------------
 
