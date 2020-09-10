@@ -185,6 +185,7 @@ DISPLAY_LIST_TITLE                                          ; System VBI sets co
 	mDL_BLANK DL_BLANK_8                                    ; 04 (052 - 059) Blank 8   3, 2, 1, GO P/M animation
 	mDL_BLANK DL_BLANK_8                                    ;    (060 - 070) Blank 8 
 	mDL_BLANK DL_BLANK_3|DL_DLI ;                                           + Blank 3  (DLI vscroll hack) 
+DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS low byte value.    
 	mDL_LMS   DL_MAP_F|DL_VSCROLL|DL_DLI,GFX_TITLE_FRAME1   ;    (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
 	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;  
 	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;    (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
@@ -462,9 +463,16 @@ GFX_TITLE_FRAME4
 
 ; Text line for the two major authors, C64, Atari.
 
-GFX_SCROLL_CREDIT
-	.sb "
-
+GFX_SCROLL_CREDIT1
+	.sb "     2019 - C64     "
+	.sb "           " ; Padding to allow values to leave before changing DLI colors.
+	.sb "    2020 - ATARI    "
+	
+GFX_SCROLL_CREDI2	
+	.sb "    DARREN FOULDS   "
+	.sb "             " ; Padding to allow values to leave before changing DLI colors.
+	.sb "    KEN JENNINGS    "
+	
 ; Scrolling text for the directions, credits, etc.
 ; Since this is in Mode 6 it only needs 
 ; 20 blank characters for padding.

@@ -7,8 +7,17 @@
 ; ==========================================================================
 ; ATARI CUSTOM CHARACTER SET
 ; 
-; custom characters - 64 characters defined
-; 
+; custom characters - 64 ( + 10) characters defined
+; --------------------------------------------------------------------------
+
+; NOTE that a full 1K character set is NOT defined.
+; Therefore, anything else declared AFTER this file cannot 
+; automatically assume it starts at a 1K boundary.   
+; Be aware.
+
+	.align $0400 ; Align character set to 1K boundary.
+
+; ==========================================================================
 ; Oddly, this character set defines most values in the same order as the
 ; Atari.  The C64 program offsets this data at +$20.  For Atari purposes
 ; this can stay at the $00 offset position.   In the C64 code the 
@@ -93,13 +102,6 @@
 ; using Player/Missile Graphic.
 ;
 ; --------------------------------------------------------------------------
-
-; NOTE that a full 1K character set is NOT defined.
-; Therefore, anything else declared AFTER this file cannot 
-; automatically assume it starts at a 1K boundary.   
-; Be aware.
-
-	.align $0400 ; Align character set to 1K boundary.
 
 CHARACTER_SET
 

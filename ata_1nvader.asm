@@ -32,8 +32,17 @@
 ; memory, therefore indulging in this evilness to define Page Zero
 ; variables and load directly into them at the same time...
 ; --------------------------------------------------------------------------
+
 	ORG $80
 
+; Title Logo Values =========================================================
+
+TITLE_LOGO_FRAME_MAX = 4 ; Five frames, Count 4, 3, 2, 1, 0
+
+TITLE_LOGO_FRAME	.byte 0 ; current frame for big graphic logo
+
+
+	
 DisplayPointer .word $0000 ; Stream of bytes to read.
 DisplaySize    .word $0000 ; Number of bytes to encode.
 OutputPointer  .word $0000 ; Pointer to memory to generate RLE codes.
