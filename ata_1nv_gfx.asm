@@ -223,7 +223,7 @@ BOTTOM_OF_DISPLAY
 ; Alien travels line progression 0 to 21.  22 is end of game.
 ;
 ; At any time there are 4 stars on screen.
-; Each star lasts 10 frames until it fades out.
+; Each star lasts 12 frames until it is replaced.
 ; When the star fades out a new star is added.
 ; There is one line of data for a star.
 ; On the Atari this fade out will be a little more animated.
@@ -231,16 +231,20 @@ BOTTOM_OF_DISPLAY
 ; sparkle pixels fade out faster than the center line pixels.
 ; 
 ; Frame:  Top/Bot:   Middle:  (colors for fading)
-;    1      $0E        $0E
-;    2      $0E        $0E
-;    3      $*E        $0E
-;    4      $*E        $0E
-;    5      $*C        $*E
-;    6      $*A        $*E
-;    7      $*8        $*C
-;    8      $*6        $*C
-;    9      $*4        $*A
-;   10      $*2        $*8
+;    0      $0E        $0E     1
+;    1      $0E        $0E     1
+;    2      $*E        $0E     1  
+;    3      $*E        $0E     1  2 
+;    4      $*C        $*E     1  2  
+;    5      $*A        $*E     1  2  
+;    6      $*8        $*C     1  2  3  
+;    7      $*6        $*C     1  2  3
+;    8      $*4        $*A     1  2  3 
+;    9      $*2        $*8     1  2  3  4
+;   10      $02        $*6     1  2  3  4
+;   11      $00        $*4     1  2  3  4 
+;   12 reset to 0.
+;   ...     ...        ...
 ;
 ; Positioning the stars is different.   Every mode 6 line on the screen for
 ; the stars refers to (LMS) the same line of screen data.  LMS and horizontal
@@ -308,6 +312,7 @@ DISPLAY_LIST_GAMEOVER                                       ; Main Game and Game
 	mDL_BLANK DL_BLANK_8
 	mDL_BLANK DL_BLANK_4   
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
+DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first star's LMS address
 	.rept 6
 		mDL_LMS   DL_TEXT_6|DL_DLI,GFX_STARS_LINE           ; 01 - 18 (028 - 171) (6) Stars
 	.endr
@@ -587,29 +592,6 @@ GFX_STARS_LINE
 	.sb "                    *                        "
 	;     ^^^^================^^^^
 
-STARS_DIVIDE_THREE
-	.by <[GFX_STARS_LINE+1],[<GFX_STARS_LINE+1],<[GFX_STARS_LINE+1]    ; (00) (0   1  2)
-	.by <[GFX_STARS_LINE+2],<[GFX_STARS_LINE+2],<[GFX_STARS_LINE+2]    ; (01) (3   4  5)
-	.by <[GFX_STARS_LINE+3],<[GFX_STARS_LINE+3],<[GFX_STARS_LINE+3]    ; (02) (6   7  8)
-	.by <[GFX_STARS_LINE+4],<[GFX_STARS_LINE+4],<[GFX_STARS_LINE+4]    ; (03) (9  10 11)
-	.by <[GFX_STARS_LINE+5],<[GFX_STARS_LINE+5],<[GFX_STARS_LINE+5]    ; (04) (12 13 14)
-	.by <[GFX_STARS_LINE+6],<[GFX_STARS_LINE+6],<[GFX_STARS_LINE+6]    ; (05) (15 16 17)
-	.by <[GFX_STARS_LINE+7],<[GFX_STARS_LINE+7],<[GFX_STARS_LINE+7]    ; (06) (18 19 20)
-	.by <[GFX_STARS_LINE+8],<[GFX_STARS_LINE+8],<[GFX_STARS_LINE+8]    ; (07) (21 22 23)
-	.by <[GFX_STARS_LINE+9],<[GFX_STARS_LINE+9],<[GFX_STARS_LINE+9]    ; (08) (24 25 26)
-	.by <[GFX_STARS_LINE+10],<[GFX_STARS_LINE+10],<[GFX_STARS_LINE+10] ; (09) (27 28 29)
-	.by <[GFX_STARS_LINE+11],<[GFX_STARS_LINE+11],<[GFX_STARS_LINE+11] ; (10) (30 31 32)
-	.by <[GFX_STARS_LINE+12],<[GFX_STARS_LINE+12],<[GFX_STARS_LINE+12] ; (11) (33 34 35)
-	.by <[GFX_STARS_LINE+13],<[GFX_STARS_LINE+13],<[GFX_STARS_LINE+13] ; (12) (36 37 38)
-	.by <[GFX_STARS_LINE+14],<[GFX_STARS_LINE+14],<[GFX_STARS_LINE+14] ; (13) (39 40 41)
-	.by <[GFX_STARS_LINE+15],<[GFX_STARS_LINE+15],<[GFX_STARS_LINE+15] ; (14) (42 43 44)
-	.by <[GFX_STARS_LINE+16],<[GFX_STARS_LINE+16],<[GFX_STARS_LINE+16] ; (15) (45 46 47)
-	.by <[GFX_STARS_LINE+17],<[GFX_STARS_LINE+17],<[GFX_STARS_LINE+17] ; (16) (48 49 50)
-	.by <[GFX_STARS_LINE+18],<[GFX_STARS_LINE+18],<[GFX_STARS_LINE+18] ; (17) (51 52 53)
-	.by <[GFX_STARS_LINE+19],<[GFX_STARS_LINE+19],<[GFX_STARS_LINE+19] ; (18) (54 55 56)
-	.by <[GFX_STARS_LINE+20],<[GFX_STARS_LINE+20],<[GFX_STARS_LINE+20] ; (19) (57 58 59)
-	.by <[GFX_STARS_LINE+21],<[GFX_STARS_LINE+21],<[GFX_STARS_LINE+21] ; (20) (60 61 62)
-	.by <[GFX_STARS_LINE+11]                                           ; (21) (63)
 
 
 	.align $0100 ; Align to page will keep all the Game over text in the same page.
