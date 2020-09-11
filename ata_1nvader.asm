@@ -35,14 +35,26 @@
 
 	ORG $80
 
+
+; Game Control Values =========================================================
+
+zNUMBER_OF_PLAYERS .byte 0 ; (0) is 1 player.  (1) is 2 player.
+
+
 ; Title Logo Values =========================================================
 
 TITLE_LOGO_FRAME_MAX = 4 ; Five frames, Count 4, 3, 2, 1, 0
 
-TITLE_LOGO_FRAME	.byte 0 ; current frame for big graphic logo
+zTITLE_LOGO_FRAME .byte 0 ; current frame for big graphic logo
 
 
-	
+; Game Over Text Values =========================================================
+
+zGAME_OVER_TEXT .word 0
+
+
+
+
 DisplayPointer .word $0000 ; Stream of bytes to read.
 DisplaySize    .word $0000 ; Number of bytes to encode.
 OutputPointer  .word $0000 ; Pointer to memory to generate RLE codes.

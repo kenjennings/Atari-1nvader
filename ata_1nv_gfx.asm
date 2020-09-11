@@ -279,7 +279,7 @@ BOTTOM_OF_DISPLAY
 ; 04 |                                        | (052 - 059) (6) Stars
 ; 05 |                                        | (060 - 067) (6) Stars
 ; 06 |                                        | (068 - 075) (6) Stars
-; 07 |                                        | (076 - 083) (6) Stars
+; 07 |                                        | (076 - 083) (6) Stars OR Game Over Line
 ; 08 |                                        | (084 - 091) (6) Stars
 ; 09 |                                        | (092 - 099) (6) Stars
 ; 10 |                                        | (100 - 107) (6) Stars
@@ -308,7 +308,11 @@ DISPLAY_LIST_GAMEOVER                                       ; Main Game and Game
 	mDL_BLANK DL_BLANK_8
 	mDL_BLANK DL_BLANK_4   
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
-	.rept 18
+	.rept 6
+		mDL_LMS   DL_TEXT_6|DL_DLI,GFX_STARS_LINE           ; 01 - 18 (028 - 171) (6) Stars
+	.endr
+DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over Text
+	.rept 12
 		mDL_LMS   DL_TEXT_6|DL_DLI,GFX_STARS_LINE           ; 01 - 18 (028 - 171) (6) Stars
 	.endr
 
@@ -612,60 +616,11 @@ STARS_DIVIDE_THREE
 
 
 ; For Game over there is a display line, and then various 
-; source lines of text.  
+; source lines of text that are copied over the line when 
+; the game is over.  
 
 GFX_GAME_OVER_LINE		
 	.ds 20
 	
-; I want Game Over to be the "normal" end game response.  
-; A fraction of the time a different value should appear.
-; Easter-eggly-like.  How to do the randomization:
-; Get a random number.
-; 0 (or failure to meet the mask requirements is GAME OVER)
-; Mask the bits we do not want.  If ANY bit is set in 
-; the masked set, then use 0.
-; If all bits in the mask are 0, then the Easter Egg event
-; occurs.
-; For the Easter Egg Game End, use the random number
-; chosem and reduce to 0 to 7, then add 2.  
-; If the result is 2, and the game is for 1 player, then 
-; decrement.  This will result in choosing the 
-; grammatically correct insult for the number of players.
-
-; This works out to a 7 in 256 chance to trigger the 
-; alternate end game text.  Or 1 in 36.571 chance.  
-; Rare enough to be surprising when it occurs.
-
-GAME_OVER_KEEP=%00000111
-GAME_OVER_MASK=%11111000
-
-GFX_GAME_OVER_TEXT0
-	.sb "     GAME  OVER     "
-GFX_GAME_OVER_TEXT1
-	.sb "     LOOOOOSER!     "
-GFX_GAME_OVER_TEXT2
-	.sb "    LOOOOOOSERS!    "
-GFX_GAME_OVER_TEXT3
-	.sb "KLAATU BARADA NIKTO "
-GFX_GAME_OVER_TEXT4
-	.sb "  IT'S A COOKBOOK!  "
-GFX_GAME_OVER_TEXT5
-	.sb "RESISTANCE IS FUTILE"	
-GFX_GAME_OVER_TEXT6
-	.sb "U BASE R BELONG 2 US"	
-GFX_GAME_OVER_TEXT7
-	.sb "  PWNED EARTHLING!  "
-GFX_GAME_OVER_TEXT8
-	.sb "GRANDMA DID BETTER! "
-GFX_GAME_OVER_TEXT9
-	.sb " ARE YOU GONNA CRY? "
-
-GFX_GAMEOVER_TABLE_LO
-		.by <GFX_GAME_OVER_TEXT0,<GFX_GAME_OVER_TEXT1
-		.by <GFX_GAME_OVER_TEXT2,<GFX_GAME_OVER_TEXT3
-		.by <GFX_GAME_OVER_TEXT4,<GFX_GAME_OVER_TEXT5
-		.by <GFX_GAME_OVER_TEXT6,<GFX_GAME_OVER_TEXT7
-		.by <GFX_GAME_OVER_TEXT8,<GFX_GAME_OVER_TEXT9
-
 
 
