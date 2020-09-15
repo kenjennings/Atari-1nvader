@@ -223,7 +223,7 @@ BOTTOM_OF_DISPLAY
 ; Alien travels line progression 0 to 21.  22 is end of game.
 ;
 ; At any time there are 4 stars on screen.
-; Each star lasts 12 frames until it is replaced.
+; Each star lasts 8 frames until it is replaced.
 ; When the star fades out a new star is added.
 ; There is one line of data for a star.
 ; On the Atari this fade out will be a little more animated.
@@ -232,18 +232,14 @@ BOTTOM_OF_DISPLAY
 ; 
 ; Frame:  Top/Bot:   Middle:  (colors for fading)
 ;    0      $0E        $0E     1
-;    1      $0E        $0E     1
-;    2      $*E        $0E     1  
-;    3      $*E        $0E     1  2 
-;    4      $*C        $*E     1  2  
-;    5      $*A        $*E     1  2  
-;    6      $*8        $*C     1  2  3  
-;    7      $*6        $*C     1  2  3
-;    8      $*4        $*A     1  2  3 
-;    9      $*2        $*8     1  2  3  4
-;   10      $02        $*6     1  2  3  4
-;   11      $00        $*4     1  2  3  4 
-;   12 reset to 0.
+;    1      $*C        $0E     1
+;    2      $*A        $0E     1  2 
+;    3      $*8        $*C     1  2  
+;    4      $*6        $*A     1  2  3  
+;    5      $*4        $*8     1  2  3
+;    6      $*2        $*6     1  2  3  4
+;    7      $02        $*4     1  2  3  4
+;    8 reset to 0.
 ;   ...     ...        ...
 ;
 ; Positioning the stars is different.   Every mode 6 line on the screen for
