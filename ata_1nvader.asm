@@ -2445,6 +2445,23 @@ mountc   ; mountain screen view chars
 
 
 ; ==========================================================================
+; The Game Entry Point where AtariDOS calls for startup.
+; 
+; And the perpetual loop calling the game's event dispatch routine.
+; The code needs this routine as a starting place, so that the 
+; routines called from the subroutine table have a place to return
+; to.  Otherwise the RTS from those routines would be at the 
+; top level and exit the game.
+; --------------------------------------------------------------------------
+
+GameStart
+
+	jsr GameLoop 
+
+	jmp GameStart ; Do While More Electricity
+
+
+; ==========================================================================
 ; Inform DOS of the program's Auto-Run address...
 ; GameStart is in the "Game.asm' file.
 ; --------------------------------------------------------------------------
