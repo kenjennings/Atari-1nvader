@@ -38,7 +38,7 @@
 
 ; Game Control Values =========================================================
 
-zNUMBER_OF_PLAYERS .byte 0 ; (0) is 1 player.  (1) is 2 player.
+zNUMBER_OF_PLAYERS .byte $FF ; (0) is 1 player.  (1) is 2 player.
 
 
 ; Title Logo Values =========================================================
@@ -46,6 +46,20 @@ zNUMBER_OF_PLAYERS .byte 0 ; (0) is 1 player.  (1) is 2 player.
 TITLE_LOGO_FRAME_MAX = 4 ; Five frames, Count 4, 3, 2, 1, 0
 
 zTITLE_LOGO_FRAME .byte 0 ; current frame for big graphic logo
+
+
+; Title Logo Values =========================================================
+
+BIG_MOTHERSHIP_START = 108 ; Starting position of the big mothership
+
+zBIG_MOTHERSHIP_Y .byte BIG_MOTHERSHIP_START
+
+
+; Generic Player/Missile Data Copying =======================================
+
+zPMG_OBJECT   .word 0 ; points to image data
+
+zPMG_HARDWARE .word 0 ; points to the Player/Missile memeory map.
 
 
 ; Game Over Text Values =========================================================

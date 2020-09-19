@@ -152,6 +152,35 @@ PMG_EXPLOSION
 
 
 ; ==========================================================================
+; PLAYER MISSILE OBJECT SHAPE LOOKUPS
+
+PMG_MOTHERSHIP_ID = 0
+PMG_EXPLOSION_ID  = 1
+PMG_CANNON_ID     = 2
+PMG_LASER_ID      = 3
+
+TABLE_LO_PMG_OBJECTS
+	.byte <PMG_MOTHERSHIP,<PMG_EXPLOSION,<PMG_CANNON,<PMG_LASER
+
+TABLE_HI_PMG_OBJECTS
+	.byte >PMG_MOTHERSHIP,>PMG_EXPLOSION,>PMG_CANNON,>PMG_LASER
+
+
+; ==========================================================================
+; PLAYER MISSILE HARDWARE LOOKUPS
+
+PMG_PLAYER0 = 0
+PMG_PLAYER1 = 1
+PMG_PLAYER2 = 2
+PMG_PLAYER3 = 3
+PMG_MISSILE = 4 ; No missile sharing, so no masking missile 3, 2, 1, 0
+
+TABLE_HI_PMG
+	.byte >PLAYERADR0,>PLAYERADR1,>PLAYERADR2,>PLAYERADR3,>MISSILEADR
+
+
+
+; ==========================================================================
 ; TITLE SCREEN SHENANIGANS
 
 ; The color overlay is done by shifting missile positions right at
