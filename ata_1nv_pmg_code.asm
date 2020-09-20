@@ -17,6 +17,42 @@
 
 
 ; ==========================================================================
+; ZERO PM MEMORY 
+; ==========================================================================
+; Initialization function to write 0 bytes to the memory map for all the 
+; Players and Missiles.
+;
+; Useless trivia: Antic does not do DMA on the first 8 scan lines and 
+; last 8 scan lines.  So, the loop only needs to zero 240 (256 - 16) bytes, 
+; or scan lines 8 to 247.  In order to make this a convenient reverse 
+; counting loop we have to count from 240 to 1, using 0 as the end of loop
+; flag rather than from 239 to 0 with -1 (255) as the end of loop flag, 
+; because the starting location, (239), is viewed as negative by the 
+; CPU flags.
+; Therefore, the target addresses are offset from the actual Player/Missile 
+; base addresses by 7 instead of 8.
+; --------------------------------------------------------------------------
+
+Pmg_Zero_PM_Memory
+
+	lda #0
+	ldx #240            ; Counting 240 to 1, zero flags the end.
+
+b_pzpm_LoopZero
+	sta PLAYERADR0+7,X  ; Zero each P/M memory map...
+	sta PLAYERADR1+7,X
+	sta PLAYERADR2+7,X
+	sta PLAYERADR3+7,X
+	sta MISSILEADR+7,X
+
+	dex                 ; Index Minus 1 
+	bne b_pzpm_LoopZero ; Loop if this is not zero.
+
+	rts
+
+
+
+; ==========================================================================
 ; DRAW BIG MOTHERSHIP
 ; ==========================================================================
 ; Copy the image bitmaps for Right and Left into Player 2 and 3  memory
@@ -132,12 +168,12 @@ Pmg_Draw_Object
 	lda TABLE_HI_PMG,Y
 	sta zPMG_HARDWARE+1 ; And supply the high page for the object.
 	
-	lda TABLE_LO_PMG_OBJECTS,X ;
+	lda TABLE_LO_PMG_OBJECTS,X ; Get the image address low byte
 	sta zPMG_OBJECT            ; 
-	lda TABLE_HI_PMG_OBJECTS,X ; 
+	lda TABLE_HI_PMG_OBJECTS,X ; Get the image address high byte
 	sta zPMG_OBJECT+1          ;
 
-	jsr Pmg_Copy_Object
-	
+	jsr Pmg_Copy_Object        ; Copy 8 bytes from *zPMG_OBJECT to *zPMG_HARDWARE
+
 	rts
 	
