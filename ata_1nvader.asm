@@ -57,16 +57,78 @@ zBIG_MOTHERSHIP_Y .byte BIG_MOTHERSHIP_START
 
 ; Generic Player/Missile Data Copying =======================================
 
-zPMG_OBJECT   .word 0 ; points to image data
+zPMG_IMAGE    .word 0 ; points to image data
 
 zPMG_HARDWARE .word 0 ; points to the Player/Missile memeory map.
+
+
+; Player/Missile object states.  X, Y, counts, etc where needed =============
+; Note that each table is in the same order listing each visible 
+; screen object for the Game.
+; (Note the title screen components as the mother ship and the animated 
+; logo are handled by special cases.)
+; Lots of Page 0 still available, so let's just be lazy and clog this up.
+; Note LDA zp,X  (two bytes) if we were thinking about code size.
+
+PMG_MOTHERSHIP_ID = 0 ; ID values index each table below.
+PMG_EXPLOSION_ID  = 1
+PMG_CANNON_1_ID   = 2
+PMG_CANNON_2_ID   = 3
+PMG_LASER_1_ID    = 4
+PMG_LASER_2_ID    = 5
+
+zTABLE_PMG_OLD_X
+zPMG_OLD_MOTHERSHIP_X .byte 0 
+zPMG_OLD_EXPLOSION_X  .byte 0 
+zPMG_OLD_CANNON_1_X   .byte 0
+zPMG_OLD_CANNON_2_X   .byte 0
+zPMG_OLD_LASER_1_X    .byte 0
+zPMG_OLD_LASER_2_X    .byte 0
+
+zTABLE_PMG_NEW_X
+zPMG_NEW_MOTHERSHIP_X .byte 0 
+zPMG_NEW_EXPLOSION_X  .byte 0 
+zPMG_NEW_CANNON_1_X   .byte 0
+zPMG_NEW_CANNON_2_X   .byte 0
+zPMG_NEW_LASER_1_X    .byte 0
+zPMG_NEW_LASER_2_X    .byte 0
+
+zTABLE_PMG_OLD_Y
+zPMG_OLD_MOTHERSHIP_Y .byte 0 
+zPMG_OLD_EXPLOSION_Y  .byte 0 
+zPMG_OLD_CANNON_1_Y   .byte 0
+zPMG_OLD_CANNON_2_Y   .byte 0
+zPMG_OLD_LASER_1_Y    .byte 0
+zPMG_OLD_LASER_2_Y    .byte 0
+
+zTABLE_PMG_NEW_Y
+zPMG_NEW_MOTHERSHIP_Y .byte 0 
+zPMG_NEW_EXPLOSION_Y  .byte 0 
+zPMG_NEW_CANNON_1_Y   .byte 0
+zPMG_NEW_CANNON_2_Y   .byte 0
+zPMG_NEW_LASER_1_Y    .byte 0
+zPMG_NEW_LASER_2_Y    .byte 0
+
+zTABLE_PMG_IMG_ID ; this does not change.
+	.byte PMG_IMG_MOTHERSHIP_ID
+	.byte PMG_IMG_EXPLOSION_ID
+	.byte PMG_IMG_CANNON_ID
+	.byte PMG_IMG_CANNON_ID
+	.byte PMG_IMG_LASER_ID
+	.byte PMG_IMG_LASER_ID
+
+zTABLE_PMG_HARDWARE ; Page, high byte, for each displayed item.
+	.byte >PLAYERADR2 ; Mothership
+	.byte >PLAYERADR3 ; Explosion
+	.byte >PLAYERADR0 ; Player 1 Cannon
+	.byte >PLAYERADR1 ; Player 2 Cannon
+	.byte >PLAYERADR0 ; Player 1 Laser
+	.byte >PLAYERADR1 ; Player 2 Laser
 
 
 ; Game Over Text Values =========================================================
 
 zGAME_OVER_TEXT .word 0
-
-
 
 
 DisplayPointer .word $0000 ; Stream of bytes to read.

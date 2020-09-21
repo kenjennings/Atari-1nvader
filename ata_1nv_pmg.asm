@@ -48,7 +48,7 @@ spr1     ; mothership sprite
 ;	.byte 0,0,0,0,0,0,0,0,0,0,0,0
 ;	.byte 0,0,0,255
 
-PMG_MOTHERSHIP
+PMG_IMG_MOTHERSHIP
 	.BYTE $00  ; ...11...
 	.BYTE $00  ; ..1111..
 	.BYTE $00  ; .111111.
@@ -58,7 +58,7 @@ PMG_MOTHERSHIP
 	.BYTE $00  ; .111111.
 	.BYTE $00  ; ..1..1..
 
-PMG_BIGGERSHIP_L ; Title Screen version.  
+PMG_IMG_BIGGERSHIP_L ; Title Screen version.  
 	.byte $07  ; .....111 111.....
 	.byte $1f  ; ...11111 11111...
 	.byte $3f  ; ..111111 111111..
@@ -68,7 +68,7 @@ PMG_BIGGERSHIP_L ; Title Screen version.
 	.byte $3f  ; ..111111 111111..
 	.byte $10  ; ...1.... ....1...
 
-PMG_BIGGERSHIP_R ; Title Screen version.  
+PMG_IMG_BIGGERSHIP_R ; Title Screen version.  
 	.byte $e0  ; .....111 111.....
 	.byte $f8  ; ...11111 11111...
 	.byte $fc  ; ..111111 111111..
@@ -92,7 +92,7 @@ spr2     ; cannon sprite
 ;	.byte 0,0,0,0,0,0,0,0,0,0,0,0
 ;	.byte 0,0,0,255
 
-PMG_CANNON
+PMG_IMG_CANNON
 	.BYTE $18  ; ...11...
 	.BYTE $18  ; ...11...
 	.BYTE $7e  ; .111111.
@@ -117,7 +117,7 @@ spr3     ; laser sprite
 ;	.byte 0,0,0,0,0,0,0,0,0,0,0,0
 ;	.byte 0,0,0,255
 
-PMG_LASER
+PMG_IMG_LASER
 	.BYTE $40  ; .1......
 	.BYTE $20  ; ..1.....
 	.BYTE $40  ; .1......
@@ -141,7 +141,7 @@ spr4     ; explosion
 ;	.byte 0,0,0,0,0,0,0,0,0,0,0,0
 ;	.byte 0,0,0,255
 
-PMG_EXPLOSION
+PMG_IMG_EXPLOSION
 	.BYTE $24  ; ..1..1..
 	.BYTE $5a  ; .1.11.1.
 	.BYTE $24  ; ..1..1..
@@ -152,28 +152,28 @@ PMG_EXPLOSION
 
 
 ; ==========================================================================
-; PLAYER MISSILE OBJECT SHAPE LOOKUPS
+; PLAYER MISSILE IMAGE SHAPE LOOKUPS
 
-PMG_MOTHERSHIP_ID = 0
-PMG_EXPLOSION_ID  = 1
-PMG_CANNON_ID     = 2
-PMG_LASER_ID      = 3
+PMG_IMG_MOTHERSHIP_ID = 0
+PMG_IMG_EXPLOSION_ID  = 1
+PMG_IMG_CANNON_ID     = 2
+PMG_IMG_LASER_ID      = 3
 
-TABLE_LO_PMG_OBJECTS
-	.byte <PMG_MOTHERSHIP,<PMG_EXPLOSION,<PMG_CANNON,<PMG_LASER
+TABLE_LO_PMG_IMAGES
+	.byte <PMG_IMG_MOTHERSHIP,<PMG_IMG_EXPLOSION,<PMG_IMG_CANNON,<PMG_IMG_LASER
 
-TABLE_HI_PMG_OBJECTS
-	.byte >PMG_MOTHERSHIP,>PMG_EXPLOSION,>PMG_CANNON,>PMG_LASER
+TABLE_HI_PMG_IMAGES
+	.byte >PMG_IMG_MOTHERSHIP,>PMG_IMG_EXPLOSION,>PMG_IMG_CANNON,>PMG_IMG_LASER
 
 
 ; ==========================================================================
 ; PLAYER MISSILE HARDWARE LOOKUPS
 
-PMG_PLAYER0 = 0
-PMG_PLAYER1 = 1
-PMG_PLAYER2 = 2
-PMG_PLAYER3 = 3
-PMG_MISSILE = 4 ; No missile sharing, so no masking missile 3, 2, 1, 0
+PMG_PLAYER0_ID = 0
+PMG_PLAYER1_ID = 1
+PMG_PLAYER2_ID = 2
+PMG_PLAYER3_ID = 3
+PMG_MISSILE_ID = 4 ; No missile sharing, so no masking missile 3, 2, 1, 0
 
 TABLE_HI_PMG
 	.byte >PLAYERADR0,>PLAYERADR1,>PLAYERADR2,>PLAYERADR3,>MISSILEADR

@@ -133,18 +133,39 @@ b_pdbs_LoopZero
 ; Erasing prior images is a different exercise done elsewhere.
 ;
 ; Y will be used to index/copy from 7 to 0.
+;
+; Loop unrolled to eliminate 8 bpl
 ; --------------------------------------------------------------------------
 
 Pmg_Copy_Object
 
 	ldy #7
-	
-b_pdc_Copy	
-	lda (zPMG_OBJECT),Y   ; From source
+
+b_pco_Copy
+	lda (zPMG_IMAGE),Y    ; From source
 	sta (zPMG_HARDWARE),Y ; To destination
 	dey
-	bpl b_pdc_Copy        ; Copy until negative
-	
+	lda (zPMG_IMAGE),Y    ; From source
+	sta (zPMG_HARDWARE),Y ; To destination
+	dey
+	lda (zPMG_IMAGE),Y    ; From source
+	sta (zPMG_HARDWARE),Y ; To destination
+	dey
+	lda (zPMG_IMAGE),Y    ; From source
+	sta (zPMG_HARDWARE),Y ; To destination
+	dey
+	lda (zPMG_IMAGE),Y    ; From source
+	sta (zPMG_HARDWARE),Y ; To destination
+	dey
+	lda (zPMG_IMAGE),Y    ; From source
+	sta (zPMG_HARDWARE),Y ; To destination
+	dey
+	lda (zPMG_IMAGE),Y    ; From source
+	sta (zPMG_HARDWARE),Y ; To destination
+	dey
+	lda (zPMG_IMAGE),Y    ; From source
+	sta (zPMG_HARDWARE),Y ; To destination
+
 	rts
 
 
@@ -168,12 +189,69 @@ Pmg_Draw_Object
 	lda TABLE_HI_PMG,Y
 	sta zPMG_HARDWARE+1 ; And supply the high page for the object.
 	
-	lda TABLE_LO_PMG_OBJECTS,X ; Get the image address low byte
-	sta zPMG_OBJECT            ; 
-	lda TABLE_HI_PMG_OBJECTS,X ; Get the image address high byte
-	sta zPMG_OBJECT+1          ;
+	lda TABLE_LO_PMG_IMAGES,X ; Get the image address low byte
+	sta zPMG_IMAGE
+	lda TABLE_HI_PMG_IMAGES,X ; Get the image address high byte
+	sta zPMG_IMAGE+1         
 
-	jsr Pmg_Copy_Object        ; Copy 8 bytes from *zPMG_OBJECT to *zPMG_HARDWARE
+	jsr Pmg_Copy_Object       ; Copy 8 bytes from *zPMG_OBJECT to *zPMG_HARDWARE
 
 	rts
-	
+
+
+; ==========================================================================
+; ZERO OBJECT
+; ==========================================================================
+; Zero 8 bytes at the location specified by zPMG_HARDWARE
+; 
+; Y will be used to index/copy from 7 to 0.
+;
+; Loop unrolled to eliminate 8 bpl
+; --------------------------------------------------------------------------
+
+Pmg_Zero_Object
+
+	ldy #7
+	lda #0
+
+	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+	dey
+	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+	dey
+	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+	dey
+	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+	dey
+	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+	dey
+	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+	dey
+	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+	dey
+	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+
+	rts
+
+
+; ==========================================================================
+; ERASE OBJECT
+; ==========================================================================
+; Setup the parameters needed to zero 8 bytes of Player/Missile image 
+; data from the Player/Missile memeory map.
+; 
+; Y is the Player/Missile hardware ID.  (See the PMG data file.).
+;
+; A is the Y location of the object on screen.
+; --------------------------------------------------------------------------
+
+Pmg_Erase_Object
+
+	sta zPMG_HARDWARE   ; The Y position is the memory offset.  How convenient.
+
+	lda TABLE_HI_PMG,Y
+	sta zPMG_HARDWARE+1 ; And supply the high page for the object.
+
+	jsr Pmg_Zero_Object       ; Copy 8 bytes from *zPMG_OBJECT to *zPMG_HARDWARE
+
+	rts
+
