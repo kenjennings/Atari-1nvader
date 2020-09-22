@@ -136,6 +136,7 @@ b_gcgot_Continue
 	
 	rts	
 
+
 ; ==========================================================================
 ; PROCESS STARS
 ; ==========================================================================
@@ -165,6 +166,7 @@ b_gcgot_Continue
 ; the stars refers to (LMS) the same line of screen data.  LMS and horizontal
 ; fine scrolling will be used to position the stars on the row where they 
 ; appear.
+;
 ; The first 21 bytes of data are blank which is used to show no star. 
 ; That is, LMS=Line+0, and HSCROLL=15.  
 ; The star character is at position 22 on the line.
@@ -183,6 +185,7 @@ b_gcgot_Continue
 ; It will transition the color for each star fading per each frame. 
 ; When the  transition reaches frame 11, the star is removed from 
 ; the screen (fade color table lookups = 0, LMS offset = +0 and HSCROL=15).
+;
 ; A new random line is chosen for the star.  Pick a random number from 
 ; 0 to 31 (mask random value with binary AND $1F).  
 ; If greater than 17, then subtract 16. (31 - 16 == 15.   18 - 16 = 2).
@@ -190,17 +193,22 @@ b_gcgot_Continue
 ; until an unused row is found.
 ; --------------------------------------------------------------------------
 
+; 
+TABLE_GFX_STAR_COLOR_MASK1
+	.byte $00,$02,$F2,$F4,$F6,$F8,$FA,$FC,$E0
+;	.byte $0E,$FC,$FA,$F8,$F6,$F4,$F2,$02,$00
+
 ; A list of positions that indicate if the position is running the star animation
-TABLE_GFX_IS_STAR 
-	.rept 18 
-		.byte 0
-	.endr
+;TABLE_GFX_IS_STAR 
+;	.rept 18 
+;		.byte 0
+;	.endr
 
 ; A list of the frame count for the animation state for each line.  -1 is no frame count.
-TABLE_GFX_STAR_COUNTER
-	.rept 18 
-		.byte 255
-	.endr
+;TABLE_GFX_STAR_COUNTER
+;	.rept 18 
+;		.byte 255
+;	.endr
 
 ; A list of the outer color value for each star line (only matters on the lines with stars)
 TABLE_GFX_STAR_OUT_COLOR
@@ -215,7 +223,7 @@ TABLE_GFX_STAR_IN_COLOR
 	.endr
 
 ; A list of the fine scroll values for each start line used for pixel positioning.
-TABLE_GFX_STAR_IN_COLOR
+TABLE_GFX_STAR_HSCROL
 	.rept 18 
 		.byte 0
 	.endr	
@@ -258,3 +266,146 @@ TABLE_HI_GFX_LMS_STARS
 		set TEMP_DL_ADDRESS += 3
 	.endr
 
+
+; Flag if the star is in use.  
+; $FF is no star in use. 
+; Otherwise contains Index to the 18 line tables.  (0 to 17)
+
+TABLE_GFX_ACTIVE_STARS .byte $FF,$FF,$FF,$FF
+
+; Base color for the star.
+
+TABLE_GFX_STAR_BASE .byte 0,0,0,0
+
+; Clock counter for each star. 8, 7, 6, 5, 4, 3, 2, 1, 0.  At 0, star goes off.
+
+TABLE_GFX_STARS_COUNT  .byte 0,0,0,0
+
+
+
+; ==========================================================================
+; CHOOSE STAR ROW
+; ==========================================================================
+; Choose a row for stars.
+;  
+; A new random line is chosen for the star.  Pick a random number from 
+; 0 to 31 (mask random value with binary AND $1F).  
+; If greater than 17, then subtract 16. (31 - 16 == 15.   18 - 16 = 2).
+; If this row is in use then use the next row and continue incrementing
+; until an unused row is found.
+;
+; A is the new row.
+; --------------------------------------------------------------------------
+
+Gfx_Choose_Star_Row
+
+	lda RANDOM
+	and #$1F                     ; Reduce to 0 to 31
+
+	cmp #18                      ; Is it greater then 17?
+	bcc b_gcsr_StartCheckLoop    ; No. Skip the subtract.  
+	clc
+	sbc #16                      ; Minus 16
+
+b_gcsr_StartCheckLoop
+	ldy #3                       ; Index 3, 2, 1, 0 for star list
+
+b_gcsr_CompareEntry
+	cmp TABLE_GFX_ACTIVE_STARS,y ; Compare to each current star, 
+	bne b_gcsr_TryNextEntry      ; Does not match, so test next entry.
+	
+	clc                          ; Oops.  Found a matching value. 
+	adc #1                       ; Increment the value and then redo the checking.
+	
+	cmp #18                      ; Did we reach row 18? 
+	bne b_gcsr_StartCheckLoop    ; No.  So, restart the loop to check values.
+	
+	lda #0                       ; Yes.  Reset to 0.  
+	beq b_gcsr_StartCheckLoop    ; restart the loop to check values.
+
+b_gcsr_TryNextEntry
+	dey
+	bpl b_gcsr_CompareEntry
+
+	rts
+	
+
+; ==========================================================================
+; SETUP NEW STAR
+; ==========================================================================
+; Get a new star row.
+;  
+; Given the new star number (0 to 3)
+;  - Choose a random row, 
+;  - Setup the star position
+;  - Setup the star color.
+;  - Setup the star clock counter.
+
+then a random color, 
+; and  read by the DLIs.
+;
+A new random line is chosen for the star.  Pick a random number from 
+; 0 to 31 (mask random value with binary AND $1F).  
+; If greater than 17, then subtract 16. (31 - 16 == 15.   18 - 16 = 2).
+; If this row is in use then use the next row and continue incrementing
+; until an unused row is found.
+;
+; X is the star number 0, 1, 2, 3 for the short lookup.
+;
+; A is the new row.
+; --------------------------------------------------------------------------
+
+Gfx_Setup_New_Star
+	
+
+	
+	
+	rts
+	
+	
+	
+; ==========================================================================
+; REMOVE STAR
+; ==========================================================================
+; Remove a star from the management data.
+;  
+; Given the star number (0 to 3)
+;  - Zero the color values. 
+;  - Zero the LMS.  
+;  - Set HSCROL 15.
+;  - Set the Star number row to $FF
+;
+; X is the star number 0, 1, 2, 3 for the short lookup.
+; --------------------------------------------------------------------------
+
+Gfx_Remove_Star
+	
+	ldy TABLE_GFX_ACTIVE_STARS,X
+	
+	lda #$FF
+	sta TABLE_GFX_ACTIVE_STARS,X ; Turn off this star.
+	
+	lda #8
+	sta TABLE_GFX_STARS_COUNT,X
+	
+	lda #15
+	sta TABLE_GFX_STAR_HSCROL,Y
+	
+	lda #0
+	sta TABLE_GFX_STAR_OUT_COLOR,Y
+	sta TABLE_GFX_STAR_IN_COLOR,Y
+	sta TABLE_GFX_STAR_BASE,X
+
+	lda TABLE_LO_GFX_LMS_STARS,Y
+	sta zDL_LMS_STARS_ADDR
+	lda TABLE_HI_GFX_LMS_STARS,Y
+	sta zDL_LMS_STARS_ADDR+1
+
+	lda #<GFX_STARS_LINE
+	ldy #0
+	sta (zDL_LMS_STARS_ADDR),Y
+	
+	rts
+	
+
+	

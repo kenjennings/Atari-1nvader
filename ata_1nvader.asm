@@ -38,7 +38,9 @@
 
 ; Game Control Values =========================================================
 
-zNUMBER_OF_PLAYERS .byte $FF ; (0) is 1 player.  (1) is 2 player.
+zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player.
+zIS_PLAYER_ONE     .byte $00 ; (0) not playing. (1) playing.
+zIS_PLAYER_TWO     .byte $00 ; (0) not playing. (1) playing.
 
 
 ; Title Logo Values =========================================================
@@ -70,12 +72,15 @@ zPMG_HARDWARE .word 0 ; points to the Player/Missile memeory map.
 ; Lots of Page 0 still available, so let's just be lazy and clog this up.
 ; Note LDA zp,X  (two bytes) if we were thinking about code size.
 
-PMG_MOTHERSHIP_ID = 0 ; ID values index each table below.
+
+PMG_MOTHERSHIP_ID = 0 ; Screen object ID values index each table below.
 PMG_EXPLOSION_ID  = 1
 PMG_CANNON_1_ID   = 2
 PMG_CANNON_2_ID   = 3
 PMG_LASER_1_ID    = 4
 PMG_LASER_2_ID    = 5
+
+zPMG_SAVE_CURRENT_ID .byte 0 ; Save ID to get around having to txa/pha/pla/tax
 
 zTABLE_PMG_OLD_X
 zPMG_OLD_MOTHERSHIP_X .byte 0 
@@ -124,6 +129,12 @@ zTABLE_PMG_HARDWARE ; Page, high byte, for each displayed item.
 	.byte >PLAYERADR1 ; Player 2 Cannon
 	.byte >PLAYERADR0 ; Player 1 Laser
 	.byte >PLAYERADR1 ; Player 2 Laser
+
+
+
+; Game Screen Stars DL LMS Address Pointer ==================================
+
+zDL_LMS_STARS_ADDR .word 0 ; points to image data
 
 
 ; Game Over Text Values =========================================================

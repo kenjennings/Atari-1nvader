@@ -175,27 +175,53 @@ b_pco_Copy
 ; Setup the parameters needed to copy 8 bytes of Player/Missile image 
 ; data to the Player/Missile memeory map.
 ; 
-; X is the ID of the image. 
+; X is the  Player/Missile screen object ID.
 ; 
-; Y is the Player/Missile hardware ID.  (See the PMG data file.).
+; Y is the PMG Hardware Page for the displayed object. (See the PMG data file.)
 ;
 ; A is the Y location of the object on screen.
 ; --------------------------------------------------------------------------
 
 Pmg_Draw_Object
 
-	sta zPMG_HARDWARE   ; The Y position is the memory offset.  How convenient.
+	sta zPMG_HARDWARE         ; The Y position is the memory offset.  How convenient.
+	sty zPMG_HARDWARE+1       ; And supply the high page for the object.
 	
-	lda TABLE_HI_PMG,Y
-	sta zPMG_HARDWARE+1 ; And supply the high page for the object.
+	ldy zTABLE_PMG_IMG_ID,X   ; Get the image ID for this object. 
 	
-	lda TABLE_LO_PMG_IMAGES,X ; Get the image address low byte
+	lda TABLE_LO_PMG_IMAGES,Y ; Get the image address low byte
 	sta zPMG_IMAGE
-	lda TABLE_HI_PMG_IMAGES,X ; Get the image address high byte
-	sta zPMG_IMAGE+1         
+	lda TABLE_HI_PMG_IMAGES,Y ; Get the image address high byte
+	sta zPMG_IMAGE+1
 
 	jsr Pmg_Copy_Object       ; Copy 8 bytes from *zPMG_OBJECT to *zPMG_HARDWARE
 
+	rts
+
+
+
+; ==========================================================================
+; DRAW
+; ==========================================================================
+; Given the screen object ID load the register values and call
+; the function to setup the parameters needed to copy 8 bytes of 
+; image data to the Player/Missile memeory map.
+; 
+; Load A with the Y coordinate from the NEW_Y value.
+;
+; Load Y with the PMG Hardware Page for the displayed object.
+; 
+; Input X is the Player/Missile screen object ID.
+; --------------------------------------------------------------------------
+
+Pmg_Draw
+
+	lda zTABLE_PMG_NEW_Y,X  
+
+	ldy zTABLE_PMG_HARDWARE,X
+
+	jsr Pmg_Draw_Object       ; Setup and copy 8 bytes to P/M memory.
+	
 	rts
 
 
@@ -238,20 +264,76 @@ Pmg_Zero_Object
 ; ==========================================================================
 ; Setup the parameters needed to zero 8 bytes of Player/Missile image 
 ; data from the Player/Missile memeory map.
-; 
-; Y is the Player/Missile hardware ID.  (See the PMG data file.).
+;
+; X is expepcted to be the screen object ID, but unused here.
 ;
 ; A is the Y location of the object on screen.
+;
+; Y is the Player/Missile hardware address (page).
 ; --------------------------------------------------------------------------
 
 Pmg_Erase_Object
 
 	sta zPMG_HARDWARE   ; The Y position is the memory offset.  How convenient.
 
-	lda TABLE_HI_PMG,Y
-	sta zPMG_HARDWARE+1 ; And supply the high page for the object.
+	sty zPMG_HARDWARE+1 ; And supply the high page for the object.
 
-	jsr Pmg_Zero_Object       ; Copy 8 bytes from *zPMG_OBJECT to *zPMG_HARDWARE
+	jsr Pmg_Zero_Object ; Zero the 8 bytes at *zPMG_HARDWARE
 
 	rts
 
+
+; ==========================================================================
+; ERASE
+; ==========================================================================
+; Given the screen object ID load the register values and call 
+; the function to zero the Player/Missile object.
+;
+; Load A with the Y coordinate from the OLD_Y value.
+;
+; Load Y with the PMG Hardware Page for the displayed object.
+; 
+; Input X is the Player/Missile screen object ID.
+; --------------------------------------------------------------------------
+
+Pmg_Erase
+
+	lda zTABLE_PMG_OLD_Y,X  
+	
+	ldy zTABLE_PMG_HARDWARE,X
+	
+	jsr Pmg_Erase_Object ; Zero the 8 bytes at *zPMG_HARDWARE
+
+	rts
+	
+
+; ==========================================================================
+; REDRAW
+; ==========================================================================
+; Given the screen object ID ERASE the object from the OLD_Y 
+; position and DRAW it at the NEW_Y psotition.
+;
+; Horizontal position updates are automatic and handled by DLIs (somewhere.)
+;
+; Copy NEW_Y to the OLD_Y value.
+; Copy NEW_X to the OLD_X value.
+; 
+; Input X is the Player/Missile screen object ID.
+; --------------------------------------------------------------------------
+
+Pmg_Redraw
+
+	stx zPMG_SAVE_CURRENT_ID ; Need to Save X in case of routines crushing this...
+	jsr Pmg_Erase            ; Zero the 8 bytes of the object from P/M memory.
+	
+	ldx zPMG_SAVE_CURRENT_ID ; Get the image ID back.
+	jsr Pmg_Draw             ; Copy the 8 byte image to P/M memory.
+	
+	ldx zPMG_SAVE_CURRENT_ID ; Get the image ID back.
+	lda zTABLE_PMG_NEW_Y,X   ; OLD = NEW
+	lda zTABLE_PMG_OLD_Y,X  
+
+	lda zTABLE_PMG_NEW_X,X   ; OLD = NEW
+	lda zTABLE_PMG_OLD_X,X 
+
+	rts	
