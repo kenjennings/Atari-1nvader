@@ -131,11 +131,13 @@ zTABLE_PMG_HARDWARE ; Page, high byte, for each displayed item.
 	.byte >PLAYERADR1 ; Player 2 Laser
 
 
-
 ; Game Screen Stars DL LMS Address Pointer ==================================
 
 zDL_LMS_STARS_ADDR .word 0 ; points to image data
 
+zTEMP_NEW_STAR_ID  .byte 0 ; gives the star 3, 2, 1, 0
+
+zTEMP_NEW_STAR_ROW .byte 0 ; Row number for star
 
 ; Game Over Text Values =========================================================
 
