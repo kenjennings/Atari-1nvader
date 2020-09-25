@@ -39,9 +39,22 @@
 ; Game Control Values =========================================================
 
 zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player.
-zIS_PLAYER_ONE     .byte $00 ; (0) not playing. (1) playing.
-zIS_PLAYER_TWO     .byte $00 ; (0) not playing. (1) playing.
 
+zPLAYER_ONE_ON     .byte $00 ; (0) not playing. (1) playing.
+zPLAYER_ONE_X      .byte $00 ; Player 1 gun X coords
+zPLAYER_ONE_Y      .byte $00 ; Player 1 Y position (slight animation, but usually fixed.)
+zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction
+zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
+zPLAYER_ONE_SCORE  .byte $00,$00,$00 ; Player 1 score, 6 digit BCD 
+
+zPLAYER_TWO_ON     .byte $00 ; (0) not playing. (1) playing.
+zPLAYER_TWO_X      .byte $00 ; Player 2 gun X coords
+zPLAYER_TWO_Y      .byte $00 ; Player 2 Y position (slight animation, but usually fixed.)
+zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction
+zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
+zPLAYER_TWO_SCORE  .byte $00,$00,$00 ; Player 2 score, 6 digit BCD 
+
+zHIGH_SCORE        .byte $00,$00,$00 ; 6 digit BCD 
 
 ; Title Logo Values =========================================================
 
@@ -166,7 +179,7 @@ OutputPointer  .word $0000 ; Pointer to memory to generate RLE codes.
 	.by "** Thanks to the Word (John 1:1), Jesus Christ, Creator of heaven, "
 	.by "and earth, and semiconductor chemistry and physics making all this "
 	.by "fun possible. "
-	.by "** Atari 1NVADER "
+	.by "** ATARI 1NVADER "
 	.by "** Atari 8-bit computer systems. "
 	.by "** Ken Jennings  2020 **"
 
@@ -282,12 +295,12 @@ colscr   sta $d800,x
 title    jsr titlinit ; new game setup
 
          lda #148   ; set p1+2 x+y
-         sta p1x
+         sta zPLAYER_ONE_X
          lda #196
-         sta p2x
-         lda #242   ; p1y p2y
-         sta p1y    ; touching bottom
-         sta p2y
+         sta zPLAYER_TWO_X
+         lda #242   ; zPLAYER_ONE_Y zPLAYER_TWO_Y
+         sta zPLAYER_ONE_Y    ; touching bottom
+         sta zPLAYER_TWO_Y
          lda #160   ; set ms x+y
          sta msx
          lda #146   ; was 58
@@ -351,23 +364,23 @@ scr99
          jsr ticolrol ; fancy title fx
 
          jsr fire1  ; get p1 fire
-         lda p1f    ; check p1f
+         lda zPLAYER_ONE_FIRE    ; check p1f
          cmp #1
          bne titleb ; no fire
          lda #1     ; fire p1 start
-         sta p1z
+         sta zPLAYER_ONE_ON
          lda #234   ; pop up p1
-         sta p1y
+         sta zPLAYER_ONE_Y
          jsr outp1
          jmp clrscr ; begin gameinit
 titleb   jsr fire2  ; get p2 fire
-         lda p2f    ; check p2f
+         lda zPLAYER_TWO_FIRE    ; check p2f
          cmp #1
          bne titlea ; no fire wait
          lda #1     ; fire p2 start
-         sta p2z
+         sta zPLAYER_TWO_ON
          lda #234   ; pop up p2
-         sta p2y
+         sta zPLAYER_TWO_Y
          jsr outp2
 
 clrscr   lda #32    ; clear scroll
@@ -495,18 +508,18 @@ tcrz     rts
 
 titlinit lda #0
          sta goflag
-         sta p1d
-         sta p1f
-         sta p2f
-         sta p1z
-         sta p2z
+         sta zPLAYER_ONE_DIR
+         sta zPLAYER_ONE_FIRE
+         sta zPLAYER_TWO_FIRE
+         sta zPLAYER_ONE_ON
+         sta zPLAYER_TWO_ON
          sta msx+1
-         sta p1x+1
-         sta p2x+1
+         sta zPLAYER_ONE_X+1
+         sta zPLAYER_TWO_X+1
          sta msrow
 
          lda #1
-         sta p2d
+         sta zPLAYER_TWO_DIR
          sta msd
          sta j1z
          sta j2z
@@ -522,28 +535,28 @@ titlinit lda #0
          sta p2col
 
          lda #148
-         sta p1x
+         sta zPLAYER_ONE_X
 
          lda #172
          sta msx
 
          lda #196
-         sta p2x
+         sta zPLAYER_TWO_X
 
          lda #242    ; touching bottom
-         sta p1y
-         sta p2y
+         sta zPLAYER_ONE_Y
+         sta zPLAYER_TWO_Y
 
          rts
 
 gameinit sed
          lda #0
-         sta p1score
-         sta p1score+1
-         sta p1score+2
-         sta p2score
-         sta p2score+1
-         sta p2score+2
+         sta zPLAYER_ONE_SCORE
+         sta zPLAYER_ONE_SCORE+1
+         sta zPLAYER_ONE_SCORE+2
+         sta zPLAYER_TWO_SCORE
+         sta zPLAYER_TWO_SCORE+1
+         sta zPLAYER_TWO_SCORE+2
          cld
 
          sed
@@ -601,31 +614,31 @@ cntdwna  jsr ticolrol;  >title fx
          sta cm+180  ; other half
 
 cntdwnb  jsr vbwait  ; wait 1 frame
-         lda p1z     ; need to chk?
+         lda zPLAYER_ONE_ON     ; need to chk?
          cmp #1
          beq cntdwnc ; nope go away
          jsr fire1   ; yes we do
          inc v+40    ; rainbow if check
-         lda p1f
+         lda zPLAYER_ONE_FIRE
          cmp #1      ; check p1 fire
          bne cntdwnc ; no
          lda #1      ; yes join game
-         sta p1z     ; p1ztatus
+         sta zPLAYER_ONE_ON     ; p1ztatus
          lda #234    ; bump p1 up
-         sta p1y
+         sta zPLAYER_ONE_Y
          jsr outp1
-cntdwnc  lda p2z     ; need to chk?
+cntdwnc  lda zPLAYER_TWO_ON     ; need to chk?
          cmp #1
          beq cntdwnd ; nope go away
          jsr fire2   ; yes we do
          inc v+41    ; rainbow if check
-         lda p2f
+         lda zPLAYER_TWO_FIRE
          cmp #1      ; check p2 fire
          bne cntdwnd ; no
          lda #1      ; yes join game
-         sta p2z     ; p2ztatus
+         sta zPLAYER_TWO_ON     ; p2ztatus
          lda #234    ; bump p2 up
-         sta p2y
+         sta zPLAYER_TWO_Y
          jsr outp2
 cntdwnd  jmp cntdwna
 
@@ -646,22 +659,22 @@ cntdwni  jsr ticolrol
          sta v+1     ; set spr1 y
 
 
-cntdsp1  lda p1z
+cntdsp1  lda zPLAYER_ONE_ON
          cmp #1
          beq cntdsp2
-         lda p1y     ; slide p1
+         lda zPLAYER_ONE_Y     ; slide p1
          cmp #250
          beq cntdsp2 ; already off scrn
-         inc p1y
+         inc zPLAYER_ONE_Y
          jsr outp1
 
-cntdsp2  lda p2z
+cntdsp2  lda zPLAYER_TWO_ON
          cmp #1
          beq cntdsz
-         lda p2y     ; slide p2
+         lda zPLAYER_TWO_Y     ; slide p2
          cmp #250    ; y=250
          beq cntdsz  ; already off scrn
-         inc p2y
+         inc zPLAYER_TWO_Y
          jsr outp2
 
 cntdsz   lda msy
@@ -673,8 +686,8 @@ cntdwnj  lda #0      ; reset ms x,y
          sta v+29    ; expand
          sta v+23    ; (for ms)
          sta msx
-         sta p1f
-         sta p2f
+         sta zPLAYER_ONE_FIRE
+         sta zPLAYER_TWO_FIRE
          sta l1s
          sta l2s
          sta msrow
@@ -729,7 +742,7 @@ vbwaita  lda $d012
 
 ;-- input ------------------------------
 
-input    lda p1z     ; get p1 ztatus
+input    lda zPLAYER_ONE_ON     ; get p1 ztatus
          cmp #1
          bne inputd  ; skip if p1 off
 
@@ -743,7 +756,7 @@ input    lda p1z     ; get p1 ztatus
 
 inputa   jsr fire1
 
-inputd   lda p2z     ; get p2 ztatus
+inputd   lda zPLAYER_TWO_ON     ; get p2 ztatus
          cmp #1
          bne inputz  ; skip if p2 off
 
@@ -770,12 +783,12 @@ f1maybe  lda j1z
          cmp #0
          bne f1nope2
          lda #1      ; set p1f═банг!
-         sta p1f
+         sta zPLAYER_ONE_FIRE
          sta j1z
          jsr lazbeep1; fire ноисе!
          rts
 f1nope2  lda #0
-         sta p1f
+         sta zPLAYER_ONE_FIRE
          rts
 
 fire2    lda joy     ; remember: 0=fire
@@ -789,12 +802,12 @@ f2maybe  lda j2z
          cmp #0
          bne f2nope2
          lda #1      ; set p2f═банг!
-         sta p2f
+         sta zPLAYER_TWO_FIRE
          sta j2z     ; lastcycle=fire
          jsr lazbeep2 ; p2 ноисе!
          rts
 f2nope2  lda #0
-         sta p2f
+         sta zPLAYER_TWO_FIRE
          rts
 
 ;-- process ----------------------------
@@ -806,11 +819,11 @@ process
          jsr proms
          jsr bump     ; bump is player
          jsr bounce   ; bounce is wall
-         lda p1z
+         lda zPLAYER_ONE_ON
          cmp #1
          bne processa
          jsr prop1
-processa lda p2z
+processa lda zPLAYER_TWO_ON
          cmp #1
          bne processb
          jsr prop2
@@ -842,15 +855,15 @@ plh1b    lda #202    ; l1s=12 on&up
          dec l1s     ; hit═!!!
          sed         ; add p1score
          clc
-         lda p1score
+         lda zPLAYER_ONE_SCORE
          adc mspts   ; from getpoints
-         sta p1score
-         lda p1score+1
+         sta zPLAYER_ONE_SCORE
+         lda zPLAYER_ONE_SCORE+1
          adc mspts+1 ; from getpoints
-         sta p1score+1
-         lda p1score+2
+         sta zPLAYER_ONE_SCORE+1
+         lda zPLAYER_ONE_SCORE+2
          adc #0      ; carry if needed
-         sta p1score+2
+         sta zPLAYER_ONE_SCORE+2
 
          sec
          lda hits    ; decrease hits
@@ -894,15 +907,15 @@ plh2b    lda #202    ; l2s=12 on&up
          dec l2s     ; hit═!!!
          sed         ; add p2score
          clc
-         lda p2score
+         lda zPLAYER_TWO_SCORE
          adc mspts   ; from getpoints
-         sta p2score
-         lda p2score+1
+         sta zPLAYER_TWO_SCORE
+         lda zPLAYER_TWO_SCORE+1
          adc mspts+1 ; from getpoints
-         sta p2score+1
-         lda p2score+2
+         sta zPLAYER_TWO_SCORE+1
+         lda zPLAYER_TWO_SCORE+2
          adc #0      ; carry if needed
-         sta p2score+2
+         sta zPLAYER_TWO_SCORE+2
 
          sec
          lda hits    ; decrease hits
@@ -950,15 +963,15 @@ plz1a    lda v30     ; get collision
          bne lz2hit  ; no hit, check l2
          sed         ; add p1score
          clc
-         lda p1score
+         lda zPLAYER_ONE_SCORE
          adc mspts   ; from getpoints
-         sta p1score
-         lda p1score+1
+         sta zPLAYER_ONE_SCORE
+         lda zPLAYER_ONE_SCORE+1
          adc mspts+1 ; from getpoints
-         sta p1score+1
-         lda p1score+2
+         sta zPLAYER_ONE_SCORE+1
+         lda zPLAYER_ONE_SCORE+2
          adc #0      ; carry if needed
-         sta p1score+2
+         sta zPLAYER_ONE_SCORE+2
 
          sec
          lda hits    ; decrease hits
@@ -1002,15 +1015,15 @@ lz2hita  lda v30     ; get collision
          jmp lzhitz  ; no hit
 lz2hitb  sed         ; add p2score
          clc
-         lda p2score
+         lda zPLAYER_TWO_SCORE
          adc mspts
-         sta p2score
-         lda p2score+1
+         sta zPLAYER_TWO_SCORE
+         lda zPLAYER_TWO_SCORE+1
          adc mspts+1
-         sta p2score+1
-         lda p2score+2
+         sta zPLAYER_TWO_SCORE+1
+         lda zPLAYER_TWO_SCORE+2
          adc #0      ; carry if needed
-         sta p2score+2
+         sta zPLAYER_TWO_SCORE+2
 
          sec
          lda hits    ; decrease hits
@@ -1197,181 +1210,181 @@ promsb   lda #1      ;
 promszz  rts
 
 bump                 ; p1/p2 bump check
-         lda p1z     ; no p1 dont bump
+         lda zPLAYER_ONE_ON     ; no p1 dont bump
          cmp #1
          bne bumpz
-         lda p2z     ; no p2 dont bump
+         lda zPLAYER_TWO_ON     ; no p2 dont bump
          cmp #1
          bne bumpz
          lda v30     ; get sp collision
          and #6      ; 2+4=6
          cmp #6
          bne bumpz
-         lda p1d
+         lda zPLAYER_ONE_DIR
          cmp #0
          bne bumpa
-         sta p2d     ; p1 on right
+         sta zPLAYER_TWO_DIR     ; p1 on right
          lda #1
-         sta p1d
+         sta zPLAYER_ONE_DIR
          sta p1bf    ; set bump flags
          sta p2bf
          jmp bumpz
-bumpa    sta p2d     ; p2 on left
+bumpa    sta zPLAYER_TWO_DIR     ; p2 on left
          lda #0
-         sta p1d
+         sta zPLAYER_ONE_DIR
          lda #1
          sta p1bf    ; set bump flags
          sta p2bf
 bumpz    rts
 
-bounce   lda p1d     ; p1 bounce
+bounce   lda zPLAYER_ONE_DIR     ; p1 bounce
          cmp #0
          beq p1bltr
-p1brtl   lda p1x+1
+p1brtl   lda zPLAYER_ONE_X+1
          cmp #0
          beq bouncep2
-         lda p1x     ; x=255+65=320
+         lda zPLAYER_ONE_X     ; x=255+65=320
          cmp #65     ;     right wall
          bne bouncep2
          lda #0
-         sta p1d
+         sta zPLAYER_ONE_DIR
          lda #1
          sta p1bf    ; set bounce flg
          jmp bouncep2
-p1bltr   lda p1x+1
+p1bltr   lda zPLAYER_ONE_X+1
          cmp #0
          bne bouncep2
-         lda p1x
+         lda zPLAYER_ONE_X
          cmp #24     ; x=24 left wall
          bne bouncep2
          lda #1
-         sta p1d
+         sta zPLAYER_ONE_DIR
          sta p1bf    ; set bounce flg
-bouncep2 lda p2d     ; p2 bounce
+bouncep2 lda zPLAYER_TWO_DIR     ; p2 bounce
          cmp #0      ; same as p1
          beq p2bltr
-p2brtl   lda p2x+1
+p2brtl   lda zPLAYER_TWO_X+1
          cmp #0
          beq bouncez
-         lda p2x
+         lda zPLAYER_TWO_X
          cmp #65
          bne bouncez
          lda #0
-         sta p2d
+         sta zPLAYER_TWO_DIR
          lda #1
          sta p2bf    ; set bounce flg
          jmp bouncez
-p2bltr   lda p2x+1
+p2bltr   lda zPLAYER_TWO_X+1
          cmp #0
          bne bouncez
-         lda p2x
+         lda zPLAYER_TWO_X
          cmp #24
          bne bouncez
          lda #1
-         sta p2d
+         sta zPLAYER_TWO_DIR
          sta p2bf    ; set bounce flag
 bouncez  rts
 
-prop1    lda p1f
+prop1    lda zPLAYER_ONE_FIRE
          cmp #1      ; check p1 fire
          beq prop1a
          jmp pp1move
 prop1a   lda p1bf    ; check bump flag
          cmp #1      ; if bump
          beq prop1fyr; skip dir change
-         lda p1d     ; change direction
+         lda zPLAYER_ONE_DIR     ; change direction
          cmp #0
          beq prop1d
          lda #0      ; change to left
-         sta p1d
+         sta zPLAYER_ONE_DIR
          jmp prop1fyr
 prop1d   lda #1      ; change to right
-         sta p1d
+         sta zPLAYER_ONE_DIR
          jmp prop1fyr
 prop1fyr             ; fire laser
          lda #12
          sta l1s
-         lda p1x
+         lda zPLAYER_ONE_X
          sta l1x
-         lda p1x+1
+         lda zPLAYER_ONE_X+1
          sta l1x+1
          lda #226
          sta l1y
          jmp pp1move
 pp1move
-         lda p1d
+         lda zPLAYER_ONE_DIR
          cmp #0
          beq pp1lt
-pp1rt    inc p1x     ; move right
+pp1rt    inc zPLAYER_ONE_X     ; move right
          bne pp1bc
-         inc p1x+1
+         inc zPLAYER_ONE_X+1
          jmp pp1bc
-pp1lt    lda p1x+1   ; move left
+pp1lt    lda zPLAYER_ONE_X+1   ; move left
          bne pp1lta
-         dec p1x     ; < 256
+         dec zPLAYER_ONE_X     ; < 256
          jmp pp1bc
-pp1lta   dec p1x     ; > 255
-         lda p1x
+pp1lta   dec zPLAYER_ONE_X     ; > 255
+         lda zPLAYER_ONE_X
          cmp #255
          beq pp1ltb
          jmp pp1bc
-pp1ltb   dec p1x+1  ; it happens earlyr
+pp1ltb   dec zPLAYER_ONE_X+1  ; it happens earlyr
          jmp pp1bc  ; its not here now
 pp1bc    jmp prop1z ; leftover bounce
 prop1z   rts
 
-prop2    lda p2f
+prop2    lda zPLAYER_TWO_FIRE
          cmp #1
          beq prop2a
          jmp pp2move
 prop2a   lda p2bf    ; check bump flag
          cmp #1      ; if set
          beq prop2fyr; skip dir change
-         lda p2d     ; change direction
+         lda zPLAYER_TWO_DIR     ; change direction
          cmp #0
          beq prop2d
          lda #0
-         sta p2d
+         sta zPLAYER_TWO_DIR
          jmp prop2fyr
 prop2d   lda #1
-         sta p2d
+         sta zPLAYER_TWO_DIR
          jmp prop2fyr
 prop2fyr
          lda #12
          sta l2s
-         lda p2x
+         lda zPLAYER_TWO_X
          sta l2x
-         lda p2x+1
+         lda zPLAYER_TWO_X+1
          sta l2x+1
          lda #226
          sta l2y
          jmp pp2move
 pp2move
-         lda p2d
+         lda zPLAYER_TWO_DIR
          cmp #0
          beq pp2lt
-pp2rt    inc p2x
+pp2rt    inc zPLAYER_TWO_X
          bne pp2bc
-         inc p2x+1
+         inc zPLAYER_TWO_X+1
          jmp pp2bc
-pp2lt    lda p2x+1
+pp2lt    lda zPLAYER_TWO_X+1
          bne pp2lta
-         dec p2x
+         dec zPLAYER_TWO_X
          jmp pp2bc
-pp2lta   dec p2x
-         lda p2x
+pp2lta   dec zPLAYER_TWO_X
+         lda zPLAYER_TWO_X
          cmp #255
          beq pp2ltb
          jmp pp2bc
-pp2ltb   dec p2x+1
+pp2ltb   dec zPLAYER_TWO_X+1
          jmp pp2bc
 pp2bc    jmp prop2z
 
 prop2z   rts
 
 proreset lda #0      ;
-         sta p1f     ; reset fire flags
-         sta p2f
+         sta zPLAYER_ONE_FIRE     ; reset fire flags
+         sta zPLAYER_TWO_FIRE
          sta p1bf    ; reset bump flags
          sta p2bf
          rts
@@ -1383,12 +1396,12 @@ output
          jsr showscr ; show score
          jsr shwstats; show stats
          jsr outms   ; show ms
-         lda p1z
+         lda zPLAYER_ONE_ON
          cmp #1
          bne outputa ; skip p1 output
          jsr outp1   ; show p1 l1
          jsr outl1
-outputa  lda p2z
+outputa  lda zPLAYER_TWO_ON
          cmp #1
          bne outputz ; skip p2 output
          jsr outp2   ; show p2 l2
@@ -1410,12 +1423,12 @@ shsca    lda #0      ; turn flag off
          sta cm+15   ; indicators
          sta cm+24
 
-         lda p1score ; show p1score
+         lda zPLAYER_ONE_SCORE ; show p1score
          and #%00001111
          clc
          adc #48
          sta cm+6
-         lda p1score
+         lda zPLAYER_ONE_SCORE
          lsr a
          lsr a
          lsr a
@@ -1424,12 +1437,12 @@ shsca    lda #0      ; turn flag off
          adc #48
          sta cm+5
 
-         lda p1score+1
+         lda zPLAYER_ONE_SCORE+1
          and #%00001111
          clc
          adc #48
          sta cm+4
-         lda p1score+1
+         lda zPLAYER_ONE_SCORE+1
          lsr a
          lsr a
          lsr a
@@ -1438,12 +1451,12 @@ shsca    lda #0      ; turn flag off
          adc #48
          sta cm+3
 
-         lda p1score+2
+         lda zPLAYER_ONE_SCORE+2
          and #%00001111
          clc
          adc #48
          sta cm+2
-         lda p1score+2
+         lda zPLAYER_ONE_SCORE+2
          lsr a
          lsr a
          lsr a
@@ -1452,12 +1465,12 @@ shsca    lda #0      ; turn flag off
          adc #48
          sta cm+1    ; end p1score
 
-         lda p2score ; show p2score
+         lda zPLAYER_TWO_SCORE ; show p2score
          and #%00001111
          clc
          adc #48
          sta cm+38
-         lda p2score
+         lda zPLAYER_TWO_SCORE
          lsr a
          lsr a
          lsr a
@@ -1466,12 +1479,12 @@ shsca    lda #0      ; turn flag off
          adc #48
          sta cm+37
 
-         lda p2score+1
+         lda zPLAYER_TWO_SCORE+1
          and #%00001111
          clc
          adc #48
          sta cm+36
-         lda p2score+1
+         lda zPLAYER_TWO_SCORE+1
          lsr a
          lsr a
          lsr a
@@ -1480,12 +1493,12 @@ shsca    lda #0      ; turn flag off
          adc #48
          sta cm+35
 
-         lda p2score+2
+         lda zPLAYER_TWO_SCORE+2
          and #%00001111
          clc
          adc #48
          sta cm+34
-         lda p2score+2
+         lda zPLAYER_TWO_SCORE+2
          lsr a
          lsr a
          lsr a
@@ -1495,58 +1508,58 @@ shsca    lda #0      ; turn flag off
          sta cm+33   ; end p2score
 
  ; check p1score for hiscore
-         lda p1score+2
-         cmp hiscore+2
+         lda zPLAYER_ONE_SCORE+2
+         cmp zHIGH_SCORE+2
          bcc chkhip2 ; end
          bne uphi1
 
-         lda p1score+1
-         cmp hiscore+1
+         lda zPLAYER_ONE_SCORE+1
+         cmp zHIGH_SCORE+1
          bcc chkhip2
          bne uphi1
 
-         lda p1score
-         cmp hiscore
+         lda zPLAYER_ONE_SCORE
+         cmp zHIGH_SCORE
          bcc chkhip2
 
 uphi1    ; update hs with p1score
-         lda p1score
-         sta hiscore
-         lda p1score+1
-         sta hiscore+1
-         lda p1score+2
-         sta hiscore+2
+         lda zPLAYER_ONE_SCORE
+         sta zHIGH_SCORE
+         lda zPLAYER_ONE_SCORE+1
+         sta zHIGH_SCORE+1
+         lda zPLAYER_ONE_SCORE+2
+         sta zHIGH_SCORE+2
 
 chkhip2  ; check p2s for hiscore
-         lda p2score+2
-         cmp hiscore+2
+         lda zPLAYER_TWO_SCORE+2
+         cmp zHIGH_SCORE+2
          bcc chkhiz  ; end
          bne uphi2
 
-         lda p2score+1
-         cmp hiscore+1
+         lda zPLAYER_TWO_SCORE+1
+         cmp zHIGH_SCORE+1
          bcc chkhiz
          bne uphi2
 
-         lda p2score
-         cmp hiscore
+         lda zPLAYER_TWO_SCORE
+         cmp zHIGH_SCORE
          bcc chkhiz
 
 uphi2    ; update hs with p2score
-         lda p2score
-         sta hiscore
-         lda p2score+1
-         sta hiscore+1
-         lda p2score+2
-         sta hiscore+2
+         lda zPLAYER_TWO_SCORE
+         sta zHIGH_SCORE
+         lda zPLAYER_TWO_SCORE+1
+         sta zHIGH_SCORE+1
+         lda zPLAYER_TWO_SCORE+2
+         sta zHIGH_SCORE+2
 chkhiz   ; done hiscore check
 
-shscc    lda hiscore ; show hiscore
+shscc    lda zHIGH_SCORE ; show hiscore
          and #%00001111
          clc
          adc #48
          sta cm+22
-         lda hiscore
+         lda zHIGH_SCORE
          lsr a
          lsr a
          lsr a
@@ -1555,12 +1568,12 @@ shscc    lda hiscore ; show hiscore
          adc #48
          sta cm+21
 
-         lda hiscore+1
+         lda zHIGH_SCORE+1
          and #%00001111
          clc
          adc #48
          sta cm+20
-         lda hiscore+1
+         lda zHIGH_SCORE+1
          lsr a
          lsr a
          lsr a
@@ -1569,19 +1582,19 @@ shscc    lda hiscore ; show hiscore
          adc #48
          sta cm+19
 
-         lda hiscore+2
+         lda zHIGH_SCORE+2
          and #%00001111
          clc
          adc #48
          sta cm+18
-         lda hiscore+2
+         lda zHIGH_SCORE+2
          lsr a
          lsr a
          lsr a
          lsr a
          clc
          adc #48
-         sta cm+17   ; end hiscore
+         sta cm+17   ; end zHIGH_SCORE
 
 shscz    rts
 
@@ -1614,17 +1627,17 @@ outmsa   lda msx     ; msx > 255
 outp1                ; player 1
          lda p1col   ; p1 colour
          sta v+40
-         lda p1y
+         lda zPLAYER_ONE_Y
          sta v+3
-         lda p1x+1
+         lda zPLAYER_ONE_X+1
          bne outp1a
-         lda p1x
+         lda zPLAYER_ONE_X
          sta v+2
          lda v+16
          and #253    ; sp2 hx off
          sta v+16
          rts
-outp1a   lda p1x
+outp1a   lda zPLAYER_ONE_X
          sta v+2
          lda v+16
          ora #2      ; sp1 hx on
@@ -1634,17 +1647,17 @@ outp1a   lda p1x
 outp2                ; player 2
          lda p2col
          sta v+41
-         lda p2y
+         lda zPLAYER_TWO_Y
          sta v+5
-         lda p2x+1
+         lda zPLAYER_TWO_X+1
          bne outp2a
-         lda p2x
+         lda zPLAYER_TWO_X
          sta v+4
          lda v+16
          and #251    ; sp3 hx off
          sta v+16
          rts
-outp2a   lda p2x
+outp2a   lda zPLAYER_TWO_X
          sta v+4
          lda v+16
          ora #4      ; sp3 hx on
@@ -1868,8 +1881,8 @@ gameod   lda #32     ; clear гаме═ожер
 
 gameoz   lda #0
          sta goflag
-         sta p1z
-         sta p2z
+         sta zPLAYER_ONE_ON
+         sta zPLAYER_TWO_ON
          jmp title
 
 pause    ldy #6
@@ -1886,28 +1899,28 @@ sweepp               ; col chk ms push
          cmp #%00000011
          bne sweepp2
          lda msd     ; push p1
-         sta p1d     ; same dir
+         sta zPLAYER_ONE_DIR     ; same dir
          jsr prop1
          cmp #0      ; if p1d=0 chk p1x
          bne sweepp2 ; else skip
-         lda p1x+1
+         lda zPLAYER_ONE_X+1
          cmp #1
          beq sweepp2 ; skip if x+1=1
-         lda p1x     ; is p1x<12
+         lda zPLAYER_ONE_X     ; is p1x<12
          cmp #12     ; then p1x+1=1
          bcc sweep1a ; and p1x=330
          jmp sweepp2
 sweep1a  lda #1
-         sta p1x+1   ; p1x+1=1
+         sta zPLAYER_ONE_X+1   ; p1x+1=1
          lda #73
-         sta p1x     ; p1x=73(+255=330)
+         sta zPLAYER_ONE_X     ; p1x=73(+255=330)
 
 sweepp2  lda v30
          and #%00000101 ; ms+p2
          cmp #%00000101
          bne sweeppz
          lda msd     ; push p2
-         sta p2d     ; same dir
+         sta zPLAYER_TWO_DIR     ; same dir
          jsr prop2
          cmp #0      ; ifp2d=0 chk p2x
          bne sweeppz ; else skip
@@ -2427,7 +2440,7 @@ prndneor tay        ; no eor
 
 ;---------------------------------------
 
-hiscore  .byte 0,0,0 ; 6-digit bcd
+;hiscore  .byte 0,0,0 ; zHIGH_SCORE  6-digit bcd 
 mspts    .byte 0,0
 goflag   .byte 0
 ssflag   .byte 0
@@ -2447,11 +2460,11 @@ hifreq   .byte 0
 lofreq   .byte 0
 wavefm   .byte 0
 
-p1x      .byte 0,0
-p1y      .byte 0
-p1d      .byte 0
-p1f      .byte 0
-p1score  .byte 0,0,0 ; 6-digit bcd
+;p1x      .byte 0,0 ; zPLAYER_ONE_X
+;p1y      .byte 0   ; zPLAYER_ONE_Y 
+;p1d      .byte 0   ; zPLAYER_ONE_DIR
+;p1f      .byte 0   ; zPLAYER_ONE_FIRE
+; p1score  .byte 0,0,0 ; zPLAYER_ONE_SCORE GFX_SCORE_P1 6-digit bcd 
 p1col    .byte 0
 p1z      .byte 0     ; p1 state
 p1bf     .byte 0     ; bump/bounce flag
@@ -2459,11 +2472,11 @@ l1x      .byte 0,0
 l1y      .byte 0
 l1s      .byte 0
 
-p2x      .byte 0,0
-p2y      .byte 0
-p2d      .byte 0
-p2f      .byte 0
-p2score  .byte 0,0,0
+;p2x      .byte 0,0 ; zPLAYER_TWO_X
+;p2y      .byte 0   ; zPLAYER_TWO_Y 
+;p2d      .byte 0   ; zPLAYER_TWO_DIR
+;p2f      .byte 0   ; zPLAYER_TWO_FIRE
+;p2score  .byte 0,0,0 ; zPLAYER_ONE_SCORE GFX_SCORE_P2 6-digit bcd 
 p2col    .byte 0
 p2z      .byte 0
 p2bf     .byte 0     ; bump/bounce flag
