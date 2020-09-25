@@ -138,14 +138,11 @@ b_gcgot_Continue
 
 
 ; ==========================================================================
-; PROCESS STARS
+; GAME SCREEN FLICKERING STARS
 ; ==========================================================================
-; Run the Stars Animation. 
-;
 ; At any time there are 4 stars on screen.
 ; Each star lasts 8 frames until it is replaced.
 ; When the star fades out a new star is added.
-; There is one line of data for a star.
 ; On the Atari this fade out will be a little more animated.
 ; The star has a little gradient applied where the top and bottom
 ; sparkle pixels fade out faster than the center line pixels.
@@ -273,26 +270,6 @@ TABLE_GFX_STARS_DIVIDE_THREE
 
 
 ; ==========================================================================
-; SERVICE STAR
-; ==========================================================================
-; Given the new star number (0 to 3)
-;  - Decrement counter.
-;  - Fade the star.
-;  - if the current frame is 0, then call Remove_Star for this star.
-;  - If the current frame is 6, look for an unused row, and restart it
-;  
-; X is the star number 0, 1, 2, 3 for the short lookup.
-; --------------------------------------------------------------------------
-
-Gfx_Service_Star
-
-	stx zTEMP_NEW_STAR_ID          ; Save Star number
-
-
-	rts
-	
-
-; ==========================================================================
 ; CHOOSE STAR ROW
 ; ==========================================================================
 ; Choose a row for stars.
@@ -339,6 +316,97 @@ b_gcsr_TryNextEntry
 	rts
 	
 
+
+; ==========================================================================
+; SERVICE STAR
+; ==========================================================================
+; Run the Star color fade Animation.
+;
+; Given the new star number (0 to 3)
+;  - Decrement counter.
+;  - Fade the star.
+;  - if the current frame is 0, then call Remove_Star for this star.
+;  - If the current frame is 6, set flag to restart a star.
+;
+; ==========================================================================
+;
+; At any time there are 4 stars on screen.
+; Each star lasts 8 frames until it is replaced.
+; When the star fades out a new star is added.
+; On the Atari this fade out will be a little more animated.
+; The star has a little gradient applied where the top and bottom
+; sparkle pixels fade out faster than the center line pixels.
+; 
+; Frame:  Top/Bot:   Middle:  (colors for fading)
+;    8      $0E        $0E     1
+;    7      $*C        $0E     1
+;    6      $*A        $0E     1  2 
+;    5      $*8        $*C     1  2  
+;    4      $*6        $*A     1  2  3  
+;    3      $*4        $*8     1  2  3
+;    2      $*2        $*6     1  2  3  4
+;    1      $02        $*4     1  2  3  4
+;    0 reset to 8.
+;   ...     ...        ...
+;
+; X is the star number 0, 1, 2, 3 for the short lookup.
+; --------------------------------------------------------------------------
+
+Gfx_Service_Star
+
+	stx zTEMP_NEW_STAR_ID            ; Save Star number
+
+	lda TABLE_GFX_ACTIVE_STARS,X     ; A == the star's row
+	sta zTEMP_NEW_STAR_ROW           ; Save for later.
+	bmi b_gss_Exit                   ; This entry is not a real row, so there's nothing to do.
+
+	dec TABLE_GFX_STARS_COUNT,X      ; Decrement the frame counter.
+	bne b_gss_CheckClock6            ; (or bpl?) Clock not zero, so ok to continue.
+
+	jmp Gfx_Remove_Star              ; Remove the current star in X.  and that will RTS.
+
+	; Due to the staggered flashing the new star stars when the previous 
+	; star reaches frame 6  (another star will reach 0  in this cycle).
+	; Yes, this is kind of redundant, but whatever.
+
+b_gss_CheckClock6               
+	ldy TABLE_GFX_STARS_COUNT,X      ; Get the clock for this star
+	cpy #6                           ; is it 6?
+	bne b_gss_ProcessColor           ; No.  So, continue with color processing.
+	
+	inc zTEMP_ADD_STAR               ; If this is on frame 6, then it is time for a new star.
+	
+b_gss_ProcessColor
+	ldy TABLE_GFX_STARS_COUNT,X      ; Index to color masks.
+	lda TABLE_GFX_STAR_BASE,X        ; Base color for star.
+	sta zTEMP_BASE_COLOR             ; Save it for re-use for outer color.
+	sta zTEMP_BASE_COLOR2            ; Save it for re-use for inner color.
+	
+	lda TABLE_GFX_STAR_COLOR_MASK1,Y ; Mask to hold or drop the base color
+	and #$F0                         ; Either keeps the color or removes it
+	and zTEMP_BASE_COLOR             ; Combine with saved color.
+	sta zTEMP_BASE_COLOR             ; Save updated color.
+	lda TABLE_GFX_STAR_COLOR_MASK1,Y ; Mask to hold or drop the base color
+	and #$0F                         ; Keep the luminance
+	ora zTEMP_BASE_COLOR             ; Merge with base color.
+	ldy TABLE_GFX_STARS_COUNT,X      ; Get the row.
+	sta TABLE_GFX_STAR_OUT_COLOR,Y   ; Save the new outer color.
+	
+	lda zTEMP_BASE_COLOR2            ; Save it for re-use.
+	lda TABLE_GFX_STAR_COLOR_MASK2,Y ; Mask to hold or drop the base color
+	and #$F0                         ; Either keeps the color or removes it
+	and zTEMP_BASE_COLOR2            ; Combine with saved color.
+	sta zTEMP_BASE_COLOR2            ; Save updated color.
+	lda TABLE_GFX_STAR_COLOR_MASK2,Y ; Mask to hold or drop the base color
+	and #$0F                         ; Keep the luminance
+	ora zTEMP_BASE_COLOR2            ; Merge with base color.
+	ldy TABLE_GFX_STARS_COUNT,X      ; Get the row.
+	sta TABLE_GFX_STAR_IN_COLOR,Y    ; Save the new inner color.
+		
+b_gss_Exit
+	rts
+	
+
 ; ==========================================================================
 ; SETUP NEW STAR
 ; ==========================================================================
@@ -357,33 +425,33 @@ b_gcsr_TryNextEntry
 
 Gfx_Setup_New_Star
 	
-	stx zTEMP_NEW_STAR_ID          ; Save Star number
+	stx zTEMP_NEW_STAR_ID              ; Save Star number
 	
-	ldy TABLE_GFX_ACTIVE_STARS,X   ; Y == the star's row
-	bpl b_gsns_Exit                ; This entry is not row $FF, so we can't remake it. 
+	ldy TABLE_GFX_ACTIVE_STARS,X       ; Y == the star's row
+	bpl b_gsns_Exit                    ; This entry is not row $FF, so we can't remake it. 
 	
-	jsr Gfx_Choose_Star_Row        ; A = random row number.
+	jsr Gfx_Choose_Star_Row            ; A = random row number.
 	
-	sta TABLE_GFX_ACTIVE_STARS,X   ; Save the new row.
-	tay                            ; Y = Row.
+	sta TABLE_GFX_ACTIVE_STARS,X       ; Save the new row.
+	tay                                ; Y = Row.
 	
 	lda #8
-	sta TABLE_GFX_STARS_COUNT,X    ; Reset the clock for the star
+	sta TABLE_GFX_STARS_COUNT,X        ; Reset the clock for the star
 	
-	lda RANDOM                     ; Get a random color for the star
-	and #$F0                       ; Interested in only the color component.
-	sta TABLE_GFX_STAR_BASE,X      ; Save Base color.
+	lda RANDOM                         ; Get a random color for the star
+	and #$F0                           ; Interested in only the color component.
+	sta TABLE_GFX_STAR_BASE,X          ; Save Base color.
 
-	lda #$FF                       ; Still Starting out with white.
-	sta TABLE_GFX_STAR_OUT_COLOR,Y ; Set top/bottom sparkle color
-	sta TABLE_GFX_STAR_IN_COLOR,Y  ; Set center star color
+	lda #$FF                           ; Still Starting out with white.
+	sta TABLE_GFX_STAR_OUT_COLOR,Y     ; Set top/bottom sparkle color
+	sta TABLE_GFX_STAR_IN_COLOR,Y      ; Set center star color
 
-	lda RANDOM                     ; Random value for star HSCROL 
-	and #$0F                       ; Reduce to 0 to 15
-	sta TABLE_GFX_STAR_HSCROL,Y  ; Output all color clocks in the buffer
+	lda RANDOM                         ; Random value for star HSCROL 
+	and #$0F                           ; Reduce to 0 to 15
+	sta TABLE_GFX_STAR_HSCROL,Y        ; Output all color clocks in the buffer
 
-	lda TABLE_LO_GFX_LMS_STARS,Y   ; Address of this row's LMS 
-	sta zDL_LMS_STARS_ADDR         ; Save to page 0 for pointer
+	lda TABLE_LO_GFX_LMS_STARS,Y       ; Address of this row's LMS 
+	sta zDL_LMS_STARS_ADDR             ; Save to page 0 for pointer
 	lda TABLE_HI_GFX_LMS_STARS,Y   
 	sta zDL_LMS_STARS_ADDR+1
 
@@ -417,12 +485,12 @@ b_gsns_Exit
 ; --------------------------------------------------------------------------
 
 Gfx_Remove_Star
-	
-	ldy TABLE_GFX_ACTIVE_STARS,X ; Y == the star's row
-	
+
+	ldy TABLE_GFX_ACTIVE_STARS,X   ; Y == the star's row
+
 	lda #$FF
-	sta TABLE_GFX_ACTIVE_STARS,X ; Turn off this star.
-	
+	sta TABLE_GFX_ACTIVE_STARS,X   ; Turn off this star.
+
 	lda #8
 	sta TABLE_GFX_STARS_COUNT,X    ; Reset the clock for the row
 
@@ -430,7 +498,7 @@ Gfx_Remove_Star
 	sta TABLE_GFX_STAR_BASE,X      ; Base color for star
 	sta TABLE_GFX_STAR_OUT_COLOR,Y ; Star's center color
 	sta TABLE_GFX_STAR_IN_COLOR,Y  ; Star's edge pixels color
-	
+
 	lda #15
 	sta TABLE_GFX_STAR_HSCROL,Y    ; Output all color clocks in the buffer
 
@@ -442,7 +510,9 @@ Gfx_Remove_Star
 	lda #<GFX_STARS_LINE           ; Low byte to the start of the stars line
 	ldy #0
 	sta (zDL_LMS_STARS_ADDR),Y     ; Change the LMS to the start of line
-	
+
+	inc zTEMP_ADD_STAR             ; Flag that this star is gone.  Add new star at next opportunity.
+
 	rts
 	
 

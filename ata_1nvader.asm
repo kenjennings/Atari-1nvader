@@ -131,15 +131,21 @@ zTABLE_PMG_HARDWARE ; Page, high byte, for each displayed item.
 	.byte >PLAYERADR1 ; Player 2 Laser
 
 
-; Game Screen Stars DL LMS Address Pointer ==================================
+; Game Screen Stars Control values ==========================================
 
-zDL_LMS_STARS_ADDR .word 0 ; points to image data
+zDL_LMS_STARS_ADDR .word 0 ; points to the LMS to change
 
 zTEMP_NEW_STAR_ID  .byte 0 ; gives the star 3, 2, 1, 0
 
-zTEMP_NEW_STAR_ROW .byte 0 ; Row number for star
+zTEMP_NEW_STAR_ROW .byte 0 ; Row number for star 0 to 17.
 
-; Game Over Text Values =========================================================
+zTEMP_ADD_STAR     .byte 0 ; Flag, 0 = no star to add.  !0 = Try adding a new star.
+
+zTEMP_BASE_COLOR   .byte 0 ; temporary color for star
+zTEMP_BASE_COLOR2  .byte 0 ; temporary color for star
+
+
+; Game Over Text Values =====================================================
 
 zGAME_OVER_TEXT .word 0
 
