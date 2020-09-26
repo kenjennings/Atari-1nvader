@@ -41,18 +41,26 @@
 zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player.
 
 zPLAYER_ONE_ON     .byte $00 ; (0) not playing. (1) playing.
-zPLAYER_ONE_X      .byte $00 ; Player 1 gun X coords
+zPLAYER_ONE_X      .byte $00 ; Player 1 gun X coord
 zPLAYER_ONE_Y      .byte $00 ; Player 1 Y position (slight animation, but usually fixed.)
 zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction
 zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
 zPLAYER_ONE_SCORE  .byte $00,$00,$00 ; Player 1 score, 6 digit BCD 
+zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color
+
+zLASER_ONE_X       .byte $00 ; Laser 1 X coord
+zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
 
 zPLAYER_TWO_ON     .byte $00 ; (0) not playing. (1) playing.
-zPLAYER_TWO_X      .byte $00 ; Player 2 gun X coords
+zPLAYER_TWO_X      .byte $00 ; Player 2 gun X coord
 zPLAYER_TWO_Y      .byte $00 ; Player 2 Y position (slight animation, but usually fixed.)
 zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction
 zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
 zPLAYER_TWO_SCORE  .byte $00,$00,$00 ; Player 2 score, 6 digit BCD 
+zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color
+
+zLASER_TWO_X       .byte $00 ; Laser 1 X coord
+zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
 
 zHIGH_SCORE        .byte $00,$00,$00 ; 6 digit BCD 
 
@@ -529,7 +537,7 @@ titlinit lda #0
          sta mscol
 
          lda #13
-         sta p1col
+         sta zPLAYER_ONE_COLOR
 
          lda #14
          sta p2col
@@ -567,8 +575,8 @@ gameinit sed
          cld
 
          lda #0
-         sta p1bf
-         sta p2bf
+         sta zPLAYER_ONE_BUMP
+         sta zPLAYER_TWO_BUMP
 
          lda #1
          sta ssflag
@@ -688,8 +696,8 @@ cntdwnj  lda #0      ; reset ms x,y
          sta msx
          sta zPLAYER_ONE_FIRE
          sta zPLAYER_TWO_FIRE
-         sta l1s
-         sta l2s
+         sta zLASER_ONE_ON
+         sta zLASER_TWO_ON
          sta msrow
 
        ; lda #58     ; should be 58
@@ -746,11 +754,11 @@ input    lda zPLAYER_ONE_ON     ; get p1 ztatus
          cmp #1
          bne inputd  ; skip if p1 off
 
-         lda l1s     ; chk lazer status
+         lda zLASER_ONE_ON     ; chk lazer status
          cmp #0      ; lazer is off, ок
          beq inputa
-         lda l1y     ; chk lazer hight
-         sbc #151    ; is l1y < 150 ?
+         lda zLASER_ONE_Y     ; chk lazer hight
+         sbc #151    ; is zLASER_ONE_Y < 150 ?
          bcc inputa  ; yes, ок
          jmp inputd
 
@@ -760,11 +768,11 @@ inputd   lda zPLAYER_TWO_ON     ; get p2 ztatus
          cmp #1
          bne inputz  ; skip if p2 off
 
-         lda l2s
+         lda zLASER_TWO_ON
          cmp #0      ; lazer of, ок
          beq inpute
-         lda l2y
-         sbc #151    ; is l2y < 200 ?
+         lda zLASER_TWO_Y
+         sbc #151    ; is zLASER_TWO_Y < 200 ?
          bcc inpute  ; yes, ок
          jmp inputz
 
@@ -831,20 +839,20 @@ processb jsr proreset
          rts
 
        ; ------------- new lazer hit
-prohit   lda l1s
+prohit   lda zLASER_ONE_ON
          cmp #0      ; is l1 off?
          beq plh1a
          cmp #12     ; is l1 on?
          beq plh1b
          jmp plh1c
 
-plh1a    lda #0      ; l1s=0 off
-         sta l1s
+plh1a    lda #0      ; zLASER_ONE_ON=0 off
+         sta zLASER_ONE_ON
          lda #202    ; laz sprite
          sta $07fb
          jmp plh2
 
-plh1b    lda #202    ; l1s=12 on&up
+plh1b    lda #202    ; zLASER_ONE_ON=12 on&up
          sta $07fb   ; laz sprite
 
          lda v30     ; chk collision
@@ -852,7 +860,7 @@ plh1b    lda #202    ; l1s=12 on&up
          cmp #9      ; s1(ms) + s4(l1)
          bne plh2    ; no hit, check l2
 
-         dec l1s     ; hit═!!!
+         dec zLASER_ONE_ON     ; hit═!!!
          sed         ; add p1score
          clc
          lda zPLAYER_ONE_SCORE
@@ -877,26 +885,26 @@ plh1b    lda #202    ; l1s=12 on&up
          jmp lzhitb  ; goto pop ms up
        ; jmp plh2
 
-plh1c    dec l1s     ; 12<l1s>0 exp
+plh1c    dec zLASER_ONE_ON     ; 12<zLASER_ONE_ON>0 exp
          lda #203    ; exp sprite
          sta $07fb   ;
          jmp plh2
 
        ; ------------- lazer 2 hit check
-plh2     lda l2s
+plh2     lda zLASER_TWO_ON
          cmp #0      ; is l2 off?
          beq plh2a
          cmp #12     ; is l2 on?
          beq plh2b
          jmp plh2c
 
-plh2a    lda #0      ; l2s=0 off
-         sta l2s
+plh2a    lda #0      ; zLASER_TWO_ON=0 off
+         sta zLASER_TWO_ON
          lda #202    ; laz sprite
          sta $07fc
          jmp prohitz
 
-plh2b    lda #202    ; l2s=12 on&up
+plh2b    lda #202    ; zLASER_TWO_ON=12 on&up
          sta $07fc   ; laz sprite
 
          lda v30     ; chk collision
@@ -904,7 +912,7 @@ plh2b    lda #202    ; l2s=12 on&up
          cmp #17     ; s1(ms) + s5(l1)
          bne prohitz ; no hit, done
 
-         dec l2s     ; hit═!!!
+         dec zLASER_TWO_ON     ; hit═!!!
          sed         ; add p2score
          clc
          lda zPLAYER_TWO_SCORE
@@ -929,7 +937,7 @@ plh2b    lda #202    ; l2s=12 on&up
          jmp lzhitb  ; goto pop ms up
        ; jmp prohitz
 
-plh2c    dec l2s     ; 12<l2s>0 exp
+plh2c    dec zLASER_TWO_ON     ; 12<zLASER_TWO_ON>0 exp
          lda #203    ; exp sprite
          sta $07fc   ;
          jmp prohitz
@@ -938,7 +946,7 @@ prohitz  rts
        ; ------------- end new prohit
 
 prolzhit             ; was ms hit?
-         lda l1s
+         lda zLASER_ONE_ON
          cmp #0
          beq lz2hit  ; l1 off, check l2
          cmp #1
@@ -946,12 +954,12 @@ prolzhit             ; was ms hit?
 
          lda #203    ; explosion stuff
          sta $07fb   ; exp sprite on
-         dec l1s
-         lda l1s
+         dec zLASER_ONE_ON
+         lda zLASER_ONE_ON
          cmp #1
          bne plz1b
          lda #0      ; turn off exp
-         sta l1s
+         sta zLASER_ONE_ON
          lda #202    ; lz sprite on
          sta $07fb
 
@@ -983,10 +991,10 @@ plz1a    lda v30     ; get collision
 
          cld
          lda #12     ; was 0
-         sta l1s     ; turn off l1
+         sta zLASER_ONE_ON     ; turn off l1
          jmp lzhitb  ; goto kill ms
 lz2hit
-         lda l2s
+         lda zLASER_TWO_ON
          cmp #0
        ; bne lz2hita
          bne plz1e
@@ -997,12 +1005,12 @@ plz1e    cmp #1
 
          lda #203    ; explosion stuff
          sta $07fc   ; exp sprite on
-         dec l2s
-         lda l2s
+         dec zLASER_TWO_ON
+         lda zLASER_TWO_ON
          cmp #1
          bne plz1c
          lda #0      ; turn off exp
-         sta l2s
+         sta zLASER_TWO_ON
          lda #202    ; lz sprite on
          sta $07fc
 
@@ -1035,7 +1043,7 @@ lz2hitb  sed         ; add p2score
 
          cld
          lda #12     ; was 0
-         sta l2s     ; turn off l2
+         sta zLASER_TWO_ON     ; turn off l2
 
        ; ------------- kill mothership
 lzhitb               ; ms was hit, popup
@@ -1095,34 +1103,34 @@ lzhitd   lda #1      ; was going right
 lzhitz   rts
 
 prolazer
-         lda l1s
+         lda zLASER_ONE_ON
        ; cmp #0
        ; beq lazera
-         cmp #12     ; l1s=12 active laz
-         bne lazera  ; only l1s goes up
-         lda l1y     ; l1 up
+         cmp #12     ; zLASER_ONE_ON=12 active laz
+         bne lazera  ; only zLASER_ONE_ON goes up
+         lda zLASER_ONE_Y     ; l1 up
          sbc #4
-         sta l1y
+         sta zLASER_ONE_Y
          cmp #50
          bne lazera
          lda #0
-         sta l1s     ; l1 off
+         sta zLASER_ONE_ON     ; l1 off
          lda #202    ; use lz sprite
          sta $07fb   ; not exp
 
-lazera   lda l2s
+lazera   lda zLASER_TWO_ON
        ; cmp #0
        ; beq lazerz
-         cmp #12     ;l2s=12 active laz
+         cmp #12     ;zLASER_TWO_ON=12 active laz
          bne lazerz
-         lda l2y     ; l2 up
+         lda zLASER_TWO_Y     ; l2 up
          sbc #4
-         sta l2y
-         lda l2y
+         sta zLASER_TWO_Y
+         lda zLASER_TWO_Y
          cmp #50
          bne lazerz
          lda #0
-         sta l2s     ; l2 off
+         sta zLASER_TWO_ON     ; l2 off
          lda #202    ; use lz sprite
          sta $07fc   ; not exp
 lazerz   rts
@@ -1226,15 +1234,15 @@ bump                 ; p1/p2 bump check
          sta zPLAYER_TWO_DIR     ; p1 on right
          lda #1
          sta zPLAYER_ONE_DIR
-         sta p1bf    ; set bump flags
-         sta p2bf
+         sta zPLAYER_ONE_BUMP    ; set bump flags
+         sta zPLAYER_TWO_BUMP
          jmp bumpz
 bumpa    sta zPLAYER_TWO_DIR     ; p2 on left
          lda #0
          sta zPLAYER_ONE_DIR
          lda #1
-         sta p1bf    ; set bump flags
-         sta p2bf
+         sta zPLAYER_ONE_BUMP    ; set bump flags
+         sta zPLAYER_TWO_BUMP
 bumpz    rts
 
 bounce   lda zPLAYER_ONE_DIR     ; p1 bounce
@@ -1249,7 +1257,7 @@ p1brtl   lda zPLAYER_ONE_X+1
          lda #0
          sta zPLAYER_ONE_DIR
          lda #1
-         sta p1bf    ; set bounce flg
+         sta zPLAYER_ONE_BUMP    ; set bounce flg
          jmp bouncep2
 p1bltr   lda zPLAYER_ONE_X+1
          cmp #0
@@ -1259,7 +1267,7 @@ p1bltr   lda zPLAYER_ONE_X+1
          bne bouncep2
          lda #1
          sta zPLAYER_ONE_DIR
-         sta p1bf    ; set bounce flg
+         sta zPLAYER_ONE_BUMP    ; set bounce flg
 bouncep2 lda zPLAYER_TWO_DIR     ; p2 bounce
          cmp #0      ; same as p1
          beq p2bltr
@@ -1272,7 +1280,7 @@ p2brtl   lda zPLAYER_TWO_X+1
          lda #0
          sta zPLAYER_TWO_DIR
          lda #1
-         sta p2bf    ; set bounce flg
+         sta zPLAYER_TWO_BUMP    ; set bounce flg
          jmp bouncez
 p2bltr   lda zPLAYER_TWO_X+1
          cmp #0
@@ -1282,14 +1290,14 @@ p2bltr   lda zPLAYER_TWO_X+1
          bne bouncez
          lda #1
          sta zPLAYER_TWO_DIR
-         sta p2bf    ; set bounce flag
+         sta zPLAYER_TWO_BUMP    ; set bounce flag
 bouncez  rts
 
 prop1    lda zPLAYER_ONE_FIRE
          cmp #1      ; check p1 fire
          beq prop1a
          jmp pp1move
-prop1a   lda p1bf    ; check bump flag
+prop1a   lda zPLAYER_ONE_BUMP    ; check bump flag
          cmp #1      ; if bump
          beq prop1fyr; skip dir change
          lda zPLAYER_ONE_DIR     ; change direction
@@ -1303,13 +1311,13 @@ prop1d   lda #1      ; change to right
          jmp prop1fyr
 prop1fyr             ; fire laser
          lda #12
-         sta l1s
+         sta zLASER_ONE_ON
          lda zPLAYER_ONE_X
-         sta l1x
+         sta zLASER_ONE_X
          lda zPLAYER_ONE_X+1
-         sta l1x+1
+         sta zLASER_ONE_X+1
          lda #226
-         sta l1y
+         sta zLASER_ONE_Y
          jmp pp1move
 pp1move
          lda zPLAYER_ONE_DIR
@@ -1337,7 +1345,7 @@ prop2    lda zPLAYER_TWO_FIRE
          cmp #1
          beq prop2a
          jmp pp2move
-prop2a   lda p2bf    ; check bump flag
+prop2a   lda zPLAYER_TWO_BUMP    ; check bump flag
          cmp #1      ; if set
          beq prop2fyr; skip dir change
          lda zPLAYER_TWO_DIR     ; change direction
@@ -1351,13 +1359,13 @@ prop2d   lda #1
          jmp prop2fyr
 prop2fyr
          lda #12
-         sta l2s
+         sta zLASER_TWO_ON
          lda zPLAYER_TWO_X
-         sta l2x
+         sta zLASER_TWO_X
          lda zPLAYER_TWO_X+1
-         sta l2x+1
+         sta zLASER_TWO_X+1
          lda #226
-         sta l2y
+         sta zLASER_TWO_Y
          jmp pp2move
 pp2move
          lda zPLAYER_TWO_DIR
@@ -1385,8 +1393,8 @@ prop2z   rts
 proreset lda #0      ;
          sta zPLAYER_ONE_FIRE     ; reset fire flags
          sta zPLAYER_TWO_FIRE
-         sta p1bf    ; reset bump flags
-         sta p2bf
+         sta zPLAYER_ONE_BUMP    ; reset bump flags
+         sta zPLAYER_TWO_BUMP
          rts
 
 ;-- output -----------------------------
@@ -1625,7 +1633,7 @@ outmsa   lda msx     ; msx > 255
          rts
 
 outp1                ; player 1
-         lda p1col   ; p1 colour
+         lda zPLAYER_ONE_COLOR   ; p1 colour
          sta v+40
          lda zPLAYER_ONE_Y
          sta v+3
@@ -1665,25 +1673,25 @@ outp2a   lda zPLAYER_TWO_X
          rts
 
 outl1                ; laser 1
-         lda l1s
+         lda zLASER_ONE_ON
          cmp #0
          beq outl1b  ; inactive laser
          lda v+21
          ora #%00001000 ; s4 on
          sta v+21
-         lda p1col
+         lda zPLAYER_ONE_COLOR
          sta v+42
-         lda l1y
+         lda zLASER_ONE_Y
          sta v+7
-         lda l1x+1
+         lda zLASER_ONE_X+1
          bne outl1a
-         lda l1x
+         lda zLASER_ONE_X
          sta v+6
          lda v+16
          and #247    ; sp4 hx off
          sta v+16
          rts
-outl1a   lda l1x
+outl1a   lda zLASER_ONE_X
          sta v+6
          lda v+16
          ora #8      ; sp4 hx on
@@ -1696,7 +1704,7 @@ outl1b               ; s4 off
          rts
 
 outl2                ; player 2
-         lda l2s
+         lda zLASER_TWO_ON
          cmp #0
          beq outl2b  ; inactive laser
          lda v+21
@@ -1704,17 +1712,17 @@ outl2                ; player 2
          sta v+21
          lda p2col
          sta v+43
-         lda l2y
+         lda zLASER_TWO_Y
          sta v+9
-         lda l2x+1
+         lda zLASER_TWO_X+1
          bne outl2a
-         lda l2x
+         lda zLASER_TWO_X
          sta v+8
          lda v+16
          and #239    ; sp5 hx off
          sta v+16
          rts
-outl2a   lda l2x
+outl2a   lda zLASER_TWO_X
          sta v+8
          lda v+16
          ora #16     ; sp5 hx on
@@ -2460,29 +2468,31 @@ hifreq   .byte 0
 lofreq   .byte 0
 wavefm   .byte 0
 
-;p1x      .byte 0,0 ; zPLAYER_ONE_X
-;p1y      .byte 0   ; zPLAYER_ONE_Y 
-;p1d      .byte 0   ; zPLAYER_ONE_DIR
-;p1f      .byte 0   ; zPLAYER_ONE_FIRE
+; p1x      .byte 0,0 ; zPLAYER_ONE_X
+; p1y      .byte 0   ; zPLAYER_ONE_Y 
+; p1d      .byte 0   ; zPLAYER_ONE_DIR
+; p1f      .byte 0   ; zPLAYER_ONE_FIRE
 ; p1score  .byte 0,0,0 ; zPLAYER_ONE_SCORE GFX_SCORE_P1 6-digit bcd 
-p1col    .byte 0
-p1z      .byte 0     ; p1 state
-p1bf     .byte 0     ; bump/bounce flag
-l1x      .byte 0,0
-l1y      .byte 0
-l1s      .byte 0
+; p1col    .byte 0   ; zPLAYER_ONE_COLOR
+; p1z      .byte 0   ; zPLAYER_ON_ON p1 state
+; p1bf     .byte 0   ; zPLAYER_ONE_BUMP bump/bounce flag
 
-;p2x      .byte 0,0 ; zPLAYER_TWO_X
-;p2y      .byte 0   ; zPLAYER_TWO_Y 
-;p2d      .byte 0   ; zPLAYER_TWO_DIR
-;p2f      .byte 0   ; zPLAYER_TWO_FIRE
-;p2score  .byte 0,0,0 ; zPLAYER_ONE_SCORE GFX_SCORE_P2 6-digit bcd 
-p2col    .byte 0
-p2z      .byte 0
-p2bf     .byte 0     ; bump/bounce flag
-l2x      .byte 0,0
-l2y      .byte 0
-l2s      .byte 0
+; l1x      .byte 0,0 ; zLASER_ONE_X
+; l1y      .byte 0   ; zLASER_ONE_Y
+; l1s      .byte 0   ; zLASER_ONE_ON
+
+; p2x      .byte 0,0 ; zPLAYER_TWO_X
+; p2y      .byte 0   ; zPLAYER_TWO_Y 
+; p2d      .byte 0   ; zPLAYER_TWO_DIR
+; p2f      .byte 0   ; zPLAYER_TWO_FIRE
+; p2score  .byte 0,0,0 ; zPLAYER_TWO_SCORE GFX_SCORE_P2 6-digit bcd 
+; p2col    .byte 0   ; zPLAYER_TWO_COLOR
+; p2z      .byte 0   ; zPLAYER_TWO_ON
+; p2bf     .byte 0   ; zPLAYER_TWO_BUMP bump/bounce flag
+
+; l2x      .byte 0,0 ; zLASER_TWO_X
+; l2y      .byte 0   ; zLASER_TWO_Y
+; l2s      .byte 0   ; zLASER_TWO_ON
 
 msx      .byte 0,0
 msy      .byte 0
