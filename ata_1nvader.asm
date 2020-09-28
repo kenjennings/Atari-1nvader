@@ -62,6 +62,10 @@ zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color
 zLASER_TWO_X       .byte $00 ; Laser 1 X coord
 zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
 
+zMOTHERSHIP_X      .byte $00 ; Game mothership X coord
+zMOTHERSHIP_Y      .byte $00 ; Game mothership Y coord
+zMOTHERSHIP_DIR    .byte $00 ; Mothership direction
+
 zHIGH_SCORE        .byte $00,$00,$00 ; 6 digit BCD 
 
 ; Title Logo Values =========================================================
@@ -310,9 +314,9 @@ title    jsr titlinit ; new game setup
          sta zPLAYER_ONE_Y    ; touching bottom
          sta zPLAYER_TWO_Y
          lda #160   ; set ms x+y
-         sta msx
+         sta zMOTHERSHIP_X
          lda #146   ; was 58
-         sta msy
+         sta zMOTHERSHIP_Y
          lda #11
          sta msrow  ; row 11 = 146
 
@@ -328,11 +332,11 @@ title    jsr titlinit ; new game setup
          jsr outp1
          jsr outp2
        ; jsr outms  ; don't work no more
-         lda msx    ; do it manually
+         lda zMOTHERSHIP_X    ; do it manually
          sta v
-         lda msy
+         lda zMOTHERSHIP_Y
          sta v+1
-         lda mscol
+         lda zMOTHERSHIP_COLOR
          sta v+39
 
        ; lda #1
@@ -521,32 +525,32 @@ titlinit lda #0
          sta zPLAYER_TWO_FIRE
          sta zPLAYER_ONE_ON
          sta zPLAYER_TWO_ON
-         sta msx+1
+         sta zMOTHERSHIP_X+1
          sta zPLAYER_ONE_X+1
          sta zPLAYER_TWO_X+1
          sta msrow
 
          lda #1
          sta zPLAYER_TWO_DIR
-         sta msd
+         sta zMOTHERSHIP_DIR
          sta j1z
          sta j2z
          sta ssflag
 
          lda #2
-         sta mscol
+         sta zMOTHERSHIP_COLOR
 
          lda #13
          sta zPLAYER_ONE_COLOR
 
          lda #14
-         sta p2col
+         sta zPLAYER_TWO_COLOR
 
          lda #148
          sta zPLAYER_ONE_X
 
          lda #172
-         sta msx
+         sta zMOTHERSHIP_X
 
          lda #196
          sta zPLAYER_TWO_X
@@ -583,7 +587,7 @@ gameinit sed
          jsr showscr
                      ; should be 2
          lda #2      ; initial ms speed
-         sta msmovs
+         sta zMOTHERSHIP_MOVE_SPEED
          lda #10     ; should be 10
          sta mssut   ; speedup threshld
          sta mssuc   ; speedup count
@@ -657,13 +661,13 @@ cntdwne  lda #$47    ; print "го"
                      ; slide stuff away
 cntdwni  jsr ticolrol
          jsr vbwait
-         dec msy     ; silde ms up
-         dec msy
+         dec zMOTHERSHIP_Y     ; silde ms up
+         dec zMOTHERSHIP_Y
        ; jsr outms   ; won't work with
                      ; raw msy. must use
                      ; msrow
                      ; do it manually
-         lda msy     ; get msy
+         lda zMOTHERSHIP_Y     ; get msy
          sta v+1     ; set spr1 y
 
 
@@ -685,7 +689,7 @@ cntdsp2  lda zPLAYER_TWO_ON
          inc zPLAYER_TWO_Y
          jsr outp2
 
-cntdsz   lda msy
+cntdsz   lda zMOTHERSHIP_Y
          cmp #32     ; should be off top
          bne cntdwni
 
@@ -693,7 +697,7 @@ cntdsz   lda msy
 cntdwnj  lda #0      ; reset ms x,y
          sta v+29    ; expand
          sta v+23    ; (for ms)
-         sta msx
+         sta zMOTHERSHIP_X
          sta zPLAYER_ONE_FIRE
          sta zPLAYER_TWO_FIRE
          sta zLASER_ONE_ON
@@ -701,13 +705,13 @@ cntdwnj  lda #0      ; reset ms x,y
          sta msrow
 
        ; lda #58     ; should be 58
-       ; sta msy     ; 202 for testing
+       ; sta zMOTHERSHIP_Y     ; 202 for testing
          ldx msrow   ; get msy from
          lda r2ytab,x  ; row 2 y table
-         sta msy
+         sta zMOTHERSHIP_Y
 
          lda #2
-         sta mscol   ; ms is red
+         sta zMOTHERSHIP_COLOR   ; ms is red
          jsr getpoints
          lda #1
          sta ssflag
@@ -1052,12 +1056,12 @@ lzhitb               ; ms was hit, popup
          lda mssuc
          cmp #0      ; time to speedup?
          bne lzhite  ; no
-         inc msmovs  ; yes
-         lda msmovs
+         inc zMOTHERSHIP_MOVE_SPEED  ; yes
+         lda zMOTHERSHIP_MOVE_SPEED
          cmp #10     ; is msmovs = 10
          bne lzhitr  ; no
          lda #2      ; yes, relief!
-         sta msmovs  ; set msmovs = 2
+         sta zMOTHERSHIP_MOVE_SPEED  ; set msmovs = 2
          lda #128    ; 128 = 80bcd
          sta hits    ; reset hit cout
 
@@ -1065,9 +1069,9 @@ lzhitr   lda mssut
          sta mssuc   ; reset counter
 lzhite   lda #1
          sta ssflag  ; set ssflag
-       ; lda msy     ; pop ms up 16px
+       ; lda zMOTHERSHIP_Y     ; pop ms up 16px
        ; sbc #16
-       ; sta msy
+       ; sta zMOTHERSHIP_Y
          sed         ; set dec flag
          clc
          lda msrow   ; why sbc #1 ?????
@@ -1080,26 +1084,26 @@ lzhite   lda #1
          lda #0      ; yes, make it 0
          sta msrow
 lzhitf ; lda #58     ; is msy >= 58?
-       ; cmp msy
+       ; cmp zMOTHERSHIP_Y
        ; bcc lzhitc  ; yes, go away
        ; lda #58     ; no, make it 58
-       ; sta msy
+       ; sta zMOTHERSHIP_Y
        ; lda #0      ; msrow to 0 too
        ; sta msrow
 lzhitc   jsr getpoints ; set new x
-         lda msd     ; check msd
+         lda zMOTHERSHIP_DIR     ; check msd
          bne lzhitd
-         sta msx     ; was going left
-         sta msx+1   ; msx x=0
+         sta zMOTHERSHIP_X     ; was going left
+         sta zMOTHERSHIP_X+1   ; msx x=0
          lda #1      ; go right
-         sta msd
+         sta zMOTHERSHIP_DIR
          jmp lzhitz
 lzhitd   lda #1      ; was going right
-         sta msx+1
+         sta zMOTHERSHIP_X+1
          lda #89     ; msx x=344
-         sta msx
+         sta zMOTHERSHIP_X
          lda #0      ; go left
-         sta msd
+         sta zMOTHERSHIP_DIR
 lzhitz   rts
 
 prolazer
@@ -1135,7 +1139,7 @@ lazera   lda zLASER_TWO_ON
          sta $07fc   ; not exp
 lazerz   rts
 
-proms    lda msmovs ; loop this ammount
+proms    lda zMOTHERSHIP_MOVE_SPEED ; loop this ammount
          sta msm    ; msm is counter
 procmsm  lda msm
          cmp #0
@@ -1145,39 +1149,39 @@ procmsm  lda msm
          jmp procmsm ; loop again
 procmsz  rts
 
-promsdo  lda msd     ; this is the move
+promsdo  lda zMOTHERSHIP_DIR     ; this is the move
          cmp #0      ; routine for real
          beq pmslt
-pmsrt    inc msx     ; move right
+pmsrt    inc zMOTHERSHIP_X     ; move right
          bne pmsbc
-         inc msx+1
+         inc zMOTHERSHIP_X+1
          jmp pmsbc
-pmslt    lda msx+1   ; move left
+pmslt    lda zMOTHERSHIP_X+1   ; move left
          bne pmslta
-         dec msx     ; < 256
+         dec zMOTHERSHIP_X     ; < 256
          jmp pmsbc
-pmslta   dec msx     ; > 255
-         lda msx
+pmslta   dec zMOTHERSHIP_X     ; > 255
+         lda zMOTHERSHIP_X
          cmp #255
          beq pmsltb
          jmp pmsbc
-pmsltb   dec msx+1   ; dec msx+1
+pmsltb   dec zMOTHERSHIP_X+1   ; dec msx+1
          jmp pmsbc
-pmsbc    lda msd     ; ms bounce
+pmsbc    lda zMOTHERSHIP_DIR     ; ms bounce
          cmp #0
          beq msbltr
-msbrtl   lda msx+1   ; bounce off right
+msbrtl   lda zMOTHERSHIP_X+1   ; bounce off right
          cmp #0
          beq promszz ; skip
-         lda msx
+         lda zMOTHERSHIP_X
          cmp #89     ; 89+255=344
          bne promszz ; skip
          lda #0
-         sta msd     ; set msd=0(left)
-       ; lda msy     ; drop down
+         sta zMOTHERSHIP_DIR     ; set msd=0(left)
+       ; lda zMOTHERSHIP_Y     ; drop down
        ; clc
        ; adc #8
-       ; sta msy
+       ; sta zMOTHERSHIP_Y
          sed         ; drop down msrow
          clc         ; set dec+clr carry
          lda msrow
@@ -1186,18 +1190,18 @@ msbrtl   lda msx+1   ; bounce off right
          cld         ; clr dec flag
          jsr getpoints ; update points
          jmp promsz
-msbltr   lda msx+1   ; bounce off left
+msbltr   lda zMOTHERSHIP_X+1   ; bounce off left
          cmp #0
          bne promszz ; msx+1 set, skip
-         lda msx     ; check msx
+         lda zMOTHERSHIP_X     ; check msx
          cmp #0
          bne promszz ; msx<>0, skip
          lda #1
-         sta msd     ; set msd=1(right)
-       ; lda msy     ; drop down
+         sta zMOTHERSHIP_DIR     ; set msd=1(right)
+       ; lda zMOTHERSHIP_Y     ; drop down
        ; clc
        ; adc #8
-       ; sta msy
+       ; sta zMOTHERSHIP_Y
          sed         ; drop msrow down
          clc         ; set dec+clr carry
          lda msrow
@@ -1206,7 +1210,7 @@ msbltr   lda msx+1   ; bounce off left
          cld         ; clr dec flag
          jsr getpoints ; update points
          jmp promsz
-promsz ; lda msy     ; check bottom
+promsz ; lda zMOTHERSHIP_Y     ; check bottom
        ; cmp #234
          lda msrow
          cmp #34
@@ -1423,7 +1427,7 @@ showscr  lda ssflag
 shsca    lda #0      ; turn flag off
          sta ssflag
 
-       ; lda msmovs  ; show msmovs
+       ; lda zMOTHERSHIP_MOVE_SPEED  ; show msmovs
        ; adc #48
        ; sta cm+13
 
@@ -1606,26 +1610,26 @@ shscc    lda zHIGH_SCORE ; show hiscore
 
 shscz    rts
 
-outms    lda mscol   ; get colour
+outms    lda zMOTHERSHIP_COLOR   ; get colour
          sta v+39
 
-       ; lda msy     ; get msy
+       ; lda zMOTHERSHIP_Y     ; get msy
        ; sta v+1     ; set spr1 y
 
          ldy msrow   ; get msrow
          lda r2ytab,y; get y from table
-       ; sta msy     ; store in msy
+       ; sta zMOTHERSHIP_Y     ; store in msy
          sta v+1     ; set spr1 y
 
-         lda msx+1   ; get msx hi-byte
+         lda zMOTHERSHIP_X+1   ; get msx hi-byte
          bne outmsa  ; hi-byte != 0
-         lda msx     ; msx <= 255
+         lda zMOTHERSHIP_X     ; msx <= 255
          sta v
          lda v+16    ; get hx flags
          and #254    ; sp1 hx off
          sta v+16
          rts
-outmsa   lda msx     ; msx > 255
+outmsa   lda zMOTHERSHIP_X     ; msx > 255
          sta v
          lda v+16    ; get hx flags
          ora #1      ; sp1 hx on
@@ -1653,7 +1657,7 @@ outp1a   lda zPLAYER_ONE_X
          rts
 
 outp2                ; player 2
-         lda p2col
+         lda zPLAYER_TWO_COLOR
          sta v+41
          lda zPLAYER_TWO_Y
          sta v+5
@@ -1710,7 +1714,7 @@ outl2                ; player 2
          lda v+21
          ora #%00010000 ; s5 on
          sta v+21
-         lda p2col
+         lda zPLAYER_TWO_COLOR
          sta v+43
          lda zLASER_TWO_Y
          sta v+9
@@ -1793,7 +1797,7 @@ shwmsrow lda msrow       ; stored as bcd
 
        ; lda #48
        ; sta br+23
-       ; lda msmovs
+       ; lda zMOTHERSHIP_MOVE_SPEED
        ; adc #48
        ; sta br+24
 
@@ -1825,7 +1829,7 @@ gameoa   jsr vbwait  ; sweep effect
          jsr outl1   ; moving l1 l2
          jsr outl2
 
-         lda msmovs  ; loop this ammount
+         lda zMOTHERSHIP_MOVE_SPEED  ; loop this ammount
          sta msm     ; msm is counter
 gameob
          lda goflag
@@ -1906,7 +1910,7 @@ sweepp               ; col chk ms push
          and #%00000011 ; ms+p1
          cmp #%00000011
          bne sweepp2
-         lda msd     ; push p1
+         lda zMOTHERSHIP_DIR     ; push p1
          sta zPLAYER_ONE_DIR     ; same dir
          jsr prop1
          cmp #0      ; if p1d=0 chk p1x
@@ -1927,7 +1931,7 @@ sweepp2  lda v30
          and #%00000101 ; ms+p2
          cmp #%00000101
          bne sweeppz
-         lda msd     ; push p2
+         lda zMOTHERSHIP_DIR     ; push p2
          sta zPLAYER_TWO_DIR     ; same dir
          jsr prop2
          cmp #0      ; ifp2d=0 chk p2x
@@ -2494,11 +2498,11 @@ wavefm   .byte 0
 ; l2y      .byte 0   ; zLASER_TWO_Y
 ; l2s      .byte 0   ; zLASER_TWO_ON
 
-msx      .byte 0,0
-msy      .byte 0
-msd      .byte 0
-mscol    .byte 0
-msmovs   .byte 0   ; how many moves
+; msx      .byte 0,0 ; zMOTHERSHIP_X 
+; msy      .byte 0   ; zMOTHERSHIP_Y
+; msd      .byte 0   ; zMOTHERSHIP_DIR
+; mscol    .byte 0   ; zMOTHERSHIP_COLOR
+; msmovs   .byte 0   ; zMOTHERSHIP_MOVE_SPEED  how many moves
 msm      .byte 0   ; move counter
 mssut    .byte 0   ; ms supeedup thresh
 mssuc    .byte 0   ; ms sp count
