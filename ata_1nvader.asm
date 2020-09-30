@@ -1939,51 +1939,52 @@ sweepp2  lda v30
 
 sweeppz  rts
 
-drawrows ldx #48     ; draw row numbers
-         stx cm+40
-         inx
-         stx cm+80
-         inx
-         stx cm+120
-         inx
-         stx cm+160
-         inx
-         stx cm+200
-         inx
-         stx cm2
-         inx
-         stx cm2+40
-         inx
-         stx cm2+80
-         inx
-         stx cm2+120
-         inx
-         stx cm2+160
-         ldx #48
-         stx cm2+201
-         inx
-         stx cm3
-         inx
-         stx cm3+40
-         inx
-         stx cm3+80
-         inx
-         stx cm3+120
-         inx
-         stx cm3+160
-         inx
-         stx cm3+200
-         inx
-         stx cm4
-         inx
-         stx cm4+40
-         inx
-         stx cm4+80
-         ldx #48
-         stx cm4+121
-         inx
-         stx cm4+160
-         rts
+; Unused
+; drawrows ldx #48     ; draw row numbers
+;	stx cm+40
+;	inx
+;	stx cm+80
+;	inx
+;	stx cm+120
+;	inx
+;	stx cm+160
+;	inx
+;	stx cm+200
+;	inx
+;	stx cm2
+;	inx
+;	stx cm2+40
+;	inx
+;	stx cm2+80
+;	inx
+;	stx cm2+120
+;	inx
+;	stx cm2+160
+;	ldx #48
+;	stx cm2+201
+;	inx
+;	stx cm3
+;	inx
+;	stx cm3+40
+;	inx
+;	stx cm3+80
+;	inx
+;	stx cm3+120
+;	inx
+;	stx cm3+160
+;	inx
+;	stx cm3+200
+;	inx
+;	stx cm4
+;	inx
+;	stx cm4+40
+;	inx
+;	stx cm4+80
+;	ldx #48
+;	stx cm4+121
+;	inx
+;	stx cm4+160
+;	rts
 
 getpoints           ; calculate mspts
        ; this is so embarassing
