@@ -41,8 +41,14 @@
 zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player. 
 zGAME_OVER_FLAG    .byte $00 ; Set 0/1 for game over 
 zSHOW_SCORE_FLAG   .byte $00 ; Flag to update score on screen.
-zVIC_COLLISION     .byte $00 ; VIC II Sprite Collision Flag. (lda VIC_BASE+30)  (Atari has several registers).
-  
+zVIC_COLLISION     .byte $00 ; VIC II Sprite Collision Flag. (lda VIC_BASE+30)  (Atari has several registers)
+zCHAR_COLOR        .byte $00 ; Character Color. (probably no use for Atari)
+zSCROLL_COUNTER    .byte $00 ; Documentation scroll counter. (probably no use for Atari)
+zCOUNTDOWN_SECS    .byte $00 ; Countdown seconds for game transition (51 to 48 as the 3, 2, 1)
+zJIFFY_COUNTER     .byte $00 ; Jiffy clock for countdown seconds for title transition.
+zSCROLL_JIFFY      .byte $00 ; Jiffy clock for scrolling directions.
+zSHIP_HITS         .byte $00 ; 
+
 zPLAYER_ONE_ON     .byte $00 ; (0) not playing. (1) playing.
 zPLAYER_ONE_X      .byte $00 ; Player 1 gun X coord
 zPLAYER_ONE_Y      .byte $00 ; Player 1 Y position (slight animation, but usually fixed.)
@@ -222,19 +228,19 @@ OutputPointer  .word $0000 ; Pointer to memory to generate RLE codes.
 
 ;         *= $4000
 
-;v        = 53248
-;joy      = 56320
-cm       = $0400    ; screen memory
-ticm     = $04f0
-ticc     = $d8f0
-ticc2    = $d811
-scrloc   = $0658    ; scroll text loc
-cm2      = $04f0    ; was $0662/$0702
-cm3      = $05e0
-cm4      = $06d0
-br       = $07c0    ; bottom row of txt
-mountsm  = $06f8    ; mount screen mem
-mountcm  = $daf8    ; mount colour mem
+gVICII        = 53248 ; v 
+gJOY          = 56320 ; joy
+gCHAR_MEM     = $0400 ; cm  ; screen memory
+gCHAR_MEM2    = $04f0 ; cm2 ; was $0662/$0702
+gCHAR_MEM2    = $05e0 ; cm3     
+gCHAR_MEM2    = $06d0 ; cm4      
+gTI_CHAR_MEM  = $04f0 ; ticm ; Note the same as cm2
+gTI_COLOR_MEM = $d8f0 ; ticc
+; unused ticc2 = $d811
+gSCROLL_MEM      = $0658 ; scrloc ; scroll text loc
+gBOTTOM_ROW      = $07c0 ; br bottom row of txt
+gMOUNT_CHAR_MEM  = $06f8 ; mountsm ; mount screen mem
+gMOUNT_COLOR_MEM = $daf8 ; mountcm ; mount colour mem
 
 cmem0    = $2000
 cmem1    = $2100
@@ -254,8 +260,8 @@ cset5    = $d500
 cset6    = $d600
 cset7    = $d700
 
-sf1      = $0428
-sf2      = $0530    ; +8 to fill botrow
+gSTAR_CHAR_MEM1 = $0428 ; sf1     
+gSTAR_CHAR_MEM2 = $0530 ; sf2 ; +8 to fill botrow
 
 sprmem1  = $3200    ; sprite memory
 sprmem2  = $3240
@@ -339,23 +345,23 @@ title    jsr titlinit ; new game setup
          sta zMOTHERHIP_ROW  ; row 11 = 146
 
          lda #1     ; make ms биг
-         sta v+29   ; expand x
-         sta v+23   ; expand y
+         sta VICII+29   ; expand x
+         sta VICII+23   ; expand y
          sta zSHOW_SCORE_FLAG
          jsr showscr; show score
 
                     ; should be 7
          lda #7     ; ms +p1 +p2 +xx +xx
-         sta v+21   ; turn on sprites
+         sta VICII+21   ; turn on sprites
          jsr outp1
          jsr outp2
        ; jsr outms  ; don't work no more
          lda zMOTHERSHIP_X    ; do it manually
-         sta v
+         sta VICII
          lda zMOTHERSHIP_Y
-         sta v+1
+         sta VICII+1
          lda zMOTHERSHIP_COLOR
-         sta v+39
+         sta VICII+39
 
        ; lda #1
        ; sta charcol
@@ -368,27 +374,27 @@ title    jsr titlinit ; new game setup
        ; jsr soundend
 
          lda #0
-         sta scrcnt
+         sta zSCROLL_COUNTER
 
 titlea   jsr vbwait
 
-         inc scrjifs
-         lda scrjifs
+         inc zSCROLL_JIFFY
+         lda zSCROLL_JIFFY
          cmp #4       ; 3 too fast?
          bne scr99
          lda #0
-         sta scrjifs
+         sta zSCROLL_JIFFY
 
-         ldx scrcnt
+         ldx zSCROLL_COUNTER
          ldy #0       ; print 40 chars
 scr02    lda GFX_SCROLL_DOCS,x ; startin at
-         sta scrloc,y ; scrcnt
+         sta gSCROLL_MEM,y ; zSCROLL_COUNTER scrcnt
          inx
          iny
          cpy #40      ; 40 chars
          bne scr02
 
-         inc scrcnt
+         inc zSCROLL_COUNTER
 scr99
        ; jsr twinkle
          jsr ticolrol ; fancy title fx
@@ -415,7 +421,7 @@ titleb   jsr fire2  ; get p2 fire
 
 clrscr   lda #32    ; clear scroll
          ldy #0
-clrscr2  sta scrloc,y
+clrscr2  sta gSCROLL_MEM,y
          iny
          cpy #40
          bne clrscr2
@@ -424,7 +430,7 @@ titlez   jmp gamestrt
 
 drawtitle ldx #0    ; draw title
 drawti2  lda tichar,x
-         sta ticm,x
+         sta gTI_CHAR_MEM,x
          inx
          cpx #240
          bne drawti2
@@ -432,15 +438,15 @@ drawti2  lda tichar,x
 
 clrtitl  ldx #0     ; clear the title
          lda #32
-clrtitl2 sta ticm,x
+clrtitl2 sta gTI_CHAR_MEM,x
          inx
          cpx #240
          bne clrtitl2
          rts
 
 coltitle ldx #0
-         lda charcol
-colti2   sta ticc,x
+         lda zCHAR_COLOR
+colti2   sta gTI_COLOR_MEM,x
          inx
          cpx #240
          bne colti2
@@ -450,16 +456,16 @@ drawmounts          ; draw mountains
          ldx #0
 
 drwmtsa  lda mountc,x
-         sta mountsm,x
+         sta gMOUNT_CHAR_MEM,x
 
          lda #11    ; default = grey
-         sta mountcm,x
+         sta gMOUNT_COLOR_MEM,x
 
          lda mountc,x
          cmp #$5d   ; is it a peak?
          bne drwmtsd
          lda #15    ; white
-         sta mountcm,x
+         sta gMOUNT_COLOR_MEM,x
 
 drwmtsd  inx
          cpx #240
@@ -467,26 +473,26 @@ drwmtsd  inx
 
          ldx #160
          lda #9
-drwmtsb  sta mountcm,x
+drwmtsb  sta gMOUNT_COLOR_MEM,x
          inx
          cpx #200
          bne drwmtsb
 
          lda #8
-drwmtsc  sta mountcm,x
+drwmtsc  sta gMOUNT_COLOR_MEM,x
          inx
          cpx #240
          bne drwmtsc
 
          lda #5
          ldx #160
-         sta mountcm,x
+         sta gMOUNT_COLOR_MEM,x
          ldx #199
-         sta mountcm,x
+         sta gMOUNT_COLOR_MEM,x
 
          lda #3        ; colour stats
          ldx #215
-drwmtse  sta mountcm,x
+drwmtse  sta gMOUNT_COLOR_MEM,x
          inx
          cpx #225
          bne drwmtse
@@ -517,7 +523,7 @@ tste     cpy #4    ; 4 is white
          lda #1
          jmp tstx
 tstf     lda #4    ; leftover 4=purple
-tstx     sta ticc,x ; change the colour
+tstx     sta gTI_COLOR_MEM,x ; change the colour
          iny
          cpy #6
          bne tsty
@@ -528,7 +534,7 @@ tsty     inx      ; 200 leaves last line
 tstz     rts
 
 ticolrol ldx #0    ; roll the title col
-tcra     inc ticc,x
+tcra     inc gTI_COLOR_MEM,x
          inx
          cpx #240
          bne tcra
@@ -590,10 +596,10 @@ gameinit sed
          cld
 
          sed
-         lda #128   ; 128 = 80
-         sta hits
+         lda #$80 ;  128 = 80 (BCD values)
+         sta zSHIP_HITS
          lda #0
-         sta hits+1
+         sta zSHIP_HITS+1
          cld
 
          lda #0
@@ -613,42 +619,42 @@ gameintz rts
 
 cntdwn               ; wait for other p
          lda #51     ; seconds 51-48=3s
-         sta secs
+         sta zCOUNTDOWN_SECS
          sbc #15     ; get wide chars
-         sta cm+179  ; shw cntdwn secs
+         sta gCHAR_MEM+179  ; shw cntdwn secs
          adc #2
-         sta cm+180  ; other half
+         sta gCHAR_MEM+180  ; other half
          lda #29     ; jiffys 0.5 secs
-         sta jifs
+         sta zJIFFY_COUNTER
 
 cntdwna  jsr ticolrol;  >title fx
 
-         dec jifs
-         lda jifs
+         dec zJIFFY_COUNTER
+         lda zJIFFY_COUNTER
          cmp #0
 
          bne cntdwnb ; go wait
 
                      ; decrease secs
          lda #29     ; reset jifs
-         sta jifs
-         dec secs    ; secs=secs-1
-         lda secs
+         sta zJIFFY_COUNTER
+         dec zCOUNTDOWN_SECS    ; secs=secs-1
+         lda zCOUNTDOWN_SECS
          cmp #48     ; 48 = '0'
 
          beq cntdwne ; lets play
 
          sbc #16     ; wide numbers
-         sta cm+179  ; show secs
+         sta gCHAR_MEM+179  ; show secs
          adc #2
-         sta cm+180  ; other half
+         sta gCHAR_MEM+180  ; other half
 
 cntdwnb  jsr vbwait  ; wait 1 frame
          lda zPLAYER_ONE_ON     ; need to chk?
          cmp #1
          beq cntdwnc ; nope go away
          jsr fire1   ; yes we do
-         inc v+40    ; rainbow if check
+         inc VICII+40    ; rainbow if check
          lda zPLAYER_ONE_FIRE
          cmp #1      ; check p1 fire
          bne cntdwnc ; no
@@ -661,7 +667,7 @@ cntdwnc  lda zPLAYER_TWO_ON     ; need to chk?
          cmp #1
          beq cntdwnd ; nope go away
          jsr fire2   ; yes we do
-         inc v+41    ; rainbow if check
+         inc VICII+41    ; rainbow if check
          lda zPLAYER_TWO_FIRE
          cmp #1      ; check p2 fire
          bne cntdwnd ; no
@@ -673,9 +679,9 @@ cntdwnc  lda zPLAYER_TWO_ON     ; need to chk?
 cntdwnd  jmp cntdwna
 
 cntdwne  lda #$47    ; print "го"
-         sta cm+179  ;
+         sta gCHAR_MEM+179  ;
          lda #$4f
-         sta cm+180
+         sta gCHAR_MEM+180
                      ; slide stuff away
 cntdwni  jsr ticolrol
          jsr vbwait
@@ -686,7 +692,7 @@ cntdwni  jsr ticolrol
                      ; msrow
                      ; do it manually
          lda zMOTHERSHIP_Y     ; get msy
-         sta v+1     ; set spr1 y
+         sta VICII+1     ; set spr1 y
 
 
 cntdsp1  lda zPLAYER_ONE_ON
@@ -713,8 +719,8 @@ cntdsz   lda zMOTHERSHIP_Y
 
                      ; reset ms stuff
 cntdwnj  lda #0      ; reset ms x,y
-         sta v+29    ; expand
-         sta v+23    ; (for ms)
+         sta VICII+29    ; expand
+         sta VICII+23    ; (for ms)
          sta zMOTHERSHIP_X
          sta zPLAYER_ONE_FIRE
          sta zPLAYER_TWO_FIRE
@@ -736,8 +742,8 @@ cntdwnj  lda #0      ; reset ms x,y
          jsr showscr
 
          lda #32      ; clear
-         sta cm+179   ; countdown
-         sta cm+180
+         sta gCHAR_MEM+179   ; countdown
+         sta gCHAR_MEM+180
 
          jsr clrtitl  ; clear title txt
        ; lda #0       ; black color mem
@@ -751,7 +757,7 @@ cntdwnz  rts
 gamestrt jsr gameinit
          jsr cntdwn
 gameloop jsr vbwait
-       ; lda v+30    ; get colision reg
+       ; lda VICII+30    ; get colision reg
        ; sta v30     ; save to chk latr
          jsr input
          jsr process
@@ -766,7 +772,7 @@ vbwaita  lda $d012
          cmp #251
          bne vbwaita
         ;dec $d020   ; timing colour
-         lda v+30    ; get col reg
+         lda VICII+30    ; get col reg
          sta zVIC_COLLISION     ; save to v30
          rts
 
@@ -896,12 +902,12 @@ plh1b    lda #202    ; zLASER_ONE_ON=12 on&up
          sta zPLAYER_ONE_SCORE+2
 
          sec
-         lda hits    ; decrease hits
+         lda zSHIP_HITS    ; decrease hits
          sbc #1
-         sta hits
-         lda hits+1
+         sta zSHIP_HITS
+         lda zSHIP_HITS+1
          sbc #0
-         sta hits+1
+         sta zSHIP_HITS+1
          cld
 
          jmp lzhitb  ; goto pop ms up
@@ -948,12 +954,12 @@ plh2b    lda #202    ; zLASER_TWO_ON=12 on&up
          sta zPLAYER_TWO_SCORE+2
 
          sec
-         lda hits    ; decrease hits
+         lda zSHIP_HITS    ; decrease hits
          sbc #1
-         sta hits
-         lda hits+1
+         sta zSHIP_HITS
+         lda zSHIP_HITS+1
          sbc #0
-         sta hits+1
+         sta zSHIP_HITS+1
          cld
 
          jmp lzhitb  ; goto pop ms up
@@ -1004,12 +1010,12 @@ plz1a    lda zVIC_COLLISION     ; get collision
          sta zPLAYER_ONE_SCORE+2
 
          sec
-         lda hits    ; decrease hits
+         lda zSHIP_HITS    ; decrease hits
          sbc #1
-         sta hits
-         lda hits+1
+         sta zSHIP_HITS
+         lda zSHIP_HITS+1
          sbc #0
-         sta hits+1
+         sta zSHIP_HITS+1
 
          cld
          lda #12     ; was 0
@@ -1056,12 +1062,12 @@ lz2hitb  sed         ; add p2score
          sta zPLAYER_TWO_SCORE+2
 
          sec
-         lda hits    ; decrease hits
+         lda zSHIP_HITS    ; decrease hits
          sbc #1
-         sta hits
-         lda hits+1
+         sta zSHIP_HITS
+         lda zSHIP_HITS+1
          sbc #0
-         sta hits+1
+         sta zSHIP_HITS+1
 
          cld
          lda #12     ; was 0
@@ -1080,8 +1086,8 @@ lzhitb               ; ms was hit, popup
          bne lzhitr  ; no
          lda #2      ; yes, relief!
          sta zMOTHERSHIP_MOVE_SPEED  ; set msmovs = 2
-         lda #128    ; 128 = 80bcd
-         sta hits    ; reset hit cout
+         lda #$80          ; 128 = $80 or 80 BCD
+         sta zSHIP_HITS    ; reset hit cout
 
 lzhitr   lda zMOTHERHIP_SPEEDUP_THRESH
          sta zMOTHERHIP_SPEEDUP_COUNTER   ; reset counter
@@ -1447,17 +1453,17 @@ shsca    lda #0      ; turn flag off
 
        ; lda zMOTHERSHIP_MOVE_SPEED  ; show msmovs
        ; adc #48
-       ; sta cm+13
+       ; sta gCHAR_MEM+13
 
          lda #32     ; clear hiscore
-         sta cm+15   ; indicators
-         sta cm+24
+         sta gCHAR_MEM+15   ; indicators
+         sta gCHAR_MEM+24
 
          lda zPLAYER_ONE_SCORE ; show p1score
          and #%00001111
          clc
          adc #48
-         sta cm+6
+         sta gCHAR_MEM+6
          lda zPLAYER_ONE_SCORE
          lsr a
          lsr a
@@ -1465,13 +1471,13 @@ shsca    lda #0      ; turn flag off
          lsr a
          clc
          adc #48
-         sta cm+5
+         sta gCHAR_MEM+5
 
          lda zPLAYER_ONE_SCORE+1
          and #%00001111
          clc
          adc #48
-         sta cm+4
+         sta gCHAR_MEM+4
          lda zPLAYER_ONE_SCORE+1
          lsr a
          lsr a
@@ -1479,13 +1485,13 @@ shsca    lda #0      ; turn flag off
          lsr a
          clc
          adc #48
-         sta cm+3
+         sta gCHAR_MEM+3
 
          lda zPLAYER_ONE_SCORE+2
          and #%00001111
          clc
          adc #48
-         sta cm+2
+         sta gCHAR_MEM+2
          lda zPLAYER_ONE_SCORE+2
          lsr a
          lsr a
@@ -1493,13 +1499,13 @@ shsca    lda #0      ; turn flag off
          lsr a
          clc
          adc #48
-         sta cm+1    ; end p1score
+         sta gCHAR_MEM+1    ; end p1score
 
          lda zPLAYER_TWO_SCORE ; show p2score
          and #%00001111
          clc
          adc #48
-         sta cm+38
+         sta gCHAR_MEM+38
          lda zPLAYER_TWO_SCORE
          lsr a
          lsr a
@@ -1507,13 +1513,13 @@ shsca    lda #0      ; turn flag off
          lsr a
          clc
          adc #48
-         sta cm+37
+         sta gCHAR_MEM+37
 
          lda zPLAYER_TWO_SCORE+1
          and #%00001111
          clc
          adc #48
-         sta cm+36
+         sta gCHAR_MEM+36
          lda zPLAYER_TWO_SCORE+1
          lsr a
          lsr a
@@ -1521,13 +1527,13 @@ shsca    lda #0      ; turn flag off
          lsr a
          clc
          adc #48
-         sta cm+35
+         sta gCHAR_MEM+35
 
          lda zPLAYER_TWO_SCORE+2
          and #%00001111
          clc
          adc #48
-         sta cm+34
+         sta gCHAR_MEM+34
          lda zPLAYER_TWO_SCORE+2
          lsr a
          lsr a
@@ -1535,7 +1541,7 @@ shsca    lda #0      ; turn flag off
          lsr a
          clc
          adc #48
-         sta cm+33   ; end p2score
+         sta gCHAR_MEM+33   ; end p2score
 
  ; check p1score for hiscore
          lda zPLAYER_ONE_SCORE+2
@@ -1588,7 +1594,7 @@ shscc    lda zHIGH_SCORE ; show hiscore
          and #%00001111
          clc
          adc #48
-         sta cm+22
+         sta gCHAR_MEM+22
          lda zHIGH_SCORE
          lsr a
          lsr a
@@ -1596,13 +1602,13 @@ shscc    lda zHIGH_SCORE ; show hiscore
          lsr a
          clc
          adc #48
-         sta cm+21
+         sta gCHAR_MEM+21
 
          lda zHIGH_SCORE+1
          and #%00001111
          clc
          adc #48
-         sta cm+20
+         sta gCHAR_MEM+20
          lda zHIGH_SCORE+1
          lsr a
          lsr a
@@ -1610,13 +1616,13 @@ shscc    lda zHIGH_SCORE ; show hiscore
          lsr a
          clc
          adc #48
-         sta cm+19
+         sta gCHAR_MEM+19
 
          lda zHIGH_SCORE+2
          and #%00001111
          clc
          adc #48
-         sta cm+18
+         sta gCHAR_MEM+18
          lda zHIGH_SCORE+2
          lsr a
          lsr a
@@ -1624,136 +1630,136 @@ shscc    lda zHIGH_SCORE ; show hiscore
          lsr a
          clc
          adc #48
-         sta cm+17   ; end zHIGH_SCORE
+         sta gCHAR_MEM+17   ; end zHIGH_SCORE
 
 shscz    rts
 
 outms    lda zMOTHERSHIP_COLOR   ; get colour
-         sta v+39
+         sta VICII+39
 
        ; lda zMOTHERSHIP_Y     ; get msy
-       ; sta v+1     ; set spr1 y
+       ; sta VICII+1     ; set spr1 y
 
          ldy zMOTHERHIP_ROW   ; get msrow
          lda TABLE_ROW_TO_Y,y; get y from table
        ; sta zMOTHERSHIP_Y     ; store in msy
-         sta v+1     ; set spr1 y
+         sta VICII+1     ; set spr1 y
 
          lda zMOTHERSHIP_X+1   ; get msx hi-byte
          bne outmsa  ; hi-byte != 0
          lda zMOTHERSHIP_X     ; msx <= 255
-         sta v
-         lda v+16    ; get hx flags
+         sta VICII
+         lda VICII+16    ; get hx flags
          and #254    ; sp1 hx off
-         sta v+16
+         sta VICII+16
          rts
 outmsa   lda zMOTHERSHIP_X     ; msx > 255
-         sta v
-         lda v+16    ; get hx flags
+         sta VICII
+         lda VICII+16    ; get hx flags
          ora #1      ; sp1 hx on
-         sta v+16
+         sta VICII+16
          rts
 
 outp1                ; player 1
          lda zPLAYER_ONE_COLOR   ; p1 colour
-         sta v+40
+         sta VICII+40
          lda zPLAYER_ONE_Y
-         sta v+3
+         sta VICII+3
          lda zPLAYER_ONE_X+1
          bne outp1a
          lda zPLAYER_ONE_X
-         sta v+2
-         lda v+16
+         sta VICII+2
+         lda VICII+16
          and #253    ; sp2 hx off
-         sta v+16
+         sta VICII+16
          rts
 outp1a   lda zPLAYER_ONE_X
-         sta v+2
-         lda v+16
+         sta VICII+2
+         lda VICII+16
          ora #2      ; sp1 hx on
-         sta v+16
+         sta VICII+16
          rts
 
 outp2                ; player 2
          lda zPLAYER_TWO_COLOR
-         sta v+41
+         sta VICII+41
          lda zPLAYER_TWO_Y
-         sta v+5
+         sta VICII+5
          lda zPLAYER_TWO_X+1
          bne outp2a
          lda zPLAYER_TWO_X
-         sta v+4
-         lda v+16
+         sta VICII+4
+         lda VICII+16
          and #251    ; sp3 hx off
-         sta v+16
+         sta VICII+16
          rts
 outp2a   lda zPLAYER_TWO_X
-         sta v+4
-         lda v+16
+         sta VICII+4
+         lda VICII+16
          ora #4      ; sp3 hx on
-         sta v+16
+         sta VICII+16
          rts
 
 outl1                ; laser 1
          lda zLASER_ONE_ON
          cmp #0
          beq outl1b  ; inactive laser
-         lda v+21
+         lda VICII+21
          ora #%00001000 ; s4 on
-         sta v+21
+         sta VICII+21
          lda zPLAYER_ONE_COLOR
-         sta v+42
+         sta VICII+42
          lda zLASER_ONE_Y
-         sta v+7
+         sta VICII+7
          lda zLASER_ONE_X+1
          bne outl1a
          lda zLASER_ONE_X
-         sta v+6
-         lda v+16
+         sta VICII+6
+         lda VICII+16
          and #247    ; sp4 hx off
-         sta v+16
+         sta VICII+16
          rts
 outl1a   lda zLASER_ONE_X
-         sta v+6
-         lda v+16
+         sta VICII+6
+         lda VICII+16
          ora #8      ; sp4 hx on
-         sta v+16
+         sta VICII+16
          rts
 outl1b               ; s4 off
-         lda v+21
+         lda VICII+21
          and #%11110111
-         sta v+21
+         sta VICII+21
          rts
 
 outl2                ; player 2
          lda zLASER_TWO_ON
          cmp #0
          beq outl2b  ; inactive laser
-         lda v+21
+         lda VICII+21
          ora #%00010000 ; s5 on
-         sta v+21
+         sta VICII+21
          lda zPLAYER_TWO_COLOR
-         sta v+43
+         sta VICII+43
          lda zLASER_TWO_Y
-         sta v+9
+         sta VICII+9
          lda zLASER_TWO_X+1
          bne outl2a
          lda zLASER_TWO_X
-         sta v+8
-         lda v+16
+         sta VICII+8
+         lda VICII+16
          and #239    ; sp5 hx off
-         sta v+16
+         sta VICII+16
          rts
 outl2a   lda zLASER_TWO_X
-         sta v+8
-         lda v+16
+         sta VICII+8
+         lda VICII+16
          ora #16     ; sp5 hx on
-         sta v+16
+         sta VICII+16
          rts
 outl2b               ; s5 off
-         lda v+21
+         lda VICII+21
          and #%11101111
-         sta v+21
+         sta VICII+21
          rts
 
 shwstats ; msrow mspts msmov etc
@@ -1761,7 +1767,7 @@ shwmsrow lda zMOTHERHIP_ROW       ; stored as bcd
          and #%00001111
          clc
          adc #48
-         sta br+16
+         sta gBOTTOM_ROW+16
          lda zMOTHERHIP_ROW
          lsr a
          lsr a
@@ -1769,13 +1775,13 @@ shwmsrow lda zMOTHERHIP_ROW       ; stored as bcd
          lsr a
          clc
          adc #48
-         sta br+15
+         sta gBOTTOM_ROW+15
 
          lda zMOTHERSHIP_POINTS   ; show points
          and #%00001111
          clc
          adc #48
-         sta br+21
+         sta gBOTTOM_ROW+21
          lda zMOTHERSHIP_POINTS
          lsr a
          lsr a
@@ -1783,13 +1789,13 @@ shwmsrow lda zMOTHERHIP_ROW       ; stored as bcd
          lsr a
          clc
          adc #48
-         sta br+20
+         sta gBOTTOM_ROW+20
 
          lda zMOTHERSHIP_POINTS+1
          and #%00001111
          clc
          adc #48
-         sta br+19
+         sta gBOTTOM_ROW+19
          lda zMOTHERSHIP_POINTS+1
          lsr a
          lsr a
@@ -1797,27 +1803,27 @@ shwmsrow lda zMOTHERHIP_ROW       ; stored as bcd
          lsr a
          clc
          adc #48
-         sta br+18
+         sta gBOTTOM_ROW+18
 
-         lda hits
+         lda zSHIP_HITS
          and #%00001111
          clc
          adc #48
-         sta br+24
-         lda hits
+         sta gBOTTOM_ROW+24
+         lda zSHIP_HITS
          lsr a
          lsr a
          lsr a
          lsr a
          clc
          adc #48
-         sta br+23
+         sta gBOTTOM_ROW+23
 
        ; lda #48
-       ; sta br+23
+       ; sta gBOTTOM_ROW+23
        ; lda zMOTHERSHIP_MOVE_SPEED
        ; adc #48
-       ; sta br+24
+       ; sta gBOTTOM_ROW+24
 
          rts
 
@@ -1825,7 +1831,7 @@ clrstats             ; clear stats row
          lda #32
          ldx #15
 
-clrstsa  sta br,x
+clrstsa  sta gBOTTOM_ROW,x
          inx
          cpx #25
          bne clrstsa
@@ -1864,26 +1870,26 @@ gameob
          jsr outp2
          jmp gameob  ; loop again
 
-gameoc   jsr tistripe; show гаме═ожер
+gameoc   jsr tistripe; show гаме═ожер == game over
          lda #$45    ; е
-         sta ticm+58
+         sta gTI_CHAR_MEM+58
          lda #$4f    ; о
-         sta ticm+61
+         sta gTI_CHAR_MEM+61
          jsr pause
          lda #$4d    ; м
-         sta ticm+57
+         sta gTI_CHAR_MEM+57
          lda #$56    ; ж
-         sta ticm+62
+         sta gTI_CHAR_MEM+62
          jsr pause
          lda #$41    ; а
-         sta ticm+56
+         sta gTI_CHAR_MEM+56
          lda #$45    ; е
-         sta ticm+63
+         sta gTI_CHAR_MEM+63
          jsr pause
          lda #$47    ; г
-         sta ticm+55
+         sta gTI_CHAR_MEM+55
          lda #$52    ; р
-         sta ticm+64
+         sta gTI_CHAR_MEM+64
          jsr pause
          jsr pause
          jsr pause
@@ -1891,20 +1897,20 @@ gameoc   jsr tistripe; show гаме═ожер
          jsr pause
 
 gameod   lda #32     ; clear гаме═ожер
-         sta ticm+58
-         sta ticm+61
+         sta gTI_CHAR_MEM+58
+         sta gTI_CHAR_MEM+61
          jsr pause
          lda #32
-         sta ticm+57
-         sta ticm+62
+         sta gTI_CHAR_MEM+57
+         sta gTI_CHAR_MEM+62
          jsr pause
          lda #32
-         sta ticm+56
-         sta ticm+63
+         sta gTI_CHAR_MEM+56
+         sta gTI_CHAR_MEM+63
          jsr pause
          lda #32
-         sta ticm+55
-         sta ticm+64
+         sta gTI_CHAR_MEM+55
+         sta gTI_CHAR_MEM+64
          jsr pause
          jsr pause
          jsr pause
@@ -1959,49 +1965,49 @@ sweeppz  rts
 
 ; Unused ==================================================
 ; drawrows ldx #48     ; draw row numbers
-;	stx cm+40
+;	stx gCHAR_MEM+40
 ;	inx
-;	stx cm+80
+;	stx gCHAR_MEM+80
 ;	inx
-;	stx cm+120
+;	stx gCHAR_MEM+120
 ;	inx
-;	stx cm+160
+;	stx gCHAR_MEM+160
 ;	inx
-;	stx cm+200
+;	stx gCHAR_MEM+200
 ;	inx
-;	stx cm2
+;	stx gCHAR_MEM2
 ;	inx
-;	stx cm2+40
+;	stx gCHAR_MEM2+40
 ;	inx
-;	stx cm2+80
+;	stx gCHAR_MEM2+80
 ;	inx
-;	stx cm2+120
+;	stx gCHAR_MEM2+120
 ;	inx
-;	stx cm2+160
+;	stx gCHAR_MEM2+160
 ;	ldx #48
-;	stx cm2+201
+;	stx gCHAR_MEM2+201
 ;	inx
-;	stx cm3
+;	stx gCHAR_MEM3
 ;	inx
-;	stx cm3+40
+;	stx gCHAR_MEM3+40
 ;	inx
-;	stx cm3+80
+;	stx gCHAR_MEM3+80
 ;	inx
-;	stx cm3+120
+;	stx gCHAR_MEM3+120
 ;	inx
-;	stx cm3+160
+;	stx gCHAR_MEM3+160
 ;	inx
-;	stx cm3+200
+;	stx gCHAR_MEM3+200
 ;	inx
-;	stx cm4
+;	stx gCHAR_MEM4
 ;	inx
-;	stx cm4+40
+;	stx gCHAR_MEM4+40
 ;	inx
-;	stx cm4+80
+;	stx gCHAR_MEM4+80
 ;	ldx #48
-;	stx cm4+121
+;	stx gCHAR_MEM4+121
 ;	inx
-;	stx cm4+160
+;	stx gCHAR_MEM4+160
 ;	rts
 
 getpoints           ; calculate zMOTHERSHIP_POINTS (mspts)
@@ -2421,34 +2427,34 @@ twinka
          cmp #0      ; odd stars in sf2
          bne twinkb
                      ; sf1
-         lda sf1,y
+         lda gSTAR_CHAR_MEM1,y
          cmp #$2a    ; is it a star?
          bne twinka1 ; no
          lda #32     ; [space]
-         sta sf1,y   ; erase old star
+         sta gSTAR_CHAR_MEM1,y   ; erase old star
 twinka1
          jsr yprnd   ; y = random
-         lda sf1,y
+         lda gSTAR_CHAR_MEM1,y
          cmp #32     ; is it [space]?
          bne twinkc  ; no (was twinka2)
          lda #$2a    ; star char
-         sta sf1,y
+         sta gSTAR_CHAR_MEM1,y
          jmp twinkc
 twinka2 ;jmp twinkc  ; done for this vb
 
 twinkb               ; sf2
-         lda sf2,y
+         lda gSTAR_CHAR_MEM2,y
          cmp #$2a    ; is it a star?
          bne twinkb1 ; no
          lda #32     ; [space]
-         sta sf2,y   ; erase old star
+         sta gSTAR_CHAR_MEM2,y   ; erase old star
 twinkb1
          jsr yprnd   ; y = random
-         lda sf2,y
+         lda gSTAR_CHAR_MEM2,y
          cmp #32     ; is it [space]?
          bne twinkc  ; no
          lda #$2a    ; star char
-         sta sf2,y
+         sta gSTAR_CHAR_MEM2,y
 twinkc
          tya         ; move y back to
          sta TABLE_STAR_LOCATION,x  ; star's loc
@@ -2479,20 +2485,21 @@ prndneor tay        ; no eor
 ; goflag   .byte 0     ; zGAME_OVER_FLAG
 ; ssflag   .byte 0     ; zSHOW_SCORE_FLAG
 ; v30      .byte 0     ; zVIC_COLLISION
-charcol  .byte 0
-ticcnt   .byte 0     ; ticolrol count
-scrcnt   .byte 0,0
-secs     .byte 0
-jifs     .byte 0
-scrjifs  .byte 0
-hits     .byte 0,0   ; 4-digit bcd
+; charcol  .byte 0     ; zCHAR_COLOR (probably no use for Atari)
+; ticcnt   .byte 0     ; unused ticolrol count
+; scrcnt   .byte 0,0   ; zSCROLL_COUNTER
+; secs     .byte 0     ; zCOUNTDOWN_SECS
+; jifs     .byte 0     ; zJIFFY_COUNTER
+; scrjifs  .byte 0     ; zSCROLL_JIFFY
+; hits     .byte 0,0   ; zSHIP_HITS 4-digit bcd
 
-attdec   .byte 0
-susrel   .byte 0
-volume   .byte 0
-hifreq   .byte 0
-lofreq   .byte 0
-wavefm   .byte 0
+; Various sound control values not applicable for Atari
+; attdec   .byte 0
+; susrel   .byte 0
+; volume   .byte 0
+; hifreq   .byte 0
+; lofreq   .byte 0
+; wavefm   .byte 0
 
 ; p1x      .byte 0,0 ; zPLAYER_ONE_X
 ; p1y      .byte 0   ; zPLAYER_ONE_Y 
