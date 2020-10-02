@@ -37,9 +37,12 @@
 
 
 ; Game Control Values =========================================================
-
-zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player.
-
+ 
+zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player. 
+zGAME_OVER_FLAG    .byte $00 ; Set 0/1 for game over 
+zSHOW_SCORE_FLAG   .byte $00 ; Flag to update score on screen.
+zVIC_COLLISION     .byte $00 ; VIC II Sprite Collision Flag. (lda VIC_BASE+30)  (Atari has several registers).
+  
 zPLAYER_ONE_ON     .byte $00 ; (0) not playing. (1) playing.
 zPLAYER_ONE_X      .byte $00 ; Player 1 gun X coord
 zPLAYER_ONE_Y      .byte $00 ; Player 1 Y position (slight animation, but usually fixed.)
@@ -61,10 +64,22 @@ zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color
 
 zLASER_TWO_X       .byte $00 ; Laser 1 X coord
 zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
+ 
+zMOTHERSHIP_X               .byte $00 ; Game mothership X coord 
+zMOTHERSHIP_Y               .byte $00 ; Game mothership Y coord 
+zMOTHERSHIP_DIR             .byte $00 ; Mothership direction 
+zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed  
+zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter 
+zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threahold 
+zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
+zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
 
-zMOTHERSHIP_X      .byte $00 ; Game mothership X coord
-zMOTHERSHIP_Y      .byte $00 ; Game mothership Y coord
-zMOTHERSHIP_DIR    .byte $00 ; Mothership direction
+zMOTHERSHIP_POINTS          .word $0000 ; Current Points for hitting mothership
+
+zJOY_ONE_LAST_STATE .byte $00 ; Joystick Button One last state.
+zJOY_TWO_LAST_STATE .byte $00 ; Joystick Button Two last state
+
+
 
 zHIGH_SCORE        .byte $00,$00,$00 ; 6 digit BCD 
 
@@ -170,6 +185,9 @@ zTEMP_BASE_COLOR   .byte 0 ; temporary color for star
 zTEMP_BASE_COLOR2  .byte 0 ; temporary color for star
 
 
+zSTAR_COUNT        .byte 0 ; starcnt original code.
+
+
 ; Game Over Text Values =====================================================
 
 zGAME_OVER_TEXT .word 0
@@ -185,7 +203,7 @@ OutputPointer  .word $0000 ; Pointer to memory to generate RLE codes.
 ; Should be the first usable memory after DOS (and DUP?).
 
 	ORG LOMEM_DOS
-;	ORG LOMEM_DOS_DUP ; Use this if following DOS won't work.  or just use $5000
+;	ORG LOMEM_DOS_DUP ; Use this if following DOS won't work.  or just use $5000 or $6000
 
 	; Label And Credit Where Ultimate Credit Is Due
 	.by "** Thanks to the Word (John 1:1), Jesus Christ, Creator of heaven, "
@@ -318,12 +336,12 @@ title    jsr titlinit ; new game setup
          lda #146   ; was 58
          sta zMOTHERSHIP_Y
          lda #11
-         sta msrow  ; row 11 = 146
+         sta zMOTHERHIP_ROW  ; row 11 = 146
 
          lda #1     ; make ms биг
          sta v+29   ; expand x
          sta v+23   ; expand y
-         sta ssflag
+         sta zSHOW_SCORE_FLAG
          jsr showscr; show score
 
                     ; should be 7
@@ -363,7 +381,7 @@ titlea   jsr vbwait
 
          ldx scrcnt
          ldy #0       ; print 40 chars
-scr02    lda scrtxt,x ; startin at
+scr02    lda GFX_SCROLL_DOCS,x ; startin at
          sta scrloc,y ; scrcnt
          inx
          iny
@@ -519,7 +537,7 @@ tcrz     rts
 ;-- game init --------------------------
 
 titlinit lda #0
-         sta goflag
+         sta zGAME_OVER_FLAG
          sta zPLAYER_ONE_DIR
          sta zPLAYER_ONE_FIRE
          sta zPLAYER_TWO_FIRE
@@ -528,14 +546,14 @@ titlinit lda #0
          sta zMOTHERSHIP_X+1
          sta zPLAYER_ONE_X+1
          sta zPLAYER_TWO_X+1
-         sta msrow
+         sta zMOTHERHIP_ROW
 
          lda #1
          sta zPLAYER_TWO_DIR
          sta zMOTHERSHIP_DIR
-         sta j1z
-         sta j2z
-         sta ssflag
+         sta zJOY_ONE_LAST_STATE
+         sta zJOY_TWO_LAST_STATE
+         sta zSHOW_SCORE_FLAG
 
          lda #2
          sta zMOTHERSHIP_COLOR
@@ -583,14 +601,14 @@ gameinit sed
          sta zPLAYER_TWO_BUMP
 
          lda #1
-         sta ssflag
+         sta zSHOW_SCORE_FLAG
          jsr showscr
                      ; should be 2
          lda #2      ; initial ms speed
          sta zMOTHERSHIP_MOVE_SPEED
          lda #10     ; should be 10
-         sta mssut   ; speedup threshld
-         sta mssuc   ; speedup count
+         sta zMOTHERHIP_SPEEDUP_THRESH   ; speedup threshld
+         sta zMOTHERHIP_SPEEDUP_COUNTER   ; speedup count
 gameintz rts
 
 cntdwn               ; wait for other p
@@ -702,19 +720,19 @@ cntdwnj  lda #0      ; reset ms x,y
          sta zPLAYER_TWO_FIRE
          sta zLASER_ONE_ON
          sta zLASER_TWO_ON
-         sta msrow
+         sta zMOTHERHIP_ROW
 
        ; lda #58     ; should be 58
        ; sta zMOTHERSHIP_Y     ; 202 for testing
-         ldx msrow   ; get msy from
-         lda r2ytab,x  ; row 2 y table
+         ldx zMOTHERHIP_ROW   ; get msy from
+         lda TABLE_ROW_TO_Y,x  ; row 2 y table
          sta zMOTHERSHIP_Y
 
          lda #2
          sta zMOTHERSHIP_COLOR   ; ms is red
          jsr getpoints
          lda #1
-         sta ssflag
+         sta zSHOW_SCORE_FLAG
          jsr showscr
 
          lda #32      ; clear
@@ -738,7 +756,7 @@ gameloop jsr vbwait
          jsr input
          jsr process
          jsr output
-         lda goflag  ; chk gameover flg
+         lda zGAME_OVER_FLAG  ; chk gameover flg
          cmp #1
          bne gameloop
          jmp gameover
@@ -749,7 +767,7 @@ vbwaita  lda $d012
          bne vbwaita
         ;dec $d020   ; timing colour
          lda v+30    ; get col reg
-         sta v30     ; save to v30
+         sta zVIC_COLLISION     ; save to v30
          rts
 
 ;-- input ------------------------------
@@ -789,14 +807,14 @@ fire1    lda joy+1   ; remember: 0=fire
          cmp #0
          beq f1maybe
 f1nope   lda #0      ; lastcycle=nofire
-         sta j1z
+         sta zJOY_ONE_LAST_STATE
          rts
-f1maybe  lda j1z
+f1maybe  lda zJOY_ONE_LAST_STATE
          cmp #0
          bne f1nope2
          lda #1      ; set p1f═банг!
          sta zPLAYER_ONE_FIRE
-         sta j1z
+         sta zJOY_ONE_LAST_STATE
          jsr lazbeep1; fire ноисе!
          rts
 f1nope2  lda #0
@@ -808,14 +826,14 @@ fire2    lda joy     ; remember: 0=fire
          cmp #0
          beq f2maybe
 f2nope   lda #0      ; lastcycle=nofire
-         sta j2z
+         sta zJOY_TWO_LAST_STATE
          rts
-f2maybe  lda j2z
+f2maybe  lda zJOY_TWO_LAST_STATE
          cmp #0
          bne f2nope2
          lda #1      ; set p2f═банг!
          sta zPLAYER_TWO_FIRE
-         sta j2z     ; lastcycle=fire
+         sta zJOY_TWO_LAST_STATE     ; lastcycle=fire
          jsr lazbeep2 ; p2 ноисе!
          rts
 f2nope2  lda #0
@@ -859,7 +877,7 @@ plh1a    lda #0      ; zLASER_ONE_ON=0 off
 plh1b    lda #202    ; zLASER_ONE_ON=12 on&up
          sta $07fb   ; laz sprite
 
-         lda v30     ; chk collision
+         lda zVIC_COLLISION     ; chk collision
          and #9
          cmp #9      ; s1(ms) + s4(l1)
          bne plh2    ; no hit, check l2
@@ -868,10 +886,10 @@ plh1b    lda #202    ; zLASER_ONE_ON=12 on&up
          sed         ; add p1score
          clc
          lda zPLAYER_ONE_SCORE
-         adc mspts   ; from getpoints
+         adc zMOTHERSHIP_POINTS   ; from getpoints
          sta zPLAYER_ONE_SCORE
          lda zPLAYER_ONE_SCORE+1
-         adc mspts+1 ; from getpoints
+         adc zMOTHERSHIP_POINTS+1 ; from getpoints
          sta zPLAYER_ONE_SCORE+1
          lda zPLAYER_ONE_SCORE+2
          adc #0      ; carry if needed
@@ -911,7 +929,7 @@ plh2a    lda #0      ; zLASER_TWO_ON=0 off
 plh2b    lda #202    ; zLASER_TWO_ON=12 on&up
          sta $07fc   ; laz sprite
 
-         lda v30     ; chk collision
+         lda zVIC_COLLISION     ; chk collision
          and #17
          cmp #17     ; s1(ms) + s5(l1)
          bne prohitz ; no hit, done
@@ -920,10 +938,10 @@ plh2b    lda #202    ; zLASER_TWO_ON=12 on&up
          sed         ; add p2score
          clc
          lda zPLAYER_TWO_SCORE
-         adc mspts   ; from getpoints
+         adc zMOTHERSHIP_POINTS   ; from getpoints
          sta zPLAYER_TWO_SCORE
          lda zPLAYER_TWO_SCORE+1
-         adc mspts+1 ; from getpoints
+         adc zMOTHERSHIP_POINTS+1 ; from getpoints
          sta zPLAYER_TWO_SCORE+1
          lda zPLAYER_TWO_SCORE+2
          adc #0      ; carry if needed
@@ -969,17 +987,17 @@ prolzhit             ; was ms hit?
 
 plz1b    jmp lz2hit
 
-plz1a    lda v30     ; get collision
+plz1a    lda zVIC_COLLISION     ; get collision
          and #9
          cmp #9      ; s1(ms) + s4(l1)
          bne lz2hit  ; no hit, check l2
          sed         ; add p1score
          clc
          lda zPLAYER_ONE_SCORE
-         adc mspts   ; from getpoints
+         adc zMOTHERSHIP_POINTS   ; from getpoints
          sta zPLAYER_ONE_SCORE
          lda zPLAYER_ONE_SCORE+1
-         adc mspts+1 ; from getpoints
+         adc zMOTHERSHIP_POINTS+1 ; from getpoints
          sta zPLAYER_ONE_SCORE+1
          lda zPLAYER_ONE_SCORE+2
          adc #0      ; carry if needed
@@ -1020,7 +1038,7 @@ plz1e    cmp #1
 
 plz1c    jmp lzhitz  ; l2 off, done
 
-lz2hita  lda v30     ; get collision
+lz2hita  lda zVIC_COLLISION     ; get collision
          and #17
          cmp #17     ; s1(ms) + s5(l2)
          beq lz2hitb
@@ -1028,10 +1046,10 @@ lz2hita  lda v30     ; get collision
 lz2hitb  sed         ; add p2score
          clc
          lda zPLAYER_TWO_SCORE
-         adc mspts
+         adc zMOTHERSHIP_POINTS
          sta zPLAYER_TWO_SCORE
          lda zPLAYER_TWO_SCORE+1
-         adc mspts+1
+         adc zMOTHERSHIP_POINTS+1
          sta zPLAYER_TWO_SCORE+1
          lda zPLAYER_TWO_SCORE+2
          adc #0      ; carry if needed
@@ -1052,8 +1070,8 @@ lz2hitb  sed         ; add p2score
        ; ------------- kill mothership
 lzhitb               ; ms was hit, popup
          jsr expnoz  ; make ноисе
-         dec mssuc   ; speedup counter
-         lda mssuc
+         dec zMOTHERHIP_SPEEDUP_COUNTER   ; speedup counter
+         lda zMOTHERHIP_SPEEDUP_COUNTER
          cmp #0      ; time to speedup?
          bne lzhite  ; no
          inc zMOTHERSHIP_MOVE_SPEED  ; yes
@@ -1065,31 +1083,31 @@ lzhitb               ; ms was hit, popup
          lda #128    ; 128 = 80bcd
          sta hits    ; reset hit cout
 
-lzhitr   lda mssut
-         sta mssuc   ; reset counter
+lzhitr   lda zMOTHERHIP_SPEEDUP_THRESH
+         sta zMOTHERHIP_SPEEDUP_COUNTER   ; reset counter
 lzhite   lda #1
-         sta ssflag  ; set ssflag
+         sta zSHOW_SCORE_FLAG  ; set ssflag
        ; lda zMOTHERSHIP_Y     ; pop ms up 16px
        ; sbc #16
        ; sta zMOTHERSHIP_Y
          sed         ; set dec flag
          clc
-         lda msrow   ; why sbc #1 ?????
+         lda zMOTHERHIP_ROW   ; why sbc #1 ?????
          sbc #1      ; pop msrow up 2
-         sta msrow
+         sta zMOTHERHIP_ROW
          cld         ; clr dec flag
          lda #30     ; check msrow
-         cmp msrow   ; is msrow < 30?
+         cmp zMOTHERHIP_ROW   ; is msrow < 30?
          bcs lzhitf  ; no, skip
          lda #0      ; yes, make it 0
-         sta msrow
+         sta zMOTHERHIP_ROW
 lzhitf ; lda #58     ; is msy >= 58?
        ; cmp zMOTHERSHIP_Y
        ; bcc lzhitc  ; yes, go away
        ; lda #58     ; no, make it 58
        ; sta zMOTHERSHIP_Y
        ; lda #0      ; msrow to 0 too
-       ; sta msrow
+       ; sta zMOTHERHIP_ROW
 lzhitc   jsr getpoints ; set new x
          lda zMOTHERSHIP_DIR     ; check msd
          bne lzhitd
@@ -1140,12 +1158,12 @@ lazera   lda zLASER_TWO_ON
 lazerz   rts
 
 proms    lda zMOTHERSHIP_MOVE_SPEED ; loop this ammount
-         sta msm    ; msm is counter
-procmsm  lda msm
+         sta zMOTHERSHIP_MOVE_COUNTER    ; msm is counter
+procmsm  lda zMOTHERSHIP_MOVE_COUNTER
          cmp #0
          beq procmsz ; done moving ms
          jsr promsdo ; do the real move
-         dec msm
+         dec zMOTHERSHIP_MOVE_COUNTER
          jmp procmsm ; loop again
 procmsz  rts
 
@@ -1184,9 +1202,9 @@ msbrtl   lda zMOTHERSHIP_X+1   ; bounce off right
        ; sta zMOTHERSHIP_Y
          sed         ; drop down msrow
          clc         ; set dec+clr carry
-         lda msrow
+         lda zMOTHERHIP_ROW
          adc #1
-         sta msrow
+         sta zMOTHERHIP_ROW
          cld         ; clr dec flag
          jsr getpoints ; update points
          jmp promsz
@@ -1204,21 +1222,21 @@ msbltr   lda zMOTHERSHIP_X+1   ; bounce off left
        ; sta zMOTHERSHIP_Y
          sed         ; drop msrow down
          clc         ; set dec+clr carry
-         lda msrow
+         lda zMOTHERHIP_ROW
          adc #1
-         sta msrow
+         sta zMOTHERHIP_ROW
          cld         ; clr dec flag
          jsr getpoints ; update points
          jmp promsz
 promsz ; lda zMOTHERSHIP_Y     ; check bottom
        ; cmp #234
-         lda msrow
+         lda zMOTHERHIP_ROW
          cmp #34
          bcs promsb  ; row = 23 (бцд 34)
        ; bcs promsb  ; >= 234
          jmp promszz ; < 234
 promsb   lda #1      ;
-         sta goflag
+         sta zGAME_OVER_FLAG
 promszz  rts
 
 bump                 ; p1/p2 bump check
@@ -1228,7 +1246,7 @@ bump                 ; p1/p2 bump check
          lda zPLAYER_TWO_ON     ; no p2 dont bump
          cmp #1
          bne bumpz
-         lda v30     ; get sp collision
+         lda zVIC_COLLISION     ; get sp collision
          and #6      ; 2+4=6
          cmp #6
          bne bumpz
@@ -1421,11 +1439,11 @@ outputa  lda zPLAYER_TWO_ON
 outputz  jsr twinkle
          rts
 
-showscr  lda ssflag
+showscr  lda zSHOW_SCORE_FLAG
          bne shsca
          jmp shscz
 shsca    lda #0      ; turn flag off
-         sta ssflag
+         sta zSHOW_SCORE_FLAG
 
        ; lda zMOTHERSHIP_MOVE_SPEED  ; show msmovs
        ; adc #48
@@ -1616,8 +1634,8 @@ outms    lda zMOTHERSHIP_COLOR   ; get colour
        ; lda zMOTHERSHIP_Y     ; get msy
        ; sta v+1     ; set spr1 y
 
-         ldy msrow   ; get msrow
-         lda r2ytab,y; get y from table
+         ldy zMOTHERHIP_ROW   ; get msrow
+         lda TABLE_ROW_TO_Y,y; get y from table
        ; sta zMOTHERSHIP_Y     ; store in msy
          sta v+1     ; set spr1 y
 
@@ -1739,12 +1757,12 @@ outl2b               ; s5 off
          rts
 
 shwstats ; msrow mspts msmov etc
-shwmsrow lda msrow       ; stored as bcd
+shwmsrow lda zMOTHERHIP_ROW       ; stored as bcd
          and #%00001111
          clc
          adc #48
          sta br+16
-         lda msrow
+         lda zMOTHERHIP_ROW
          lsr a
          lsr a
          lsr a
@@ -1753,12 +1771,12 @@ shwmsrow lda msrow       ; stored as bcd
          adc #48
          sta br+15
 
-         lda mspts   ; show points
+         lda zMOTHERSHIP_POINTS   ; show points
          and #%00001111
          clc
          adc #48
          sta br+21
-         lda mspts
+         lda zMOTHERSHIP_POINTS
          lsr a
          lsr a
          lsr a
@@ -1767,12 +1785,12 @@ shwmsrow lda msrow       ; stored as bcd
          adc #48
          sta br+20
 
-         lda mspts+1
+         lda zMOTHERSHIP_POINTS+1
          and #%00001111
          clc
          adc #48
          sta br+19
-         lda mspts+1
+         lda zMOTHERSHIP_POINTS+1
          lsr a
          lsr a
          lsr a
@@ -1817,7 +1835,7 @@ clrstsa  sta br,x
 ;-- game over --------------------------
 
 gameover lda #0      ; fancy ending
-         sta goflag
+         sta zGAME_OVER_FLAG
 gameoa   jsr vbwait  ; sweep effect
          jsr twinkle
 
@@ -1830,16 +1848,16 @@ gameoa   jsr vbwait  ; sweep effect
          jsr outl2
 
          lda zMOTHERSHIP_MOVE_SPEED  ; loop this ammount
-         sta msm     ; msm is counter
+         sta zMOTHERSHIP_MOVE_COUNTER     ; msm is counter
 gameob
-         lda goflag
+         lda zGAME_OVER_FLAG
          cmp #1      ; did ms reach edge
          beq gameoc  ; really gameover
-         lda msm
+         lda zMOTHERSHIP_MOVE_COUNTER
          cmp #0
          beq gameoa  ; done moving ms
          jsr promsdo ; do the real move
-         dec msm
+         dec zMOTHERSHIP_MOVE_COUNTER
          jsr sweepp  ; sweep p1+p2
          jsr outms
          jsr outp1   ; better move p1+p2
@@ -1892,7 +1910,7 @@ gameod   lda #32     ; clear гаме═ожер
          jsr pause
 
 gameoz   lda #0
-         sta goflag
+         sta zGAME_OVER_FLAG
          sta zPLAYER_ONE_ON
          sta zPLAYER_TWO_ON
          jmp title
@@ -1906,7 +1924,7 @@ pausea   jsr vbwait
 pausez   rts
 
 sweepp               ; col chk ms push
-         lda v30
+         lda zVIC_COLLISION
          and #%00000011 ; ms+p1
          cmp #%00000011
          bne sweepp2
@@ -1927,7 +1945,7 @@ sweep1a  lda #1
          lda #73
          sta zPLAYER_ONE_X     ; p1x=73(+255=330)
 
-sweepp2  lda v30
+sweepp2  lda zVIC_COLLISION
          and #%00000101 ; ms+p2
          cmp #%00000101
          bne sweeppz
@@ -1939,7 +1957,7 @@ sweepp2  lda v30
 
 sweeppz  rts
 
-; Unused
+; Unused ==================================================
 ; drawrows ldx #48     ; draw row numbers
 ;	stx cm+40
 ;	inx
@@ -1986,112 +2004,115 @@ sweeppz  rts
 ;	stx cm4+160
 ;	rts
 
-getpoints           ; calculate mspts
-       ; this is so embarassing
-       ; a lookup table would be so
-       ; much easier and faster :(
+getpoints           ; calculate zMOTHERSHIP_POINTS (mspts)
+	; this is so embarassing
+	; a lookup table would be so
+	; much easier and faster :(
+	
+	; Uhhhhhh.  Yeah.  Definitely.
+	   
          lda #0       ; 0000 pts
-         sta mspts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS
+         sta zMOTHERSHIP_POINTS+1
 
-         lda msrow
+         lda zMOTHERHIP_ROW
          cmp #0     ; check for row 0
          bne gp1
 
          lda #0     ; 1000 pts
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #16    ; 5 bit is 1 in tens
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp1      cmp #1     ; check for row 1
          bne gp2
 
          lda #0     ; 0500 pts
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #5
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp2      cmp #2     ; check for row 2
          bne gp3
 
          lda #%01110101; 7and5
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #4     ; 475 pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp3      cmp #3
          bne gp4
 
          lda #%01010000; 5and0
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #4     ; 450 pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp4      cmp #4
          bne gp5
 
          lda #%00100101; 2and5
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #4     ; 425  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp5      cmp #5
          bne gp6
 
          lda #0        ; 0
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #4     ; 400  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp6      cmp #6
          bne gp7
 
          lda #%01110101; 7and5
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #3     ; 375  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp7      cmp #7
          bne gp8
 
          lda #%01010000; 5and0
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #3     ; 350  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp8      cmp #8
          bne gp9
 
          lda #%00100101; 2and5
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #3     ; 325  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp9      cmp #9
          bne gp10
 
          lda #0        ; 0
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #3     ; 300  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp10     cmp #16     ; бцд 10
          bne gp11
 
          lda #%01110101; 7and5
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #2     ; 275  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 ; 11 and on...
@@ -2100,96 +2121,96 @@ gp11     cmp #17     ; бцд 11
          bne gp12
 
          lda #%01010000; 5and0
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #2     ; 250  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp12     cmp #18     ; бцд 12
          bne gp13
 
          lda #%00100101; 2and5
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #2     ; 225 pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp13     cmp #19     ; бцд 13
          bne gp14
 
          lda #0        ; 0
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #2     ; 200 pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp14     cmp #20     ; бцд 14
          bne gp15
 
          lda #%01110101; 7and5
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #1     ; 175  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp15     cmp #21     ; бцд 15
          bne gp16
 
          lda #%01010000; 5and0
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #1     ; 150  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp16     cmp #22     ; бцд 16
          bne gp17
 
          lda #%00100101; 2and5
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #1     ; 125  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp17     cmp #23     ; бцд 17
          bne gp18
 
          lda #0        ; 0
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #1     ; 100  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp18     cmp #24     ; бцд 18
          bne gp19
 
          lda #%01110101; 7and5
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #0     ; 075  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp19     cmp #25     ; бцд 19
          bne gp20
 
          lda #%01010000; 5and0
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #0     ; 050  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp20     cmp #32     ; бцд 20
          bne gp21
 
          lda #%00100101; 2and5
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #0     ; 025  pts
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
          jmp gpz
 
 gp21     lda #1     ; 0001 pts
-         sta mspts
+         sta zMOTHERSHIP_POINTS
          lda #0
-         sta mspts+1
+         sta zMOTHERSHIP_POINTS+1
 
 gpz      rts
 
@@ -2384,16 +2405,16 @@ sprseta
 sprsetz  rts
 
 twinkle
-         inc starcnt
-         lda starcnt
+         inc zSTAR_COUNT
+         lda zSTAR_COUNT
          cmp #6      ; 2,4,6,8 stars
          bne twinka
          lda #0
-         sta starcnt
+         sta zSTAR_COUNT
        ; jmp twinka
 twinka
-         ldx starcnt
-         ldy star,x  ; y is star's loc
+         ldx zSTAR_COUNT
+         ldy TABLE_STAR_LOCATION,x  ; y is star's loc
 
          txa
          and #%00000001
@@ -2430,7 +2451,7 @@ twinkb1
          sta sf2,y
 twinkc
          tya         ; move y back to
-         sta star,x  ; star's loc
+         sta TABLE_STAR_LOCATION,x  ; star's loc
 
          jmp twinkz
 
@@ -2453,11 +2474,11 @@ prndneor tay        ; no eor
 
 ;---------------------------------------
 
-;hiscore  .byte 0,0,0 ; zHIGH_SCORE  6-digit bcd 
-mspts    .byte 0,0
-goflag   .byte 0
-ssflag   .byte 0
-v30      .byte 0
+; hiscore  .byte 0,0,0 ; zHIGH_SCORE  6-digit bcd 
+; mspts    .byte 0,0   ; zMOTHERSHIP_POINTS
+; goflag   .byte 0     ; zGAME_OVER_FLAG
+; ssflag   .byte 0     ; zSHOW_SCORE_FLAG
+; v30      .byte 0     ; zVIC_COLLISION
 charcol  .byte 0
 ticcnt   .byte 0     ; ticolrol count
 scrcnt   .byte 0,0
@@ -2504,51 +2525,62 @@ wavefm   .byte 0
 ; msd      .byte 0   ; zMOTHERSHIP_DIR
 ; mscol    .byte 0   ; zMOTHERSHIP_COLOR
 ; msmovs   .byte 0   ; zMOTHERSHIP_MOVE_SPEED  how many moves
-msm      .byte 0   ; move counter
-mssut    .byte 0   ; ms supeedup thresh
-mssuc    .byte 0   ; ms sp count
-msrow    .byte 0
+; msm      .byte 0   ; zMOTHERSHIP_MOVE_COUNTER move counter
+; mssut    .byte 0   ; zMOTHERHIP_SPEEDUP_THRESH ms supeedup thresh
+; mssuc    .byte 0   ; zMOTHERHIP_SPEEDUP_COUNTER ms sp count
+; msrow    .byte 0   ; zMOTHERHIP_ROW
 
-j1       .byte 0
-j1z      .byte 0
-j2       .byte 0
-j2z      .byte 0
+; j1       .byte 0 ; unused
+; j1z      .byte 0 ; zJOY_ONE_LAST_STATE
+; j2       .byte 0 ; unused
+; j2z      .byte 0 ; zJOY_TWO_LAST_STATE
 
-star     .byte 0,32,64,96       ;eight
-         .byte 128,160,192,224  ;stars
-starcnt  .byte 0
+; Are there really 8 stars? In the video it appears there are 4
+; in screen at any time.  It seems like the code wraps around 
+; at 6, so ...? 
+TABLE_STAR_LOCATION ; star
+	.byte 0,32,64,96       ; eight
+	.byte 128,160,192,224  ; stars
+		 
+; starcnt  .byte 0 ; zSTAR_COUNT
 
-r2ytab   .byte 58,66,74,82,90,98,106
-         .byte 114,122,130,0,0,0,0,0,0
-         .byte 138,146,154,162,170,178
-         .byte 186,194,202,210
-         .byte 0,0,0,0,0,0
-         .byte 218,226,234
+; Table to convert row to Y coordinate.
+; I am not understanding why there are sequences of 0 here. ????
+; This is also do-able with a LSR to multiply time 8 then add offset.
+TABLE_ROW_TO_Y ; r2ytab
+	.byte 58,66,74,82,90,98,106,114,122,130       ; Rows 0 to 9
+	.byte 0,0,0,0,0,0                             ; Ummm Why?
+	.byte 138,146,154,162,170,178,186,194,202,210 ; Rows 10 to 19
+	.byte 0,0,0,0,0,0                             ; Again?  Why 6 zeros?
+	.byte 218,226,234                             ; Rows 20 to 22
 
-scrtxt   .text "                "
-         .text "                "
-         .text "      press fire"
-         .text " to play     fir"
-         .text "e shoots and cha"
-         .text "nges cannon dire"
-         .text "ction     more p"
-         .text "oints when 1nvad"
-         .text "er is high up   "
-         .text "  1nvader slows "
-         .text "down after eight"
-         .text "y hits     'darr"
-         .text "enthefoulds     "
-         .text "thx 'bedfordlvle"
-         .text "xp     hi nate a"
-         .text "nd tbone/       "
+; GFX_SCROLL_DOCS on Atari.  
+; Declared in gfx.asm aligned in memory to accommodate 
+; fine scrolling directly from where it is declared. 
+;scrtxt   .text "                "
+;         .text "                "
+;         .text "      press fire"
+;         .text " to play     fir"
+;         .text "e shoots and cha"
+;         .text "nges cannon dire"
+;         .text "ction     more p"
+;         .text "oints when 1nvad"
+;         .text "er is high up   "
+;         .text "  1nvader slows "
+;         .text "down after eight"
+;         .text "y hits     'darr"
+;         .text "enthefoulds     "
+;         .text "thx 'bedfordlvle"
+;         .text "xp     hi nate a"
+;         .text "nd tbone/       "
 
-tichar   ; title characters
-	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$ff,$e1,$7b,$e1,$e1,$20,$e1,$20,$fe,$e1,$e2,$7b,$e1,$e2,$e2,$e1,$e2,$7f,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$e1,$e1,$7c,$fe,$e1,$6c,$7e,$ff,$e1,$e1,$20,$e1,$e1,$7c,$7e,$e1,$6c,$ff,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$e1,$e1,$20,$e1,$e1,$7e,$e1,$7c,$fb,$e1,$6c,$fe,$e1,$62,$62,$e1,$20,$e1,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$32,$30,$31,$39,$20,$44,$41,$52,$52,$45,$4e,$20,$46,$4f,$55,$4c,$44,$53,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+tichar   ; title characters -- ; Handled with GTIA graphics on Atari
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$ff,$e1,$7b,$e1,$e1,$20,$e1,$20,$fe,$e1,$e2,$7b,$e1,$e2,$e2,$e1,$e2,$7f,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$e1,$e1,$7c,$fe,$e1,$6c,$7e,$ff,$e1,$e1,$20,$e1,$e1,$7c,$7e,$e1,$6c,$ff,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$e1,$e1,$20,$e1,$e1,$7e,$e1,$7c,$fb,$e1,$6c,$fe,$e1,$62,$62,$e1,$20,$e1,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$32,$30,$31,$39,$20,$44,$41,$52,$52,$45,$4e,$20,$46,$4f,$55,$4c,$44,$53,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
 
 mountc   ; mountain screen view chars
 ;	.byte $20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20

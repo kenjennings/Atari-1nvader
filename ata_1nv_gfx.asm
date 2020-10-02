@@ -574,8 +574,10 @@ GFX_STAT_HITS
 ; but uses the memory for only the one line of text characters. 
 ; Where a star appears the starting position for the LMS will be 
 ; random from 1 to 20.
-; This can't be a full divide by three.   This may occur during the 
-; VBI, so needs to complete as fast as possible.
+; This can't do code for a real divide by three, since this may occur 
+; during the VBI, thus it needs to complete as fast as possible.
+; Math will be replaced by a lookup table to quickly convert 0 to
+; 63 into the desired range.
 ; Read a byte from the RANDOM register, then mask it (bitwise AND) 
 ; with %3F.  
 ; The resulting value, 0 to 63, is used as the index to a lookup 
@@ -586,7 +588,7 @@ GFX_STAT_HITS
 GFX_STARS_LINE
 	;    0123456789 123456789 123456789
 	.sb "                    *                        "
-	;     ^^^^================^^^^
+	;     ^^==================^^
 
 
 
