@@ -736,7 +736,7 @@ cntdwnj  lda #0      ; reset ms x,y
 
          lda #2
          sta zMOTHERSHIP_COLOR   ; ms is red
-         jsr getpoints
+         jsr GetMothershipPoints ; X will contain Mothership Row
          lda #1
          sta zSHOW_SCORE_FLAG
          jsr showscr
@@ -892,10 +892,10 @@ plh1b    lda #202    ; zLASER_ONE_ON=12 on&up
          sed         ; add p1score
          clc
          lda zPLAYER_ONE_SCORE
-         adc zMOTHERSHIP_POINTS   ; from getpoints
+         adc zMOTHERSHIP_POINTS   ; from GetMothershipPoints ; X will contain Mothership Row
          sta zPLAYER_ONE_SCORE
          lda zPLAYER_ONE_SCORE+1
-         adc zMOTHERSHIP_POINTS+1 ; from getpoints
+         adc zMOTHERSHIP_POINTS+1 ; from GetMothershipPoints ; X will contain Mothership Row
          sta zPLAYER_ONE_SCORE+1
          lda zPLAYER_ONE_SCORE+2
          adc #0      ; carry if needed
@@ -944,10 +944,10 @@ plh2b    lda #202    ; zLASER_TWO_ON=12 on&up
          sed         ; add p2score
          clc
          lda zPLAYER_TWO_SCORE
-         adc zMOTHERSHIP_POINTS   ; from getpoints
+         adc zMOTHERSHIP_POINTS   ; from GetMothershipPoints ; X will contain Mothership Row
          sta zPLAYER_TWO_SCORE
          lda zPLAYER_TWO_SCORE+1
-         adc zMOTHERSHIP_POINTS+1 ; from getpoints
+         adc zMOTHERSHIP_POINTS+1 ; from GetMothershipPoints ; X will contain Mothership Row
          sta zPLAYER_TWO_SCORE+1
          lda zPLAYER_TWO_SCORE+2
          adc #0      ; carry if needed
@@ -1000,10 +1000,10 @@ plz1a    lda zVIC_COLLISION     ; get collision
          sed         ; add p1score
          clc
          lda zPLAYER_ONE_SCORE
-         adc zMOTHERSHIP_POINTS   ; from getpoints
+         adc zMOTHERSHIP_POINTS   ; from GetMothershipPoints ; X will contain Mothership Row
          sta zPLAYER_ONE_SCORE
          lda zPLAYER_ONE_SCORE+1
-         adc zMOTHERSHIP_POINTS+1 ; from getpoints
+         adc zMOTHERSHIP_POINTS+1 ; from GetMothershipPoints ; X will contain Mothership Row
          sta zPLAYER_ONE_SCORE+1
          lda zPLAYER_ONE_SCORE+2
          adc #0      ; carry if needed
@@ -1114,7 +1114,7 @@ lzhitf ; lda #58     ; is msy >= 58?
        ; sta zMOTHERSHIP_Y
        ; lda #0      ; msrow to 0 too
        ; sta zMOTHERHIP_ROW
-lzhitc   jsr getpoints ; set new x
+lzhitc   jsr GetMothershipPoints ; set new x ; X will contain Mothership Row
          lda zMOTHERSHIP_DIR     ; check msd
          bne lzhitd
          sta zMOTHERSHIP_X     ; was going left
@@ -1212,7 +1212,7 @@ msbrtl   lda zMOTHERSHIP_X+1   ; bounce off right
          adc #1
          sta zMOTHERHIP_ROW
          cld         ; clr dec flag
-         jsr getpoints ; update points
+         jsr GetMothershipPoints ; update points ; X will contain Mothership Row
          jmp promsz
 msbltr   lda zMOTHERSHIP_X+1   ; bounce off left
          cmp #0
@@ -1232,7 +1232,7 @@ msbltr   lda zMOTHERSHIP_X+1   ; bounce off left
          adc #1
          sta zMOTHERHIP_ROW
          cld         ; clr dec flag
-         jsr getpoints ; update points
+         jsr GetMothershipPoints ; update points ; X will contain Mothership Row
          jmp promsz
 promsz ; lda zMOTHERSHIP_Y     ; check bottom
        ; cmp #234
@@ -2010,215 +2010,280 @@ sweeppz  rts
 ;	stx gCHAR_MEM4+160
 ;	rts
 
-getpoints           ; calculate zMOTHERSHIP_POINTS (mspts)
+
+
+; Points for Mothership by row.
+
+; 00 = 1000
+; 01 = 0500
+; 02 = 0475 
+; 03 = 0450
+; 04 = 0425
+; 05 = 0400
+; 06 = 0375
+; 07 = 0350
+; 08 = 0325
+; 09 = 0300
+; 10 = 0275
+; 11 = 0250
+; 12 = 0225
+; 13 = 0200
+; 14 = 0175
+; 15 = 0150
+; 16 = 0125
+; 17 = 0100
+; 18 = 0075
+; 19 = 0050
+; 20 = 0025
+; 21 = 0001
+	
+TABLE_MOTHERSHIP_POINTS_HIGH
+	.byte $10,$05,$04,$04,$04,$04,$03,$03,$03,$03,$02,$02,$02,$02,$01,$01,$01,$01,$00,$00,$00,$00
+
+TABLE_MOTHERSHIP_POINTS_LOW
+	.byte $00,$00,$75,$50,$25,$00,$75,$50,$25,$00,$75,$50,$25,$00,$75,$50,$25,$00,$75,$50,$25,$01
+
+
+
+GetMothershipPoints
+getpoints
+	; calculate zMOTHERSHIP_POINTS (mspts)
 	; this is so embarassing
 	; a lookup table would be so
 	; much easier and faster :(
 	
-	; Uhhhhhh.  Yeah.  Definitely.
-	   
-         lda #0       ; 0000 pts
-         sta zMOTHERSHIP_POINTS
-         sta zMOTHERSHIP_POINTS+1
+	; Uhhhhhh.  Yeah.  Definitely.  See above.
+	lda #0       ; 0000 pts
+	sta zMOTHERSHIP_POINTS
+	sta zMOTHERSHIP_POINTS+1
 
-         lda zMOTHERHIP_ROW
-         cmp #0     ; check for row 0
-         bne gp1
+	ldx zMOTHERHIP_ROW
+	lda TABLE_MOTHERSHIP_POINTS_LOW,X
+	sta zMOTHERSHIP_POINTS
+	lda TABLE_MOTHERSHIP_POINTS_HIGH,X
+	sta zMOTHERSHIP_POINTS+1
 
-         lda #0     ; 1000 pts
-         sta zMOTHERSHIP_POINTS
-         lda #16    ; 5 bit is 1 in tens
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+;	lda zMOTHERHIP_ROW
+;	cmp #0     ; check for row 0
+;	bne gp1
 
-gp1      cmp #1     ; check for row 1
-         bne gp2
+;	lda #0     ; 1000 pts
+;	sta zMOTHERSHIP_POINTS
+;	lda #16    ; 5 bit is 1 in tens
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-         lda #0     ; 0500 pts
-         sta zMOTHERSHIP_POINTS
-         lda #5
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+; gp1
+;	cmp #1     ; check for row 1
+;	bne gp2
 
-gp2      cmp #2     ; check for row 2
-         bne gp3
+;	lda #0     ; 0500 pts
+;	sta zMOTHERSHIP_POINTS
+;	lda #5
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-         lda #%01110101; 7and5
-         sta zMOTHERSHIP_POINTS
-         lda #4     ; 475 pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+; gp2
+;	cmp #2     ; check for row 2
+;	bne gp3
 
-gp3      cmp #3
-         bne gp4
+;	lda #%01110101; 7and5
+;	sta zMOTHERSHIP_POINTS
+;	lda #4     ; 475 pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-         lda #%01010000; 5and0
-         sta zMOTHERSHIP_POINTS
-         lda #4     ; 450 pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+; gp3
+;	cmp #3
+;	bne gp4
 
-gp4      cmp #4
-         bne gp5
+;	lda #%01010000; 5and0
+;	sta zMOTHERSHIP_POINTS
+;	lda #4     ; 450 pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-         lda #%00100101; 2and5
-         sta zMOTHERSHIP_POINTS
-         lda #4     ; 425  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+; gp4
+;	cmp #4
+;	bne gp5
 
-gp5      cmp #5
-         bne gp6
+;	lda #%00100101; 2and5
+;	sta zMOTHERSHIP_POINTS
+;	lda #4     ; 425  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-         lda #0        ; 0
-         sta zMOTHERSHIP_POINTS
-         lda #4     ; 400  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+; gp5
+;	cmp #5
+;	bne gp6
 
-gp6      cmp #6
-         bne gp7
+;	lda #0        ; 0
+;	sta zMOTHERSHIP_POINTS
+;	lda #4     ; 400  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-         lda #%01110101; 7and5
-         sta zMOTHERSHIP_POINTS
-         lda #3     ; 375  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+; gp6
+;	cmp #6
+;	bne gp7
 
-gp7      cmp #7
-         bne gp8
+;	lda #%01110101; 7and5
+;	sta zMOTHERSHIP_POINTS
+;	lda #3     ; 375  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-         lda #%01010000; 5and0
-         sta zMOTHERSHIP_POINTS
-         lda #3     ; 350  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+; gp7
+;	cmp #7
+;	bne gp8
 
-gp8      cmp #8
-         bne gp9
+;	lda #%01010000; 5and0
+;	sta zMOTHERSHIP_POINTS
+;	lda #3     ; 350  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-         lda #%00100101; 2and5
-         sta zMOTHERSHIP_POINTS
-         lda #3     ; 325  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+; gp8
+;	cmp #8
+;	bne gp9
 
-gp9      cmp #9
-         bne gp10
+;	lda #%00100101; 2and5
+;	sta zMOTHERSHIP_POINTS
+;	lda #3     ; 325  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-         lda #0        ; 0
-         sta zMOTHERSHIP_POINTS
-         lda #3     ; 300  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+; gp9
+;	cmp #9
+;	bne gp10
 
-gp10     cmp #16     ; бцд 10
-         bne gp11
+;	lda #0        ; 0
+;	sta zMOTHERSHIP_POINTS
+;	lda #3     ; 300  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-         lda #%01110101; 7and5
-         sta zMOTHERSHIP_POINTS
-         lda #2     ; 275  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+; gp10
+;	cmp #16     ; бцд 10
+;	bne gp11
+
+;	lda #%01110101; 7and5
+;	sta zMOTHERSHIP_POINTS
+;	lda #2     ; 275  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
 ; 11 and on...
 
-gp11     cmp #17     ; бцд 11
-         bne gp12
+; gp11     
+;	cmp #17     ; бцд 11
+;	bne gp12
 
-         lda #%01010000; 5and0
-         sta zMOTHERSHIP_POINTS
-         lda #2     ; 250  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+;	lda #%01010000; 5and0
+;	sta zMOTHERSHIP_POINTS
+;	lda #2     ; 250  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-gp12     cmp #18     ; бцд 12
-         bne gp13
+; gp12     
+;	cmp #18     ; бцд 12
+;	bne gp13
 
-         lda #%00100101; 2and5
-         sta zMOTHERSHIP_POINTS
-         lda #2     ; 225 pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+;	lda #%00100101; 2and5
+;	sta zMOTHERSHIP_POINTS
+;	lda #2     ; 225 pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-gp13     cmp #19     ; бцд 13
-         bne gp14
+; gp13     
+;	cmp #19     ; бцд 13
+;	bne gp14
 
-         lda #0        ; 0
-         sta zMOTHERSHIP_POINTS
-         lda #2     ; 200 pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+;	lda #0        ; 0
+;	sta zMOTHERSHIP_POINTS
+;	lda #2     ; 200 pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-gp14     cmp #20     ; бцд 14
-         bne gp15
+; gp14     
+;	cmp #20     ; бцд 14
+;	bne gp15
 
-         lda #%01110101; 7and5
-         sta zMOTHERSHIP_POINTS
-         lda #1     ; 175  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+;	lda #%01110101; 7and5
+;	sta zMOTHERSHIP_POINTS
+;	lda #1     ; 175  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-gp15     cmp #21     ; бцд 15
-         bne gp16
+; gp15     
+;	cmp #21     ; бцд 15
+;	bne gp16
 
-         lda #%01010000; 5and0
-         sta zMOTHERSHIP_POINTS
-         lda #1     ; 150  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+;	lda #%01010000; 5and0
+;	sta zMOTHERSHIP_POINTS
+;	lda #1     ; 150  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-gp16     cmp #22     ; бцд 16
-         bne gp17
+; gp16     
+;	cmp #22     ; бцд 16
+;	bne gp17
 
-         lda #%00100101; 2and5
-         sta zMOTHERSHIP_POINTS
-         lda #1     ; 125  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+;	lda #%00100101; 2and5
+;	sta zMOTHERSHIP_POINTS
+;	lda #1     ; 125  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-gp17     cmp #23     ; бцд 17
-         bne gp18
+; gp17     
+;	cmp #23     ; бцд 17
+;	bne gp18
 
-         lda #0        ; 0
-         sta zMOTHERSHIP_POINTS
-         lda #1     ; 100  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+;	lda #0        ; 0
+;	sta zMOTHERSHIP_POINTS
+;	lda #1     ; 100  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-gp18     cmp #24     ; бцд 18
-         bne gp19
+; gp18     
+;	cmp #24     ; бцд 18
+;	bne gp19
 
-         lda #%01110101; 7and5
-         sta zMOTHERSHIP_POINTS
-         lda #0     ; 075  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+;	lda #%01110101; 7and5
+;	sta zMOTHERSHIP_POINTS
+;	lda #0     ; 075  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-gp19     cmp #25     ; бцд 19
-         bne gp20
+; gp19     
+;	cmp #25     ; бцд 19
+;	bne gp20
 
-         lda #%01010000; 5and0
-         sta zMOTHERSHIP_POINTS
-         lda #0     ; 050  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+;	lda #%01010000; 5and0
+;	sta zMOTHERSHIP_POINTS
+;	lda #0     ; 050  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-gp20     cmp #32     ; бцд 20
-         bne gp21
+; gp20     
+;	cmp #32     ; бцд 20
+;	bne gp21
 
-         lda #%00100101; 2and5
-         sta zMOTHERSHIP_POINTS
-         lda #0     ; 025  pts
-         sta zMOTHERSHIP_POINTS+1
-         jmp gpz
+;	lda #%00100101; 2and5
+;	sta zMOTHERSHIP_POINTS
+;	lda #0     ; 025  pts
+;	sta zMOTHERSHIP_POINTS+1
+;	jmp gpz
 
-gp21     lda #1     ; 0001 pts
-         sta zMOTHERSHIP_POINTS
-         lda #0
-         sta zMOTHERSHIP_POINTS+1
+; gp21     
+;	lda #1     ; 0001 pts
+;	sta zMOTHERSHIP_POINTS
+;	lda #0
+;	sta zMOTHERSHIP_POINTS+1
 
-gpz      rts
+; gpz
+	rts
+
 
 ;---------------------------------------
 
