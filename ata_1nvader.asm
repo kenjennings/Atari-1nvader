@@ -79,6 +79,13 @@ zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter
 zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threahold 
 zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
 zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
+; Note that the original game dealt with some things in BCD values, 
+; such as the Mothership row here making it a little more convenient to 
+; convert hex values to printable characters on the screen.  This makes 
+; using the value as an index a royal pain.  For sanity's sake this 
+; port is going to use it as a plain integer/binary byte value and do 
+; the special handling for the screen display part.
+; This is why the original code has weird gaps in some lookup tables.
 
 zMOTHERSHIP_POINTS          .word $0000 ; Current Points for hitting mothership
 
@@ -242,31 +249,37 @@ gBOTTOM_ROW      = $07c0 ; br bottom row of txt
 gMOUNT_CHAR_MEM  = $06f8 ; mountsm ; mount screen mem
 gMOUNT_COLOR_MEM = $daf8 ; mountcm ; mount colour mem
 
-cmem0    = $2000
-cmem1    = $2100
-cmem2    = $2200
-cmem3    = $2300
-cmem4    = $2400
-cmem5    = $2500
-cmem6    = $2600
-cmem7    = $2700
 
-cset0    = $d000    ; this is where
-cset1    = $d100    ; the 6510 sees
-cset2    = $d200    ; the char data
-cset3    = $d300    ; under the жиц (ROM)
-cset4    = $d400
-cset5    = $d500
-cset6    = $d600
-cset7    = $d700
+; Not needed on Atari.  Atari character set is declared in code 
+; and will be loaded into memory where they will be used by ANTIC.
+
+; cmem0    = $2000
+; cmem1    = $2100
+; cmem2    = $2200
+; cmem3    = $2300
+; cmem4    = $2400
+; cmem5    = $2500
+; cmem6    = $2600
+; cmem7    = $2700
+
+; cset0    = $d000    ; this is where
+; cset1    = $d100    ; the 6510 sees
+; cset2    = $d200    ; the char data
+; cset3    = $d300    ; under the жиц (ROM)
+; cset4    = $d400
+; cset5    = $d500
+; cset6    = $d600
+; cset7    = $d700
 
 gSTAR_CHAR_MEM1 = $0428 ; sf1     
 gSTAR_CHAR_MEM2 = $0530 ; sf2 ; +8 to fill botrow
 
-sprmem1  = $3200    ; sprite memory
-sprmem2  = $3240
-sprmem3  = $3280
-sprmem4  = $32c0
+; Not needed on Atari.  Atari images are declared and loaded 
+; into memory where they will be used by ANTIC.
+;sprmem1  = $3200    ; sprite memory
+;sprmem2  = $3240
+;sprmem3  = $3280
+;sprmem4  = $32c0
 
 ;-- inv516a ----------------------------
 
@@ -279,12 +292,22 @@ sprmem4  = $32c0
 
 	icl "ata_1nv_pmg.asm"  ; Data for Player/Missile graphics (and reserve the bitmap).
 
+
+	icl "ata_1nv_gfx_code.asm"  ; Routines for manipulating screen graphics.
+
+	icl "ata_1nv_pmg_code.asm"  ; Routines for Player/Missile graphics animation.
+
+
+	icl "ata_1nv_int.asm"   ; Code for I/O, Isplay List Interrupts, and Vertical Blank Interrupt.
+	
+	icl "ata_1nv_game.asm"  ; Code for game logic.
+	
 ; --------------------------------------------------------------------------
 
 
 
 
-
+; ==========================================================================
 ;-- setup ------------------------------
 
          lda #147
@@ -298,251 +321,359 @@ sprmem4  = $32c0
          lda #1
          sta $0286  ; character colour
 
-         lda #1     ; colour the screen
-         ldx #0     ; col mem white
-colscr   sta $d800,x
-         sta $d8c8,x
-         sta $d990,x
-         sta $da58,x
-         sta $db20,x
-         inx
-         cpx #200
-         bne colscr
+	lda #1     ; colour the screen
+;;	ldx #0     ; col mem white
+	ldx #199   ; counting reverse 199 to 0
+colscr   
+	sta $d800,x
+	sta $d8c8,x
+	sta $d990,x
+	sta $da58,x
+	sta $db20,x
+;;	inx
+;;	cpx #200
+;;	bne colscr
+	dex
+	bpl colscr
 
-         jsr charsetup
-         jsr sprsetup
+	jsr charsetup
+	jsr sprsetup
 
-         sei        ; turn on interupts
+	sei        ; turn on interupts
 
-         lda #200   ; sprite pointers
-         sta $07f8  ; ms
-         lda #201
-         sta $07f9  ; p1
-         sta $07fa  ; p2
-         lda #202
-         sta $07fb  ; l1
-         sta $07fc  ; l2
+	lda #200   ; sprite pointers
+	sta $07f8  ; ms
+	lda #201
+	sta $07f9  ; p1
+	sta $07fa  ; p2
+	lda #202
+	sta $07fb  ; l1
+	sta $07fc  ; l2
 
-       ; jsr drawrows
-         jsr drawmounts
+	; jsr drawrows
+	jsr drawmounts
 
+; ==========================================================================
 ;-- title ------------------------------
 
-title    jsr titlinit ; new game setup
+title    
+	jsr titlinit ; new game setup
 
-         lda #148   ; set p1+2 x+y
-         sta zPLAYER_ONE_X
-         lda #196
-         sta zPLAYER_TWO_X
-         lda #242   ; zPLAYER_ONE_Y zPLAYER_TWO_Y
-         sta zPLAYER_ONE_Y    ; touching bottom
-         sta zPLAYER_TWO_Y
-         lda #160   ; set ms x+y
-         sta zMOTHERSHIP_X
-         lda #146   ; was 58
-         sta zMOTHERSHIP_Y
-         lda #11
-         sta zMOTHERHIP_ROW  ; row 11 = 146
+	lda #148   ; set p1+2 x+y
+	sta zPLAYER_ONE_X
+	
+	lda #196
+	sta zPLAYER_TWO_X
+	
+	lda #242   ; zPLAYER_ONE_Y zPLAYER_TWO_Y
+	sta zPLAYER_ONE_Y    ; touching bottom
+	sta zPLAYER_TWO_Y
+	
+	lda #160   ; set ms x+y
+	sta zMOTHERSHIP_X
+	
+	lda #146   ; was 58
+	sta zMOTHERSHIP_Y
+	
+	lda #11
+	sta zMOTHERHIP_ROW  ; row 11 = 146
 
-         lda #1     ; make ms биг
-         sta VICII+29   ; expand x
-         sta VICII+23   ; expand y
-         sta zSHOW_SCORE_FLAG
-         jsr showscr; show score
+	lda #1     ; make ms биг
+	sta VICII+29   ; expand x
+	sta VICII+23   ; expand y
+	
+	sta zSHOW_SCORE_FLAG
+	jsr showscr; show score
 
-                    ; should be 7
-         lda #7     ; ms +p1 +p2 +xx +xx
-         sta VICII+21   ; turn on sprites
-         jsr outp1
-         jsr outp2
-       ; jsr outms  ; don't work no more
-         lda zMOTHERSHIP_X    ; do it manually
-         sta VICII
-         lda zMOTHERSHIP_Y
-         sta VICII+1
-         lda zMOTHERSHIP_COLOR
-         sta VICII+39
+	; should be 7
+	lda #7     ; ms +p1 +p2 +xx +xx
+	sta VICII+21   ; turn on sprites
+	
+	jsr outp1
+	jsr outp2
+	; jsr outms  ; don't work no more
+	
+	lda zMOTHERSHIP_X    ; do it manually
+	sta VICII
+	
+	lda zMOTHERSHIP_Y
+	sta VICII+1
+	
+	lda zMOTHERSHIP_COLOR
+	sta VICII+39
 
-       ; lda #1
-       ; sta charcol
-       ; jsr coltitle
+	; lda #1
+	; sta charcol
+	; jsr coltitle
 
-         jsr tistripe
-         jsr drawtitle
-         jsr clrstats
+	jsr tistripe
+	jsr drawtitle
+	jsr clrstats
 
-       ; jsr soundend
+;	jsr soundend
 
-         lda #0
-         sta zSCROLL_COUNTER
+;	lda #0
+	lda #39 ; Minimum is 39 due to reverse order of loading into screen memory.
+	sta zSCROLL_COUNTER
 
-titlea   jsr vbwait
+titlea   
+	jsr vbwait
 
-         inc zSCROLL_JIFFY
-         lda zSCROLL_JIFFY
-         cmp #4       ; 3 too fast?
-         bne scr99
-         lda #0
-         sta zSCROLL_JIFFY
+	inc zSCROLL_JIFFY
+	lda zSCROLL_JIFFY
+	cmp #4       ; 3 too fast?
+	bne scr99
+	
+	lda #0
+	sta zSCROLL_JIFFY
 
-         ldx zSCROLL_COUNTER
-         ldy #0       ; print 40 chars
-scr02    lda GFX_SCROLL_DOCS,x ; startin at
-         sta gSCROLL_MEM,y ; zSCROLL_COUNTER scrcnt
-         inx
-         iny
-         cpy #40      ; 40 chars
-         bne scr02
+	ldx zSCROLL_COUNTER ; 
+;;	ldy #0       ; print 40 chars
+	ldy #39      ; Print 40 chars in reverse to avoid the cmp.
+	
+scr02
+	lda GFX_SCROLL_DOCS,x ; startin at
+	sta gSCROLL_MEM,y ; zSCROLL_COUNTER scrcnt
+;	inx
+;	iny
+;	cpy #40      ; 40 chars
+;	bne scr02
+	dex
+	dey
+	bpl scr02
 
-         inc zSCROLL_COUNTER
+	inc zSCROLL_COUNTER
+	
 scr99
-       ; jsr twinkle
-         jsr ticolrol ; fancy title fx
+	; jsr twinkle
+	jsr ticolrol ; fancy title fx
+	jsr fire1  ; get p1 fire
+	
+	lda zPLAYER_ONE_FIRE    ; check p1f
+;;	cmp #1
+;;	bne titleb ; no fire
+	beq titleb ; no fire
+	
+	lda #1     ; fire p1 start
+	sta zPLAYER_ONE_ON
+	
+	lda #234   ; pop up p1
+	sta zPLAYER_ONE_Y
+	
+	jsr outp1
+	jmp clrscr ; begin gameinit
+		 
+titleb   
+	jsr fire2  ; get p2 fire
+	
+	lda zPLAYER_TWO_FIRE    ; check p2f
+;;	cmp #1
+;;	bne titlea ; no fire wait
+	beq titlea ; no fire wait
+	
+	lda #1     ; fire p2 start
+	sta zPLAYER_TWO_ON
+	
+	lda #234   ; pop up p2
+	sta zPLAYER_TWO_Y
+	
+	jsr outp2
 
-         jsr fire1  ; get p1 fire
-         lda zPLAYER_ONE_FIRE    ; check p1f
-         cmp #1
-         bne titleb ; no fire
-         lda #1     ; fire p1 start
-         sta zPLAYER_ONE_ON
-         lda #234   ; pop up p1
-         sta zPLAYER_ONE_Y
-         jsr outp1
-         jmp clrscr ; begin gameinit
-titleb   jsr fire2  ; get p2 fire
-         lda zPLAYER_TWO_FIRE    ; check p2f
-         cmp #1
-         bne titlea ; no fire wait
-         lda #1     ; fire p2 start
-         sta zPLAYER_TWO_ON
-         lda #234   ; pop up p2
-         sta zPLAYER_TWO_Y
-         jsr outp2
+clrscr   
+	lda #32    ; clear scroll
+;;	ldy #0
+	ldy #39 ; count in reverse. eliminate cmp.
+		 
+clrscr2  
+	sta gSCROLL_MEM,y
+;;	iny
+;;	cpy #40
+;;	bne clrscr2
+	dey
+	bpl clrscr2
 
-clrscr   lda #32    ; clear scroll
-         ldy #0
-clrscr2  sta gSCROLL_MEM,y
-         iny
-         cpy #40
-         bne clrscr2
+titlez   
+	jmp gamestrt
 
-titlez   jmp gamestrt
+; ==========================================================================
 
-drawtitle ldx #0    ; draw title
-drawti2  lda tichar,x
-         sta gTI_CHAR_MEM,x
-         inx
-         cpx #240
-         bne drawti2
-         rts
+drawtitle 
+;;	ldx #0    ; draw title
+	ldx #240  ;  count in reverse to eliminate cmp.
+drawti2  
+	lda tichar-1,x
+	sta gTI_CHAR_MEM-1,x
+;;	inx
+;;	cpx #240
+;;	bne drawti2
+	dex
+	bne drawti2
 
-clrtitl  ldx #0     ; clear the title
-         lda #32
-clrtitl2 sta gTI_CHAR_MEM,x
-         inx
-         cpx #240
-         bne clrtitl2
-         rts
+	rts
 
-coltitle ldx #0
-         lda zCHAR_COLOR
-colti2   sta gTI_COLOR_MEM,x
-         inx
-         cpx #240
-         bne colti2
-         rts
+; ==========================================================================
+
+clrtitl  
+;;	ldx #0     ; clear the title
+	ldx #240   ; count in reverse to eliminate cmp.
+	lda #32
+		 
+clrtitl2 
+	sta gTI_CHAR_MEM-1,x
+;;	inx
+;;	cpx #240
+;;	bne clrtitl2
+	dex
+	bne clrtitl2
+	
+	rts
+
+; ==========================================================================
+
+coltitle 
+;;	ldx #0
+	ldx #240 ; count in reverse to eliminate the cmp.
+	lda zCHAR_COLOR
+		 
+colti2   
+	sta gTI_COLOR_MEM-1,x
+;;	inx
+;;	cpx #240
+;;	bne colti2
+	dex
+	bne colti2
+
+	rts
+
+; ==========================================================================
 
 drawmounts          ; draw mountains
-         ldx #0
+	ldx #0
 
-drwmtsa  lda mountc,x
-         sta gMOUNT_CHAR_MEM,x
+drwmtsa  
+	lda mountc,x
+	sta gMOUNT_CHAR_MEM,x
 
-         lda #11    ; default = grey
-         sta gMOUNT_COLOR_MEM,x
+	lda #11    ; default = grey
+	sta gMOUNT_COLOR_MEM,x
 
-         lda mountc,x
-         cmp #$5d   ; is it a peak?
-         bne drwmtsd
-         lda #15    ; white
-         sta gMOUNT_COLOR_MEM,x
+	lda mountc,x
+	cmp #$5d   ; is it a peak?
+	bne drwmtsd
+	
+	lda #15    ; white
+	sta gMOUNT_COLOR_MEM,x
 
-drwmtsd  inx
-         cpx #240
-         bne drwmtsa
+drwmtsd  
+	inx
+	cpx #240
+	bne drwmtsa
 
-         ldx #160
-         lda #9
-drwmtsb  sta gMOUNT_COLOR_MEM,x
-         inx
-         cpx #200
-         bne drwmtsb
+	ldx #160
+	lda #9
+		 
+drwmtsb  
+	sta gMOUNT_COLOR_MEM,x
+	inx
+	cpx #200
+	bne drwmtsb
 
-         lda #8
-drwmtsc  sta gMOUNT_COLOR_MEM,x
-         inx
-         cpx #240
-         bne drwmtsc
+	lda #8
+		 
+drwmtsc  
+	sta gMOUNT_COLOR_MEM,x
+	inx
+	cpx #240
+	bne drwmtsc
 
-         lda #5
-         ldx #160
-         sta gMOUNT_COLOR_MEM,x
-         ldx #199
-         sta gMOUNT_COLOR_MEM,x
+	lda #5
+	ldx #160
+	sta gMOUNT_COLOR_MEM,x
+	ldx #199
+	sta gMOUNT_COLOR_MEM,x
 
-         lda #3        ; colour stats
-         ldx #215
-drwmtse  sta gMOUNT_COLOR_MEM,x
-         inx
-         cpx #225
-         bne drwmtse
+	lda #3        ; colour stats
+	ldx #215
+		 
+drwmtse  
+	sta gMOUNT_COLOR_MEM,x
+	inx
+	cpx #225
+	bne drwmtse
 
-         rts
+	rts
 
 tistripe          ; striped title colour
-         ldx #0
-         ldy #0
-tsta     cpy #0    ; 0 is black
-         bne tstb
-         lda #6    ; 0
-         jmp tstx
-tstb     cpy #1    ; 1 is dark grey
-         bne tstc
-         lda #11   ; 11
-         jmp tstx
-tstc     cpy #2    ; 2 is med grey
-         bne tstd
-         lda #12   ; 12
-         jmp tstx
-tstd     cpy #3    ; 3 is lite grey
-         bne tste
-         lda #15   ; 15
-         jmp tstx
-tste     cpy #4    ; 4 is white
-         bne tstf
-         lda #1
-         jmp tstx
-tstf     lda #4    ; leftover 4=purple
-tstx     sta gTI_COLOR_MEM,x ; change the colour
-         iny
-         cpy #6
-         bne tsty
-         ldy #0
-tsty     inx      ; 200 leaves last line
-         cpx #160 ; 240 for all
-         bne tsta
-tstz     rts
+	ldx #0
+	ldy #0
+	
+tsta     
+	cpy #0    ; 0 is black
+	bne tstb
+	lda #6    ; 0
+	jmp tstx
+		 
+tstb     
+	cpy #1    ; 1 is dark grey
+	bne tstc
+	lda #11   ; 11
+	jmp tstx
+		 
+tstc     
+	cpy #2    ; 2 is med grey
+	bne tstd
+	lda #12   ; 12
+	jmp tstx
+		 
+tstd     
+	cpy #3    ; 3 is lite grey
+	bne tste
+	lda #15   ; 15
+	jmp tstx
+		 
+tste     
+	cpy #4    ; 4 is white
+	bne tstf
+	lda #1
+	jmp tstx
+	
+tstf     
+	lda #4    ; leftover 4=purple
+	
+tstx     
+	sta gTI_COLOR_MEM,x ; change the colour
+	iny
+	cpy #6
+	bne tsty
+	ldy #0
+	
+tsty     
+	inx      ; 200 leaves last line
+	cpx #160 ; 240 for all
+	bne tsta
+		 
+tstz    
+	rts
 
-ticolrol ldx #0    ; roll the title col
-tcra     inc gTI_COLOR_MEM,x
-         inx
-         cpx #240
-         bne tcra
-tcrz     rts
+; ==========================================================================
 
+ticolrol 
+	ldx #0    ; roll the title col
+	
+tcra     
+	inc gTI_COLOR_MEM,x
+	inx
+	cpx #240
+	bne tcra
+	
+tcrz     
+	rts
+
+; ==========================================================================
 ;-- game init --------------------------
 
-titlinit lda #0
+titlinit 
+	lda #0
          sta zGAME_OVER_FLAG
          sta zPLAYER_ONE_DIR
          sta zPLAYER_ONE_FIRE
@@ -584,8 +715,11 @@ titlinit lda #0
          sta zPLAYER_TWO_Y
 
          rts
+		 
+; ==========================================================================
 
-gameinit sed
+gameinit 
+	sed
          lda #0
          sta zPLAYER_ONE_SCORE
          sta zPLAYER_ONE_SCORE+1
@@ -615,7 +749,11 @@ gameinit sed
          lda #10     ; should be 10
          sta zMOTHERHIP_SPEEDUP_THRESH   ; speedup threshld
          sta zMOTHERHIP_SPEEDUP_COUNTER   ; speedup count
-gameintz rts
+		 
+gameintz 
+	rts
+
+; ==========================================================================
 
 cntdwn               ; wait for other p
          lda #51     ; seconds 51-48=3s
@@ -627,7 +765,8 @@ cntdwn               ; wait for other p
          lda #29     ; jiffys 0.5 secs
          sta zJIFFY_COUNTER
 
-cntdwna  jsr ticolrol;  >title fx
+cntdwna  
+	jsr ticolrol;  >title fx
 
          dec zJIFFY_COUNTER
          lda zJIFFY_COUNTER
@@ -649,7 +788,8 @@ cntdwna  jsr ticolrol;  >title fx
          adc #2
          sta gCHAR_MEM+180  ; other half
 
-cntdwnb  jsr vbwait  ; wait 1 frame
+cntdwnb  
+	jsr vbwait  ; wait 1 frame
          lda zPLAYER_ONE_ON     ; need to chk?
          cmp #1
          beq cntdwnc ; nope go away
@@ -663,7 +803,9 @@ cntdwnb  jsr vbwait  ; wait 1 frame
          lda #234    ; bump p1 up
          sta zPLAYER_ONE_Y
          jsr outp1
-cntdwnc  lda zPLAYER_TWO_ON     ; need to chk?
+
+cntdwnc  
+	lda zPLAYER_TWO_ON     ; need to chk?
          cmp #1
          beq cntdwnd ; nope go away
          jsr fire2   ; yes we do
@@ -676,14 +818,18 @@ cntdwnc  lda zPLAYER_TWO_ON     ; need to chk?
          lda #234    ; bump p2 up
          sta zPLAYER_TWO_Y
          jsr outp2
-cntdwnd  jmp cntdwna
+		 
+cntdwnd  
+	jmp cntdwna
 
-cntdwne  lda #$47    ; print "го"
+cntdwne  
+	lda #$47    ; print "го"
          sta gCHAR_MEM+179  ;
          lda #$4f
          sta gCHAR_MEM+180
                      ; slide stuff away
-cntdwni  jsr ticolrol
+cntdwni  
+	jsr ticolrol
          jsr vbwait
          dec zMOTHERSHIP_Y     ; silde ms up
          dec zMOTHERSHIP_Y
@@ -694,8 +840,8 @@ cntdwni  jsr ticolrol
          lda zMOTHERSHIP_Y     ; get msy
          sta VICII+1     ; set spr1 y
 
-
-cntdsp1  lda zPLAYER_ONE_ON
+cntdsp1  
+	lda zPLAYER_ONE_ON
          cmp #1
          beq cntdsp2
          lda zPLAYER_ONE_Y     ; slide p1
@@ -704,7 +850,8 @@ cntdsp1  lda zPLAYER_ONE_ON
          inc zPLAYER_ONE_Y
          jsr outp1
 
-cntdsp2  lda zPLAYER_TWO_ON
+cntdsp2  
+	lda zPLAYER_TWO_ON
          cmp #1
          beq cntdsz
          lda zPLAYER_TWO_Y     ; slide p2
@@ -713,12 +860,14 @@ cntdsp2  lda zPLAYER_TWO_ON
          inc zPLAYER_TWO_Y
          jsr outp2
 
-cntdsz   lda zMOTHERSHIP_Y
+cntdsz   
+	lda zMOTHERSHIP_Y
          cmp #32     ; should be off top
          bne cntdwni
 
-                     ; reset ms stuff
-cntdwnj  lda #0      ; reset ms x,y
+                     ; reset mothership stuff
+cntdwnj  
+	lda #0      ; reset ms x,y
          sta VICII+29    ; expand
          sta VICII+23    ; (for ms)
          sta zMOTHERSHIP_X
@@ -750,35 +899,47 @@ cntdwnj  lda #0      ; reset ms x,y
        ; sta charcol  ; set 0=black
        ; jsr coltitle ; color title blk
 
-cntdwnz  rts
+cntdwnz  
+	rts
 
+; ==========================================================================
 ;-- game loop --------------------------
 
-gamestrt jsr gameinit
-         jsr cntdwn
-gameloop jsr vbwait
-       ; lda VICII+30    ; get colision reg
-       ; sta v30     ; save to chk latr
-         jsr input
-         jsr process
-         jsr output
-         lda zGAME_OVER_FLAG  ; chk gameover flg
-         cmp #1
-         bne gameloop
-         jmp gameover
+gamestrt 
+	jsr gameinit
+	jsr cntdwn
+		 
+gameloop 
+	jsr vbwait
+	; lda VICII+30    ; get colision reg
+	; sta v30     ; save to chk latr
+	jsr input
+	jsr process
+	jsr output
+		 
+	lda zGAME_OVER_FLAG  ; chk gameover flg
+;	cmp #1               ; assume 1 = game over, 0 = continue
+;	bne gameloop
+	beq gameloop         ; 0, so keep looping
+
+	jmp gameover
 
 vbwait  ;inc $d020   ; timing colour
-vbwaita  lda $d012
+vbwaita  
+	lda $d012
          cmp #251
          bne vbwaita
         ;dec $d020   ; timing colour
          lda VICII+30    ; get col reg
          sta zVIC_COLLISION     ; save to v30
-         rts
 
+	rts
+
+; ==========================================================================
 ;-- input ------------------------------
 
-input    lda zPLAYER_ONE_ON     ; get p1 ztatus
+input    
+	lda zPLAYER_ONE_ON     ; get p1 ztatus
          cmp #1
          bne inputd  ; skip if p1 off
 
@@ -790,9 +951,11 @@ input    lda zPLAYER_ONE_ON     ; get p1 ztatus
          bcc inputa  ; yes, ок
          jmp inputd
 
-inputa   jsr fire1
+inputa   
+	jsr fire1
 
-inputd   lda zPLAYER_TWO_ON     ; get p2 ztatus
+inputd   
+	lda zPLAYER_TWO_ON     ; get p2 ztatus
          cmp #1
          bne inputz  ; skip if p2 off
 
@@ -804,18 +967,26 @@ inputd   lda zPLAYER_TWO_ON     ; get p2 ztatus
          bcc inpute  ; yes, ок
          jmp inputz
 
-inpute   jsr fire2
+inpute   
+	jsr fire2
 
-inputz   rts
+inputz   
+	rts
 
-fire1    lda joy+1   ; remember: 0=fire
+fire1    
+	lda joy+1   ; remember: 0=fire
          and #16
          cmp #0
          beq f1maybe
-f1nope   lda #0      ; lastcycle=nofire
+		 
+f1nope   
+	lda #0      ; lastcycle=nofire
          sta zJOY_ONE_LAST_STATE
+		 
          rts
-f1maybe  lda zJOY_ONE_LAST_STATE
+		 
+f1maybe  
+	lda zJOY_ONE_LAST_STATE
          cmp #0
          bne f1nope2
          lda #1      ; set p1f═банг!
@@ -825,26 +996,38 @@ f1maybe  lda zJOY_ONE_LAST_STATE
          rts
 f1nope2  lda #0
          sta zPLAYER_ONE_FIRE
-         rts
+
+	rts
 
 fire2    lda joy     ; remember: 0=fire
          and #16
          cmp #0
          beq f2maybe
-f2nope   lda #0      ; lastcycle=nofire
+
+f2nope   
+	lda #0      ; lastcycle=nofire
          sta zJOY_TWO_LAST_STATE
-         rts
-f2maybe  lda zJOY_TWO_LAST_STATE
+		 
+	rts
+
+f2maybe  
+	lda zJOY_TWO_LAST_STATE
          cmp #0
          bne f2nope2
          lda #1      ; set p2f═банг!
          sta zPLAYER_TWO_FIRE
          sta zJOY_TWO_LAST_STATE     ; lastcycle=fire
          jsr lazbeep2 ; p2 ноисе!
+
          rts
-f2nope2  lda #0
+
+f2nope2  
+	lda #0
          sta zPLAYER_TWO_FIRE
+		 
          rts
+
+; ==========================================================================
 
 ;-- process ----------------------------
 
@@ -866,21 +1049,26 @@ processa lda zPLAYER_TWO_ON
 processb jsr proreset
          rts
 
+; ==========================================================================
+
        ; ------------- new lazer hit
-prohit   lda zLASER_ONE_ON
+prohit   
+	lda zLASER_ONE_ON
          cmp #0      ; is l1 off?
          beq plh1a
          cmp #12     ; is l1 on?
          beq plh1b
          jmp plh1c
 
-plh1a    lda #0      ; zLASER_ONE_ON=0 off
+plh1a    
+	lda #0      ; zLASER_ONE_ON=0 off
          sta zLASER_ONE_ON
          lda #202    ; laz sprite
          sta $07fb
          jmp plh2
 
-plh1b    lda #202    ; zLASER_ONE_ON=12 on&up
+plh1b    
+	lda #202    ; zLASER_ONE_ON=12 on&up
          sta $07fb   ; laz sprite
 
          lda zVIC_COLLISION     ; chk collision
@@ -913,26 +1101,30 @@ plh1b    lda #202    ; zLASER_ONE_ON=12 on&up
          jmp lzhitb  ; goto pop ms up
        ; jmp plh2
 
-plh1c    dec zLASER_ONE_ON     ; 12<zLASER_ONE_ON>0 exp
+plh1c    
+	dec zLASER_ONE_ON     ; 12<zLASER_ONE_ON>0 exp
          lda #203    ; exp sprite
          sta $07fb   ;
          jmp plh2
 
        ; ------------- lazer 2 hit check
-plh2     lda zLASER_TWO_ON
+plh2     
+	lda zLASER_TWO_ON
          cmp #0      ; is l2 off?
          beq plh2a
          cmp #12     ; is l2 on?
          beq plh2b
          jmp plh2c
 
-plh2a    lda #0      ; zLASER_TWO_ON=0 off
+plh2a    
+	lda #0      ; zLASER_TWO_ON=0 off
          sta zLASER_TWO_ON
          lda #202    ; laz sprite
          sta $07fc
          jmp prohitz
 
-plh2b    lda #202    ; zLASER_TWO_ON=12 on&up
+plh2b    
+	lda #202    ; zLASER_TWO_ON=12 on&up
          sta $07fc   ; laz sprite
 
          lda zVIC_COLLISION     ; chk collision
@@ -965,13 +1157,17 @@ plh2b    lda #202    ; zLASER_TWO_ON=12 on&up
          jmp lzhitb  ; goto pop ms up
        ; jmp prohitz
 
-plh2c    dec zLASER_TWO_ON     ; 12<zLASER_TWO_ON>0 exp
+plh2c    
+	dec zLASER_TWO_ON     ; 12<zLASER_TWO_ON>0 exp
          lda #203    ; exp sprite
          sta $07fc   ;
          jmp prohitz
 
-prohitz  rts
+prohitz  
+	rts
        ; ------------- end new prohit
+
+; ==========================================================================
 
 prolzhit             ; was ms hit?
          lda zLASER_ONE_ON
@@ -991,9 +1187,11 @@ prolzhit             ; was ms hit?
          lda #202    ; lz sprite on
          sta $07fb
 
-plz1b    jmp lz2hit
+plz1b    
+	jmp lz2hit
 
-plz1a    lda zVIC_COLLISION     ; get collision
+plz1a    
+	lda zVIC_COLLISION     ; get collision
          and #9
          cmp #9      ; s1(ms) + s4(l1)
          bne lz2hit  ; no hit, check l2
@@ -1021,6 +1219,7 @@ plz1a    lda zVIC_COLLISION     ; get collision
          lda #12     ; was 0
          sta zLASER_ONE_ON     ; turn off l1
          jmp lzhitb  ; goto kill ms
+
 lz2hit
          lda zLASER_TWO_ON
          cmp #0
@@ -1028,7 +1227,8 @@ lz2hit
          bne plz1e
          jmp lzhitz
 
-plz1e    cmp #1
+plz1e    
+	cmp #1
          beq lz2hita ; goto active lz2
 
          lda #203    ; explosion stuff
@@ -1042,14 +1242,17 @@ plz1e    cmp #1
          lda #202    ; lz sprite on
          sta $07fc
 
-plz1c    jmp lzhitz  ; l2 off, done
+plz1c    
+	jmp lzhitz  ; l2 off, done
 
-lz2hita  lda zVIC_COLLISION     ; get collision
+lz2hita  
+	lda zVIC_COLLISION     ; get collision
          and #17
          cmp #17     ; s1(ms) + s5(l2)
          beq lz2hitb
          jmp lzhitz  ; no hit
-lz2hitb  sed         ; add p2score
+lz2hitb  
+	sed         ; add p2score
          clc
          lda zPLAYER_TWO_SCORE
          adc zMOTHERSHIP_POINTS
@@ -1089,9 +1292,12 @@ lzhitb               ; ms was hit, popup
          lda #$80          ; 128 = $80 or 80 BCD
          sta zSHIP_HITS    ; reset hit cout
 
-lzhitr   lda zMOTHERHIP_SPEEDUP_THRESH
+lzhitr   
+	lda zMOTHERHIP_SPEEDUP_THRESH
          sta zMOTHERHIP_SPEEDUP_COUNTER   ; reset counter
-lzhite   lda #1
+		 
+lzhite   
+	lda #1
          sta zSHOW_SCORE_FLAG  ; set ssflag
        ; lda zMOTHERSHIP_Y     ; pop ms up 16px
        ; sbc #16
@@ -1107,14 +1313,16 @@ lzhite   lda #1
          bcs lzhitf  ; no, skip
          lda #0      ; yes, make it 0
          sta zMOTHERHIP_ROW
-lzhitf ; lda #58     ; is msy >= 58?
+lzhitf 
+	; lda #58     ; is msy >= 58?
        ; cmp zMOTHERSHIP_Y
        ; bcc lzhitc  ; yes, go away
        ; lda #58     ; no, make it 58
        ; sta zMOTHERSHIP_Y
        ; lda #0      ; msrow to 0 too
        ; sta zMOTHERHIP_ROW
-lzhitc   jsr GetMothershipPoints ; set new x ; X will contain Mothership Row
+lzhitc   
+	jsr GetMothershipPoints ; set new x ; X will contain Mothership Row
          lda zMOTHERSHIP_DIR     ; check msd
          bne lzhitd
          sta zMOTHERSHIP_X     ; was going left
@@ -1122,13 +1330,17 @@ lzhitc   jsr GetMothershipPoints ; set new x ; X will contain Mothership Row
          lda #1      ; go right
          sta zMOTHERSHIP_DIR
          jmp lzhitz
-lzhitd   lda #1      ; was going right
+lzhitd   
+	lda #1      ; was going right
          sta zMOTHERSHIP_X+1
          lda #89     ; msx x=344
          sta zMOTHERSHIP_X
          lda #0      ; go left
          sta zMOTHERSHIP_DIR
-lzhitz   rts
+lzhitz   
+	rts
+
+; ==========================================================================
 
 prolazer
          lda zLASER_ONE_ON
@@ -1146,7 +1358,8 @@ prolazer
          lda #202    ; use lz sprite
          sta $07fb   ; not exp
 
-lazera   lda zLASER_TWO_ON
+lazera   
+	lda zLASER_TWO_ON
        ; cmp #0
        ; beq lazerz
          cmp #12     ;zLASER_TWO_ON=12 active laz
@@ -1161,40 +1374,55 @@ lazera   lda zLASER_TWO_ON
          sta zLASER_TWO_ON     ; l2 off
          lda #202    ; use lz sprite
          sta $07fc   ; not exp
-lazerz   rts
+lazerz   
+	rts
 
-proms    lda zMOTHERSHIP_MOVE_SPEED ; loop this ammount
+; ==========================================================================
+
+proms    
+	lda zMOTHERSHIP_MOVE_SPEED ; loop this ammount
          sta zMOTHERSHIP_MOVE_COUNTER    ; msm is counter
-procmsm  lda zMOTHERSHIP_MOVE_COUNTER
+procmsm  
+	lda zMOTHERSHIP_MOVE_COUNTER
          cmp #0
          beq procmsz ; done moving ms
          jsr promsdo ; do the real move
          dec zMOTHERSHIP_MOVE_COUNTER
          jmp procmsm ; loop again
-procmsz  rts
+procmsz  
+	rts
 
-promsdo  lda zMOTHERSHIP_DIR     ; this is the move
+; ==========================================================================
+
+promsdo  
+	lda zMOTHERSHIP_DIR     ; this is the move
          cmp #0      ; routine for real
          beq pmslt
-pmsrt    inc zMOTHERSHIP_X     ; move right
+pmsrt    
+	inc zMOTHERSHIP_X     ; move right
          bne pmsbc
          inc zMOTHERSHIP_X+1
          jmp pmsbc
-pmslt    lda zMOTHERSHIP_X+1   ; move left
+pmslt    
+	lda zMOTHERSHIP_X+1   ; move left
          bne pmslta
          dec zMOTHERSHIP_X     ; < 256
          jmp pmsbc
-pmslta   dec zMOTHERSHIP_X     ; > 255
+pmslta   
+	dec zMOTHERSHIP_X     ; > 255
          lda zMOTHERSHIP_X
          cmp #255
          beq pmsltb
          jmp pmsbc
-pmsltb   dec zMOTHERSHIP_X+1   ; dec msx+1
+pmsltb   
+	dec zMOTHERSHIP_X+1   ; dec msx+1
          jmp pmsbc
-pmsbc    lda zMOTHERSHIP_DIR     ; ms bounce
+pmsbc    
+	lda zMOTHERSHIP_DIR     ; ms bounce
          cmp #0
          beq msbltr
-msbrtl   lda zMOTHERSHIP_X+1   ; bounce off right
+msbrtl   
+	lda zMOTHERSHIP_X+1   ; bounce off right
          cmp #0
          beq promszz ; skip
          lda zMOTHERSHIP_X
@@ -1214,7 +1442,8 @@ msbrtl   lda zMOTHERSHIP_X+1   ; bounce off right
          cld         ; clr dec flag
          jsr GetMothershipPoints ; update points ; X will contain Mothership Row
          jmp promsz
-msbltr   lda zMOTHERSHIP_X+1   ; bounce off left
+msbltr   
+	lda zMOTHERSHIP_X+1   ; bounce off left
          cmp #0
          bne promszz ; msx+1 set, skip
          lda zMOTHERSHIP_X     ; check msx
@@ -1234,16 +1463,21 @@ msbltr   lda zMOTHERSHIP_X+1   ; bounce off left
          cld         ; clr dec flag
          jsr GetMothershipPoints ; update points ; X will contain Mothership Row
          jmp promsz
-promsz ; lda zMOTHERSHIP_Y     ; check bottom
+promsz 
+	; lda zMOTHERSHIP_Y     ; check bottom
        ; cmp #234
          lda zMOTHERHIP_ROW
          cmp #34
          bcs promsb  ; row = 23 (бцд 34)
        ; bcs promsb  ; >= 234
          jmp promszz ; < 234
-promsb   lda #1      ;
+promsb   
+	lda #1      ;
          sta zGAME_OVER_FLAG
-promszz  rts
+promszz  
+	rts
+
+; ==========================================================================
 
 bump                 ; p1/p2 bump check
          lda zPLAYER_ONE_ON     ; no p1 dont bump
@@ -1271,12 +1505,17 @@ bumpa    sta zPLAYER_TWO_DIR     ; p2 on left
          lda #1
          sta zPLAYER_ONE_BUMP    ; set bump flags
          sta zPLAYER_TWO_BUMP
-bumpz    rts
+bumpz    
+	rts
 
-bounce   lda zPLAYER_ONE_DIR     ; p1 bounce
+; ==========================================================================
+
+bounce   
+	lda zPLAYER_ONE_DIR     ; p1 bounce
          cmp #0
          beq p1bltr
-p1brtl   lda zPLAYER_ONE_X+1
+p1brtl   
+	lda zPLAYER_ONE_X+1
          cmp #0
          beq bouncep2
          lda zPLAYER_ONE_X     ; x=255+65=320
@@ -1287,7 +1526,8 @@ p1brtl   lda zPLAYER_ONE_X+1
          lda #1
          sta zPLAYER_ONE_BUMP    ; set bounce flg
          jmp bouncep2
-p1bltr   lda zPLAYER_ONE_X+1
+p1bltr   
+	lda zPLAYER_ONE_X+1
          cmp #0
          bne bouncep2
          lda zPLAYER_ONE_X
@@ -1296,10 +1536,12 @@ p1bltr   lda zPLAYER_ONE_X+1
          lda #1
          sta zPLAYER_ONE_DIR
          sta zPLAYER_ONE_BUMP    ; set bounce flg
-bouncep2 lda zPLAYER_TWO_DIR     ; p2 bounce
+bouncep2 
+	lda zPLAYER_TWO_DIR     ; p2 bounce
          cmp #0      ; same as p1
          beq p2bltr
-p2brtl   lda zPLAYER_TWO_X+1
+p2brtl   
+	lda zPLAYER_TWO_X+1
          cmp #0
          beq bouncez
          lda zPLAYER_TWO_X
@@ -1310,7 +1552,8 @@ p2brtl   lda zPLAYER_TWO_X+1
          lda #1
          sta zPLAYER_TWO_BUMP    ; set bounce flg
          jmp bouncez
-p2bltr   lda zPLAYER_TWO_X+1
+p2bltr   
+	lda zPLAYER_TWO_X+1
          cmp #0
          bne bouncez
          lda zPLAYER_TWO_X
@@ -1319,13 +1562,19 @@ p2bltr   lda zPLAYER_TWO_X+1
          lda #1
          sta zPLAYER_TWO_DIR
          sta zPLAYER_TWO_BUMP    ; set bounce flag
-bouncez  rts
+bouncez  
+	rts
 
-prop1    lda zPLAYER_ONE_FIRE
+; ==========================================================================
+
+prop1    
+	lda zPLAYER_ONE_FIRE
          cmp #1      ; check p1 fire
          beq prop1a
          jmp pp1move
-prop1a   lda zPLAYER_ONE_BUMP    ; check bump flag
+
+prop1a   
+	lda zPLAYER_ONE_BUMP    ; check bump flag
          cmp #1      ; if bump
          beq prop1fyr; skip dir change
          lda zPLAYER_ONE_DIR     ; change direction
@@ -1334,9 +1583,12 @@ prop1a   lda zPLAYER_ONE_BUMP    ; check bump flag
          lda #0      ; change to left
          sta zPLAYER_ONE_DIR
          jmp prop1fyr
-prop1d   lda #1      ; change to right
+
+prop1d   
+	lda #1      ; change to right
          sta zPLAYER_ONE_DIR
          jmp prop1fyr
+
 prop1fyr             ; fire laser
          lda #12
          sta zLASER_ONE_ON
@@ -1347,33 +1599,51 @@ prop1fyr             ; fire laser
          lda #226
          sta zLASER_ONE_Y
          jmp pp1move
+		 
 pp1move
          lda zPLAYER_ONE_DIR
          cmp #0
          beq pp1lt
-pp1rt    inc zPLAYER_ONE_X     ; move right
+		 
+pp1rt    
+	inc zPLAYER_ONE_X     ; move right
          bne pp1bc
          inc zPLAYER_ONE_X+1
          jmp pp1bc
-pp1lt    lda zPLAYER_ONE_X+1   ; move left
+		 
+pp1lt    
+	lda zPLAYER_ONE_X+1   ; move left
          bne pp1lta
          dec zPLAYER_ONE_X     ; < 256
          jmp pp1bc
-pp1lta   dec zPLAYER_ONE_X     ; > 255
+		 
+pp1lta   
+	dec zPLAYER_ONE_X     ; > 255
          lda zPLAYER_ONE_X
          cmp #255
          beq pp1ltb
          jmp pp1bc
-pp1ltb   dec zPLAYER_ONE_X+1  ; it happens earlyr
+		 
+pp1ltb   
+	dec zPLAYER_ONE_X+1  ; it happens earlyr
          jmp pp1bc  ; its not here now
-pp1bc    jmp prop1z ; leftover bounce
-prop1z   rts
 
-prop2    lda zPLAYER_TWO_FIRE
+pp1bc    
+	jmp prop1z ; leftover bounce
+
+prop1z   
+	rts
+
+; ==========================================================================
+
+prop2    
+	lda zPLAYER_TWO_FIRE
          cmp #1
          beq prop2a
          jmp pp2move
-prop2a   lda zPLAYER_TWO_BUMP    ; check bump flag
+		 
+prop2a   
+	lda zPLAYER_TWO_BUMP    ; check bump flag
          cmp #1      ; if set
          beq prop2fyr; skip dir change
          lda zPLAYER_TWO_DIR     ; change direction
@@ -1382,9 +1652,12 @@ prop2a   lda zPLAYER_TWO_BUMP    ; check bump flag
          lda #0
          sta zPLAYER_TWO_DIR
          jmp prop2fyr
-prop2d   lda #1
+		 
+prop2d   
+	lda #1
          sta zPLAYER_TWO_DIR
          jmp prop2fyr
+		 
 prop2fyr
          lda #12
          sta zLASER_TWO_ON
@@ -1395,36 +1668,50 @@ prop2fyr
          lda #226
          sta zLASER_TWO_Y
          jmp pp2move
+		 
 pp2move
          lda zPLAYER_TWO_DIR
          cmp #0
          beq pp2lt
-pp2rt    inc zPLAYER_TWO_X
+		 
+pp2rt    
+	inc zPLAYER_TWO_X
          bne pp2bc
          inc zPLAYER_TWO_X+1
          jmp pp2bc
-pp2lt    lda zPLAYER_TWO_X+1
+		 
+pp2lt    
+	lda zPLAYER_TWO_X+1
          bne pp2lta
          dec zPLAYER_TWO_X
          jmp pp2bc
-pp2lta   dec zPLAYER_TWO_X
+		 
+pp2lta   
+	dec zPLAYER_TWO_X
          lda zPLAYER_TWO_X
          cmp #255
          beq pp2ltb
          jmp pp2bc
-pp2ltb   dec zPLAYER_TWO_X+1
+		 
+pp2ltb   
+	dec zPLAYER_TWO_X+1
          jmp pp2bc
-pp2bc    jmp prop2z
+		 
+pp2bc    
+	jmp prop2z
 
-prop2z   rts
+prop2z   
+	rts
 
-proreset lda #0      ;
-         sta zPLAYER_ONE_FIRE     ; reset fire flags
-         sta zPLAYER_TWO_FIRE
-         sta zPLAYER_ONE_BUMP    ; reset bump flags
-         sta zPLAYER_TWO_BUMP
-         rts
+proreset 
+	lda #0      ;
+	sta zPLAYER_ONE_FIRE     ; reset fire flags
+	sta zPLAYER_TWO_FIRE
+	sta zPLAYER_ONE_BUMP    ; reset bump flags
+	sta zPLAYER_TWO_BUMP
+	rts
 
+; ==========================================================================
 ;-- output -----------------------------
 
 output
@@ -1442,14 +1729,20 @@ outputa  lda zPLAYER_TWO_ON
          bne outputz ; skip p2 output
          jsr outp2   ; show p2 l2
          jsr outl2
-outputz  jsr twinkle
-         rts
+outputz  
+	jsr twinkle
+	rts
 
-showscr  lda zSHOW_SCORE_FLAG
-         bne shsca
-         jmp shscz
-shsca    lda #0      ; turn flag off
-         sta zSHOW_SCORE_FLAG
+; ==========================================================================
+
+showscr  
+	lda zSHOW_SCORE_FLAG
+	bne shsca
+	jmp shscz
+		 
+shsca    
+	lda #0      ; turn flag off
+	sta zSHOW_SCORE_FLAG
 
        ; lda zMOTHERSHIP_MOVE_SPEED  ; show msmovs
        ; adc #48
@@ -1590,7 +1883,8 @@ uphi2    ; update hs with p2score
          sta zHIGH_SCORE+2
 chkhiz   ; done hiscore check
 
-shscc    lda zHIGH_SCORE ; show hiscore
+shscc    
+	lda zHIGH_SCORE ; show hiscore
          and #%00001111
          clc
          adc #48
@@ -1632,7 +1926,10 @@ shscc    lda zHIGH_SCORE ; show hiscore
          adc #48
          sta gCHAR_MEM+17   ; end zHIGH_SCORE
 
-shscz    rts
+shscz    
+	rts
+
+; ==========================================================================
 
 outms    lda zMOTHERSHIP_COLOR   ; get colour
          sta VICII+39
@@ -1680,6 +1977,8 @@ outp1a   lda zPLAYER_ONE_X
          sta VICII+16
          rts
 
+; ==========================================================================
+
 outp2                ; player 2
          lda zPLAYER_TWO_COLOR
          sta VICII+41
@@ -1700,6 +1999,8 @@ outp2a   lda zPLAYER_TWO_X
          sta VICII+16
          rts
 
+; ==========================================================================
+
 outl1                ; laser 1
          lda zLASER_ONE_ON
          cmp #0
@@ -1719,7 +2020,9 @@ outl1                ; laser 1
          and #247    ; sp4 hx off
          sta VICII+16
          rts
-outl1a   lda zLASER_ONE_X
+		 
+outl1a   
+	lda zLASER_ONE_X
          sta VICII+6
          lda VICII+16
          ora #8      ; sp4 hx on
@@ -1730,6 +2033,8 @@ outl1b               ; s4 off
          and #%11110111
          sta VICII+21
          rts
+
+; ==========================================================================
 
 outl2                ; player 2
          lda zLASER_TWO_ON
@@ -1761,6 +2066,8 @@ outl2b               ; s5 off
          and #%11101111
          sta VICII+21
          rts
+
+; ==========================================================================
 
 shwstats ; msrow mspts msmov etc
 shwmsrow lda zMOTHERHIP_ROW       ; stored as bcd
@@ -1827,6 +2134,8 @@ shwmsrow lda zMOTHERHIP_ROW       ; stored as bcd
 
          rts
 
+; ==========================================================================
+
 clrstats             ; clear stats row
          lda #32
          ldx #15
@@ -1838,6 +2147,7 @@ clrstsa  sta gBOTTOM_ROW,x
 
          rts
 
+; ==========================================================================
 ;-- game over --------------------------
 
 gameover lda #0      ; fancy ending
@@ -1927,7 +2237,10 @@ pausea   jsr vbwait
          beq pausez
          dey
          jmp pausea
-pausez   rts
+pausez   
+	rts
+
+; ==========================================================================
 
 sweepp               ; col chk ms push
          lda zVIC_COLLISION
@@ -1961,10 +2274,14 @@ sweepp2  lda zVIC_COLLISION
          cmp #0      ; ifp2d=0 chk p2x
          bne sweeppz ; else skip
 
-sweeppz  rts
+sweeppz  
+	rts
 
-; Unused ==================================================
-; drawrows ldx #48     ; draw row numbers
+
+; Unused ===================================================================
+
+; drawrows 
+;	ldx #48     ; draw row numbers
 ;	stx gCHAR_MEM+40
 ;	inx
 ;	stx gCHAR_MEM+80
@@ -2010,32 +2327,16 @@ sweeppz  rts
 ;	stx gCHAR_MEM4+160
 ;	rts
 
-
+; ==========================================================================
 
 ; Points for Mothership by row.
 
-; 00 = 1000
-; 01 = 0500
-; 02 = 0475 
-; 03 = 0450
-; 04 = 0425
-; 05 = 0400
-; 06 = 0375
-; 07 = 0350
-; 08 = 0325
-; 09 = 0300
-; 10 = 0275
-; 11 = 0250
-; 12 = 0225
-; 13 = 0200
-; 14 = 0175
-; 15 = 0150
-; 16 = 0125
-; 17 = 0100
-; 18 = 0075
-; 19 = 0050
-; 20 = 0025
-; 21 = 0001
+; 00 = 1000 ; 01 = 0500 
+; 02 = 0475 ; 03 = 0450 ; 04 = 0425 ; 05 = 0400
+; 06 = 0375 ; 07 = 0350 ; 08 = 0325 ; 09 = 0300
+; 10 = 0275 ; 11 = 0250 ; 12 = 0225 ; 13 = 0200
+; 14 = 0175 ; 15 = 0150 ; 16 = 0125 ; 17 = 0100
+; 18 = 0075 ; 19 = 0050 ; 20 = 0025 ; 21 = 0001
 	
 TABLE_MOTHERSHIP_POINTS_HIGH
 	.byte $10,$05,$04,$04,$04,$04,$03,$03,$03,$03,$02,$02,$02,$02,$01,$01,$01,$01,$00,$00,$00,$00
@@ -2053,6 +2354,12 @@ getpoints
 	; much easier and faster :(
 	
 	; Uhhhhhh.  Yeah.  Definitely.  See above.
+	;
+	; NOTE that MOTHERSHIP_ROW is being treated as a regular 
+	; integer for indexing purposes.  The original code handled 
+	; this as BCD, creating weird gaps between values $09/9 and
+	; $10/16.
+	
 	lda #0       ; 0000 pts
 	sta zMOTHERSHIP_POINTS
 	sta zMOTHERSHIP_POINTS+1
@@ -2285,7 +2592,7 @@ getpoints
 	rts
 
 
-;---------------------------------------
+; ==========================================================================
 
 soundgo1
          lda attdec
@@ -2338,6 +2645,8 @@ soundgo3
          sta $d412
          rts
 
+; ==========================================================================
+
 soundend1
          lda #0
          sta $d404     ; wf1
@@ -2352,6 +2661,8 @@ soundend3
          lda #0
          sta $d412     ;wf3
          rts
+
+; ==========================================================================
 
 lazbeep1
          jsr soundend1
@@ -2371,6 +2682,8 @@ lazbeep1
          jsr soundgo1
          rts
 
+; ==========================================================================
+
 lazbeep2
          jsr soundend2
          lda #%00001001 ; 0 9
@@ -2388,6 +2701,8 @@ lazbeep2
 
          jsr soundgo2
          rts
+
+; ==========================================================================
 
 expnoz
          jsr soundend3
@@ -2407,73 +2722,82 @@ expnoz
          jsr soundgo3
          rts
 
-;---------------------------------------
+; ==========================================================================
 
 charsetup
-         sei        ; turn off interupts
+;	sei        ; turn off interupts
 
-         lda #$18   ; *=$2000
-         sta $d018
+;	lda #$18   ; *=$2000
+;	sta $d018
 
-         lda $01    ; swap char rom in
-         and #251   ; #%11111011
-         sta $01    ; maybe?
+;	lda $01    ; swap char rom in
+;	and #251   ; #%11111011
+;	sta $01    ; maybe?
 
-         ldx #0
+;	ldx #0
 
-csetupa  lda cset0,x ; get char data
-         sta cmem0,x ; store in charmem
+csetupa  
+;	lda cset0,x ; get char data
+;	sta cmem0,x ; store in charmem
 
-         lda cdat1,x
-         sta cmem1,x
+;	lda cdat1,x
+;	sta cmem1,x
 
-         lda cdat2,x
-         sta cmem2,x
+;	lda cdat2,x
+;	sta cmem2,x
 
-         lda cset3,x
-         sta cmem3,x
+;	lda cset3,x
+;	sta cmem3,x
 
-         lda cset4,x
-         sta cmem4,x
+;	lda cset4,x
+;	sta cmem4,x
 
-         lda cset5,x
-         sta cmem5,x
+;	lda cset5,x
+;	sta cmem5,x
 
-         lda cset6,x
-         sta cmem6,x
+;	lda cset6,x
+;	sta cmem6,x
 
-         lda cset7,x
-         sta cmem7,x
+;	lda cset7,x
+;	sta cmem7,x
 
-         inx
-         beq csetupz
-         jmp csetupa
+;	inx
+;	beq csetupz
+;	jmp csetupa
 
-csetupz  lda $01
-         ora #4
-         sta $01
+csetupz  
+;	lda $01
+;	ora #4
+;	sta $01
 
-         cli
-         rts
-
-;---------------------------------------
+;	cli
+	rts
+	
+; ==========================================================================
 
 sprsetup ; load in sprites from data
-         ldx #0
-sprseta
-         lda spr1,x
-         sta sprmem1,x
-         lda spr2,x
-         sta sprmem2,x
-         lda spr3,x
-         sta sprmem3,x
-         lda spr4,x
-         sta sprmem4,x
+; Not needed on Atari.  Atari images are declared and loaded 
+; into memory where they will be used by ANTIC.
 
-         inx
-         cpx #64
-         bne sprseta
-sprsetz  rts
+;	ldx #0
+;sprseta
+;	lda spr1,x
+;	sta sprmem1,x
+;	lda spr2,x
+;	sta sprmem2,x
+;	lda spr3,x
+;	sta sprmem3,x
+;	lda spr4,x
+;	sta sprmem4,x
+
+;	inx
+;	cpx #64
+;	bne sprseta
+sprsetz  
+	rts
+
+; ==========================================================================
+
 
 twinkle
          inc zSTAR_COUNT
@@ -2529,7 +2853,7 @@ twinkc
 twinkz
          rts
 
-;---------------------------------------
+; ==========================================================================
 
 yprnd    ; replace y with rand num
 
@@ -2543,7 +2867,7 @@ prndneor tay        ; no eor
 
          rts
 
-;---------------------------------------
+; ==========================================================================
 
 ; hiscore  .byte 0,0,0 ; zHIGH_SCORE  6-digit bcd 
 ; mspts    .byte 0,0   ; zMOTHERSHIP_POINTS
@@ -2617,55 +2941,15 @@ TABLE_STAR_LOCATION ; star
 ; starcnt  .byte 0 ; zSTAR_COUNT
 
 ; Table to convert row to Y coordinate.
-; I am not understanding why there are sequences of 0 here. ????
-; This is also do-able with a LSR to multiply time 8 then add offset.
+; This is also do-able with a LSR to multiply times 8 then add offset.
+; The original code relied on BCD value of MOTHERSHIP ROW to do 
+; the lookup from the tables.
 TABLE_ROW_TO_Y ; r2ytab
 	.byte 58,66,74,82,90,98,106,114,122,130       ; Rows 0 to 9
-	.byte 0,0,0,0,0,0                             ; Ummm Why?
+;	.byte 0,0,0,0,0,0                             ; Ummm?
 	.byte 138,146,154,162,170,178,186,194,202,210 ; Rows 10 to 19
-	.byte 0,0,0,0,0,0                             ; Again?  Why 6 zeros?
+;	.byte 0,0,0,0,0,0                             ; Again?
 	.byte 218,226,234                             ; Rows 20 to 22
-
-; GFX_SCROLL_DOCS on Atari.  
-; Declared in gfx.asm aligned in memory to accommodate 
-; fine scrolling directly from where it is declared. 
-;scrtxt   .text "                "
-;         .text "                "
-;         .text "      press fire"
-;         .text " to play     fir"
-;         .text "e shoots and cha"
-;         .text "nges cannon dire"
-;         .text "ction     more p"
-;         .text "oints when 1nvad"
-;         .text "er is high up   "
-;         .text "  1nvader slows "
-;         .text "down after eight"
-;         .text "y hits     'darr"
-;         .text "enthefoulds     "
-;         .text "thx 'bedfordlvle"
-;         .text "xp     hi nate a"
-;         .text "nd tbone/       "
-
-tichar   ; title characters -- ; Handled with GTIA graphics on Atari
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$ff,$e1,$7b,$e1,$e1,$20,$e1,$20,$fe,$e1,$e2,$7b,$e1,$e2,$e2,$e1,$e2,$7f,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$e1,$e1,$7c,$fe,$e1,$6c,$7e,$ff,$e1,$e1,$20,$e1,$e1,$7c,$7e,$e1,$6c,$ff,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$e1,$e1,$20,$e1,$e1,$7e,$e1,$7c,$fb,$e1,$6c,$fe,$e1,$62,$62,$e1,$20,$e1,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$32,$30,$31,$39,$20,$44,$41,$52,$52,$45,$4e,$20,$46,$4f,$55,$4c,$44,$53,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-
-mountc   ; mountain screen view chars
-;	.byte $20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20
-
-;	.byte $5b,$5e,$5c,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$5b,$5e,$5c,$20,$20,$20,$20,$20,$20,$20,$5b,$5c,$5b,$5e,$5c,$5d,$20,$20,$20,$20,$20,$5d,$5b,$5e,$5c
-
-;	.byte $5d,$20,$20,$5c,$5c,$20,$20,$20,$20,$5b,$5c,$5b,$5e,$5c,$5b,$20,$20,$20,$5c,$20,$20,$20,$20,$20,$5b,$20,$20,$5c,$20,$5b,$5e,$5c,$20,$20,$20,$5b,$5e,$5c,$20,$5d
-
-;	.byte $5f,$5c,$20,$20,$20,$5c,$20,$20,$5b,$20,$20,$5c,$20,$5b,$20,$20,$20,$20,$20,$5c,$20,$20,$20,$5b,$20,$20,$20,$20,$20,$20,$20,$20,$5c,$20,$5b,$20,$20,$20,$5b,$5f
-
-;	.byte $40,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$40
-
-;	.byte $5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e
 
 
 

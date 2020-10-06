@@ -400,6 +400,17 @@ GFX_SCORE_P2
 	.sb "000000 "
 
 
+
+;tichar   ; title characters -- ; Handled with GTIA graphics on Atari
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$ff,$e1,$7b,$e1,$e1,$20,$e1,$20,$fe,$e1,$e2,$7b,$e1,$e2,$e2,$e1,$e2,$7f,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$e1,$e1,$7c,$fe,$e1,$6c,$7e,$ff,$e1,$e1,$20,$e1,$e1,$7c,$7e,$e1,$6c,$ff,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$e1,$e1,$20,$e1,$e1,$7e,$e1,$7c,$fb,$e1,$6c,$fe,$e1,$62,$62,$e1,$20,$e1,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$32,$30,$31,$39,$20,$44,$41,$52,$52,$45,$4e,$20,$46,$4f,$55,$4c,$44,$53,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+
+
+
 ; Title graphics are ANTIC F+GTIA $4 (aka BASIC mode 9, 16-grey scale) 
 ; with a Player 5 (the missile) used as color overlay.
 ;
@@ -477,6 +488,27 @@ GFX_SCROLL_CREDI2
 	.sb "    DARREN FOULDS   "
 	.sb "             " ; Padding to allow values to leave before changing DLI colors.
 	.sb "    KEN JENNINGS    "
+
+
+; GFX_SCROLL_DOCS on Atari.  
+; Declared in gfx.asm aligned in memory to accommodate 
+; fine scrolling directly from where it is declared. 
+;scrtxt   .text "                "
+;         .text "                "
+;         .text "      press fire"
+;         .text " to play     fir"
+;         .text "e shoots and cha"
+;         .text "nges cannon dire"
+;         .text "ction     more p"
+;         .text "oints when 1nvad"
+;         .text "er is high up   "
+;         .text "  1nvader slows "
+;         .text "down after eight"
+;         .text "y hits     'darr"
+;         .text "enthefoulds     "
+;         .text "thx 'bedfordlvle"
+;         .text "xp     hi nate a"
+;         .text "nd tbone/       "
 	
 ; Scrolling text for the directions, credits, etc.
 ; Since this is in Mode 6 it only needs 
@@ -493,6 +525,20 @@ scrtxt
 	.sb "     ATARI VERSION 2020 - KEN JENNINGS HTTPS://GITHUB.COM/KENJENNINGS/ATARI-1NVADER"
 	.sb "                    "
 
+
+
+; mountc   ; mountain screen view chars
+;	.byte $20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20
+
+;	.byte $5b,$5e,$5c,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$5b,$5e,$5c,$20,$20,$20,$20,$20,$20,$20,$5b,$5c,$5b,$5e,$5c,$5d,$20,$20,$20,$20,$20,$5d,$5b,$5e,$5c
+
+;	.byte $5d,$20,$20,$5c,$5c,$20,$20,$20,$20,$5b,$5c,$5b,$5e,$5c,$5b,$20,$20,$20,$5c,$20,$20,$20,$20,$20,$5b,$20,$20,$5c,$20,$5b,$5e,$5c,$20,$20,$20,$5b,$5e,$5c,$20,$5d
+
+;	.byte $5f,$5c,$20,$20,$20,$5c,$20,$20,$5b,$20,$20,$5c,$20,$5b,$20,$20,$20,$20,$20,$5c,$20,$20,$20,$5b,$20,$20,$20,$20,$20,$20,$20,$20,$5c,$20,$5b,$20,$20,$20,$5b,$5f
+
+;	.byte $40,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$40
+
+;	.byte $5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e
 
 ; Since Mode 6 characters are twice the width, then only half the 
 ; screen data is needed.  What to do with the rest....?
