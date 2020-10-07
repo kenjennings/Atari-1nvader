@@ -546,62 +546,67 @@ colti2
 	rts
 
 ; ==========================================================================
+; Unused.   The Atari has the mountains defined and declared where they
+; will be used for the graphics already.  The display lists will 
+; reference their memory automatically.
 
 drawmounts          ; draw mountains
-	ldx #0
+;;	ldx #0
 
-drwmtsa  
-	lda mountc,x
-	sta gMOUNT_CHAR_MEM,x
+;;drwmtsa  
+;;	lda mountc,x
+;;	sta gMOUNT_CHAR_MEM,x
 
-	lda #11    ; default = grey
-	sta gMOUNT_COLOR_MEM,x
+;;	lda #11    ; default = grey
+;;	sta gMOUNT_COLOR_MEM,x
 
-	lda mountc,x
-	cmp #$5d   ; is it a peak?
-	bne drwmtsd
+;;	lda mountc,x
+;;	cmp #$5d   ; is it a peak?
+;;	bne drwmtsd
 	
-	lda #15    ; white
-	sta gMOUNT_COLOR_MEM,x
+;;	lda #15    ; white
+;;	sta gMOUNT_COLOR_MEM,x
 
-drwmtsd  
-	inx
-	cpx #240
-	bne drwmtsa
+;drwmtsd  
+;;	inx
+;;	cpx #240
+;;	bne drwmtsa
 
-	ldx #160
-	lda #9
+;;	ldx #160
+;;	lda #9
 		 
-drwmtsb  
-	sta gMOUNT_COLOR_MEM,x
-	inx
-	cpx #200
-	bne drwmtsb
+;;drwmtsb  
+;;	sta gMOUNT_COLOR_MEM,x
+;;	inx
+;;	cpx #200
+;;	bne drwmtsb
 
-	lda #8
+;;	lda #8
 		 
-drwmtsc  
-	sta gMOUNT_COLOR_MEM,x
-	inx
-	cpx #240
-	bne drwmtsc
+;;drwmtsc  
+;;	sta gMOUNT_COLOR_MEM,x
+;;	inx
+;;	cpx #240
+;;	bne drwmtsc
 
-	lda #5
-	ldx #160
-	sta gMOUNT_COLOR_MEM,x
-	ldx #199
-	sta gMOUNT_COLOR_MEM,x
+;;	lda #5
+;;	ldx #160
+;;	sta gMOUNT_COLOR_MEM,x
+;;	ldx #199
+;;	sta gMOUNT_COLOR_MEM,x
 
-	lda #3        ; colour stats
-	ldx #215
+;;	lda #3        ; colour stats
+;;	ldx #215
 		 
-drwmtse  
-	sta gMOUNT_COLOR_MEM,x
-	inx
-	cpx #225
-	bne drwmtse
+;;drwmtse  
+;;	sta gMOUNT_COLOR_MEM,x
+;;	inx
+;;	cpx #225
+;;	bne drwmtse
 
 	rts
+
+; ==========================================================================
 
 tistripe          ; striped title colour
 	ldx #0
