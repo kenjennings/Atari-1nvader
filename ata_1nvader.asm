@@ -607,69 +607,73 @@ drawmounts          ; draw mountains
 	rts
 
 ; ==========================================================================
+; Unused.
+; Atari is animating the title a different way.
 
 tistripe          ; striped title colour
-	ldx #0
-	ldy #0
+;;	ldx #0
+;;	ldy #0
 	
 tsta     
-	cpy #0    ; 0 is black
-	bne tstb
-	lda #6    ; 0
-	jmp tstx
+;;	cpy #0    ; 0 is black
+;;	bne tstb
+;;	lda #6    ; 0
+;;	jmp tstx
 		 
 tstb     
-	cpy #1    ; 1 is dark grey
-	bne tstc
-	lda #11   ; 11
-	jmp tstx
+;;	cpy #1    ; 1 is dark grey
+;;	bne tstc
+;;	lda #11   ; 11
+;;	jmp tstx
 		 
 tstc     
-	cpy #2    ; 2 is med grey
-	bne tstd
-	lda #12   ; 12
-	jmp tstx
+;;	cpy #2    ; 2 is med grey
+;;	bne tstd
+;;	lda #12   ; 12
+;;	jmp tstx
 		 
 tstd     
-	cpy #3    ; 3 is lite grey
-	bne tste
-	lda #15   ; 15
-	jmp tstx
+;;	cpy #3    ; 3 is lite grey
+;;	bne tste
+;;	lda #15   ; 15
+;;	jmp tstx
 		 
 tste     
-	cpy #4    ; 4 is white
-	bne tstf
-	lda #1
-	jmp tstx
+;;	cpy #4    ; 4 is white
+;;	bne tstf
+;;	lda #1
+;;	jmp tstx
 	
 tstf     
-	lda #4    ; leftover 4=purple
+;;	lda #4    ; leftover 4=purple
 	
 tstx     
-	sta gTI_COLOR_MEM,x ; change the colour
-	iny
-	cpy #6
-	bne tsty
-	ldy #0
+;;	sta gTI_COLOR_MEM,x ; change the colour
+;;	iny
+;;	cpy #6
+;;	bne tsty
+;;	ldy #0
 	
 tsty     
-	inx      ; 200 leaves last line
-	cpx #160 ; 240 for all
-	bne tsta
+;;	inx      ; 200 leaves last line
+;;	cpx #160 ; 240 for all
+;;	bne tsta
 		 
 tstz    
 	rts
 
 ; ==========================================================================
+; Unused.
+; Atari animates the title screen in a different way.
 
 ticolrol 
-	ldx #0    ; roll the title col
+;;	ldx #0    ; roll the title col
 	
 tcra     
-	inc gTI_COLOR_MEM,x
-	inx
-	cpx #240
-	bne tcra
+;;	inc gTI_COLOR_MEM,x
+;;	inx
+;;	cpx #240
+;;	bne tcra
 	
 tcrz     
 	rts
