@@ -70,15 +70,15 @@ INPUTSCAN_FRAMES = $07  ; previously $09
 
 ResetTimers
 
-	sta AnimateFrames
+;	sta AnimateFrames
 
 	pha ; preserve it for caller.
 
-	lda InputScanFrames
+;	lda InputScanFrames
 	bne EndResetTimers
 
 	lda #INPUTSCAN_FRAMES
-	sta InputScanFrames
+;	sta InputScanFrames
 
 EndResetTimers
 	pla ; get this back for the caller.

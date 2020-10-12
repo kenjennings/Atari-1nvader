@@ -116,7 +116,7 @@ zPMG_IMAGE    .word 0 ; points to image data
 
 zPMG_HARDWARE .word 0 ; points to the Player/Missile memeory map.
 
-
+ 
 ; Player/Missile object states.  X, Y, counts, etc where needed =============
 ; Note that each table is in the same order listing each visible 
 ; screen object for the Game.
@@ -239,8 +239,8 @@ gVICII        = 53248 ; v
 gJOY          = 56320 ; joy
 gCHAR_MEM     = $0400 ; cm  ; screen memory
 gCHAR_MEM2    = $04f0 ; cm2 ; was $0662/$0702
-gCHAR_MEM2    = $05e0 ; cm3     
-gCHAR_MEM2    = $06d0 ; cm4      
+gCHAR_MEM3    = $05e0 ; cm3     
+gCHAR_MEM4    = $06d0 ; cm4      
 gTI_CHAR_MEM  = $04f0 ; ticm ; Note the same as cm2
 gTI_COLOR_MEM = $d8f0 ; ticc
 ; unused ticc2 = $d811
@@ -918,7 +918,7 @@ gamestrt
 	jsr gameinit
 	jsr cntdwn
 		 
-gameloop 
+game_loop 
 	jsr vbwait
 	; lda VICII+30    ; get colision reg
 	; sta v30     ; save to chk latr
@@ -929,7 +929,7 @@ gameloop
 	lda zGAME_OVER_FLAG  ; chk gameover flg
 ;	cmp #1               ; assume 1 = game over, 0 = continue
 ;	bne gameloop
-	beq gameloop         ; 0, so keep looping
+	beq game_loop         ; 0, so keep looping
 
 	jmp gameover
 
