@@ -767,10 +767,12 @@ gameintz
 cntdwn                 ; wait for other p
 	lda #51            ; seconds 51-48=3s
 	sta zCOUNTDOWN_SECS
+	
 	sbc #15            ; get wide chars
 	sta gCHAR_MEM+179  ; shw cntdwn secs
 	adc #2
 	sta gCHAR_MEM+180  ; other half
+	
 	lda #29            ; jiffys 0.5 secs
 	sta zJIFFY_COUNTER
 
@@ -779,55 +781,69 @@ cntdwna
 
 	dec zJIFFY_COUNTER
 	lda zJIFFY_COUNTER
-	cmp #0
+;;	cmp #0
 
-	bne cntdwnb ; go wait
+	bne cntdwnb         ; go wait
 
-                     ; decrease secs
-	lda #29     ; reset jifs
+						; decrease secs
+	lda #29             ; reset jifs
 	sta zJIFFY_COUNTER
-	dec zCOUNTDOWN_SECS    ; secs=secs-1
+	
+	dec zCOUNTDOWN_SECS ; secs=secs-1
 	lda zCOUNTDOWN_SECS
-	cmp #48     ; 48 = '0'
+	cmp #48             ; 48 = '0'
+	beq cntdwne         ; lets play
 
-	beq cntdwne ; lets play
-
-	sbc #16     ; wide numbers
-	sta gCHAR_MEM+179  ; show secs
+	sbc #16             ; wide numbers
+	sta gCHAR_MEM+179   ; show secs
 	adc #2
-	sta gCHAR_MEM+180  ; other half
+	sta gCHAR_MEM+180   ; other half
 
 cntdwnb  
 	jsr vbwait  ; wait 1 frame
+	
 	lda zPLAYER_ONE_ON     ; need to chk?
-	cmp #1
-	beq cntdwnc ; nope go away
-	jsr fire1   ; yes we do
-	inc VICII+40    ; rainbow if check
+;;	cmp #1
+;;	beq cntdwnc            ; nope go away
+	bne cntdwnc            ; nope go away
+
+	jsr fire1              ; yes we do
+	
+	inc VICII+40           ; rainbow if check
 	lda zPLAYER_ONE_FIRE
-	cmp #1      ; check p1 fire
-	bne cntdwnc ; no
-	lda #1      ; yes join game
+;;	cmp #1                 ; check p1 fire
+;;	bne cntdwnc            ; no
+	beq cntdwnc            ; no
+	
+	
+	lda #1                 ; yes join game
 	sta zPLAYER_ONE_ON     ; p1ztatus
-	lda #234    ; bump p1 up
+	lda #234               ; bump p1 up
 	sta zPLAYER_ONE_Y
+	
 	jsr outp1
 
 cntdwnc  
 	lda zPLAYER_TWO_ON     ; need to chk?
-	cmp #1
-	beq cntdwnd ; nope go away
+;;	cmp #1
+;;	beq cntdwnd ; nope go away
+	bne cntdwnd ; nope go away
+	
 	jsr fire2   ; yes we do
+	
 	inc VICII+41    ; rainbow if check
 	lda zPLAYER_TWO_FIRE
-	cmp #1      ; check p2 fire
-	bne cntdwnd ; no
+;;	cmp #1      ; check p2 fire
+;;	bne cntdwnd ; no
+	beq cntdwnd ; no
+	
 	lda #1      ; yes join game
 	sta zPLAYER_TWO_ON     ; p2ztatus
 	lda #234    ; bump p2 up
 	sta zPLAYER_TWO_Y
+	
 	jsr outp2
-		 
+
 cntdwnd  
 	jmp cntdwna
 
