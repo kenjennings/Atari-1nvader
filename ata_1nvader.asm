@@ -738,8 +738,8 @@ gameinit
 	sta zPLAYER_TWO_SCORE+2
 	cld
 
-	sed ; ummm?   We just turned it off one line above.
-	lda #$80 ;  128 = 80 (BCD values)
+	sed                           ; ummm?   We just turned it off one line above.
+	lda #$80                      ;  128 = 80 (BCD values)
 	sta zSHIP_HITS
 	lda #0
 	sta zSHIP_HITS+1
@@ -752,12 +752,12 @@ gameinit
 	lda #1
 	sta zSHOW_SCORE_FLAG
 	jsr showscr
-                     ; should be 2
-	lda #2      ; initial ms speed
+                                   ; should be 2
+	lda #2                         ; initial ms speed
 	sta zMOTHERSHIP_MOVE_SPEED
-	lda #10     ; should be 10
-	sta zMOTHERHIP_SPEEDUP_THRESH   ; speedup threshld
-	sta zMOTHERHIP_SPEEDUP_COUNTER   ; speedup count
+	lda #10                        ; should be 10
+	sta zMOTHERHIP_SPEEDUP_THRESH  ; speedup threshld
+	sta zMOTHERHIP_SPEEDUP_COUNTER ; speedup count
 		 
 gameintz 
 	rts
@@ -785,7 +785,7 @@ cntdwna
 
 	bne cntdwnb         ; go wait
 
-						; decrease secs
+						; at 0.  decrease secs
 	lda #29             ; reset jifs
 	sta zJIFFY_COUNTER
 	
@@ -800,7 +800,7 @@ cntdwna
 	sta gCHAR_MEM+180   ; other half
 
 cntdwnb  
-	jsr vbwait  ; wait 1 frame
+	jsr vbwait             ; wait 1 frame
 	
 	lda zPLAYER_ONE_ON     ; need to chk?
 ;;	cmp #1
@@ -826,20 +826,20 @@ cntdwnb
 cntdwnc  
 	lda zPLAYER_TWO_ON     ; need to chk?
 ;;	cmp #1
-;;	beq cntdwnd ; nope go away
-	bne cntdwnd ; nope go away
+;;	beq cntdwnd            ; nope go away
+	bne cntdwnd            ; nope go away
 	
-	jsr fire2   ; yes we do
+	jsr fire2              ; yes we do
 	
-	inc VICII+41    ; rainbow if check
+	inc VICII+41           ; rainbow if check
 	lda zPLAYER_TWO_FIRE
-;;	cmp #1      ; check p2 fire
-;;	bne cntdwnd ; no
-	beq cntdwnd ; no
+;;	cmp #1                 ; check p2 fire
+;;	bne cntdwnd            ; no
+	beq cntdwnd            ; no
 	
-	lda #1      ; yes join game
+	lda #1                 ; yes join game
 	sta zPLAYER_TWO_ON     ; p2ztatus
-	lda #234    ; bump p2 up
+	lda #234               ; bump p2 up
 	sta zPLAYER_TWO_Y
 	
 	jsr outp2
@@ -848,53 +848,59 @@ cntdwnd
 	jmp cntdwna
 
 cntdwne  
-	lda #$47    ; print "го"
-	sta gCHAR_MEM+179  ;
+	lda #$47               ; print "го" ("GO")
+	sta gCHAR_MEM+179  
 	lda #$4f
 	sta gCHAR_MEM+180
-                     ; slide stuff away
+                           ; slide stuff away
 cntdwni  
 	jsr ticolrol
 	jsr vbwait
 	dec zMOTHERSHIP_Y     ; silde ms up
 	dec zMOTHERSHIP_Y
-	; jsr outms   ; won't work with
-                     ; raw msy. must use
-                     ; msrow
-                     ; do it manually
+	; jsr outms           ; won't work with
+                          ; raw msy. must use
+                          ; msrow
+                          ; do it manually
 	lda zMOTHERSHIP_Y     ; get msy
-	sta VICII+1     ; set spr1 y
+	sta VICII+1           ; set spr1 y
 
 cntdsp1  
 	lda zPLAYER_ONE_ON
-	cmp #1
-	beq cntdsp2
+;;	cmp #1
+;;	beq cntdsp2           ; Player is ON
+	bne cntdsp2           ; Player is ON
+
 	lda zPLAYER_ONE_Y     ; slide p1
 	cmp #250
-	beq cntdsp2 ; already off scrn
+	beq cntdsp2           ; already off scrn
+
 	inc zPLAYER_ONE_Y
 	jsr outp1
 
 cntdsp2  
 	lda zPLAYER_TWO_ON
-	cmp #1
-	beq cntdsz
+;;	cmp #1
+;;	beq cntdsz            ; Player is ON
+	bne cntdsz            ; Player is ON
+
 	lda zPLAYER_TWO_Y     ; slide p2
-	cmp #250    ; y=250
-	beq cntdsz  ; already off scrn
+	cmp #250              ; y=250
+	beq cntdsz            ; already off scrn
+
 	inc zPLAYER_TWO_Y
 	jsr outp2
 
 cntdsz   
 	lda zMOTHERSHIP_Y
-	cmp #32     ; should be off top
-	bne cntdwni
+	cmp #32               ; should be off top
+	bne cntdwni           ; Not yet 32
 
-                     ; reset mothership stuff
+	; reset mothership stuff
 cntdwnj  
-	lda #0      ; reset ms x,y
-	sta VICII+29    ; expand
-	sta VICII+23    ; (for ms)
+	lda #0               ; reset ms x,y
+	sta VICII+29         ; expand
+	sta VICII+23         ; (for ms)
 	sta zMOTHERSHIP_X
 	sta zPLAYER_ONE_FIRE
 	sta zPLAYER_TWO_FIRE
@@ -902,10 +908,10 @@ cntdwnj
 	sta zLASER_TWO_ON
 	sta zMOTHERHIP_ROW
 
-	; lda #58     ; should be 58
-	; sta zMOTHERSHIP_Y     ; 202 for testing
+;;	lda #58              ; should be 58
+;;	sta zMOTHERSHIP_Y    ; 202 for testing
 	ldx zMOTHERHIP_ROW   ; get msy from
-	lda TABLE_ROW_TO_Y,x  ; row 2 y table
+	lda TABLE_ROW_TO_Y,x ; row 2 y table
 	sta zMOTHERSHIP_Y
 
 	lda #2
@@ -915,14 +921,14 @@ cntdwnj
 	sta zSHOW_SCORE_FLAG
 	jsr showscr
 
-	lda #32      ; clear
+	lda #32             ; clear
 	sta gCHAR_MEM+179   ; countdown
 	sta gCHAR_MEM+180
 
 	jsr clrtitl  ; clear title txt
-	; lda #0       ; black color mem
-	; sta charcol  ; set 0=black
-	; jsr coltitle ; color title blk
+;	lda #0       ; black color mem
+;	sta charcol  ; set 0=black
+;	jsr coltitle ; color title blk
 
 cntdwnz  
 	rts
@@ -936,8 +942,8 @@ gamestrt
 		 
 game_loop 
 	jsr vbwait
-	; lda VICII+30    ; get colision reg
-	; sta v30     ; save to chk latr
+	; lda VICII+30       ; get colision reg
+	; sta v30            ; save to chk latr
 	jsr input
 	jsr process
 	jsr output
@@ -945,17 +951,19 @@ game_loop
 	lda zGAME_OVER_FLAG  ; chk gameover flg
 ;	cmp #1               ; assume 1 = game over, 0 = continue
 ;	bne gameloop
-	beq game_loop         ; 0, so keep looping
+	beq game_loop        ; 0, so keep looping
 
 	jmp gameover
 
-vbwait  ;inc $d020   ; timing colour
+vbwait  
+;	inc $d020              ; timing colour
+
 vbwaita  
 	lda $d012
 	cmp #251
 	bne vbwaita
-	;dec $d020   ; timing colour
-	lda VICII+30    ; get col reg
+	;dec $d020             ; timing colour
+	lda VICII+30           ; get col reg
 	sta zVIC_COLLISION     ; save to v30
 
 	rts
@@ -964,32 +972,36 @@ vbwaita
 ;-- input ------------------------------
 
 input    
-	lda zPLAYER_ONE_ON     ; get p1 ztatus
-	cmp #1
-	bne inputd  ; skip if p1 off
+	lda zPLAYER_ONE_ON ; get p1 ztatus
+;;	cmp #1
+;;	bne inputd         ; skip if p1 off
+	beq inputd         ; skip if p1 off
 
-	lda zLASER_ONE_ON     ; chk lazer status
-	cmp #0      ; lazer is off, ок
-	beq inputa
-	lda zLASER_ONE_Y     ; chk lazer hight
-	sbc #151    ; is zLASER_ONE_Y < 150 ?
-	bcc inputa  ; yes, ок
+	lda zLASER_ONE_ON  ; chk lazer status
+;;	cmp #0             ; lazer is off, ок
+	beq inputa         ; lazer is off, ок
+
+	lda zLASER_ONE_Y   ; chk lazer hight
+	sbc #151           ; is zLASER_ONE_Y < 150 ?
+	bcc inputa         ; yes, ок
 	jmp inputd
 
 inputa   
 	jsr fire1
 
 inputd   
-	lda zPLAYER_TWO_ON     ; get p2 ztatus
-	cmp #1
-	bne inputz  ; skip if p2 off
+	lda zPLAYER_TWO_ON ; get p2 ztatus
+;;	cmp #1
+;;	bne inputz         ; skip if p2 off
+	beq inputz         ; skip if p2 off
 
 	lda zLASER_TWO_ON
-	cmp #0      ; lazer of, ок
+;;	cmp #0             ; lazer of, ок
 	beq inpute
+
 	lda zLASER_TWO_Y
-	sbc #151    ; is zLASER_TWO_Y < 200 ?
-	bcc inpute  ; yes, ок
+	sbc #151           ; is zLASER_TWO_Y < 200 ?
+	bcc inpute         ; yes, ок
 	jmp inputz
 
 inpute   
@@ -998,27 +1010,29 @@ inpute
 inputz   
 	rts
 
+; ==========================================================================
+
 fire1    
-	lda joy+1   ; remember: 0=fire
+	lda joy+1          ; remember: 0=fire
 	and #16
-	cmp #0
+;;	cmp #0
 	beq f1maybe
 		 
 f1nope   
-	lda #0      ; lastcycle=nofire
+	lda #0            ; lastcycle=nofire
 	sta zJOY_ONE_LAST_STATE
 		 
 	rts
-		 
+
 f1maybe  
 	lda zJOY_ONE_LAST_STATE
-	cmp #0
+;;	cmp #0
 	bne f1nope2
-	lda #1      ; set p1f═банг!
+	
+	lda #1                  ; set p1f═банг!
 	sta zPLAYER_ONE_FIRE
 	sta zJOY_ONE_LAST_STATE
-	jsr lazbeep1; fire ноисе!
-	
+	jsr lazbeep1            ; fire ноисе!
 	rts
 	
 f1nope2  
@@ -1027,33 +1041,36 @@ f1nope2
 
 	rts
 
+; ==========================================================================
+
 fire2    
 	lda joy     ; remember: 0=fire
 	and #16
-	cmp #0
+;;	cmp #0
 	beq f2maybe
 
 f2nope   
 	lda #0      ; lastcycle=nofire
 	sta zJOY_TWO_LAST_STATE
-		 
+
 	rts
 
 f2maybe  
 	lda zJOY_TWO_LAST_STATE
-	cmp #0
+;;	cmp #0
 	bne f2nope2
-	lda #1      ; set p2f═банг!
+
+	lda #1                  ; set p2f═банг!
 	sta zPLAYER_TWO_FIRE
-	sta zJOY_TWO_LAST_STATE     ; lastcycle=fire
-	jsr lazbeep2 ; p2 ноисе!
+	sta zJOY_TWO_LAST_STATE ; lastcycle=fire
+	jsr lazbeep2            ; p2 ноисе!
 
 	rts
 
 f2nope2  
 	lda #0
 	sta zPLAYER_TWO_FIRE
-		 
+
 	rts
 
 ; ==========================================================================
@@ -1066,15 +1083,20 @@ process
 	jsr proms
 	jsr bump     ; bump is player
 	jsr bounce   ; bounce is wall
+
 	lda zPLAYER_ONE_ON
-	cmp #1
-	bne processa
+;;	cmp #1
+;;	bne processa
+	beq processa
+	
 	jsr prop1
 
 processa 
 	lda zPLAYER_TWO_ON
-	cmp #1
-	bne processb
+;;	cmp #1
+;;	bne processb
+	beq processb
+	
 	jsr prop2
 
 processb 
@@ -1083,11 +1105,13 @@ processb
 	rts
 
 ; ==========================================================================
-       ; ------------- new lazer hit
+; ------------- new lazer hit
+
 prohit   
 	lda zLASER_ONE_ON
 	cmp #0      ; is l1 off?
 	beq plh1a
+
 	cmp #12     ; is l1 on?
 	beq plh1b
 	jmp plh1c
@@ -1095,6 +1119,7 @@ prohit
 plh1a    
 	lda #0      ; zLASER_ONE_ON=0 off
 	sta zLASER_ONE_ON
+	
 	lda #202    ; laz sprite
 	sta $07fb
 	jmp plh2
