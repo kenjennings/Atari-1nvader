@@ -1095,7 +1095,7 @@ processa
 	lda zPLAYER_TWO_ON
 ;;	cmp #1
 ;;	bne processb
-	beq processb
+	beq processb ; Player 2 Off
 	
 	jsr prop2
 
@@ -1109,32 +1109,33 @@ processb
 
 prohit   
 	lda zLASER_ONE_ON
-	cmp #0      ; is l1 off?
+;;	cmp #0                   ; is l1 off?
 	beq plh1a
 
-	cmp #12     ; is l1 on?
+	cmp #12                  ; is l1 on? ; ???  12?  not 1?
 	beq plh1b
 	jmp plh1c
 
 plh1a    
-	lda #0      ; zLASER_ONE_ON=0 off
+	lda #0                   ; zLASER_ONE_ON=0 off
 	sta zLASER_ONE_ON
 	
-	lda #202    ; laz sprite
+	lda #202                 ; laz sprite
 	sta $07fb
 	jmp plh2
 
 plh1b    
-	lda #202    ; zLASER_ONE_ON=12 on&up
-	sta $07fb   ; laz sprite
+	lda #202                 ; zLASER_ONE_ON=12 on&up
+	sta $07fb                ; laz sprite
 
-	lda zVIC_COLLISION     ; chk collision
+	lda zVIC_COLLISION       ; chk collision
 	and #9
-	cmp #9      ; s1(ms) + s4(l1)
-	bne plh2    ; no hit, check l2
+	cmp #9                   ; s1(ms) + s4(l1)
+	bne plh2                 ; no hit, check l2
 
-	dec zLASER_ONE_ON     ; hit═!!!
-	sed         ; add p1score
+	dec zLASER_ONE_ON        ; hit ═ !!!
+	
+	sed                      ; add p1score
 	clc
 	lda zPLAYER_ONE_SCORE
 	adc zMOTHERSHIP_POINTS   ; from GetMothershipPoints ; X will contain Mothership Row
@@ -1159,38 +1160,44 @@ plh1b
 	; jmp plh2
 
 plh1c    
-	dec zLASER_ONE_ON     ; 12<zLASER_ONE_ON>0 exp
-	lda #203    ; exp sprite
-	sta $07fb   ;
-	jmp plh2
+	dec zLASER_ONE_ON  ; 12<zLASER_ONE_ON>0 exp
+	
+	lda #203           ; exp sprite
+	sta $07fb          ;
+;;	jmp plh2           ; This is the next instruction.
 
        ; ------------- lazer 2 hit check
 plh2     
 	lda zLASER_TWO_ON
-	cmp #0      ; is l2 off?
+;;	cmp #0      ; is l2 off?
 	beq plh2a
-	cmp #12     ; is l2 on?
+	
+	cmp #12     ; is l2 on?   Whyyyy 12?
 	beq plh2b
+	
 	jmp plh2c
 
 plh2a    
-	lda #0      ; zLASER_TWO_ON=0 off
+	lda #0             ; zLASER_TWO_ON=0 off
 	sta zLASER_TWO_ON
-	lda #202    ; laz sprite
+	
+	lda #202           ; laz sprite
 	sta $07fc
+	
 	jmp prohitz
 
 plh2b    
-	lda #202    ; zLASER_TWO_ON=12 on&up
-	sta $07fc   ; laz sprite
+	lda #202           ; zLASER_TWO_ON=12 on&up
+	sta $07fc          ; laz sprite
 
-	lda zVIC_COLLISION     ; chk collision
+	lda zVIC_COLLISION ; chk collision
 	and #17
-	cmp #17     ; s1(ms) + s5(l1)
-	bne prohitz ; no hit, done
+	cmp #17            ; s1(ms) + s5(l1)
+	bne prohitz        ; no hit, done
 
-	dec zLASER_TWO_ON     ; hit═!!!
-	sed         ; add p2score
+	dec zLASER_TWO_ON  ; hit═!!!
+	
+	sed                      ; add p2score
 	clc
 	lda zPLAYER_TWO_SCORE
 	adc zMOTHERSHIP_POINTS   ; from GetMothershipPoints ; X will contain Mothership Row
@@ -1199,7 +1206,137 @@ plh2b
 	adc zMOTHERSHIP_POINTS+1 ; from GetMothershipPoints ; X will contain Mothership Row
 	sta zPLAYER_TWO_SCORE+1
 	lda zPLAYER_TWO_SCORE+2
-	adc #0      ; carry if needed
+	adc #0                   ; carry if needed
+	sta zPLAYER_TWO_SCORE+2
+
+	sec
+	lda zSHIP_HITS           ; decrease hits
+	sbc #1
+	sta zSHIP_HITS
+	lda zSHIP_HITS+1
+	sbc #0
+	sta zSHIP_HITS+1
+	cld
+
+	jmp lzhitb               ; goto pop ms up
+	; jmp prohitz
+
+plh2c    
+	dec zLASER_TWO_ON        ; 12<zLASER_TWO_ON>0 exp
+	
+	lda #203                 ; exp sprite
+	sta $07fc                ;
+	jmp prohitz
+
+prohitz  
+	rts
+
+	; ------------- end new prohit
+
+; ==========================================================================
+
+prolzhit              ; was ms hit?
+	lda zLASER_ONE_ON 
+;;	cmp #0
+	beq lz2hit        ; l1 off, check l2
+	
+;;	cmp #1
+;;	beq plz1a         ; goto active lz1
+	bne plz1a         ; goto active lz1
+
+	lda #203          ; explosion stuff
+	sta $07fb         ; exp sprite on
+	
+	dec zLASER_ONE_ON
+	lda zLASER_ONE_ON
+	cmp #1
+	bne plz1b
+	
+	lda #0            ; turn off exp
+	sta zLASER_ONE_ON
+	
+	lda #202          ; lz sprite on
+	sta $07fb
+
+plz1b    
+	jmp lz2hit
+
+plz1a    
+	lda zVIC_COLLISION       ; get collision
+	and #9
+	cmp #9                   ; s1(ms) + s4(l1)
+	bne lz2hit               ; no hit, check l2
+		 
+	sed                      ; add p1score
+	clc
+	lda zPLAYER_ONE_SCORE
+	adc zMOTHERSHIP_POINTS   ; from GetMothershipPoints ; X will contain Mothership Row
+	sta zPLAYER_ONE_SCORE
+	lda zPLAYER_ONE_SCORE+1
+	adc zMOTHERSHIP_POINTS+1 ; from GetMothershipPoints ; X will contain Mothership Row
+	sta zPLAYER_ONE_SCORE+1
+	lda zPLAYER_ONE_SCORE+2
+	adc #0                   ; carry if needed
+	sta zPLAYER_ONE_SCORE+2
+
+	sec
+	lda zSHIP_HITS           ; decrease hits
+	sbc #1
+	sta zSHIP_HITS
+	lda zSHIP_HITS+1
+	sbc #0
+	sta zSHIP_HITS+1
+
+	cld
+	lda #12                  ; was 0               ; WHY 12?   Why Not 1?
+	sta zLASER_ONE_ON        ; turn off l1
+	jmp lzhitb               ; goto kill ms
+
+lz2hit
+	lda zLASER_TWO_ON
+;;	cmp #0
+;	bne lz2hita
+	bne plz1e
+	jmp lzhitz
+
+plz1e    
+	cmp #1
+	beq lz2hita        ; goto active lz2
+
+	lda #203           ; explosion stuff
+	sta $07fc          ; exp sprite on
+	
+	dec zLASER_TWO_ON
+	lda zLASER_TWO_ON
+	cmp #1
+	bne plz1c
+
+	lda #0             ; turn off exp
+	sta zLASER_TWO_ON
+	lda #202           ; lz sprite on
+	sta $07fc
+
+plz1c    
+	jmp lzhitz         ; l2 off, done
+
+lz2hita  
+	lda zVIC_COLLISION ; get collision
+	and #17
+	cmp #17            ; s1(ms) + s5(l2)
+	beq lz2hitb
+	jmp lzhitz         ; no hit
+	
+lz2hitb  
+	sed                ; add p2score
+	clc
+	lda zPLAYER_TWO_SCORE
+	adc zMOTHERSHIP_POINTS
+	sta zPLAYER_TWO_SCORE
+	lda zPLAYER_TWO_SCORE+1
+	adc zMOTHERSHIP_POINTS+1
+	sta zPLAYER_TWO_SCORE+1
+	lda zPLAYER_TWO_SCORE+2
+	adc #0                   ; carry if needed
 	sta zPLAYER_TWO_SCORE+2
 
 	sec
@@ -1209,137 +1346,21 @@ plh2b
 	lda zSHIP_HITS+1
 	sbc #0
 	sta zSHIP_HITS+1
+
 	cld
+	lda #12     ; was 0
+	sta zLASER_TWO_ON     ; turn off l2
 
-	jmp lzhitb  ; goto pop ms up
-	; jmp prohitz
-
-plh2c    
-	dec zLASER_TWO_ON     ; 12<zLASER_TWO_ON>0 exp
-	lda #203    ; exp sprite
-	sta $07fc   ;
-	jmp prohitz
-
-prohitz  
-	rts
-       ; ------------- end new prohit
-
-; ==========================================================================
-
-prolzhit             ; was ms hit?
-         lda zLASER_ONE_ON
-         cmp #0
-         beq lz2hit  ; l1 off, check l2
-         cmp #1
-         beq plz1a   ; goto active lz1
-
-         lda #203    ; explosion stuff
-         sta $07fb   ; exp sprite on
-         dec zLASER_ONE_ON
-         lda zLASER_ONE_ON
-         cmp #1
-         bne plz1b
-         lda #0      ; turn off exp
-         sta zLASER_ONE_ON
-         lda #202    ; lz sprite on
-         sta $07fb
-
-plz1b    
-	jmp lz2hit
-
-plz1a    
-	lda zVIC_COLLISION     ; get collision
-         and #9
-         cmp #9      ; s1(ms) + s4(l1)
-         bne lz2hit  ; no hit, check l2
-         sed         ; add p1score
-         clc
-         lda zPLAYER_ONE_SCORE
-         adc zMOTHERSHIP_POINTS   ; from GetMothershipPoints ; X will contain Mothership Row
-         sta zPLAYER_ONE_SCORE
-         lda zPLAYER_ONE_SCORE+1
-         adc zMOTHERSHIP_POINTS+1 ; from GetMothershipPoints ; X will contain Mothership Row
-         sta zPLAYER_ONE_SCORE+1
-         lda zPLAYER_ONE_SCORE+2
-         adc #0      ; carry if needed
-         sta zPLAYER_ONE_SCORE+2
-
-         sec
-         lda zSHIP_HITS    ; decrease hits
-         sbc #1
-         sta zSHIP_HITS
-         lda zSHIP_HITS+1
-         sbc #0
-         sta zSHIP_HITS+1
-
-         cld
-         lda #12     ; was 0
-         sta zLASER_ONE_ON     ; turn off l1
-         jmp lzhitb  ; goto kill ms
-
-lz2hit
-         lda zLASER_TWO_ON
-         cmp #0
-       ; bne lz2hita
-         bne plz1e
-         jmp lzhitz
-
-plz1e    
-	cmp #1
-         beq lz2hita ; goto active lz2
-
-         lda #203    ; explosion stuff
-         sta $07fc   ; exp sprite on
-         dec zLASER_TWO_ON
-         lda zLASER_TWO_ON
-         cmp #1
-         bne plz1c
-         lda #0      ; turn off exp
-         sta zLASER_TWO_ON
-         lda #202    ; lz sprite on
-         sta $07fc
-
-plz1c    
-	jmp lzhitz  ; l2 off, done
-
-lz2hita  
-	lda zVIC_COLLISION     ; get collision
-         and #17
-         cmp #17     ; s1(ms) + s5(l2)
-         beq lz2hitb
-         jmp lzhitz  ; no hit
-lz2hitb  
-	sed         ; add p2score
-         clc
-         lda zPLAYER_TWO_SCORE
-         adc zMOTHERSHIP_POINTS
-         sta zPLAYER_TWO_SCORE
-         lda zPLAYER_TWO_SCORE+1
-         adc zMOTHERSHIP_POINTS+1
-         sta zPLAYER_TWO_SCORE+1
-         lda zPLAYER_TWO_SCORE+2
-         adc #0      ; carry if needed
-         sta zPLAYER_TWO_SCORE+2
-
-         sec
-         lda zSHIP_HITS    ; decrease hits
-         sbc #1
-         sta zSHIP_HITS
-         lda zSHIP_HITS+1
-         sbc #0
-         sta zSHIP_HITS+1
-
-         cld
-         lda #12     ; was 0
-         sta zLASER_TWO_ON     ; turn off l2
-
-       ; ------------- kill mothership
+	; ------------- kill mothership
+	
 lzhitb               ; ms was hit, popup
-         jsr expnoz  ; make ноисе
-         dec zMOTHERHIP_SPEEDUP_COUNTER   ; speedup counter
-         lda zMOTHERHIP_SPEEDUP_COUNTER
-         cmp #0      ; time to speedup?
-         bne lzhite  ; no
+	jsr expnoz  ; make ноисе
+	
+	dec zMOTHERHIP_SPEEDUP_COUNTER   ; speedup counter
+	lda zMOTHERHIP_SPEEDUP_COUNTER
+;;	cmp #0      ; time to speedup?
+	bne lzhite  ; no
+	
          inc zMOTHERSHIP_MOVE_SPEED  ; yes
          lda zMOTHERSHIP_MOVE_SPEED
          cmp #10     ; is msmovs = 10
@@ -1355,45 +1376,52 @@ lzhitr
 		 
 lzhite   
 	lda #1
-         sta zSHOW_SCORE_FLAG  ; set ssflag
-       ; lda zMOTHERSHIP_Y     ; pop ms up 16px
-       ; sbc #16
-       ; sta zMOTHERSHIP_Y
-         sed         ; set dec flag
-         clc
-         lda zMOTHERHIP_ROW   ; why sbc #1 ?????
-         sbc #1      ; pop msrow up 2
-         sta zMOTHERHIP_ROW
-         cld         ; clr dec flag
-         lda #30     ; check msrow
-         cmp zMOTHERHIP_ROW   ; is msrow < 30?
-         bcs lzhitf  ; no, skip
-         lda #0      ; yes, make it 0
-         sta zMOTHERHIP_ROW
+	sta zSHOW_SCORE_FLAG  ; set ssflag
+;	lda zMOTHERSHIP_Y     ; pop ms up 16px
+;	sbc #16
+;	sta zMOTHERSHIP_Y
+
+	sed                ; set dec flag
+	clc
+	lda zMOTHERHIP_ROW ; why sbc #1 ?????
+	sbc #1             ; pop msrow up 2
+	sta zMOTHERHIP_ROW
+	cld                ; clr dec flag
+	
+	lda #30            ; check msrow
+	cmp zMOTHERHIP_ROW ; is msrow < 30?
+	bcs lzhitf         ; no, skip
+	lda #0             ; yes, make it 0
+	sta zMOTHERHIP_ROW
+
 lzhitf 
-	; lda #58     ; is msy >= 58?
-       ; cmp zMOTHERSHIP_Y
-       ; bcc lzhitc  ; yes, go away
-       ; lda #58     ; no, make it 58
-       ; sta zMOTHERSHIP_Y
-       ; lda #0      ; msrow to 0 too
-       ; sta zMOTHERHIP_ROW
+;	lda #58            ; is msy >= 58?
+;	cmp zMOTHERSHIP_Y
+;	bcc lzhitc         ; yes, go away
+;	lda #58            ; no, make it 58
+;	sta zMOTHERSHIP_Y
+;	lda #0             ; msrow to 0 too
+;	sta zMOTHERHIP_ROW
+
 lzhitc   
 	jsr GetMothershipPoints ; set new x ; X will contain Mothership Row
-         lda zMOTHERSHIP_DIR     ; check msd
-         bne lzhitd
-         sta zMOTHERSHIP_X     ; was going left
-         sta zMOTHERSHIP_X+1   ; msx x=0
-         lda #1      ; go right
-         sta zMOTHERSHIP_DIR
-         jmp lzhitz
+	lda zMOTHERSHIP_DIR     ; check msd
+	bne lzhitd
+	
+	sta zMOTHERSHIP_X   ; was going left
+	sta zMOTHERSHIP_X+1 ; msx x=0
+	lda #1              ; go right
+	sta zMOTHERSHIP_DIR
+	jmp lzhitz
+	
 lzhitd   
-	lda #1      ; was going right
-         sta zMOTHERSHIP_X+1
-         lda #89     ; msx x=344
-         sta zMOTHERSHIP_X
-         lda #0      ; go left
-         sta zMOTHERSHIP_DIR
+	lda #1              ; was going right
+	sta zMOTHERSHIP_X+1
+	lda #89             ; msx x=344
+	sta zMOTHERSHIP_X
+	lda #0              ; go left
+	sta zMOTHERSHIP_DIR
+	
 lzhitz   
 	rts
 
