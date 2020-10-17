@@ -1428,168 +1428,211 @@ lzhitz
 ; ==========================================================================
 
 prolazer
-         lda zLASER_ONE_ON
-       ; cmp #0
-       ; beq lazera
-         cmp #12     ; zLASER_ONE_ON=12 active laz
-         bne lazera  ; only zLASER_ONE_ON goes up
-         lda zLASER_ONE_Y     ; l1 up
-         sbc #4
-         sta zLASER_ONE_Y
-         cmp #50
-         bne lazera
-         lda #0
-         sta zLASER_ONE_ON     ; l1 off
-         lda #202    ; use lz sprite
-         sta $07fb   ; not exp
+	lda zLASER_ONE_ON
+	; cmp #0
+	; beq lazera
+	cmp #12     ; zLASER_ONE_ON=12 active laz
+	bne lazera  ; only zLASER_ONE_ON goes up
+	
+	lda zLASER_ONE_Y     ; l1 up
+	sbc #4
+	sta zLASER_ONE_Y
+	
+	cmp #50
+	bne lazera
+	
+	lda #0
+	sta zLASER_ONE_ON     ; l1 off
+
+	lda #202    ; use lz sprite
+	sta $07fb   ; not exp
 
 lazera   
 	lda zLASER_TWO_ON
-       ; cmp #0
-       ; beq lazerz
-         cmp #12     ;zLASER_TWO_ON=12 active laz
-         bne lazerz
-         lda zLASER_TWO_Y     ; l2 up
-         sbc #4
-         sta zLASER_TWO_Y
-         lda zLASER_TWO_Y
-         cmp #50
-         bne lazerz
-         lda #0
-         sta zLASER_TWO_ON     ; l2 off
-         lda #202    ; use lz sprite
-         sta $07fc   ; not exp
+	; cmp #0
+	; beq lazerz
+	cmp #12     ;zLASER_TWO_ON=12 active laz
+	bne lazerz
+	
+	lda zLASER_TWO_Y     ; l2 up
+	sbc #4
+	sta zLASER_TWO_Y
+;;	lda zLASER_TWO_Y
+
+	cmp #50
+	bne lazerz
+	
+	lda #0
+	sta zLASER_TWO_ON     ; l2 off
+	
+	lda #202    ; use lz sprite
+	sta $07fc   ; not exp
+	
 lazerz   
 	rts
 
 ; ==========================================================================
 
 proms    
-	lda zMOTHERSHIP_MOVE_SPEED ; loop this ammount
-         sta zMOTHERSHIP_MOVE_COUNTER    ; msm is counter
+	lda zMOTHERSHIP_MOVE_SPEED   ; loop this ammount
+	sta zMOTHERSHIP_MOVE_COUNTER ; msm is counter
+	
 procmsm  
 	lda zMOTHERSHIP_MOVE_COUNTER
-         cmp #0
-         beq procmsz ; done moving ms
-         jsr promsdo ; do the real move
-         dec zMOTHERSHIP_MOVE_COUNTER
-         jmp procmsm ; loop again
+;;	cmp #0
+	beq procmsz ; done moving ms
+	
+	jsr promsdo ; do the real move
+	dec zMOTHERSHIP_MOVE_COUNTER
+	jmp procmsm ; loop again
+	
 procmsz  
 	rts
 
 ; ==========================================================================
 
 promsdo  
-	lda zMOTHERSHIP_DIR     ; this is the move
-         cmp #0      ; routine for real
-         beq pmslt
+	lda zMOTHERSHIP_DIR  ; this is the move
+;;	cmp #0               ; routine for real
+	beq pmslt
+	
 pmsrt    
-	inc zMOTHERSHIP_X     ; move right
-         bne pmsbc
-         inc zMOTHERSHIP_X+1
-         jmp pmsbc
+	inc zMOTHERSHIP_X    ; move right
+	bne pmsbc
+	
+	inc zMOTHERSHIP_X+1
+	jmp pmsbc
+	
 pmslt    
 	lda zMOTHERSHIP_X+1   ; move left
-         bne pmslta
-         dec zMOTHERSHIP_X     ; < 256
-         jmp pmsbc
+	bne pmslta
+	
+	dec zMOTHERSHIP_X     ; < 256
+	jmp pmsbc
+	
 pmslta   
 	dec zMOTHERSHIP_X     ; > 255
-         lda zMOTHERSHIP_X
-         cmp #255
-         beq pmsltb
-         jmp pmsbc
+	lda zMOTHERSHIP_X
+	cmp #255
+	beq pmsltb
+	jmp pmsbc
+	
 pmsltb   
 	dec zMOTHERSHIP_X+1   ; dec msx+1
-         jmp pmsbc
+	jmp pmsbc
+	
 pmsbc    
-	lda zMOTHERSHIP_DIR     ; ms bounce
-         cmp #0
-         beq msbltr
+	lda zMOTHERSHIP_DIR   ; ms bounce
+;;	cmp #0
+	beq msbltr
+	
 msbrtl   
 	lda zMOTHERSHIP_X+1   ; bounce off right
-         cmp #0
-         beq promszz ; skip
-         lda zMOTHERSHIP_X
-         cmp #89     ; 89+255=344
-         bne promszz ; skip
-         lda #0
-         sta zMOTHERSHIP_DIR     ; set msd=0(left)
-       ; lda zMOTHERSHIP_Y     ; drop down
-       ; clc
-       ; adc #8
-       ; sta zMOTHERSHIP_Y
-         sed         ; drop down msrow
-         clc         ; set dec+clr carry
-         lda zMOTHERHIP_ROW
-         adc #1
-         sta zMOTHERHIP_ROW
-         cld         ; clr dec flag
-         jsr GetMothershipPoints ; update points ; X will contain Mothership Row
-         jmp promsz
+;;	cmp #0
+	beq promszz         ; skip
+	
+	lda zMOTHERSHIP_X
+	cmp #89             ; 89+255=344
+	bne promszz         ; skip
+	
+	lda #0
+	sta zMOTHERSHIP_DIR ; set msd=0(left)
+	
+	; lda zMOTHERSHIP_Y ; drop down
+	; clc
+	; adc #8
+	; sta zMOTHERSHIP_Y
+	
+	sed                ; drop down msrow
+	clc                ; set dec+clr carry
+	lda zMOTHERHIP_ROW
+	adc #1
+	sta zMOTHERHIP_ROW
+	cld                     ; clr dec flag
+	
+	jsr GetMothershipPoints ; update points ; X will contain Mothership Row
+	jmp promsz
+	
 msbltr   
-	lda zMOTHERSHIP_X+1   ; bounce off left
-         cmp #0
-         bne promszz ; msx+1 set, skip
-         lda zMOTHERSHIP_X     ; check msx
-         cmp #0
-         bne promszz ; msx<>0, skip
-         lda #1
-         sta zMOTHERSHIP_DIR     ; set msd=1(right)
-       ; lda zMOTHERSHIP_Y     ; drop down
-       ; clc
-       ; adc #8
-       ; sta zMOTHERSHIP_Y
-         sed         ; drop msrow down
-         clc         ; set dec+clr carry
-         lda zMOTHERHIP_ROW
-         adc #1
-         sta zMOTHERHIP_ROW
-         cld         ; clr dec flag
-         jsr GetMothershipPoints ; update points ; X will contain Mothership Row
-         jmp promsz
+	lda zMOTHERSHIP_X+1     ; bounce off left
+;;	cmp #0
+	bne promszz ; msx+1 set, skip
+	
+	lda zMOTHERSHIP_X       ; check msx
+;;	cmp #0
+	bne promszz             ; msx<>0, skip
+	
+	lda #1
+	sta zMOTHERSHIP_DIR     ; set msd=1(right)
+	
+	; lda zMOTHERSHIP_Y     ; drop down
+	; clc
+	; adc #8
+	; sta zMOTHERSHIP_Y
+	
+	sed                     ; drop msrow down
+	clc                     ; set dec+clr carry
+	lda zMOTHERHIP_ROW
+	adc #1
+	sta zMOTHERHIP_ROW
+	cld                     ; clr dec flag
+	
+	jsr GetMothershipPoints ; update points ; X will contain Mothership Row
+	jmp promsz
+	
 promsz 
-	; lda zMOTHERSHIP_Y     ; check bottom
-       ; cmp #234
-         lda zMOTHERHIP_ROW
-         cmp #34
-         bcs promsb  ; row = 23 (бцд 34)
-       ; bcs promsb  ; >= 234
-         jmp promszz ; < 234
+	; lda zMOTHERSHIP_Y ; check bottom
+	; cmp #234
+	lda zMOTHERHIP_ROW
+	cmp #34
+	bcs promsb          ; row = 23 (бцд 34)
+	
+	; bcs promsb        ; >= 234
+	jmp promszz         ; < 234
+	
 promsb   
 	lda #1      ;
-         sta zGAME_OVER_FLAG
+	sta zGAME_OVER_FLAG
+	
 promszz  
 	rts
 
 ; ==========================================================================
 
 bump                 ; p1/p2 bump check
-         lda zPLAYER_ONE_ON     ; no p1 dont bump
-         cmp #1
-         bne bumpz
-         lda zPLAYER_TWO_ON     ; no p2 dont bump
-         cmp #1
-         bne bumpz
-         lda zVIC_COLLISION     ; get sp collision
-         and #6      ; 2+4=6
-         cmp #6
-         bne bumpz
-         lda zPLAYER_ONE_DIR
-         cmp #0
-         bne bumpa
-         sta zPLAYER_TWO_DIR     ; p1 on right
-         lda #1
-         sta zPLAYER_ONE_DIR
-         sta zPLAYER_ONE_BUMP    ; set bump flags
-         sta zPLAYER_TWO_BUMP
-         jmp bumpz
-bumpa    sta zPLAYER_TWO_DIR     ; p2 on left
-         lda #0
-         sta zPLAYER_ONE_DIR
-         lda #1
-         sta zPLAYER_ONE_BUMP    ; set bump flags
-         sta zPLAYER_TWO_BUMP
+	lda zPLAYER_ONE_ON     ; no p1 dont bump
+;;	cmp #1
+;;	bne bumpz
+	beq bumpz
+
+	lda zPLAYER_TWO_ON     ; no p2 dont bump
+;;	cmp #1
+;;	bne bumpz
+	beq bumpz
+		 
+	lda zVIC_COLLISION     ; get sp collision
+	and #6      ; 2+4=6
+	cmp #6
+	bne bumpz
+		 
+	lda zPLAYER_ONE_DIR
+;;	cmp #0
+	bne bumpa
+		 
+	sta zPLAYER_TWO_DIR     ; p1 on right
+	lda #1
+	sta zPLAYER_ONE_DIR
+	sta zPLAYER_ONE_BUMP    ; set bump flags
+	sta zPLAYER_TWO_BUMP
+	jmp bumpz
+		 
+bumpa    
+	sta zPLAYER_TWO_DIR     ; p2 on left
+	lda #0
+	sta zPLAYER_ONE_DIR
+	lda #1
+	sta zPLAYER_ONE_BUMP    ; set bump flags
+	sta zPLAYER_TWO_BUMP
 bumpz    
 	rts
 
@@ -1597,56 +1640,70 @@ bumpz
 
 bounce   
 	lda zPLAYER_ONE_DIR     ; p1 bounce
-         cmp #0
-         beq p1bltr
+;;	cmp #0
+	beq p1bltr
+		 
 p1brtl   
 	lda zPLAYER_ONE_X+1
-         cmp #0
-         beq bouncep2
-         lda zPLAYER_ONE_X     ; x=255+65=320
-         cmp #65     ;     right wall
-         bne bouncep2
-         lda #0
-         sta zPLAYER_ONE_DIR
-         lda #1
-         sta zPLAYER_ONE_BUMP    ; set bounce flg
-         jmp bouncep2
+;;	cmp #0
+	beq bouncep2
+	
+	lda zPLAYER_ONE_X     ; x=255+65=320
+	cmp #65     ;     right wall
+	bne bouncep2
+		 
+	lda #0
+	sta zPLAYER_ONE_DIR
+	lda #1
+	sta zPLAYER_ONE_BUMP    ; set bounce flg
+	jmp bouncep2
+		 
 p1bltr   
 	lda zPLAYER_ONE_X+1
-         cmp #0
-         bne bouncep2
-         lda zPLAYER_ONE_X
-         cmp #24     ; x=24 left wall
-         bne bouncep2
-         lda #1
-         sta zPLAYER_ONE_DIR
-         sta zPLAYER_ONE_BUMP    ; set bounce flg
+;;	cmp #0
+	bne bouncep2
+	
+	lda zPLAYER_ONE_X
+	cmp #24     ; x=24 left wall
+	bne bouncep2
+	
+	lda #1
+	sta zPLAYER_ONE_DIR
+	sta zPLAYER_ONE_BUMP    ; set bounce flg
+	
 bouncep2 
 	lda zPLAYER_TWO_DIR     ; p2 bounce
-         cmp #0      ; same as p1
-         beq p2bltr
+;;	cmp #0      ; same as p1
+	beq p2bltr
+	
 p2brtl   
 	lda zPLAYER_TWO_X+1
-         cmp #0
-         beq bouncez
-         lda zPLAYER_TWO_X
-         cmp #65
-         bne bouncez
-         lda #0
-         sta zPLAYER_TWO_DIR
-         lda #1
-         sta zPLAYER_TWO_BUMP    ; set bounce flg
-         jmp bouncez
+;;	cmp #0
+	beq bouncez
+	
+	lda zPLAYER_TWO_X
+	cmp #65
+	bne bouncez
+		 
+	lda #0
+	sta zPLAYER_TWO_DIR
+	lda #1
+	sta zPLAYER_TWO_BUMP    ; set bounce flg
+	jmp bouncez
+		 
 p2bltr   
 	lda zPLAYER_TWO_X+1
-         cmp #0
-         bne bouncez
-         lda zPLAYER_TWO_X
-         cmp #24
-         bne bouncez
-         lda #1
-         sta zPLAYER_TWO_DIR
-         sta zPLAYER_TWO_BUMP    ; set bounce flag
+;;	cmp #0
+	bne bouncez
+	
+	lda zPLAYER_TWO_X
+	cmp #24
+	bne bouncez
+		 
+	lda #1
+	sta zPLAYER_TWO_DIR
+	sta zPLAYER_TWO_BUMP    ; set bounce flag
+	
 bouncez  
 	rts
 
@@ -1654,67 +1711,74 @@ bouncez
 
 prop1    
 	lda zPLAYER_ONE_FIRE
-         cmp #1      ; check p1 fire
-         beq prop1a
-         jmp pp1move
+;;	cmp #1                ; check p1 fire
+;;	beq prop1a
+	bne prop1a
+	jmp pp1move
 
 prop1a   
-	lda zPLAYER_ONE_BUMP    ; check bump flag
-         cmp #1      ; if bump
-         beq prop1fyr; skip dir change
-         lda zPLAYER_ONE_DIR     ; change direction
-         cmp #0
-         beq prop1d
-         lda #0      ; change to left
-         sta zPLAYER_ONE_DIR
-         jmp prop1fyr
+	lda zPLAYER_ONE_BUMP  ; check bump flag
+;;	cmp #1                ; if bump
+;;	beq prop1fyr          ; skip dir change
+	bne prop1fyr          ; skip dir change
+	
+	lda zPLAYER_ONE_DIR   ; change direction
+;;	cmp #0
+	beq prop1d
+	
+	lda #0                ; change to left
+	sta zPLAYER_ONE_DIR
+	jmp prop1fyr
 
 prop1d   
-	lda #1      ; change to right
-         sta zPLAYER_ONE_DIR
-         jmp prop1fyr
+	lda #1                ; change to right
+	sta zPLAYER_ONE_DIR
+	jmp prop1fyr
 
-prop1fyr             ; fire laser
-         lda #12
-         sta zLASER_ONE_ON
-         lda zPLAYER_ONE_X
-         sta zLASER_ONE_X
-         lda zPLAYER_ONE_X+1
-         sta zLASER_ONE_X+1
-         lda #226
-         sta zLASER_ONE_Y
-         jmp pp1move
+prop1fyr                  ; fire laser
+	lda #12
+	sta zLASER_ONE_ON
+	lda zPLAYER_ONE_X
+	sta zLASER_ONE_X
+	lda zPLAYER_ONE_X+1
+	sta zLASER_ONE_X+1
+	lda #226
+	sta zLASER_ONE_Y
+	jmp pp1move
 		 
 pp1move
-         lda zPLAYER_ONE_DIR
-         cmp #0
-         beq pp1lt
-		 
+	lda zPLAYER_ONE_DIR
+;;	cmp #0
+	beq pp1lt
+
 pp1rt    
 	inc zPLAYER_ONE_X     ; move right
-         bne pp1bc
-         inc zPLAYER_ONE_X+1
-         jmp pp1bc
+	bne pp1bc
+	
+	inc zPLAYER_ONE_X+1
+	jmp pp1bc
 		 
 pp1lt    
 	lda zPLAYER_ONE_X+1   ; move left
-         bne pp1lta
-         dec zPLAYER_ONE_X     ; < 256
-         jmp pp1bc
+	bne pp1lta
+	
+	dec zPLAYER_ONE_X     ; < 256
+	jmp pp1bc
 		 
 pp1lta   
 	dec zPLAYER_ONE_X     ; > 255
-         lda zPLAYER_ONE_X
-         cmp #255
-         beq pp1ltb
-         jmp pp1bc
+	lda zPLAYER_ONE_X
+	cmp #255
+	beq pp1ltb
+	
+	jmp pp1bc
 		 
 pp1ltb   
 	dec zPLAYER_ONE_X+1  ; it happens earlyr
-         jmp pp1bc  ; its not here now
+	jmp pp1bc            ; its not here now
 
 pp1bc    
-	jmp prop1z ; leftover bounce
+	jmp prop1z           ; leftover bounce
 
 prop1z   
 	rts
@@ -1723,64 +1787,73 @@ prop1z
 
 prop2    
 	lda zPLAYER_TWO_FIRE
-         cmp #1
-         beq prop2a
-         jmp pp2move
+;;	cmp #1
+;;	beq prop2a
+	bne prop2a
+	jmp pp2move
 		 
 prop2a   
 	lda zPLAYER_TWO_BUMP    ; check bump flag
-         cmp #1      ; if set
-         beq prop2fyr; skip dir change
-         lda zPLAYER_TWO_DIR     ; change direction
-         cmp #0
-         beq prop2d
-         lda #0
-         sta zPLAYER_TWO_DIR
-         jmp prop2fyr
+;;	cmp #1                  ; if set
+;;	beq prop2fyr            ; skip dir change
+	bne prop2fyr            ; skip dir change
+	
+	lda zPLAYER_TWO_DIR     ; change direction
+;;	cmp #0
+	beq prop2d
+	
+	lda #0
+	sta zPLAYER_TWO_DIR
+	jmp prop2fyr
 		 
 prop2d   
 	lda #1
-         sta zPLAYER_TWO_DIR
-         jmp prop2fyr
+	sta zPLAYER_TWO_DIR
+;;	jmp prop2fyr
 		 
 prop2fyr
-         lda #12
-         sta zLASER_TWO_ON
-         lda zPLAYER_TWO_X
-         sta zLASER_TWO_X
-         lda zPLAYER_TWO_X+1
-         sta zLASER_TWO_X+1
-         lda #226
-         sta zLASER_TWO_Y
-         jmp pp2move
+	lda #12
+	sta zLASER_TWO_ON
+	
+	lda zPLAYER_TWO_X
+	sta zLASER_TWO_X
+	
+	lda zPLAYER_TWO_X+1
+	sta zLASER_TWO_X+1
+	
+	lda #226
+	sta zLASER_TWO_Y
+	jmp pp2move
 		 
 pp2move
-         lda zPLAYER_TWO_DIR
-         cmp #0
-         beq pp2lt
+	lda zPLAYER_TWO_DIR
+;;	cmp #0
+	beq pp2lt
 		 
 pp2rt    
 	inc zPLAYER_TWO_X
-         bne pp2bc
-         inc zPLAYER_TWO_X+1
-         jmp pp2bc
+	bne pp2bc
+	
+	inc zPLAYER_TWO_X+1
+	jmp pp2bc
 		 
 pp2lt    
 	lda zPLAYER_TWO_X+1
-         bne pp2lta
-         dec zPLAYER_TWO_X
-         jmp pp2bc
+	bne pp2lta
+	
+	dec zPLAYER_TWO_X
+	jmp pp2bc
 		 
 pp2lta   
 	dec zPLAYER_TWO_X
-         lda zPLAYER_TWO_X
-         cmp #255
-         beq pp2ltb
-         jmp pp2bc
+	lda zPLAYER_TWO_X
+	cmp #255
+	beq pp2ltb
+	jmp pp2bc
 		 
 pp2ltb   
 	dec zPLAYER_TWO_X+1
-         jmp pp2bc
+	jmp pp2bc
 		 
 pp2bc    
 	jmp prop2z
@@ -1790,32 +1863,39 @@ prop2z
 
 proreset 
 	lda #0      ;
-	sta zPLAYER_ONE_FIRE     ; reset fire flags
+	sta zPLAYER_ONE_FIRE ; reset fire flags
 	sta zPLAYER_TWO_FIRE
-	sta zPLAYER_ONE_BUMP    ; reset bump flags
+	sta zPLAYER_ONE_BUMP ; reset bump flags
 	sta zPLAYER_TWO_BUMP
+	
 	rts
 
 ; ==========================================================================
 ;-- output -----------------------------
 
 output
-       ; jsr twinkle
-         jsr showscr ; show score
-         jsr shwstats; show stats
-         jsr outms   ; show ms
-         lda zPLAYER_ONE_ON
-         cmp #1
-         bne outputa ; skip p1 output
-         jsr outp1   ; show p1 l1
-         jsr outl1
-outputa  lda zPLAYER_TWO_ON
-         cmp #1
-         bne outputz ; skip p2 output
-         jsr outp2   ; show p2 l2
-         jsr outl2
+	; jsr twinkle
+	jsr showscr ; show score
+	jsr shwstats; show stats
+	jsr outms   ; show ms
+	
+	lda zPLAYER_ONE_ON
+	cmp #1
+	bne outputa ; skip p1 output
+	
+	jsr outp1   ; show p1 l1
+	jsr outl1
+		 
+outputa  
+	lda zPLAYER_TWO_ON
+	cmp #1
+	bne outputz ; skip p2 output
+	jsr outp2   ; show p2 l2
+	jsr outl2
+	
 outputz  
 	jsr twinkle
+	
 	rts
 
 ; ==========================================================================
@@ -1829,238 +1909,250 @@ shsca
 	lda #0      ; turn flag off
 	sta zSHOW_SCORE_FLAG
 
-       ; lda zMOTHERSHIP_MOVE_SPEED  ; show msmovs
-       ; adc #48
-       ; sta gCHAR_MEM+13
+	; lda zMOTHERSHIP_MOVE_SPEED  ; show msmovs
+	; adc #48
+	; sta gCHAR_MEM+13
 
-         lda #32     ; clear hiscore
-         sta gCHAR_MEM+15   ; indicators
-         sta gCHAR_MEM+24
+	lda #32     ; clear hiscore
+	sta gCHAR_MEM+15   ; indicators
+	sta gCHAR_MEM+24
 
-         lda zPLAYER_ONE_SCORE ; show p1score
-         and #%00001111
-         clc
-         adc #48
-         sta gCHAR_MEM+6
-         lda zPLAYER_ONE_SCORE
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gCHAR_MEM+5
+	lda zPLAYER_ONE_SCORE ; show p1score
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+6
+	lda zPLAYER_ONE_SCORE
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gCHAR_MEM+5
 
-         lda zPLAYER_ONE_SCORE+1
-         and #%00001111
-         clc
-         adc #48
-         sta gCHAR_MEM+4
-         lda zPLAYER_ONE_SCORE+1
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gCHAR_MEM+3
+	lda zPLAYER_ONE_SCORE+1
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+4
+	lda zPLAYER_ONE_SCORE+1
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gCHAR_MEM+3
 
-         lda zPLAYER_ONE_SCORE+2
-         and #%00001111
-         clc
-         adc #48
-         sta gCHAR_MEM+2
-         lda zPLAYER_ONE_SCORE+2
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gCHAR_MEM+1    ; end p1score
+	lda zPLAYER_ONE_SCORE+2
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+2
+	lda zPLAYER_ONE_SCORE+2
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gCHAR_MEM+1    ; end p1score
 
-         lda zPLAYER_TWO_SCORE ; show p2score
-         and #%00001111
-         clc
-         adc #48
-         sta gCHAR_MEM+38
-         lda zPLAYER_TWO_SCORE
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gCHAR_MEM+37
+	lda zPLAYER_TWO_SCORE ; show p2score
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+38
+	lda zPLAYER_TWO_SCORE
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gCHAR_MEM+37
 
-         lda zPLAYER_TWO_SCORE+1
-         and #%00001111
-         clc
-         adc #48
-         sta gCHAR_MEM+36
-         lda zPLAYER_TWO_SCORE+1
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gCHAR_MEM+35
+	lda zPLAYER_TWO_SCORE+1
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+36
+	lda zPLAYER_TWO_SCORE+1
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gCHAR_MEM+35
 
-         lda zPLAYER_TWO_SCORE+2
-         and #%00001111
-         clc
-         adc #48
-         sta gCHAR_MEM+34
-         lda zPLAYER_TWO_SCORE+2
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gCHAR_MEM+33   ; end p2score
+	lda zPLAYER_TWO_SCORE+2
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+34
+	lda zPLAYER_TWO_SCORE+2
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gCHAR_MEM+33   ; end p2score
 
  ; check p1score for hiscore
-         lda zPLAYER_ONE_SCORE+2
-         cmp zHIGH_SCORE+2
-         bcc chkhip2 ; end
-         bne uphi1
+	lda zPLAYER_ONE_SCORE+2
+	cmp zHIGH_SCORE+2
+	bcc chkhip2 ; end
+	bne uphi1
 
-         lda zPLAYER_ONE_SCORE+1
-         cmp zHIGH_SCORE+1
-         bcc chkhip2
-         bne uphi1
+	lda zPLAYER_ONE_SCORE+1
+	cmp zHIGH_SCORE+1
+	bcc chkhip2
+	bne uphi1
 
-         lda zPLAYER_ONE_SCORE
-         cmp zHIGH_SCORE
-         bcc chkhip2
+	lda zPLAYER_ONE_SCORE
+	cmp zHIGH_SCORE
+	bcc chkhip2
 
 uphi1    ; update hs with p1score
-         lda zPLAYER_ONE_SCORE
-         sta zHIGH_SCORE
-         lda zPLAYER_ONE_SCORE+1
-         sta zHIGH_SCORE+1
-         lda zPLAYER_ONE_SCORE+2
-         sta zHIGH_SCORE+2
+	lda zPLAYER_ONE_SCORE
+	sta zHIGH_SCORE
+	lda zPLAYER_ONE_SCORE+1
+	sta zHIGH_SCORE+1
+	lda zPLAYER_ONE_SCORE+2
+	sta zHIGH_SCORE+2
 
 chkhip2  ; check p2s for hiscore
-         lda zPLAYER_TWO_SCORE+2
-         cmp zHIGH_SCORE+2
-         bcc chkhiz  ; end
-         bne uphi2
+	lda zPLAYER_TWO_SCORE+2
+	cmp zHIGH_SCORE+2
+	bcc chkhiz  ; end
+	bne uphi2
 
-         lda zPLAYER_TWO_SCORE+1
-         cmp zHIGH_SCORE+1
-         bcc chkhiz
-         bne uphi2
+	lda zPLAYER_TWO_SCORE+1
+	cmp zHIGH_SCORE+1
+	bcc chkhiz
+	bne uphi2
 
-         lda zPLAYER_TWO_SCORE
-         cmp zHIGH_SCORE
-         bcc chkhiz
+	lda zPLAYER_TWO_SCORE
+	cmp zHIGH_SCORE
+	bcc chkhiz
 
 uphi2    ; update hs with p2score
-         lda zPLAYER_TWO_SCORE
-         sta zHIGH_SCORE
-         lda zPLAYER_TWO_SCORE+1
-         sta zHIGH_SCORE+1
-         lda zPLAYER_TWO_SCORE+2
-         sta zHIGH_SCORE+2
+	lda zPLAYER_TWO_SCORE
+	sta zHIGH_SCORE
+	lda zPLAYER_TWO_SCORE+1
+	sta zHIGH_SCORE+1
+	lda zPLAYER_TWO_SCORE+2
+	sta zHIGH_SCORE+2
+	
 chkhiz   ; done hiscore check
 
 shscc    
 	lda zHIGH_SCORE ; show hiscore
-         and #%00001111
-         clc
-         adc #48
-         sta gCHAR_MEM+22
-         lda zHIGH_SCORE
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gCHAR_MEM+21
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+22
+	lda zHIGH_SCORE
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gCHAR_MEM+21
 
-         lda zHIGH_SCORE+1
-         and #%00001111
-         clc
-         adc #48
-         sta gCHAR_MEM+20
-         lda zHIGH_SCORE+1
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gCHAR_MEM+19
+	lda zHIGH_SCORE+1
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+20
+	lda zHIGH_SCORE+1
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gCHAR_MEM+19
 
-         lda zHIGH_SCORE+2
-         and #%00001111
-         clc
-         adc #48
-         sta gCHAR_MEM+18
-         lda zHIGH_SCORE+2
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gCHAR_MEM+17   ; end zHIGH_SCORE
+	lda zHIGH_SCORE+2
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+18
+	lda zHIGH_SCORE+2
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gCHAR_MEM+17   ; end zHIGH_SCORE
 
 shscz    
 	rts
 
 ; ==========================================================================
 
-outms    lda zMOTHERSHIP_COLOR   ; get colour
-         sta VICII+39
+outms    
+	lda zMOTHERSHIP_COLOR ; get colour
+	sta VICII+39
 
-       ; lda zMOTHERSHIP_Y     ; get msy
-       ; sta VICII+1     ; set spr1 y
+	; lda zMOTHERSHIP_Y   ; get msy
+	; sta VICII+1         ; set spr1 y
 
-         ldy zMOTHERHIP_ROW   ; get msrow
-         lda TABLE_ROW_TO_Y,y; get y from table
-       ; sta zMOTHERSHIP_Y     ; store in msy
-         sta VICII+1     ; set spr1 y
+	ldy zMOTHERHIP_ROW    ; get msrow
+	lda TABLE_ROW_TO_Y,y  ; get y from table
+	; sta zMOTHERSHIP_Y   ; store in msy
+	sta VICII+1           ; set spr1 y
 
-         lda zMOTHERSHIP_X+1   ; get msx hi-byte
-         bne outmsa  ; hi-byte != 0
-         lda zMOTHERSHIP_X     ; msx <= 255
-         sta VICII
-         lda VICII+16    ; get hx flags
-         and #254    ; sp1 hx off
-         sta VICII+16
-         rts
-outmsa   lda zMOTHERSHIP_X     ; msx > 255
-         sta VICII
-         lda VICII+16    ; get hx flags
-         ora #1      ; sp1 hx on
-         sta VICII+16
-         rts
+	lda zMOTHERSHIP_X+1   ; get msx hi-byte
+	bne outmsa            ; hi-byte != 0
+	
+	lda zMOTHERSHIP_X     ; msx <= 255
+	sta VICII
+	lda VICII+16          ; get hx flags
+	and #254              ; sp1 hx off
+	sta VICII+16
+	
+	rts
+ 
+outmsa   
+	lda zMOTHERSHIP_X     ; msx > 255
+	sta VICII
+	lda VICII+16          ; get hx flags
+	ora #1                ; sp1 hx on
+	sta VICII+16
+	
+	rts
 
-outp1                ; player 1
-         lda zPLAYER_ONE_COLOR   ; p1 colour
-         sta VICII+40
-         lda zPLAYER_ONE_Y
-         sta VICII+3
-         lda zPLAYER_ONE_X+1
-         bne outp1a
-         lda zPLAYER_ONE_X
-         sta VICII+2
-         lda VICII+16
-         and #253    ; sp2 hx off
-         sta VICII+16
-         rts
-outp1a   lda zPLAYER_ONE_X
-         sta VICII+2
-         lda VICII+16
-         ora #2      ; sp1 hx on
-         sta VICII+16
-         rts
+outp1                     ; player 1
+	lda zPLAYER_ONE_COLOR ; p1 colour
+	sta VICII+40
+	lda zPLAYER_ONE_Y
+	sta VICII+3
+	lda zPLAYER_ONE_X+1
+	bne outp1a
+	
+	lda zPLAYER_ONE_X
+	sta VICII+2
+	lda VICII+16
+	and #253              ; sp2 hx off
+	sta VICII+16
+	
+	rts
+		 
+outp1a   
+	lda zPLAYER_ONE_X
+	sta VICII+2
+	lda VICII+16
+	ora #2               ; sp1 hx on
+	sta VICII+16
+	
+	rts
 
 ; ==========================================================================
 
