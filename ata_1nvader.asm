@@ -37,6 +37,8 @@
 
 
 ; Game Control Values =========================================================
+
+zCurrentEvent      .byte $00 ; Global Current Game Behavior.
  
 zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player. 
 zGAME_OVER_FLAG    .byte $00 ; Set 0/1 for game over 

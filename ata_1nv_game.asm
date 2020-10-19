@@ -23,31 +23,32 @@
 ; animated components on the screen.  
 ;
 ; Example:  The Title Screen 
+;
 ; The VBI manages the timing, performs the page flipping for the graphics, 
 ; sets the Missile color overlay horizontal position and color.  The main 
 ; code watches the timing clock for animation and updates the Missile 
 ; color overlay image when needed.
+;
 ; The Title Screen state is waiting on a joystick button to leave 
 ; the state.   Then the next state is a transitional condition that 
 ; runs animation for the 3, 2, 1, GO animation while it waits for the 
 ; other player to press a button.  
+;
 ; After that the next state is a transition animation to move the large
 ; mothership off the screen to go to the state for the Game Screen. 
 ; --------------------------------------------------------------------------
 
-EVENT_TARGET_TABLE
-	.word EventGameInit-1           ; 0  = EVENT_INIT
-	.word EventScreenStart-1        ; 1  = EVENT_START
-	.word EventTitleScreen-1        ; 2  = EVENT_TITLE
-	.word EventTransitionToGame-1   ; 3  = EVENT_TRANS_GAME
-	.word EventGameScreen-1         ; 4  = EVENT_GAME    
-	.word EventTransitionToWin-1    ; 5  = EVENT_TRANS_WIN 
-	.word EventWinScreen-1          ; 6  = EVENT_WIN      
-	.word EventTransitionToDead-1   ; 7  = EVENT_TRANS_DEAD  
-	.word EventDeadScreen-1         ; 8  = EVENT_DEAD      
-	.word EventTransitionGameOver-1 ; 9  = EVENT_TRANS_OVER 
-	.word EventGameOverScreen-1     ; 10 = EVENT_OVER      
-	.word EventTransitionToTitle-1  ; 11 = EVENT_TRANS_TITLE
+TABLE_GAME_FUNCTION
+	.word GameInit-1       ; 0  = EVENT_INIT
+	.word GameSetupTitle-1 ; 1  = EVENT_SETUP_TITLE
+	.word GameTitle-1      ; 2  = EVENT_TITLE
+	.word GameCountdown-1  ; 3  = EVENT_COUNTDOWN
+	.word GameSetupMain-1  ; 4  = EVENT_SETUP_GAME    
+	.word GameMain-1       ; 5  = EVENT_GAME
+	.word GameLastRow-1    ; 6  = EVENT_LAST_ROW     
+	.word GameSetupOver-1  ; 7  = EVENT_SETUP_GAMEOVER  
+	.word GameOcver-1      ; 8  = EVENT_GAMEOVER
+
 
 
 
@@ -69,16 +70,16 @@ GameLoop
 ; Due to the frame sync above, at this point the code
 ; is running at/near the top of the screen refresh.
 
-	lda CurrentEvent           ; Get the current event
-	asl                        ; Times 2 for size of address
-	tax                        ; Use as index
+	lda zCurrentEvent           ; Get the current event
+	asl                         ; Times 2 for size of address
+	tax                         ; Use as index
 
-	lda EVENT_TARGET_TABLE+1,x ; Get routine high byte
-	pha                        ; Push to stack
-	lda EVENT_TARGET_TABLE,x   ; Get routine low byte 
-	pha                        ; Push to stack
+	lda TABLE_GAME_FUNCTION+1,x ; Get routine high byte
+	pha                         ; Push to stack
+	lda TABLE_GAME_FUNCTION,x   ; Get routine low byte 
+	pha                         ; Push to stack
 
-	rts                        ; Forces calling the address pushed on the stack.
+	rts                         ; Forces calling the address pushed on the stack.
 
 	; When the called routine ends with rts, it will return to the place 
 	; that called this routine which is up in GameStart.
