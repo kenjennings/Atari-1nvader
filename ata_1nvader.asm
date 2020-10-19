@@ -2157,263 +2157,307 @@ outp1a
 ; ==========================================================================
 
 outp2                ; player 2
-         lda zPLAYER_TWO_COLOR
-         sta VICII+41
-         lda zPLAYER_TWO_Y
-         sta VICII+5
-         lda zPLAYER_TWO_X+1
-         bne outp2a
-         lda zPLAYER_TWO_X
-         sta VICII+4
-         lda VICII+16
-         and #251    ; sp3 hx off
-         sta VICII+16
-         rts
-outp2a   lda zPLAYER_TWO_X
-         sta VICII+4
-         lda VICII+16
-         ora #4      ; sp3 hx on
-         sta VICII+16
-         rts
+	lda zPLAYER_TWO_COLOR
+	sta VICII+41
+	lda zPLAYER_TWO_Y
+	sta VICII+5
+	lda zPLAYER_TWO_X+1
+	bne outp2a
+
+	lda zPLAYER_TWO_X
+	sta VICII+4
+	lda VICII+16
+	and #251          ; sp3 hx off
+	sta VICII+16
+
+	rts
+
+outp2a   
+	lda zPLAYER_TWO_X
+	sta VICII+4
+	lda VICII+16
+	ora #4            ; sp3 hx on
+	sta VICII+16
+
+	rts
 
 ; ==========================================================================
 
 outl1                ; laser 1
-         lda zLASER_ONE_ON
-         cmp #0
-         beq outl1b  ; inactive laser
-         lda VICII+21
-         ora #%00001000 ; s4 on
-         sta VICII+21
-         lda zPLAYER_ONE_COLOR
-         sta VICII+42
-         lda zLASER_ONE_Y
-         sta VICII+7
-         lda zLASER_ONE_X+1
-         bne outl1a
-         lda zLASER_ONE_X
-         sta VICII+6
-         lda VICII+16
-         and #247    ; sp4 hx off
-         sta VICII+16
-         rts
-		 
+	lda zLASER_ONE_ON
+;;	cmp #0
+	beq outl1b  ; inactive laser
+
+	lda VICII+21
+	ora #%00001000 ; s4 on
+	sta VICII+21
+	lda zPLAYER_ONE_COLOR
+	sta VICII+42
+	lda zLASER_ONE_Y
+	sta VICII+7
+	lda zLASER_ONE_X+1
+	bne outl1a
+
+	lda zLASER_ONE_X
+	sta VICII+6
+	lda VICII+16
+	and #247    ; sp4 hx off
+	sta VICII+16
+
+	rts
+
 outl1a   
 	lda zLASER_ONE_X
-         sta VICII+6
-         lda VICII+16
-         ora #8      ; sp4 hx on
-         sta VICII+16
-         rts
+	sta VICII+6
+	lda VICII+16
+	ora #8      ; sp4 hx on
+	sta VICII+16
+
+	rts
+
 outl1b               ; s4 off
-         lda VICII+21
-         and #%11110111
-         sta VICII+21
-         rts
+	lda VICII+21
+	and #%11110111
+	sta VICII+21
+
+	rts
 
 ; ==========================================================================
 
 outl2                ; player 2
-         lda zLASER_TWO_ON
-         cmp #0
-         beq outl2b  ; inactive laser
-         lda VICII+21
-         ora #%00010000 ; s5 on
-         sta VICII+21
-         lda zPLAYER_TWO_COLOR
-         sta VICII+43
-         lda zLASER_TWO_Y
-         sta VICII+9
-         lda zLASER_TWO_X+1
-         bne outl2a
-         lda zLASER_TWO_X
-         sta VICII+8
-         lda VICII+16
-         and #239    ; sp5 hx off
-         sta VICII+16
-         rts
-outl2a   lda zLASER_TWO_X
-         sta VICII+8
-         lda VICII+16
-         ora #16     ; sp5 hx on
-         sta VICII+16
-         rts
+	lda zLASER_TWO_ON
+;;	cmp #0
+	beq outl2b  ; inactive laser
+
+	lda VICII+21
+	ora #%00010000 ; s5 on
+	sta VICII+21
+	lda zPLAYER_TWO_COLOR
+	sta VICII+43
+	lda zLASER_TWO_Y
+	sta VICII+9
+	lda zLASER_TWO_X+1
+	bne outl2a
+	lda zLASER_TWO_X
+	sta VICII+8
+	lda VICII+16
+	and #239    ; sp5 hx off
+	sta VICII+16
+
+	rts
+
+outl2a   
+	lda zLASER_TWO_X
+	sta VICII+8
+	lda VICII+16
+	ora #16     ; sp5 hx on
+	sta VICII+16
+
+	rts
+
 outl2b               ; s5 off
-         lda VICII+21
-         and #%11101111
-         sta VICII+21
-         rts
+	lda VICII+21
+	and #%11101111
+	sta VICII+21
+
+	rts
 
 ; ==========================================================================
 
 shwstats ; msrow mspts msmov etc
-shwmsrow lda zMOTHERHIP_ROW       ; stored as bcd
-         and #%00001111
-         clc
-         adc #48
-         sta gBOTTOM_ROW+16
-         lda zMOTHERHIP_ROW
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gBOTTOM_ROW+15
+shwmsrow 
+	lda zMOTHERHIP_ROW       ; stored as bcd
+	and #%00001111
+	clc
+	adc #48
+	sta gBOTTOM_ROW+16
+	lda zMOTHERHIP_ROW
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gBOTTOM_ROW+15
 
-         lda zMOTHERSHIP_POINTS   ; show points
-         and #%00001111
-         clc
-         adc #48
-         sta gBOTTOM_ROW+21
-         lda zMOTHERSHIP_POINTS
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gBOTTOM_ROW+20
+	lda zMOTHERSHIP_POINTS   ; show points
+	and #%00001111
+	clc
+	adc #48
+	sta gBOTTOM_ROW+21
+	lda zMOTHERSHIP_POINTS
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gBOTTOM_ROW+20
 
-         lda zMOTHERSHIP_POINTS+1
-         and #%00001111
-         clc
-         adc #48
-         sta gBOTTOM_ROW+19
-         lda zMOTHERSHIP_POINTS+1
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gBOTTOM_ROW+18
+	lda zMOTHERSHIP_POINTS+1
+	and #%00001111
+	clc
+	adc #48
+	sta gBOTTOM_ROW+19
+	lda zMOTHERSHIP_POINTS+1
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gBOTTOM_ROW+18
 
-         lda zSHIP_HITS
-         and #%00001111
-         clc
-         adc #48
-         sta gBOTTOM_ROW+24
-         lda zSHIP_HITS
-         lsr a
-         lsr a
-         lsr a
-         lsr a
-         clc
-         adc #48
-         sta gBOTTOM_ROW+23
+	lda zSHIP_HITS
+	and #%00001111
+	clc
+	adc #48
+	sta gBOTTOM_ROW+24
+	lda zSHIP_HITS
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	clc
+	adc #48
+	sta gBOTTOM_ROW+23
 
-       ; lda #48
-       ; sta gBOTTOM_ROW+23
-       ; lda zMOTHERSHIP_MOVE_SPEED
-       ; adc #48
-       ; sta gBOTTOM_ROW+24
+	; lda #48
+	; sta gBOTTOM_ROW+23
+	; lda zMOTHERSHIP_MOVE_SPEED
+	; adc #48
+	; sta gBOTTOM_ROW+24
 
-         rts
+	rts
 
 ; ==========================================================================
 
 clrstats             ; clear stats row
-         lda #32
-         ldx #15
+	lda #32
+	ldx #15
 
-clrstsa  sta gBOTTOM_ROW,x
-         inx
-         cpx #25
-         bne clrstsa
+clrstsa  
+	sta gBOTTOM_ROW,x
+	inx
+	cpx #25
+	bne clrstsa
 
-         rts
+	rts
 
 ; ==========================================================================
 ;-- game over --------------------------
 
-gameover lda #0      ; fancy ending
-         sta zGAME_OVER_FLAG
-gameoa   jsr vbwait  ; sweep effect
-         jsr twinkle
+gameover 
+	lda #0      ; fancy ending
+	sta zGAME_OVER_FLAG
 
-         jsr prop1   ; must keep
-         jsr prop2   ; moving p1 p2
-         jsr outp1
-         jsr outp2
-         jsr prolazer; must keep
-         jsr outl1   ; moving l1 l2
-         jsr outl2
+gameoa   
+	jsr vbwait  ; sweep effect
+	jsr twinkle
 
-         lda zMOTHERSHIP_MOVE_SPEED  ; loop this ammount
-         sta zMOTHERSHIP_MOVE_COUNTER     ; msm is counter
+	jsr prop1   ; must keep
+	jsr prop2   ; moving p1 p2
+	jsr outp1
+	jsr outp2
+	jsr prolazer; must keep
+	jsr outl1   ; moving l1 l2
+	jsr outl2
+
+	lda zMOTHERSHIP_MOVE_SPEED  ; loop this ammount
+	sta zMOTHERSHIP_MOVE_COUNTER     ; msm is counter
+
 gameob
-         lda zGAME_OVER_FLAG
-         cmp #1      ; did ms reach edge
-         beq gameoc  ; really gameover
-         lda zMOTHERSHIP_MOVE_COUNTER
-         cmp #0
-         beq gameoa  ; done moving ms
-         jsr promsdo ; do the real move
-         dec zMOTHERSHIP_MOVE_COUNTER
-         jsr sweepp  ; sweep p1+p2
-         jsr outms
-         jsr outp1   ; better move p1+p2
-         jsr outp2
-         jmp gameob  ; loop again
+	lda zGAME_OVER_FLAG
+;;	cmp #1      ; did ms reach edge
+;;	beq gameoc  ; really gameover
+	bne gameoc  ; really gameover
 
-gameoc   jsr tistripe; show гаме═ожер == game over
-         lda #$45    ; е
-         sta gTI_CHAR_MEM+58
-         lda #$4f    ; о
-         sta gTI_CHAR_MEM+61
-         jsr pause
-         lda #$4d    ; м
-         sta gTI_CHAR_MEM+57
-         lda #$56    ; ж
-         sta gTI_CHAR_MEM+62
-         jsr pause
-         lda #$41    ; а
-         sta gTI_CHAR_MEM+56
-         lda #$45    ; е
-         sta gTI_CHAR_MEM+63
-         jsr pause
-         lda #$47    ; г
-         sta gTI_CHAR_MEM+55
-         lda #$52    ; р
-         sta gTI_CHAR_MEM+64
-         jsr pause
-         jsr pause
-         jsr pause
-         jsr pause
-         jsr pause
+	lda zMOTHERSHIP_MOVE_COUNTER
+;;	cmp #0
+	beq gameoa  ; done moving ms
 
-gameod   lda #32     ; clear гаме═ожер
-         sta gTI_CHAR_MEM+58
-         sta gTI_CHAR_MEM+61
-         jsr pause
-         lda #32
-         sta gTI_CHAR_MEM+57
-         sta gTI_CHAR_MEM+62
-         jsr pause
-         lda #32
-         sta gTI_CHAR_MEM+56
-         sta gTI_CHAR_MEM+63
-         jsr pause
-         lda #32
-         sta gTI_CHAR_MEM+55
-         sta gTI_CHAR_MEM+64
-         jsr pause
-         jsr pause
-         jsr pause
+	jsr promsdo ; do the real move
+	dec zMOTHERSHIP_MOVE_COUNTER
+	jsr sweepp  ; sweep p1+p2
+	jsr outms
+	jsr outp1   ; better move p1+p2
+	jsr outp2
+	jmp gameob  ; loop again
 
-gameoz   lda #0
-         sta zGAME_OVER_FLAG
-         sta zPLAYER_ONE_ON
-         sta zPLAYER_TWO_ON
-         jmp title
+gameoc   
+	jsr tistripe; show гаме═ожер == game over
+	lda #$45    ; е
+	sta gTI_CHAR_MEM+58
+	lda #$4f    ; о
+	sta gTI_CHAR_MEM+61
+	jsr pause
 
-pause    ldy #6
-pausea   jsr vbwait
-         cpy #0
-         beq pausez
-         dey
-         jmp pausea
+	lda #$4d    ; м
+	sta gTI_CHAR_MEM+57
+	lda #$56    ; ж
+	sta gTI_CHAR_MEM+62
+	jsr pause
+
+	lda #$41    ; а
+	sta gTI_CHAR_MEM+56
+	lda #$45    ; е
+	sta gTI_CHAR_MEM+63
+	jsr pause
+
+	lda #$47    ; г
+	sta gTI_CHAR_MEM+55
+	lda #$52    ; р
+	sta gTI_CHAR_MEM+64
+	jsr pause
+
+	jsr pause
+	jsr pause
+	jsr pause
+	jsr pause
+
+gameod   
+	lda #32     ; clear гаме═ожер
+	sta gTI_CHAR_MEM+58
+	sta gTI_CHAR_MEM+61
+	jsr pause
+
+	lda #32
+	sta gTI_CHAR_MEM+57
+	sta gTI_CHAR_MEM+62
+	jsr pause
+
+	lda #32
+	sta gTI_CHAR_MEM+56
+	sta gTI_CHAR_MEM+63
+	jsr pause
+
+	lda #32
+	sta gTI_CHAR_MEM+55
+	sta gTI_CHAR_MEM+64
+	jsr pause
+
+	jsr pause
+	jsr pause
+
+gameoz   
+	lda #0
+	sta zGAME_OVER_FLAG
+	sta zPLAYER_ONE_ON
+	sta zPLAYER_TWO_ON
+	jmp title
+
+; ==========================================================================
+
+pause    
+	ldy #6
+
+pausea   
+	jsr vbwait
+	cpy #0
+	beq pausez
+	dey
+	jmp pausea
+
 pausez   
 	rts
 
@@ -2978,6 +3022,7 @@ sprsetup ; load in sprites from data
 ;	inx
 ;	cpx #64
 ;	bne sprseta
+
 sprsetz  
 	rts
 
@@ -2985,72 +3030,88 @@ sprsetz
 
 
 twinkle
-         inc zSTAR_COUNT
-         lda zSTAR_COUNT
-         cmp #6      ; 2,4,6,8 stars
-         bne twinka
-         lda #0
-         sta zSTAR_COUNT
-       ; jmp twinka
-twinka
-         ldx zSTAR_COUNT
-         ldy TABLE_STAR_LOCATION,x  ; y is star's loc
+	inc zSTAR_COUNT
+	lda zSTAR_COUNT
+	cmp #6      ; 2,4,6,8 stars
+	bne twinka
 
-         txa
-         and #%00000001
-         cmp #0      ; odd stars in sf2
-         bne twinkb
+	lda #0
+	sta zSTAR_COUNT
+	; jmp twinka
+
+twinka
+	ldx zSTAR_COUNT
+	ldy TABLE_STAR_LOCATION,x  ; y is star's loc
+
+	txa
+	and #%00000001
+;;	cmp #0      ; odd stars in sf2
+	bne twinkb
                      ; sf1
-         lda gSTAR_CHAR_MEM1,y
-         cmp #$2a    ; is it a star?
-         bne twinka1 ; no
-         lda #32     ; [space]
-         sta gSTAR_CHAR_MEM1,y   ; erase old star
+	lda gSTAR_CHAR_MEM1,y
+	cmp #$2a    ; is it a star?
+	bne twinka1 ; no
+
+	lda #32     ; [space]
+	sta gSTAR_CHAR_MEM1,y   ; erase old star
+
 twinka1
-         jsr yprnd   ; y = random
-         lda gSTAR_CHAR_MEM1,y
-         cmp #32     ; is it [space]?
-         bne twinkc  ; no (was twinka2)
-         lda #$2a    ; star char
-         sta gSTAR_CHAR_MEM1,y
-         jmp twinkc
+	jsr yprnd   ; y = random
+	lda gSTAR_CHAR_MEM1,y
+	cmp #32     ; is it [space]?
+	bne twinkc  ; no (was twinka2)
+
+	lda #$2a    ; star char
+	sta gSTAR_CHAR_MEM1,y
+	jmp twinkc
+
 twinka2 ;jmp twinkc  ; done for this vb
 
 twinkb               ; sf2
-         lda gSTAR_CHAR_MEM2,y
-         cmp #$2a    ; is it a star?
-         bne twinkb1 ; no
-         lda #32     ; [space]
-         sta gSTAR_CHAR_MEM2,y   ; erase old star
-twinkb1
-         jsr yprnd   ; y = random
-         lda gSTAR_CHAR_MEM2,y
-         cmp #32     ; is it [space]?
-         bne twinkc  ; no
-         lda #$2a    ; star char
-         sta gSTAR_CHAR_MEM2,y
-twinkc
-         tya         ; move y back to
-         sta TABLE_STAR_LOCATION,x  ; star's loc
+	lda gSTAR_CHAR_MEM2,y
+	cmp #$2a    ; is it a star?
+	bne twinkb1 ; no
 
-         jmp twinkz
+	lda #32     ; [space]
+	sta gSTAR_CHAR_MEM2,y   ; erase old star
+
+twinkb1
+	jsr yprnd   ; y = random
+	lda gSTAR_CHAR_MEM2,y
+	cmp #32     ; is it [space]?
+	bne twinkc  ; no
+	lda #$2a    ; star char
+	sta gSTAR_CHAR_MEM2,y
+
+twinkc
+	tya         ; move y back to
+	sta TABLE_STAR_LOCATION,x  ; star's loc
+
+	jmp twinkz
 
 twinkz
-         rts
+	rts
 
 ; ==========================================================================
 
 yprnd    ; replace y with rand num
 
-         tya
-         beq prnddeor
-         asl a
-         beq prnddeor
-         bcc prndneor
-prnddeor eor #$1d   ; do eor
-prndneor tay        ; no eor
+;;	tya
+;;	beq prnddeor
 
-         rts
+;;	asl a
+;;	beq prnddeor
+;;	bcc prndneor
+
+prnddeor 
+;;	eor #$1d   ; do eor
+
+prndneor 
+;;	tay        ; no eor
+
+	ldy RANDOM  ; Atari has a hardware random number generator.
+
+	rts
 
 ; ==========================================================================
 
