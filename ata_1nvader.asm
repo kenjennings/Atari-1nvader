@@ -208,11 +208,72 @@ zSTAR_COUNT        .byte 0 ; starcnt original code.
 zGAME_OVER_TEXT .word 0
 
 
+
+; ======== V B I ======== The world's most inept sound system. 
+
+; Pointer used by the VBI service routine for the current sequence under work:
+SOUND_POINTER .word $0000
+
+; Pointer to the sound entry in use for each voice.
+SOUND_FX_LO
+SOUND_FX_LO0 .byte 0
+SOUND_FX_LO1 .byte 0
+SOUND_FX_LO2 .byte 0
+SOUND_FX_LO3 .byte 0 
+
+SOUND_FX_HI
+SOUND_FX_HI0 .byte 0
+SOUND_FX_HI1 .byte 0
+SOUND_FX_HI2 .byte 0
+SOUND_FX_HI3 .byte 0 
+
+; Sound Control value coordinates between the main process and the VBI 
+; service routine to turn on/off/play sounds. Control Values:
+; 0   = Set by Main to direct VBI to stop managing sound pending an 
+;       update from MAIN. This does not stop the POKEY's currently 
+;       playing sound.  It is set by the VBI when a sequence is complete 
+;       to indicate the channel is idle/unmanaged. 
+; 1   = MAIN sets to direct VBI to start playing a new sound FX.
+; 2   = VBI sets when it is playing to inform MAIN that it has taken 
+;       direction and is now busy.
+; 255 = Direct VBI to silence the channel immediately.
+;
+; So, the procedure for playing sound.
+; 1) MAIN sets the channel's SOUND_CONTROL to 0.
+; 2) MAIN sets the channel's SOUND_FX_LO/HI pointer to the sound effects 
+;    sequence to play.
+; 3) MAIN sets the channel's SOUND_CONTROL to 1 to tell VBI to start.
+; 4) VBI sets the channel's SOUND_CONTROL value to 2 when playing, then 
+;    when the sequence is complete, back to value 0.
+
+SOUND_CONTROL
+SOUND_CONTROL0  .byte $00
+SOUND_CONTROL1  .byte $00
+SOUND_CONTROL2  .byte $00
+SOUND_CONTROL3  .byte $00
+
+; When these are non-zero, the current settings continue for the next frame.
+SOUND_DURATION
+SOUND_DURATION0 .byte $00
+SOUND_DURATION1 .byte $00
+SOUND_DURATION2 .byte $00
+SOUND_DURATION3 .byte $00
+
+
 ; DisplayPointer .word $0000 ; Stream of bytes to read.
 ; DisplaySize    .word $0000 ; Number of bytes to encode.
 ; OutputPointer  .word $0000 ; Pointer to memory to generate RLE codes.
 
+
+; In the event stupid programming tricks means some things can't be saved on 
+; the stack, then protect them here....
+SAVEA = $FD
+SAVEX = $FE
+SAVEY = $FF
+
 ; ======== E N D   O F   P A G E   Z E R O ======== 
+
+
 
 ; Now for the Code...
 ; Should be the first usable memory after DOS (and DUP?).
