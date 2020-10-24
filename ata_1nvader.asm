@@ -349,11 +349,11 @@ gSTAR_CHAR_MEM2 = $0530 ; sf2 ; +8 to fill botrow
 ; ==========================================================================
 ; Include all the code parts . . .
 
-	icl "ata_1nv_gfx.asm"  ; Data for Display Lists and Screen Memory (2K)
+	icl "ata_1nv_gfx.asm"       ; Data for Display Lists and Screen Memory (2K)
 
-	icl "ata_1nv_cset.asm" ; Data for custom character set (1K space)
+	icl "ata_1nv_cset.asm"      ; Data for custom character set (1K space)
 
-	icl "ata_1nv_pmg.asm"  ; Data for Player/Missile graphics (and reserve the bitmap).
+	icl "ata_1nv_pmg.asm"       ; Data for Player/Missile graphics (and reserve the 2K bitmap).
 
 
 	icl "ata_1nv_gfx_code.asm"  ; Routines for manipulating screen graphics.
@@ -361,9 +361,11 @@ gSTAR_CHAR_MEM2 = $0530 ; sf2 ; +8 to fill botrow
 	icl "ata_1nv_pmg_code.asm"  ; Routines for Player/Missile graphics animation.
 
 
-;	icl "ata_1nv_int.asm"   ; Code for I/O, Isplay List Interrupts, and Vertical Blank Interrupt.
+;	icl "ata_1nv_int.asm"       ; Code for I/O, Isplay List Interrupts, and Vertical Blank Interrupt.
 	
-;	icl "ata_1nv_game.asm"  ; Code for game logic.
+;	icl "ata_1nv_game.asm"      ; Code for game logic.
+
+ 	icl "ata_1nv_audio.asm"     ; The world's lamest sound sequencer.
 	
 ; --------------------------------------------------------------------------
 
