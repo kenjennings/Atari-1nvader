@@ -7,7 +7,7 @@
 ; ==========================================================================
 ; GAME MAIN LOOP
 ; 
-; Each TV frame is one game cycle.   There is the main line code here 
+; Each TV frame is one game cycle. There is the main line code here 
 ; that occurs while the frame is being display.  Its job is to compute 
 ; and do things indirectly that should be updated on the display during 
 ; the VBI.
@@ -16,11 +16,21 @@
 ; and the DLIs produce the per-scanline changes needed at different 
 ; points on the display.
 ; 
-; The game operates in states.  Basically, a condition of waiting for 
-; an event to occur to transition the game to the next state.
+; The game operates in states.  Basically, a condition of executing a 
+; routine assigned to each "state".  Some "states" are one-time 
+; routines called to setup moving to another state.  Main game states
+; keep looping until a condition is met to move to another state.
 ; The main states are Title screen, Game screen, Game Over.
 ; While in a state the main loop and VBI are cooperating to run 
-; animated components on the screen.  
+; animated components on the screen.
+;
+; "Setup" functions manage the globals that are needed for the next
+; major state to begin running and looping.  The main event loop syncs
+; to the end of the frame for loop.  This means the game takes a frame 
+; to execute a Setup function, and the next frame runs the next major 
+; function.  The one frame pause shouldn't be noticed, because it only 
+; happens in places where the game is not maintaining constant animation.
+;
 ;
 ; Example:  The Title Screen 
 ;
@@ -39,15 +49,15 @@
 ; --------------------------------------------------------------------------
 
 TABLE_GAME_FUNCTION
-	.word GameInit-1       ; 0  = EVENT_INIT
+	.word GameInit-1       ; 0  = EVENT_INIT            one time globals setup
 	.word GameSetupTitle-1 ; 1  = EVENT_SETUP_TITLE
-	.word GameTitle-1      ; 2  = EVENT_TITLE
-	.word GameCountdown-1  ; 3  = EVENT_COUNTDOWN
-	.word GameSetupMain-1  ; 4  = EVENT_SETUP_GAME    
-	.word GameMain-1       ; 5  = EVENT_GAME
-	.word GameLastRow-1    ; 6  = EVENT_LAST_ROW     
-	.word GameSetupOver-1  ; 7  = EVENT_SETUP_GAMEOVER  
-	.word GameOver-1       ; 8  = EVENT_GAMEOVER
+	.word GameTitle-1      ; 2  = EVENT_TITLE           run title and get player start button
+	.word GameCountdown-1  ; 3  = EVENT_COUNTDOWN       then move mothership
+	.word GameSetupMain-1  ; 4  = EVENT_SETUP_GAME
+	.word GameMain-1       ; 5  = EVENT_GAME            regular game play.  boom boom boom
+	.word GameLastRow-1    ; 6  = EVENT_LAST_ROW        forced player shove off screen
+	.word GameSetupOver-1  ; 7  = EVENT_SETUP_GAMEOVER
+	.word GameOver-1       ; 8  = EVENT_GAMEOVER        display text, then go to title
 
 
 
