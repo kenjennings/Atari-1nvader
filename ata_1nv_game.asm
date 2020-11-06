@@ -7,30 +7,29 @@
 ; ==========================================================================
 ; GAME MAIN LOOP
 ; 
-; Each TV frame is one game cycle. There is the main line code here 
-; that occurs while the frame is being display.  Its job is to compute 
-; and do things indirectly that should be updated on the display during 
-; the VBI.
+; Each TV frame is one game cycle. This executes in two parts.  First, the 
+; main line code here in this file which executes while the frame is being 
+; displayed.  Second is the VBI whose job is to to compute and do things 
+; that affect the display.
 ;
 ; In the "Interrupts" file the VBI takes care of most graphics updates, 
 ; and the DLIs produce the per-scanline changes needed at different 
 ; points on the display.
 ; 
-; The game operates in states.  Basically, a condition of executing a 
-; routine assigned to each "state".  Some "states" are one-time 
-; routines called to setup moving to another state.  Main game states
-; keep looping until a condition is met to move to another state.
-; The main states are Title screen, Game screen, Game Over.
-; While in a state the main loop and VBI are cooperating to run 
-; animated components on the screen.
+; The game operates in states with a routine assigned to each state.
+; Some "states" are one-time events that set up the variables for 
+; a following state.  Other major states keep looping until a condition 
+; is met to move to another state.
 ;
-; "Setup" functions manage the globals that are needed for the next
-; major state to begin running and looping.  The main event loop syncs
-; to the end of the frame for loop.  This means the game takes a frame 
-; to execute a Setup function, and the next frame runs the next major 
-; function.  The one frame pause shouldn't be noticed, because it only 
-; happens in places where the game is not maintaining constant animation.
+; Since each iteration of the main event loop syncs to the display the 
+; setup functions execute for a frame and the next frame runs the next 
+; major function.  The apparent one frame pause shouldn't be noticed, 
+; because it typicall happens in places where the game is not maintaining 
+; constant animation.
 ;
+; The major states are Title screen, Game screen, Game Over. While in 
+; these states the main loop and VBI are cooperating to run animated 
+; components on the screen.
 ;
 ; Example:  The Title Screen 
 ;
@@ -40,13 +39,60 @@
 ; color overlay image when needed.
 ;
 ; The Title Screen state is waiting on a joystick button to leave 
-; the state.   Then the next state is a transitional condition that 
+; the state.  Then the next state is a transitional condition that 
 ; runs animation for the 3, 2, 1, GO animation while it waits for the 
 ; other player to press a button.  
 ;
 ; After that the next state is a transition animation to move the large
 ; mothership off the screen to go to the state for the Game Screen. 
 ; --------------------------------------------------------------------------
+
+
+; ==========================================================================
+; 1nvader STATE/EVENTS
+;
+; All the routines to run for each screen/state.
+; --------------------------------------------------------------------------
+
+; Each State has associated vectors for the game routine, the display 
+; list, and the display list interrupts.  
+;
+; This is a simple game, so there are only special screen 
+; considerations for the Title screen, the Main Game, and the 
+; Game Over.
+;
+; Given the current program state, the Immediate VBI sets the 
+; Disply List and Display List Interrupt vectors.  The main line 
+; game loop calls the associated state function 
+;
+; There are 2 kinds of displays to run.  The Title and the Game.
+; Other activities occur on one of these displays.  The count down 
+; and giant mothership animation occur on the Title screen.  The 
+; Game Over display occurs using the Game screen.  
+; Alo, there are different DLI chains and lookup tables for colors 
+; used depending on what the screen is doing.
+
+; Below is enumeration for each processing state.
+; Note that the order here does not imply the only order of
+; movement between screens/event activity.  The enumeration
+; could be entirely random.
+
+EVENT_INIT             = 0  ; One Time initialization.
+EVENT_SETUP_TITLE      = 1  ; Entry Point to setup title screen.
+EVENT_TITLE            = 2  ; Credits and Instructions.
+EVENT_COUNTDOWN        = 3  ; Transition animation from Title to Game.
+EVENT_SETUP_GAME       = 4  ; Entry Point for New Game setup.
+EVENT_GAME             = 5  ; GamePlay
+EVENT_LAST_ROW         = 6  ; Ship/guns animation from Game to GameOver.
+EVENT_SETUP_GAMEOVER   = 7  ; Setup screen for Game over text.
+EVENT_GAMEOVER         = 8  ; Game Over. Animated words, go to title.
+
+; The Immediate Vertical Blank Interrupt will update the Display List 
+; OS shadow register, and the Display List Interrupt vector based 
+; on the program state.  Note that Entry 0 is pointless to define,
+; for the Display List and the Display List Interrupt, because the 
+; Init state (0 entry) will never have an operating display.
+; The Init state only sets permanent globals and shadow registers.
 
 TABLE_GAME_FUNCTION
 	.word GameInit-1       ; 0  = EVENT_INIT            one time globals setup
@@ -59,7 +105,27 @@ TABLE_GAME_FUNCTION
 	.word GameSetupOver-1  ; 7  = EVENT_SETUP_GAMEOVER
 	.word GameOver-1       ; 8  = EVENT_GAMEOVER        display text, then go to title
 
+TABLE_GAME_DISPLAY_LIST
+	.word $0000              ; 0  = EVENT_INIT            one time globals setup
+	.word DISPLAY_LIST_TITLE ; 1  = EVENT_SETUP_TITLE
+	.word DISPLAY_LIST_TITLE ; 2  = EVENT_TITLE           run title and get player start button
+	.word DISPLAY_LIST_TITLE ; 3  = EVENT_COUNTDOWN       then move mothership
+	.word DISPLAY_LIST_TITLE ; 4  = EVENT_SETUP_GAME
+	.word DISPLAY_LIST_GAME  ; 5  = EVENT_GAME            regular game play.  boom boom boom
+	.word DISPLAY_LIST_GAME  ; 6  = EVENT_LAST_ROW        forced player shove off screen
+	.word DISPLAY_LIST_GAME  ; 7  = EVENT_SETUP_GAMEOVER
+	.word DISPLAY_LIST_GAME  ; 8  = EVENT_GAMEOVER        display text, then go to title
 
+TABLE_GAME_DISPLAY_LIST_INTERRUPT
+	.word DoNothing_DLI ; 0  = EVENT_INIT            one time globals setup
+	.word DoNothing_DLI ; 1  = EVENT_SETUP_TITLE
+	.word DoNothing_DLI ; 2  = EVENT_TITLE           run title and get player start button
+	.word DoNothing_DLI ; 3  = EVENT_COUNTDOWN       then move mothership
+	.word DoNothing_DLI ; 4  = EVENT_SETUP_GAME
+	.word DoNothing_DLI ; 5  = EVENT_GAME            regular game play.  boom boom boom
+	.word DoNothing_DLI ; 6  = EVENT_LAST_ROW        forced player shove off screen
+	.word DoNothing_DLI ; 7  = EVENT_SETUP_GAMEOVER
+	.word DoNothing_DLI ; 8  = EVENT_GAMEOVER        display text, then go to title
 
 
 ; ==========================================================================
@@ -70,7 +136,14 @@ TABLE_GAME_FUNCTION
 ; game states which are (loosely) based on the current mode of
 ; the display.
 ;
-; Each event sets CurrentEvent to change to another event target.
+; When each event reaches an end codition it sets zCurrentEvent to change 
+; to another event/state target.
+;
+; Thus all routines executing as main line code are synchronized to the 
+; top of the frame.  They should complete before the bottom of the frame.  
+; Ideally, where the main line code is manipulating the screen objects  
+; it should do so BEFORE or AFTER the item is displayed. 
+; to the  display, and whenever it exits 
 ; --------------------------------------------------------------------------
 
 GameLoop
@@ -99,72 +172,12 @@ GameLoop
 ; --------------------------------------------------------------------------
 
 
-
-
-; ==========================================================================
-; Frogger EVENTS
-;
-; All the routines to run for each screen/state.
-; --------------------------------------------------------------------------
-
-; Note that there is no mention in this code for scrolling the credits
-; text.  This is entirely handled by the Vertical blank routine.  Every
-; display list ends with common instructions that show the scrolling 
-; credit text. The VBI routine updates the common Display List's LMS 
-; pointer to the text.  Since the VBI is in control of this on all screens
-; it means every display has continuous, seamless scrolling credit text 
-; even when the display changes, and no matter what else is happening.
-
-; Screen enumeration states for current processing condition.
-; Note that the order here does not imply the only order of
-; movement between screens/event activity.  The enumeration
-; could be entirely random.
-
-	.word GameInit-1       ; 0  = EVENT_INIT
-	.word GameSetupTitle-1 ; 1  = EVENT_SETUP_TITLE
-	.word GameTitle-1      ; 2  = EVENT_TITLE
-	.word GameCountdown-1  ; 3  = EVENT_COUNTDOWN
-	.word GameSetupMain-1  ; 4  = EVENT_SETUP_GAME    
-	.word GameMain-1       ; 5  = EVENT_GAME
-	.word GameLastRow-1    ; 6  = EVENT_LAST_ROW     
-	.word GameSetupOver-1  ; 7  = EVENT_SETUP_GAMEOVER  
-	.word GameOver-1       ; 8  = EVENT_GAMEOVER
-	
-EVENT_INIT        = 0  ; One Time initialization.
-
-EVENT_SETUP_TITLE       = 1  ; Entry Point for New Game setup.
-EVENT_TITLE       = 2  ; Credits and Instructions.
-
-EVENT_COUNTDOWN  = 3  ; Transition animation from Title to Game.
-EVENT_SETUP_GAME        = 4  ; GamePlay
-
-EVENT_GAME   = 5  ; Transition animation from Game to Win.
-EVENT_LAST_ROW         = 6  ; Crossed the river!
-
-EVENT_SETUP_GAMEOVER  = 7  ; Transition animation from Game to Dead.
-
-EVENT_GAMEOVER        = 10 ; Game Over.
-
-EVENT_TRANS_TITLE = 11 ; Transition animation from Game Over to Title.
-
-; Screen Order/Path
-;                       +-------------------------+
-;                       V                         |
-; Screen Title ---> Game Screen -+-> Win Screen  -+
-;       ^               ^        |
-;       |               |        +-> Dead Screen -+-> Game Over -+
-;       |               |                         |              |
-;       |               +-------------------------+              |
-;       +--------------------------------------------------------+
-
-
 ; ==========================================================================\
 ; EVENT GAME INIT
 ; ==========================================================================
 ; The Game Starting Point.  Event Entry 0.
-; Called only once at start.  
-; Transition to Title from here and all other events 
-; will use non-zero events.
+; Called only once at start.  The game will never return here.
+; Setup all the values that are Global 
 ; Note that the vast majority of game values in page 0 are automatically
 ; set/initialized as load time, so there does not need to be any first-
 ; time setup code here.
@@ -188,9 +201,9 @@ GameInit
 	lda #0
 	sta ThisDLI
 
-	lda #<Score1_DLI; TITLE_DLI ; Set DLI vector. (will be reset by VBI on screen setup)
+	lda #<DoNothing_DLI; TITLE_DLI ; Set DLI vector. (will be reset by VBI on screen setup)
 	sta VDSLST
-	lda #>Score1_DLI; TITLE_DLI
+	lda #>DoNothing_DLI; TITLE_DLI
 	sta VDSLST+1
 	
 	lda #[NMI_DLI|NMI_VBI]     ; Turn On DLIs

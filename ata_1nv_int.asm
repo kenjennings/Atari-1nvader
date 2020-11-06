@@ -1052,8 +1052,8 @@ ExitMyDeferredVBI
 
 	; mRegRestoreAY
 
-; DoNothing_DLI ; In testing mode jump here to not do anything or to stop the DLI chain.
-	; rti
+DoNothing_DLI ; In testing mode jump here to not do anything or to stop the DLI chain.
+	 rti
 
 
 ; ;==============================================================================
