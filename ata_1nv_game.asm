@@ -177,7 +177,8 @@ GameLoop
 ; ==========================================================================
 ; The Game Starting Point.  Event Entry 0.
 ; Called only once at start.  The game will never return here.
-; Setup all the values that are Global 
+; Setup all the values that are Global to the program, the default OS
+; shadow values that are consistent with the beginning og each screen.
 ; Note that the vast majority of game values in page 0 are automatically
 ; set/initialized as load time, so there does not need to be any first-
 ; time setup code here.

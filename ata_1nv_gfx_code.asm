@@ -515,5 +515,3 @@ Gfx_Remove_Star
 
 	rts
 	
-
-	
