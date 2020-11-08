@@ -177,8 +177,8 @@ GameLoop
 ; ==========================================================================
 ; The Game Starting Point.  Event Entry 0.
 ; Called only once at start.  The game will never return here.
-; Setup all the values that are Global to the program, the default OS
-; shadow values that are consistent with the beginning og each screen.
+; Setup all the values that are Global to the program: i.e. the default 
+; OS shadow values that are consistent with the beginning of each screen.
 ; Note that the vast majority of game values in page 0 are automatically
 ; set/initialized as load time, so there does not need to be any first-
 ; time setup code here.
@@ -196,11 +196,29 @@ GameInit
 	lda #>CHARACTER_SET        ; Set custom character set.  Global to game, forever.
 	sta CHBAS
 
-	lda #NMI_VBI               ; Turn Off DLI
+	jsr Pmg_Init               ; Will also reset SDMACTL settings for P/M DMA
+
+	; Zero all the colors, except text color.  DLIs will set all other.
+	
+	lda #0
+	sta PCOLOR0 ; COLPM0 - Player/Missile 0 color, GTIA 9-color playfield color 0 for Background
+	sta PCOLOR1 ; COLPM1 - Player/Missile 1 color, GTIA 9-color playfield color 1
+	sta PCOLOR2 ; COLPM2 - Player/Missile 2 color, GTIA 9-color playfield color 2
+	sta PCOLOR3 ; COLPM3 - Player/Missile 3 color, GTIA 9-color playfield color 3
+;
+	sta COLOR0 ; COLPF0 - Playfield 0 color
+	sta COLOR2 ; COLPF2 - Playfield 2 color (Background for ANTIC modes 2, 3, and F)
+	sta COLOR3 ; COLPF3 - Playfield 3 color (and fifth Player color)
+	sta COLOR4 ; COLBK  - Playfield Background color (Border for modes 2, 3, and F) 
+
+	lda #COLOR_WHITE|$0C ; Light white
+	sta COLOR1           ; COLPF1 - Playfield 1 color (mode 2 text)
+
+	lda #NMI_VBI         ; Turn Off DLI
 	sta NMIEN
 
 	lda #0
-	sta ThisDLI
+	sta zThisDLI
 
 	lda #<DoNothing_DLI; TITLE_DLI ; Set DLI vector. (will be reset by VBI on screen setup)
 	sta VDSLST
@@ -234,10 +252,6 @@ GameInit
 	sta FlaggedHiScore
 	sta InputStick             ; no input from joystick
 
-	lda #COLOR_BLACK+$E        ; COLPF3 is white on all screens. it is up to DLIs to modify otherwise.
-	sta COLOR3
-
-	jsr libPmgInit             ; Will also reset SDMACTL settings for P/M DMA
 
 	jsr SetupTransitionToTitle ; will set CurrentEvent = EVENT_TRANS_TITLE
 

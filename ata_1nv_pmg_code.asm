@@ -139,32 +139,32 @@ b_pdbs_LoopZero
 
 Pmg_Copy_Object
 
-	ldy #7
+;	ldy #7
 
-b_pco_Copy
-	lda (zPMG_IMAGE),Y    ; From source
-	sta (zPMG_HARDWARE),Y ; To destination
-	dey
-	lda (zPMG_IMAGE),Y    ; From source
-	sta (zPMG_HARDWARE),Y ; To destination
-	dey
-	lda (zPMG_IMAGE),Y    ; From source
-	sta (zPMG_HARDWARE),Y ; To destination
-	dey
-	lda (zPMG_IMAGE),Y    ; From source
-	sta (zPMG_HARDWARE),Y ; To destination
-	dey
-	lda (zPMG_IMAGE),Y    ; From source
-	sta (zPMG_HARDWARE),Y ; To destination
-	dey
-	lda (zPMG_IMAGE),Y    ; From source
-	sta (zPMG_HARDWARE),Y ; To destination
-	dey
-	lda (zPMG_IMAGE),Y    ; From source
-	sta (zPMG_HARDWARE),Y ; To destination
-	dey
-	lda (zPMG_IMAGE),Y    ; From source
-	sta (zPMG_HARDWARE),Y ; To destination
+;b_pco_Copy
+;	lda (zPMG_IMAGE),Y    ; From source
+;	sta (zPMG_HARDWARE),Y ; To destination
+;	dey
+;	lda (zPMG_IMAGE),Y    ; From source
+;	sta (zPMG_HARDWARE),Y ; To destination
+;	dey
+;	lda (zPMG_IMAGE),Y    ; From source
+;	sta (zPMG_HARDWARE),Y ; To destination
+;	dey
+;	lda (zPMG_IMAGE),Y    ; From source
+;	sta (zPMG_HARDWARE),Y ; To destination
+;	dey
+;	lda (zPMG_IMAGE),Y    ; From source
+;	sta (zPMG_HARDWARE),Y ; To destination
+;	dey
+;	lda (zPMG_IMAGE),Y    ; From source
+;	sta (zPMG_HARDWARE),Y ; To destination
+;	dey
+;	lda (zPMG_IMAGE),Y    ; From source
+;	sta (zPMG_HARDWARE),Y ; To destination
+;	dey
+;	lda (zPMG_IMAGE),Y    ; From source
+;	sta (zPMG_HARDWARE),Y ; To destination
 
 	rts
 
@@ -184,17 +184,17 @@ b_pco_Copy
 
 Pmg_Draw_Object
 
-	sta zPMG_HARDWARE         ; The Y position is the memory offset.  How convenient.
-	sty zPMG_HARDWARE+1       ; And supply the high page for the object.
-	
-	ldy zTABLE_PMG_IMG_ID,X   ; Get the image ID for this object. 
-	
-	lda TABLE_LO_PMG_IMAGES,Y ; Get the image address low byte
-	sta zPMG_IMAGE
-	lda TABLE_HI_PMG_IMAGES,Y ; Get the image address high byte
-	sta zPMG_IMAGE+1
+;	sta zPMG_HARDWARE         ; The Y position is the memory offset.  How convenient.
+;	sty zPMG_HARDWARE+1       ; And supply the high page for the object.
 
-	jsr Pmg_Copy_Object       ; Copy 8 bytes from *zPMG_OBJECT to *zPMG_HARDWARE
+;	ldy zTABLE_PMG_IMG_ID,X   ; Get the image ID for this object. 
+
+;	lda TABLE_LO_PMG_IMAGES,Y ; Get the image address low byte
+;	sta zPMG_IMAGE
+;	lda TABLE_HI_PMG_IMAGES,Y ; Get the image address high byte
+;	sta zPMG_IMAGE+1
+
+;	jsr Pmg_Copy_Object       ; Copy 8 bytes from *zPMG_OBJECT to *zPMG_HARDWARE
 
 	rts
 
@@ -216,12 +216,12 @@ Pmg_Draw_Object
 
 Pmg_Draw
 
-	lda zTABLE_PMG_NEW_Y,X  
+;	lda zTABLE_PMG_NEW_Y,X  
 
-	ldy zTABLE_PMG_HARDWARE,X
+;	ldy zTABLE_PMG_HARDWARE,X
 
-	jsr Pmg_Draw_Object       ; Setup and copy 8 bytes to P/M memory.
-	
+;	jsr Pmg_Draw_Object       ; Setup and copy 8 bytes to P/M memory.
+
 	rts
 
 
@@ -237,24 +237,24 @@ Pmg_Draw
 
 Pmg_Zero_Object
 
-	ldy #7
-	lda #0
+;	ldy #7
+;	lda #0
 
-	sta (zPMG_HARDWARE),Y ; To player/missile memory map
-	dey
-	sta (zPMG_HARDWARE),Y ; To player/missile memory map
-	dey
-	sta (zPMG_HARDWARE),Y ; To player/missile memory map
-	dey
-	sta (zPMG_HARDWARE),Y ; To player/missile memory map
-	dey
-	sta (zPMG_HARDWARE),Y ; To player/missile memory map
-	dey
-	sta (zPMG_HARDWARE),Y ; To player/missile memory map
-	dey
-	sta (zPMG_HARDWARE),Y ; To player/missile memory map
-	dey
-	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+;	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+;	dey
+;	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+;	dey
+;	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+;	dey
+;	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+;	dey
+;	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+;	dey
+;	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+;	dey
+;	sta (zPMG_HARDWARE),Y ; To player/missile memory map
+;	dey
+;	sta (zPMG_HARDWARE),Y ; To player/missile memory map
 
 	rts
 
@@ -274,11 +274,11 @@ Pmg_Zero_Object
 
 Pmg_Erase_Object
 
-	sta zPMG_HARDWARE   ; The Y position is the memory offset.  How convenient.
+;	sta zPMG_HARDWARE   ; The Y position is the memory offset.  How convenient.
 
-	sty zPMG_HARDWARE+1 ; And supply the high page for the object.
+;	sty zPMG_HARDWARE+1 ; And supply the high page for the object.
 
-	jsr Pmg_Zero_Object ; Zero the 8 bytes at *zPMG_HARDWARE
+;	jsr Pmg_Zero_Object ; Zero the 8 bytes at *zPMG_HARDWARE
 
 	rts
 
@@ -298,14 +298,14 @@ Pmg_Erase_Object
 
 Pmg_Erase
 
-	lda zTABLE_PMG_OLD_Y,X  
-	
-	ldy zTABLE_PMG_HARDWARE,X
-	
-	jsr Pmg_Erase_Object ; Zero the 8 bytes at *zPMG_HARDWARE
+;	lda zTABLE_PMG_OLD_Y,X  
+
+;	ldy zTABLE_PMG_HARDWARE,X
+
+;	jsr Pmg_Erase_Object ; Zero the 8 bytes at *zPMG_HARDWARE
 
 	rts
-	
+
 
 ; ==========================================================================
 ; REDRAW
@@ -323,17 +323,253 @@ Pmg_Erase
 
 Pmg_Redraw
 
-	stx zPMG_SAVE_CURRENT_ID ; Need to Save X in case of routines crushing this...
-	jsr Pmg_Erase            ; Zero the 8 bytes of the object from P/M memory.
+;	stx zPMG_SAVE_CURRENT_ID ; Need to Save X in case of routines crushing this...
+;	jsr Pmg_Erase            ; Zero the 8 bytes of the object from P/M memory.
 	
-	ldx zPMG_SAVE_CURRENT_ID ; Get the image ID back.
-	jsr Pmg_Draw             ; Copy the 8 byte image to P/M memory.
+;	ldx zPMG_SAVE_CURRENT_ID ; Get the image ID back.
+;	jsr Pmg_Draw             ; Copy the 8 byte image to P/M memory.
 	
-	ldx zPMG_SAVE_CURRENT_ID ; Get the image ID back.
-	lda zTABLE_PMG_NEW_Y,X   ; OLD = NEW
-	lda zTABLE_PMG_OLD_Y,X  
+;	ldx zPMG_SAVE_CURRENT_ID ; Get the image ID back.
+;	lda zTABLE_PMG_NEW_Y,X   ; OLD = NEW
+;	lda zTABLE_PMG_OLD_Y,X  
 
-	lda zTABLE_PMG_NEW_X,X   ; OLD = NEW
-	lda zTABLE_PMG_OLD_X,X 
+;	lda zTABLE_PMG_NEW_X,X   ; OLD = NEW
+;	lda zTABLE_PMG_OLD_X,X 
 
-	rts	
+	rts
+	
+	
+	
+	
+	
+
+;==============================================================================
+;												Pmg_Init  A  X  Y
+;==============================================================================
+; One-time setup tasks to do Player/Missile graphics.
+; Zero all positions.
+; Clear all bitmaps.
+; Set  GRACTL and SDMCTL for  pmgraphics.
+; Set PRIOR
+; -----------------------------------------------------------------------------
+
+Pmg_Init
+
+	jsr Pmg_AllZero  ; get all Players/Missiles off screen, etc.
+	
+	; clear all bitmap images
+;	jsr Pmg_ClearBitmaps
+	jsr Pmg_Zero_PM_Memory
+
+;	; Load text labels into P/M memory
+;	jsr LoadPMGTextLines
+
+	; Tell ANTIC where P/M memory is located for DMA to GTIA
+	lda #>PMADR
+	sta PMBASE
+
+	; Enable GTIA to accept DMA to the GRAFxx registers.
+	lda #[ENABLE_PLAYERS|ENABLE_MISSILES]
+	sta GRACTL
+
+	; Set all the ANTIC screen controls and DMA options.
+	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
+	sta SDMCTL
+
+	; Setup PRIOR 
+	lda #[FIFTH_PLAYER|GTIA_MODE_DEFAULT] ; Normal CTIA color interpretation
+	sta GPRIOR
+
+	jsr Pmg_SetColors
+
+	rts 
+
+
+;==============================================================================
+;											Pmg_SetHPOSZero  A  X
+;==============================================================================
+; Zero the hardware HPOS registers.
+;
+; Useful for DLI which needs to remove Players from the screen.
+; With no other changes (i.e. the size,) this is sufficient to remove 
+; visibility for all Player/Missile overlay objects 
+; -----------------------------------------------------------------------------
+
+Pmg_SetHPOSZero
+
+	lda #$00                ; 0 position
+
+	sta HPOSP0 ; Player positions 0, 1, 2, 3
+	sta HPOSP1
+	sta HPOSP2
+	sta HPOSP3
+	sta HPOSM0 ; Missile positions 0, 1, 2, 3
+	sta HPOSM1
+	sta HPOSM2
+	sta HPOSM3
+
+	rts
+
+
+;==============================================================================
+;											Pmg_AllZero  A  X
+;==============================================================================
+; Simple hardware reset of all Player/Missile registers.
+; Typically used only at program startup to zero everything
+; and prevent any screen glitchiness on startup.
+;
+; Reset all Players and Missiles horizontal positions to 0, so
+; that none are visible no matter the size or bitmap contents.
+; Zero all colors.
+; Also reset sizes to zero.
+; -----------------------------------------------------------------------------
+
+Pmg_AllZero
+
+	jsr Pmg_SetHPOSZero   ; Sets all HPOS off screen.
+
+	lda #$00                ; 0 position
+	ldx #$03                ; four objects, 3 to 0
+
+bAZ_LoopZeroPMSpecs
+	sta SIZEP0,x            ; Player width 3, 2, 1, 0
+	sta PCOLOR0,x           ; And black the colors.
+	dex
+	bpl bAZ_LoopZeroPMSpecs
+
+	sta SIZEM
+
+;	lda #[GTIA_MODE_DEFAULT|%0001] ; Default priority 
+;	sta GPRIOR
+
+	rts
+
+
+;==============================================================================
+;											Pmg_ClearBitmaps  A  X
+;==============================================================================
+; Zero the bitmaps for all players and missiles
+; 
+; Try to make this called only once at game initialization.
+; All other P/M  use should be orderly and clean up after itself.
+; Residual P/M pixels are verboten.
+; -----------------------------------------------------------------------------
+
+Pmg_ClearBitmaps
+
+;	lda #$00
+;	tax      ; count 0 to 255.
+
+;bCB_Loop
+;	sta MISSILEADR,x  ; Missiles
+;	sta PLAYERADR0,x  ; Player 0
+;	sta PLAYERADR1,x  ; Player 1
+;	sta PLAYERADR2,x  ; Player 2
+;	sta PLAYERADR3,x  ; Player 3
+;	inx
+;	bne bCB_Loop      ; Count 1 to 255, then 0 breaks out of loop
+
+	rts
+
+
+;==============================================================================
+;											Pmg_SetColors  A  X
+;==============================================================================
+; Load the P0-P3 colors based on shape identity.
+; 
+; X == SHAPE Identify  0 (off), 1, 2, 3...
+; -----------------------------------------------------------------------------
+
+Pmg_SetColors
+
+;	txa   ; Object number
+;	asl   ; Times 2
+;	asl   ; Times 4
+;	tax   ; Back into index for referencing from table.
+
+;	lda BASE_PMCOLORS_TABLE,x    ; Get color associated to object                 
+;	sta COLPM0_TABLE+2           ; Stuff in the Player color registers.
+
+;	lda BASE_PMCOLORS_TABLE+1,x
+;	sta COLPM1_TABLE+2
+
+;	lda BASE_PMCOLORS_TABLE+2,x
+;	sta COLPM2_TABLE+2
+
+;	lda BASE_PMCOLORS_TABLE+3,x
+;	sta COLPM3_TABLE+2
+
+	rts
+
+
+; ==========================================================================
+; LOAD PMG TEXT LINES                                                 A  X  
+; ==========================================================================
+; Load the Text labels for the the scores, lives, and saved frogs into 
+; the Player/Missile memory.
+; --------------------------------------------------------------------------
+
+;PMGLABEL_OFFSET=24
+
+;LoadPmgTextLines
+
+;	ldx #14
+
+;bLPTL_LoadBytes
+;	lda P0TEXT_TABLE,x
+;	sta PLAYERADR0+PMGLABEL_OFFSET,x
+;	
+;	lda P1TEXT_TABLE,x
+;	sta PLAYERADR1+PMGLABEL_OFFSET,x
+;	
+;	lda P2TEXT_TABLE,x
+;	sta PLAYERADR2+PMGLABEL_OFFSET,x
+;	
+;	lda P3TEXT_TABLE,x
+;	sta PLAYERADR3+PMGLABEL_OFFSET,x
+;	
+;	lda MTEXT_TABLE,x
+;	sta MISSILEADR+PMGLABEL_OFFSET,x
+
+;	dex
+;	bpl bLPTL_LoadBytes
+
+;	rts
+
+
+;==============================================================================
+;											Pmg_SetAllZero  A  X
+;==============================================================================
+; Zero the table entries for the animated object on screen.
+;
+; -----------------------------------------------------------------------------
+
+Pmg_SetAllZero
+
+	lda #$00            ; 0 position
+
+;	sta COLPM0_TABLE+2
+;	sta COLPM1_TABLE+2
+;	sta COLPM2_TABLE+2
+;	sta COLPM3_TABLE+2
+;	
+;	sta SIZEP0_TABLE+2
+;	sta SIZEP0_TABLE+2
+;	sta SIZEP0_TABLE+2
+;	sta SIZEP0_TABLE+2
+;	sta SIZEM_TABLE+2   ; and Missile size 3, 2, 1, 0
+;	
+;	sta HPOSP0_TABLE+2
+;	sta HPOSP1_TABLE+2
+;	sta HPOSP2_TABLE+2
+;	sta HPOSP3_TABLE+2
+;	
+;	sta HPOSM0_TABLE+2
+;	sta HPOSM1_TABLE+2
+;	sta HPOSM2_TABLE+2
+;	sta HPOSM3_TABLE+2
+
+;	lda #[GTIA_MODE_DEFAULT|%0001]
+;	sta PRIOR_TABLE+2
+
+	rts

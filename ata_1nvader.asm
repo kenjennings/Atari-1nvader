@@ -208,6 +208,10 @@ zSTAR_COUNT        .byte 0 ; starcnt original code.
 zGAME_OVER_TEXT .word 0
 
 
+; Misc Control Values  =====================================================
+
+zThisDLI .byte 0
+
 
 ; ======== V B I ======== The world's most inept sound system. 
 
