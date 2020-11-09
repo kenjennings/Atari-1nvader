@@ -294,73 +294,64 @@ bLoopWaitFrame
 
 
 
+
+
+
+
+
 ;==============================================================================
 ;                                                           MyImmediateVBI
 ;==============================================================================
 ; Immediate Vertical Blank Interrupt.
 ;
 ; Frame-critical tasks:
+; Manage switching Display Lists.
 ; Force steady state of DLI.
-; Manage switching displays.
 ;
-; Optional Input: VBICurrentDL  
-; ID number for new Display sent by Main.  Reset to -1 by VBI.
-; DISPLAY_TITLE = 0
-; DISPLAY_GAME  = 1
-; DISPLAY_WIN   = 2
-; DISPLAY_DEAD  = 3
-; DISPLAY_OVER  = 4
-;
-; Output: CurrentDL 
-; Set by VBI to the display number when the Display is changed.
+; Input: zCurrentEvent  
+; Current Event specified which Display List and which DLI chain to follow.
 ;==============================================================================
+
+TABLE_GAME_DISPLAY_LIST
+	.word $0000              ; 0  = EVENT_INIT            one time globals setup
+	.word DISPLAY_LIST_TITLE ; 1  = EVENT_SETUP_TITLE
+	.word DISPLAY_LIST_TITLE ; 2  = EVENT_TITLE           run title and get player start button
+	.word DISPLAY_LIST_TITLE ; 3  = EVENT_COUNTDOWN       then move mothership
+	.word DISPLAY_LIST_TITLE ; 4  = EVENT_SETUP_GAME
+	.word DISPLAY_LIST_GAME  ; 5  = EVENT_GAME            regular game play.  boom boom boom
+	.word DISPLAY_LIST_GAME  ; 6  = EVENT_LAST_ROW        forced player shove off screen
+	.word DISPLAY_LIST_GAME  ; 7  = EVENT_SETUP_GAMEOVER
+	.word DISPLAY_LIST_GAME  ; 8  = EVENT_GAMEOVER        display text, then go to title
+
+TABLE_GAME_DISPLAY_LIST_INTERRUPT
+	.word DoNothing_DLI ; 0  = EVENT_INIT            one time globals setup
+	.word DoNothing_DLI ; 1  = EVENT_SETUP_TITLE
+	.word DoNothing_DLI ; 2  = EVENT_TITLE           run title and get player start button
+	.word DoNothing_DLI ; 3  = EVENT_COUNTDOWN       then move mothership
+	.word DoNothing_DLI ; 4  = EVENT_SETUP_GAME
+	.word DoNothing_DLI ; 5  = EVENT_GAME            regular game play.  boom boom boom
+	.word DoNothing_DLI ; 6  = EVENT_LAST_ROW        forced player shove off screen
+	.word DoNothing_DLI ; 7  = EVENT_SETUP_GAMEOVER
+	.word DoNothing_DLI ; 8  = EVENT_GAMEOVER        display text, then go to title
+
 
 MyImmediateVBI
 
 ; ======== Manage Changing Display List ========
-	lda VBICurrentDL            ; Did Main code signal to change displays?
-	bmi VBIResetDLIChain        ; -1, No, just restore current DLI chain.
+	lda zCurrentEvent           ; Did Main code signal to change displays?
+	beq ExitMyImmediateVBI      ; If this is 0 we shoul dnot be here.
+	asl                         ; Times 2 for size of address
+	tax                         ; Use as index
 
-;VBISetupDisplay
-	tax                         ; Use VBICurrentDL  as index to tables.
-
-	lda DISPLAYLIST_LO_TABLE,x  ; Copy Display List Pointer
-	sta SDLSTL                  ; for the OS
-	lda DISPLAYLIST_HI_TABLE,x
-	sta SDLSTH
-
-	lda DLI_LO_TABLE,x          ; Copy Display List Interrupt chain table starting address
+	lda TABLE_GAME_DISPLAY_LIST,x           ; Copy Display List Pointer for the OS
+	sta SDLSTL                              
+	lda TABLE_GAME_DISPLAY_LIST_INTERRUPT,x ; Copy Display List Interrupt chain table starting address
 	sta ThisDLIAddr
-	lda DLI_HI_TABLE,x
+	inx                                     ; and the high bytes.
+	lda TABLE_GAME_DISPLAY_LIST,x
+	sta SDLSTH
+	lda TABLE_GAME_DISPLAY_LIST_INTERRUPT,x
 	sta ThisDLIAddr+1
-
-	lda BASE_PMG_LO_TABLE,x     ; Copy PMG Settings table base address
-	sta BasePmgAddr
-	lda BASE_PMG_HI_TABLE,x
-	sta BasePmgAddr+1
-
-	stx CurrentDL               ; Let Main know this is now the current screen.
-	lda #$FF                    ; Turn off the signal from Main to change screens.
-	sta VBICurrentDL
-
-	cpx #DISPLAY_TITLE          ; Is this the Title display?
-	bne VBIResetDLIChain        ; No, continue with DLI reset.
-	jsr TitleSetOrigin          ; Title screen.  Reset scrolling to origin.
-
-VBIResetDLIChain
-	ldy #0
-	lda (ThisDLIAddr),y         ; Grab 0 entry from this DLI chain
-	sta VDSLST                  ; and restart the DLI routine.
-	lda #>TITLE_DLI
-	sta VDSLST+1
-
-	iny                         ; !!! Start at 1, because entry 0 provided the starting DLI address !!!
-	sty ThisDLI 
-	; This means indexed pulls from the color tables are +1 from the current DLI.
-
-; Stage colors and HSCROL for first DLI into page 0 
-; to make selecting these faster during the DLI.
-	jsr SetupAllColors
 
 ExitMyImmediateVBI
 
@@ -401,15 +392,19 @@ MyDeferredVBI
 ; shape, and start the other activities to announce death.
 
 ManageDeathOfASalesfrog
-	lda CurrentDL                ; Get current display list
-	cmp #DISPLAY_GAME            ; Is this the Game display?
-	bne EndOfDeathOfASalesfrog   ; No. So no collision processing. 
+	lda zCurrentEvent           ; Did Main code signal to change displays?
+	beq ExitMyImmediateVBI      ; If this is 0 we shoul dnot be here.
 
-	ldx FrogRow                  ; What screen row is the frog currently on?
-	lda MOVING_ROW_STATES,x      ; Is the current Row a boat row?
-	beq EndOfDeathOfASalesfrog   ; No. So skip collision processing. 
 
-	jsr CheckRideTheBoat         ; Make sure the frog is riding the boat. Otherwise it dies.
+;	lda CurrentDL                ; Get current display list
+;	cmp #DISPLAY_GAME            ; Is this the Game display?
+;	bne EndOfDeathOfASalesfrog   ; No. So no collision processing. 
+
+;	ldx FrogRow                  ; What screen row is the frog currently on?
+;	lda MOVING_ROW_STATES,x      ; Is the current Row a boat row?
+;	beq EndOfDeathOfASalesfrog   ; No. So skip collision processing. 
+
+;	jsr CheckRideTheBoat         ; Make sure the frog is riding the boat. Otherwise it dies.
 
 EndOfDeathOfASalesfrog
 ;	sta HITCLR                   ; Always reset the P/M collision bits for next frame.
@@ -426,11 +421,11 @@ EndOfDeathOfASalesfrog
 ; It may be easier only on an Amiga.
 
 ManageBoatScrolling
-	lda CurrentDL                 ; Get current display list
-	cmp #DISPLAY_GAME             ; Is this the Game display?
-	bne EndOfBoatScrolling        ; No.  Skip the scrolling logic.
+;	lda CurrentDL                 ; Get current display list
+;	cmp #DISPLAY_GAME             ; Is this the Game display?
+;	bne EndOfBoatScrolling        ; No.  Skip the scrolling logic.
 
-	ldy #1                        ; Current Row.  Row 0 is the safe zone, no scrolling happens there.
+;	ldy #1                        ; Current Row.  Row 0 is the safe zone, no scrolling happens there.
 
 ; Common code to each row. 
 ; Loop through rows.
@@ -440,37 +435,37 @@ ManageBoatScrolling
 
 LoopBoatScrolling
 	; Need row in X and Y due to different 6502 addressing modes in the timer and scroll functions.
-	tya                           ; A = Y, Current Row 
-	tax                           ; X = A, Current Row.  Can't dec zeropage,x, darn you cpu.
+;	tya                           ; A = Y, Current Row 
+;	tax                           ; X = A, Current Row.  Can't dec zeropage,x, darn you cpu.
 
-	lda MOVING_ROW_STATES,y       ; Get the current Row State
-	beq EndOfScrollLoop           ; Not a scrolling row.  Go to next row.
-	php                           ; Save the + or - status until later.
+;	lda MOVING_ROW_STATES,y       ; Get the current Row State
+;	beq EndOfScrollLoop           ; Not a scrolling row.  Go to next row.
+;	php                           ; Save the + or - status until later.
 	; We know this is either left or right, so this block is common code
 	; to update the row's speed counter based on the row entry.
-	lda CurrentBoatFrames,x       ; Get the row's frame delay value.
-	beq ResetBoatFrames           ; If BoatFrames is 0, time to make the donuts.
-	dec CurrentBoatFrames,x       ; Not zero, so decrement
-	plp                           ; oops.  got to dispose of that.
-	jmp EndOfScrollLoop           
+;	lda CurrentBoatFrames,x       ; Get the row's frame delay value.
+;	beq ResetBoatFrames           ; If BoatFrames is 0, time to make the donuts.
+;	dec CurrentBoatFrames,x       ; Not zero, so decrement
+;	plp                           ; oops.  got to dispose of that.
+;	jmp EndOfScrollLoop           
 
 ResetBoatFrames
-	lda (BoatFramesPointer),y     ; Get master value for row's frame delay
-	sta CurrentBoatFrames,x       ; Restart the row's frame speed delay.
+;	lda (BoatFramesPointer),y     ; Get master value for row's frame delay
+;	sta CurrentBoatFrames,x       ; Restart the row's frame speed delay.
 
-	plp                           ; Get the current Row State (again.)
-	bmi LeftBoatScroll            ; 0 already bypassed.  1 = Right, -1 (FF) = Left.
+;	plp                           ; Get the current Row State (again.)
+;	bmi LeftBoatScroll            ; 0 already bypassed.  1 = Right, -1 (FF) = Left.
 
-	jsr RightBoatFineScrolling    ; Do Right Boat Fine Scrolling.  (and frog X update) 
-	jmp EndOfScrollLoop           ; end of this row.  go to the next one.
+;	jsr RightBoatFineScrolling    ; Do Right Boat Fine Scrolling.  (and frog X update) 
+;	jmp EndOfScrollLoop           ; end of this row.  go to the next one.
 
 LeftBoatScroll
-	jsr LeftBoatFineScrolling     ; Do Left Boat Fine Scrolling.  (and frog X update) 
+;	jsr LeftBoatFineScrolling     ; Do Left Boat Fine Scrolling.  (and frog X update) 
 
 EndOfScrollLoop                   ; end of this row.  go to the next one.
-	iny                           ; Y reliably has Row.  X was changed.
-	cpy #18                       ; Last entry is beach.  Do not bother to go further.
-	bne LoopBoatScrolling         ; Not 18.  Process the next row.
+;	iny                           ; Y reliably has Row.  X was changed.
+;	cpy #18                       ; Last entry is beach.  Do not bother to go further.
+;	bne LoopBoatScrolling         ; Not 18.  Process the next row.
 
 EndOfBoatScrolling
 
@@ -479,41 +474,41 @@ EndOfBoatScrolling
 ; It is MAIN's job to act when the timer is 0, and reset it if needed.
 
 DoManageInputClock
-	lda InputScanFrames          ; Is input delay already 0?
-	beq DoAnimateClock           ; Yes, do not decrement it again.
-	dec InputScanFrames          ; Minus 1.
+;	lda InputScanFrames          ; Is input delay already 0?
+;	beq DoAnimateClock           ; Yes, do not decrement it again.
+;	dec InputScanFrames          ; Minus 1.
 
 ; ======== Manage Main code's timer.  Decrement while non-zero. ========
 ; It is MAIN's job to act when the timer is 0, and reset it if needed.
 
 DoAnimateClock
-	lda AnimateFrames            ; Is animation countdown already 0?
-	beq DoAnimateClock2          ; Yes, do not decrement now.
-	dec AnimateFrames            ; Minus 1
+;	lda AnimateFrames            ; Is animation countdown already 0?
+;	beq DoAnimateClock2          ; Yes, do not decrement now.
+;	dec AnimateFrames            ; Minus 1
 
 ; ======== Manage Another Main code timer.  Decrement while non-zero. ========
 ; It is MAIN's job to act when the timer is 0, and reset it if needed.
 
 DoAnimateClock2
-	lda AnimateFrames2           ; Is animation countdown already 0?
-	beq DoAnimateClock3          ; Yes, do not decrement now.
-	dec AnimateFrames2           ; Minus 1
+;	lda AnimateFrames2           ; Is animation countdown already 0?
+;	beq DoAnimateClock3          ; Yes, do not decrement now.
+;	dec AnimateFrames2           ; Minus 1
 
 ; ======== Manage Another Main code timer.  Decrement while non-zero. ========
 ; It is MAIN's job to act when the timer is 0, and reset it if needed.
 
 DoAnimateClock3
-	lda AnimateFrames3           ; Is animation countdown already 0?
-	beq DoAnimateClock4          ; Yes, do not decrement now.
-	dec AnimateFrames3           ; Minus 1
-	
+;	lda AnimateFrames3           ; Is animation countdown already 0?
+;	beq DoAnimateClock4          ; Yes, do not decrement now.
+;	dec AnimateFrames3           ; Minus 1
+
 ; ======== Manage Another Main code timer.  Decrement while non-zero. ========
 ; It is MAIN's job to act when the timer is 0, and reset it if needed.
 
 DoAnimateClock4
-	lda AnimateFrames4           ; Is animation countdown already 0?
-	beq EndOfTimers              ; Yes, do not decrement now.
-	dec AnimateFrames4           ; Minus 1
+;	lda AnimateFrames4           ; Is animation countdown already 0?
+;	beq EndOfTimers              ; Yes, do not decrement now.
+;	dec AnimateFrames4           ; Minus 1
 
 EndOfTimers
 
@@ -523,16 +518,16 @@ EndOfTimers
 ; is not doing anything related to the frog.
 
 DoAnimateEyeballs
-	lda FrogRefocus              ; Is the eye move counter greater than 0?
-	beq EndOfClockChecks         ; No, Nothing else to do here.
-	dec FrogRefocus              ; Subtract 1.
-	bne EndOfClockChecks         ; Has not reached 0, so nothing left to do here.
-	lda FrogShape                ; Maybe the player raced the timer to the next screen...
-	cmp #SHAPE_FROG              ; ... so verify the frog is still displayable.
-	bne EndOfClockChecks         ; Not the frog, so do not animate eyes.
-	lda #1                       ; Inform the Frog renderer  
-	sta FrogEyeball              ; to use the default/centered eyeball.
-	sta FrogUpdate               ; and set mandatory redraw.
+;	lda FrogRefocus              ; Is the eye move counter greater than 0?
+;	beq EndOfClockChecks         ; No, Nothing else to do here.
+;	dec FrogRefocus              ; Subtract 1.
+;	bne EndOfClockChecks         ; Has not reached 0, so nothing left to do here.
+;	lda FrogShape                ; Maybe the player raced the timer to the next screen...
+;	cmp #SHAPE_FROG              ; ... so verify the frog is still displayable.
+;	bne EndOfClockChecks         ; Not the frog, so do not animate eyes.
+;	lda #1                       ; Inform the Frog renderer  
+;	sta FrogEyeball              ; to use the default/centered eyeball.
+;	sta FrogUpdate               ; and set mandatory redraw.
 
 EndOfClockChecks
 
@@ -544,15 +539,15 @@ EndOfClockChecks
 ; Here, finally apply the position and move the frog image.
 
 MaintainFrogliness
-	lda FrogUpdate               ; Nonzero means something important needs to be updated.
-	bne SimplyUpdatePosition
+;	lda FrogUpdate               ; Nonzero means something important needs to be updated.
+;	bne SimplyUpdatePosition
 
-	lda FrogNewShape             ; Get the new frog shape.
-	beq NoFrogUpdate             ; 0 is off, so no movement there at all, so skip all
+;	lda FrogNewShape             ; Get the new frog shape.
+;	beq NoFrogUpdate             ; 0 is off, so no movement there at all, so skip all
 
 ; ==== Frog and boat position gyrations are done.  ==== Is there actual movement?
 SimplyUpdatePosition
-	jsr ProcessNewShapePosition  ; limit object to screen.  redraw the object.
+;	jsr ProcessNewShapePosition  ; limit object to screen.  redraw the object.
 
 NoFrogUpdate
 
@@ -564,35 +559,35 @@ NoFrogUpdate
 ; value $04.  Luminance $00 means no further consideration.
 
 ManageScoredFades
-	ldx CurrentDL
-	lda MANAGE_SCORE_COLORS_TABLE,x
-	beq EndManageScoreFades
+;	ldx CurrentDL
+;	lda MANAGE_SCORE_COLORS_TABLE,x
+;	beq EndManageScoreFades
 
 DoFadeScore
-	lda COLPM0_TABLE       ; Get Color.
-	jsr DecThisColorOrNot  ; Can it be decremented?
-	sta COLPM0_TABLE       ; Re-Save Color
-	sta COLPM1_TABLE       ; Second half of the same object is same color
+;	lda COLPM0_TABLE       ; Get Color.
+;	jsr DecThisColorOrNot  ; Can it be decremented?
+;	sta COLPM0_TABLE       ; Re-Save Color
+;	sta COLPM1_TABLE       ; Second half of the same object is same color
 
 DoFadeHiScore
-	lda COLPM2_TABLE       ; Get Color.
-	jsr DecThisColorOrNot  ; Can it be decremented?
-	sta COLPM2_TABLE       ; Re-Save Color 
+;	lda COLPM2_TABLE       ; Get Color.
+;	jsr DecThisColorOrNot  ; Can it be decremented?
+;	sta COLPM2_TABLE       ; Re-Save Color 
 
 DoFadeLives
-	lda MANAGE_LIVES_COLORS_TABLE,x ; Is this a thing to do on this display.
-	beq EndManageScoreFades
+;	lda MANAGE_LIVES_COLORS_TABLE,x ; Is this a thing to do on this display.
+;	beq EndManageScoreFades
 
-	lda COLPM0_TABLE+1     ; Get Color.
-	jsr DecThisColorOrNot  ; Can it be decremented?
-	sta COLPM0_TABLE+1     ; Re-Save Color
-	sta COLPM1_TABLE+1     ; Second half of the same object is same color
+;	lda COLPM0_TABLE+1     ; Get Color.
+;	jsr DecThisColorOrNot  ; Can it be decremented?
+;	sta COLPM0_TABLE+1     ; Re-Save Color
+;	sta COLPM1_TABLE+1     ; Second half of the same object is same color
 
 DoFadeSaved
-	lda COLPM2_TABLE+1     ; Get Color.
-	jsr DecThisColorOrNot  ; Can it be decremented?
-	sta COLPM2_TABLE+1     ; Re-Save Color
-	sta COLPM3_TABLE+1     ; Second half of the same object is same color
+;	lda COLPM2_TABLE+1     ; Get Color.
+;	jsr DecThisColorOrNot  ; Can it be decremented?
+;	sta COLPM2_TABLE+1     ; Re-Save Color
+;	sta COLPM3_TABLE+1     ; Second half of the same object is same color
 
 EndManageScoreFades
 
@@ -607,22 +602,22 @@ EndManageScoreFades
 ; origin before setting  VBIEnableScrollTitle  to start scrolling.
 
 ManageTitleScrolling
-	lda VBIEnableScrollTitle     ; Is scrolling turned on?
-	beq WaitToRestoreTitle       ; No. See if the timer needs something.
+;	lda VBIEnableScrollTitle     ; Is scrolling turned on?
+;	beq WaitToRestoreTitle       ; No. See if the timer needs something.
 
-	jsr TitleLeftScroll          ; Scroll it
-	jsr TitleIsItAtTheEnd        ; Is it done?  Zero return is over.
-	bne EndManageTitleScrolling  ; Nope.  Do again on the next frame.
+;	jsr TitleLeftScroll          ; Scroll it
+;	jsr TitleIsItAtTheEnd        ; Is it done?  Zero return is over.
+;	bne EndManageTitleScrolling  ; Nope.  Do again on the next frame.
 
-	lda #0                       ; Reached target position.
-	sta VBIEnableScrollTitle     ; Turn off further left scrolling.
-	lda #TITLE_RETURN_WAIT       ; Set the timer to wait to restore the title.
-	sta RestoreTitleTimer        ; Set new timeout value.
+;	lda #0                       ; Reached target position.
+;	sta VBIEnableScrollTitle     ; Turn off further left scrolling.
+;	lda #TITLE_RETURN_WAIT       ; Set the timer to wait to restore the title.
+;	sta RestoreTitleTimer        ; Set new timeout value.
 
 WaitToRestoreTitle               ; Tell Main when to restore title.
-	lda RestoreTitleTimer        ; Get timer value.
-	beq EndManageTitleScrolling  ; Its 0?  Then skip this.
-	dec RestoreTitleTimer        ; Decrement timer when non-zero.
+;	lda RestoreTitleTimer        ; Get timer value.
+;	beq EndManageTitleScrolling  ; Its 0?  Then skip this.
+;	dec RestoreTitleTimer        ; Decrement timer when non-zero.
 
 EndManageTitleScrolling
 
@@ -641,54 +636,54 @@ EndManageTitleScrolling
 ;BoatyComponent     .byte 0  ; 0, 1, 2, 3 one of the four boat parts.
 
 ManageBoatAnimations
-	dec BoatyMcBoatCounter        ; subtract from scroll delay counter
-	bne ExitBoatyness             ; Not 0 yet, so no animation.
+;	dec BoatyMcBoatCounter        ; subtract from scroll delay counter
+;	bne ExitBoatyness             ; Not 0 yet, so no animation.
 
 	; One of the boat components will be animated. 
-	lda #2                        ; Reset counter to original value.
-	sta BoatyMcBoatCounter
+;	lda #2                        ; Reset counter to original value.
+;	sta BoatyMcBoatCounter
 
-	ldx BoatyFrame                ; going to load a frame, which one?
-	jsr DoBoatCharacterAnimation  ; load the frame for the current component.
+;	ldx BoatyFrame                ; going to load a frame, which one?
+;	jsr DoBoatCharacterAnimation  ; load the frame for the current component.
 
 ; Finish by setting up for next frame/component.
-	inc BoatyComponent            ; increment to next visual component for next time.
-	lda BoatyComponent            ; get it to mask it 
-	and #$03                      ; mask it to value 0 to 3
-	sta BoatyComponent            ; Save it.
-	bne ExitBoatyness             ; it is non-zero, so no new frame counter.
+;	inc BoatyComponent            ; increment to next visual component for next time.
+;	lda BoatyComponent            ; get it to mask it 
+;	and #$03                      ; mask it to value 0 to 3
+;	sta BoatyComponent            ; Save it.
+;	bne ExitBoatyness             ; it is non-zero, so no new frame counter.
 
 ; Whenever the boat component returns to 0, then update the frame counter...
-	inc BoatyFrame                ; next frame.
-	lda BoatyFrame                ; get it to mask it.
-	and #$07                      ; mask it to 0 to 7
-	sta BoatyFrame                ; save it.
+;	inc BoatyFrame                ; next frame.
+;	lda BoatyFrame                ; get it to mask it.
+;	and #$07                      ; mask it to 0 to 7
+;	sta BoatyFrame                ; save it.
 
 ExitBoatyness
 
 
 ; ======== Manage the prompt flashing for Press A Button ========
 ManagePressAButtonPrompt
-	lda EnablePressAButton
-	bne DoAnimateButtonTimer      ; Not zero means enabled.
-	; Prompt is off.  Zero everything.
-	sta PressAButtonColor         ; Set background
-	sta PressAButtonText          ; Set text.
-	sta PressAButtonFrames        ; This makes sure it will restart as soon as enabled.
-	beq DoCheesySoundService  
+;	lda EnablePressAButton
+;	bne DoAnimateButtonTimer      ; Not zero means enabled.
+;	; Prompt is off.  Zero everything.
+;	sta PressAButtonColor         ; Set background
+;	sta PressAButtonText          ; Set text.
+;	sta PressAButtonFrames        ; This makes sure it will restart as soon as enabled.
+;	beq DoCheesySoundService  
 
 ; Note that the Enable/Disable behavior connected to the timer mechanism 
 ; means that the action will occur when this timer executes with value 1 
 ; or 0. At 1 it will be decremented to become 0. The value 0 is evaluated 
 ; immediately.
 DoAnimateButtonTimer
-	lda PressAButtonFrames   
-	beq DoPromptColorchange       ; Timer is Zero.  Go switch colors.
-	dec PressAButtonFrames        ; Minus 1
-	bne DoCheesySoundService      ; if it is still non-zero end this section.
+;	lda PressAButtonFrames   
+;	beq DoPromptColorchange       ; Timer is Zero.  Go switch colors.
+;	dec PressAButtonFrames        ; Minus 1
+;	bne DoCheesySoundService      ; if it is still non-zero end this section.
 
 DoPromptColorchange
-	jsr ToggleButtonPrompt        ; Manipulates colors for prompt.
+;	jsr ToggleButtonPrompt        ; Manipulates colors for prompt.
 
 DoCheesySoundService              ; World's most inept sound sequencer.
 	jsr SoundService
@@ -696,12 +691,12 @@ DoCheesySoundService              ; World's most inept sound sequencer.
 
 ; ======== Manage scrolling the Credits text ========
 ScrollTheCreditLine               ; Scroll the text identifying the perpetrators
-	dec ScrollCounter             ; subtract from scroll delay counter
-	bne EndOfScrollTheCredits     ; Not 0 yet, so no scrolling.
-	lda #2                        ; Reset counter to original value.
-	sta ScrollCounter
+;	dec ScrollCounter             ; subtract from scroll delay counter
+;	bne EndOfScrollTheCredits     ; Not 0 yet, so no scrolling.
+;	lda #2                        ; Reset counter to original value.
+;	sta ScrollCounter
 
-	jsr FineScrollTheCreditLine   ; Do the business.
+;	jsr FineScrollTheCreditLine   ; Do the business.
 
 EndOfScrollTheCredits
 

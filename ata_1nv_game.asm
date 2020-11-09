@@ -105,29 +105,6 @@ TABLE_GAME_FUNCTION
 	.word GameSetupOver-1  ; 7  = EVENT_SETUP_GAMEOVER
 	.word GameOver-1       ; 8  = EVENT_GAMEOVER        display text, then go to title
 
-TABLE_GAME_DISPLAY_LIST
-	.word $0000              ; 0  = EVENT_INIT            one time globals setup
-	.word DISPLAY_LIST_TITLE ; 1  = EVENT_SETUP_TITLE
-	.word DISPLAY_LIST_TITLE ; 2  = EVENT_TITLE           run title and get player start button
-	.word DISPLAY_LIST_TITLE ; 3  = EVENT_COUNTDOWN       then move mothership
-	.word DISPLAY_LIST_TITLE ; 4  = EVENT_SETUP_GAME
-	.word DISPLAY_LIST_GAME  ; 5  = EVENT_GAME            regular game play.  boom boom boom
-	.word DISPLAY_LIST_GAME  ; 6  = EVENT_LAST_ROW        forced player shove off screen
-	.word DISPLAY_LIST_GAME  ; 7  = EVENT_SETUP_GAMEOVER
-	.word DISPLAY_LIST_GAME  ; 8  = EVENT_GAMEOVER        display text, then go to title
-
-TABLE_GAME_DISPLAY_LIST_INTERRUPT
-	.word DoNothing_DLI ; 0  = EVENT_INIT            one time globals setup
-	.word DoNothing_DLI ; 1  = EVENT_SETUP_TITLE
-	.word DoNothing_DLI ; 2  = EVENT_TITLE           run title and get player start button
-	.word DoNothing_DLI ; 3  = EVENT_COUNTDOWN       then move mothership
-	.word DoNothing_DLI ; 4  = EVENT_SETUP_GAME
-	.word DoNothing_DLI ; 5  = EVENT_GAME            regular game play.  boom boom boom
-	.word DoNothing_DLI ; 6  = EVENT_LAST_ROW        forced player shove off screen
-	.word DoNothing_DLI ; 7  = EVENT_SETUP_GAMEOVER
-	.word DoNothing_DLI ; 8  = EVENT_GAMEOVER        display text, then go to title
-
-
 ; ==========================================================================
 ; GAME LOOP
 ;
@@ -196,9 +173,9 @@ GameInit
 	lda #>CHARACTER_SET        ; Set custom character set.  Global to game, forever.
 	sta CHBAS
 
-	jsr Pmg_Init               ; Will also reset SDMACTL settings for P/M DMA
+	jsr Pmg_Init               ; Will also reset GRACTL and SDMACTL settings for P/M DMA
 
-	; Zero all the colors, except text color.  DLIs will set all other.
+	; Zero all the colors, except text color.  DLIs will (re)set all other.
 	
 	lda #0
 	sta PCOLOR0 ; COLPM0 - Player/Missile 0 color, GTIA 9-color playfield color 0 for Background
@@ -238,6 +215,9 @@ GameInit
 	; Interrupt and this directs the interrupt to change the current
 	; display list.  Easy-peasy and never updated at the wrong time.
 
+	lda #EVENT_SETUP_TITLE
+	sta zCurrentEvent
+
 	ldy #<MyImmediateVBI       ; Add the VBI to the system (Display List dictatorship)
 	ldx #>MyImmediateVBI
 	lda #6                     ; 6 = Immediate VBI
@@ -249,11 +229,8 @@ GameInit
 	jsr SETVBV                 ; Tell OS to set it
 
 	lda #0
-	sta FlaggedHiScore
-	sta InputStick             ; no input from joystick
-
-
-	jsr SetupTransitionToTitle ; will set CurrentEvent = EVENT_TRANS_TITLE
+;	sta FlaggedHiScore
+;	sta InputStick             ; no input from joystick
 
 	rts                         ; And now ready to go back to main game loop . . . .
 
