@@ -175,17 +175,18 @@ GameInit
 
 	jsr Pmg_Init               ; Will also reset GRACTL and SDMACTL settings for P/M DMA
 
-	; Zero all the colors, except text color.  DLIs will (re)set all other.
-	
+	; Zero all the colors.  (Except text will be turned back on to white.)
+	; Zero all Player positions (fake shadow registers for HPOS) 
+	; DLIs will (re)set them all as needed other.
+
+	ldx #7
 	lda #0
-	sta PCOLOR0 ; COLPM0 - Player/Missile 0 color, GTIA 9-color playfield color 0 for Background
-	sta PCOLOR1 ; COLPM1 - Player/Missile 1 color, GTIA 9-color playfield color 1
-	sta PCOLOR2 ; COLPM2 - Player/Missile 2 color, GTIA 9-color playfield color 2
-	sta PCOLOR3 ; COLPM3 - Player/Missile 3 color, GTIA 9-color playfield color 3
-;
-	sta COLOR0 ; COLPF0 - Playfield 0 color
-	sta COLOR2 ; COLPF2 - Playfield 2 color (Background for ANTIC modes 2, 3, and F)
-	sta COLOR3 ; COLPF3 - Playfield 3 color (and fifth Player color)
+b_gi_LoopFillZero
+	sta PCOLOR0,x 
+	sta SHPOSP0,x
+	dex
+	bpl b_gi_LoopFillZero
+
 	sta COLOR4 ; COLBK  - Playfield Background color (Border for modes 2, 3, and F) 
 
 	lda #COLOR_WHITE|$0C ; Light white
@@ -201,7 +202,7 @@ GameInit
 	sta VDSLST
 	lda #>DoNothing_DLI; TITLE_DLI
 	sta VDSLST+1
-	
+
 	lda #[NMI_DLI|NMI_VBI]     ; Turn On DLIs
 	sta NMIEN
 
@@ -247,43 +248,48 @@ GameInit
 
 GameSetupTitle
 
-	lda AnimateFrames          ; Did animation counter reach 0 ?
-	bne EndTransitionToTitle   ; Nope.  Nothing to do.
-	lda #TITLE_SPEED           ; yes.  Reset it.
-	jsr ResetTimers
+	rts
 
-	lda EventStage             ; What stage are we in?
-	cmp #1
-	bne GoToStartEventForTitle
+;	lda AnimateFrames          ; Did animation counter reach 0 ?
+;	bne EndTransitionToTitle   ; Nope.  Nothing to do.
+;	lda #TITLE_SPEED           ; yes.  Reset it.
+;	jsr ResetTimers
+
+;	lda EventStage             ; What stage are we in?
+;	cmp #1
+;	bne GoToStartEventForTitle
  
 	; === STAGE 1 ===
 
-	jsr ToPlayFXScrollOrNot    ; Start slide sound playing if not playing now.
+;	jsr ToPlayFXScrollOrNot    ; Start slide sound playing if not playing now.
 
 ;FinishedNowSetupStage2
-	jsr PlaySaberHum           ; Play light saber hum using two channels.
+;	jsr PlaySaberHum           ; Play light saber hum using two channels.
 
-	lda #2                     ; Set stage 2 as next part of Title screen event...
-	sta EventStage
-	bne EndTransitionToTitle
+;	lda #2                     ; Set stage 2 as next part of Title screen event...
+;	sta EventStage
+;	bne EndTransitionToTitle
 
 	; === STAGE 2 ===
 
 GoToStartEventForTitle
-	lda #0 
-	sta EventStage
+;	lda #0 
+;	sta EventStage
 
-	lda #EVENT_START           ; Yes, change to event to start new game.
-	sta CurrentEvent
+
+
+;	lda #EVENT_TITLE           ; Yes, change to event to start new game.
+;	sta zCurrentEvent
 
 EndTransitionToTitle
-	jsr WobbleDeWobble         ; Frog following spirograph art path on the title.
+;	jsr WobbleDeWobble         ; Frog following spirograph art path on the title.
 
 	rts
 
 
+
 ; ==========================================================================
-; EVENT TITLE Screen
+; GAME TITLE
 ; ==========================================================================
 ; Event Process TITLE SCREEN
 ; The activity on the title screen:
@@ -303,57 +309,59 @@ EndTransitionToTitle
 ; 4) Waiting to return to Stage 0 (AnimateFrames2 timer). and Button Input.
 ; --------------------------------------------------------------------------
 
-EventTitleScreen
+GameTitle
+
+	rts
 
 ; =============== Stage * ; Always run the frog and the label flashing. . .
 
-	jsr WobbleDeWobble         ; Frog drawing spirograph path on the title.
-	jsr FlashTitleLabels       ; and cycle the label flashing.
+;	jsr WobbleDeWobble         ; Frog drawing spirograph path on the title.
+;	jsr FlashTitleLabels       ; and cycle the label flashing.
 
-	lda EventStage
-	bne bETS_InputStage        ; stage is >0, so title treatment is over.
+;	lda EventStage
+;	bne bETS_InputStage        ; stage is >0, so title treatment is over.
 
 ; =============== Stage 0      ; Animating Title only while sound runs
 
-	lda TITLE_UNDERLINE_FADE+6
-	sta COLPF0_TABLE+9
+;	lda TITLE_UNDERLINE_FADE+6
+;	sta COLPF0_TABLE+9
 
-	lda SOUND_CONTROL3         ; Is channel 3 busy?
-	beq bETS_EndTitleAnimation ; No. Stop the title animation.
+;	lda SOUND_CONTROL3         ; Is channel 3 busy?
+;	beq bETS_EndTitleAnimation ; No. Stop the title animation.
 
 ;bETS_RandomizeLogo
-	lda #$FF                   ; Channel 3 is playing sound, so animate.
-	jsr TitleRender            ; and -1  means draw the random masked title.
-	jmp EndTitleScreen         ; Do not process input during the randomize.
+;	lda #$FF                   ; Channel 3 is playing sound, so animate.
+;	jsr TitleRender            ; and -1  means draw the random masked title.
+;	jmp EndTitleScreen         ; Do not process input during the randomize.
 
 bETS_EndTitleAnimation
-	lda #1                     ; Draw the title as solid and stop animation.
-	sta EventStage             ; Stage 1 is always skip the title drawing.
-	sta EnablePressAButton     ; Turn On the prompt to press button (for later below).
-	jsr TitleRender            ; and 1 also means draw the solid title.
+;	lda #1                     ; Draw the title as solid and stop animation.
+;	sta EventStage             ; Stage 1 is always skip the title drawing.
+;	sta EnablePressAButton     ; Turn On the prompt to press button (for later below).
+;	jsr TitleRender            ; and 1 also means draw the solid title.
 
 ; =============== Stage-ish Not 0-ish, handling button input when Option/Select hacks are not in motion. 
 
 bETS_InputStage 
 
 ;CheckTitleInput
-	lda EnablePressAButton     ; Is button input on?
-	beq CheckFunctionButton    ; No.  A later stage may still be running.
+;	lda EnablePressAButton     ; Is button input on?
+;	beq CheckFunctionButton    ; No.  A later stage may still be running.
 
-	jsr RunPromptForButton     ; Blink Prompt to press Joystick button and check input.
-	beq CheckFunctionButton    ; No joystick button.  Try a function key.
+;	jsr RunPromptForButton     ; Blink Prompt to press Joystick button and check input.
+;	beq CheckFunctionButton    ; No joystick button.  Try a function key.
 
 ;ProcessTitleScreenInput        ; Button pressed. Prepare for the screen transition to the game.
-	jsr SetupTransitionToGame
+;	jsr SetupTransitionToGame
 
 	; This was part of the Start event, but after the change to keep the 
 	; scores displayed on the title screen it would end up erasing the 
 	; last game score as soon as the title transition animation completed.
 	; Therefore resetting the score is deferred until leaving the Title.
-	jsr ClearGameScores     ; Zero the score.  And high score if not set.
-	jsr PrintFrogsAndLives  ; Update the screen memory.
+;	jsr ClearGameScores     ; Zero the score.  And high score if not set.
+;	jsr PrintFrogsAndLives  ; Update the screen memory.
 
-	jmp EndTitleScreen
+;	jmp EndTitleScreen
 
 
 ; For the Option/Select handling it is easy to maintain safe input (no 
@@ -368,88 +376,161 @@ bETS_InputStage
 ; difficulty, then the high score is cleared on game start.
 
 CheckFunctionButton
-	lda EventStage
-	cmp #1                   ; 1) Just doing input checking per above, and testing Option/Select.
-	bne bETS_Stage2          ; Not Stage 1.  Go to Stage 2.  Skip checking console keys.
+;	lda EventStage
+;	cmp #1                   ; 1) Just doing input checking per above, and testing Option/Select.
+;	bne bETS_Stage2          ; Not Stage 1.  Go to Stage 2.  Skip checking console keys.
 
-	jsr CheckForConsoleInput ; If Button pressed, then sets Stage 2, and EventCounter for TitleShiftDown.
-	jmp EndTitleScreen       ; Regardless of the console input, this is the end of stage 1.
+;	jsr CheckForConsoleInput ; If Button pressed, then sets Stage 2, and EventCounter for TitleShiftDown.
+;	jmp EndTitleScreen       ; Regardless of the console input, this is the end of stage 1.
 
 ; =============== Stage 2    ; Shifting Left buffer pixels down.
 
 bETS_Stage2
-	cmp #2                   ; 2) slide left buffer down.
-	bne bETS_Stage3          ; Not Stage 2.  Try Stage 3.
+;	cmp #2                   ; 2) slide left buffer down.
+;	bne bETS_Stage3          ; Not Stage 2.  Try Stage 3.
 
 ;CheckTitleSlideDown 
-	lda AnimateFrames
-	bne EndTitleScreen       ; Animation frames not 0.  Wait till next time.
+;	lda AnimateFrames
+;	bne EndTitleScreen       ; Animation frames not 0.  Wait till next time.
 
-	jsr TitleShiftDown       ; Shift Pixels down
+;	jsr TitleShiftDown       ; Shift Pixels down
 
-	ldx EventCounter         ; Get the counter
-	jsr FadeTitleUnderlines  ; Fade (or not) the green underlines to yellow.
+;	ldx EventCounter         ; Get the counter
+;	jsr FadeTitleUnderlines  ; Fade (or not) the green underlines to yellow.
 
-	dec EventCounter         ; Decrement number of times this is done.
-	bmi bETS_Stage2_ToStage3 ; When it is done, go to stage 3. 
+;	dec EventCounter         ; Decrement number of times this is done.
+;	bmi bETS_Stage2_ToStage3 ; When it is done, go to stage 3. 
 
-	lda #TITLE_DOWN_SPEED    ; The down shift is not done, so 
-	jsr ResetTimers          ; Reset animation/input frame counter.      
-	jmp EndTitleScreen
+;	lda #TITLE_DOWN_SPEED    ; The down shift is not done, so 
+;	jsr ResetTimers          ; Reset animation/input frame counter.      
+;	jmp EndTitleScreen
 
 bETS_Stage2_ToStage3         ; Setup for next Stage
-	lda #3
-	sta EventStage
+;	lda #3
+;	sta EventStage
 
-	jsr RandomizeTitleColors ; Random color gradient for the Text pixels.
+;	jsr RandomizeTitleColors ; Random color gradient for the Text pixels.
 
-	jsr PlayLefts            ;  Play Left movement sound for title graphics on OPTION and SELECT
-	inc VBIEnableScrollTitle ; Turn on Title fine scrolling.
-	bne EndTitleScreen
+;	jsr PlayLefts            ;  Play Left movement sound for title graphics on OPTION and SELECT
+;	inc VBIEnableScrollTitle ; Turn on Title fine scrolling.
+;	bne EndTitleScreen
 
 ; =============== Stage 3    ; Scrolling in pixels from Right to Left. 
 
 bETS_Stage3
-	cmp #3
-	bne bETS_Stage4
+;	cmp #3
+;	bne bETS_Stage4
 
 ;CheckTitleScroll
-	lda VBIEnableScrollTitle   ; Is VBI busy scrolling option text?
-	bne EndTitleScreen         ; Yes.  Nothing more to do here.
+;	lda VBIEnableScrollTitle   ; Is VBI busy scrolling option text?
+;	bne EndTitleScreen         ; Yes.  Nothing more to do here.
 
 	; Readjust display to show the left buffer visible 
-	; and reset scrolling origin.
-	jsr TitleCopyRightToLeftGraphics ; Copy right buffer to left buffer.
-	jsr TitleSetOrigin               ; Reset LMS to point to left buffer
+;	; and reset scrolling origin.
+;	jsr TitleCopyRightToLeftGraphics ; Copy right buffer to left buffer.
+;	jsr TitleSetOrigin               ; Reset LMS to point to left buffer
 
 ;bETS_Stage3_ToStage4         ; Setup for next Stage
-	lda #4
-	sta EventStage
-	bne EndTitleScreen
+;	lda #4
+;	sta EventStage
+;	bne EndTitleScreen
 
 ; =============== Stage 4 ; Waiting on RestoreTitleTimer to return to Stage 0. 
 
 bETS_Stage4                  ; Stage 4, allow console input.
-	jsr CheckForConsoleInput ; If Button pressed, then sets Stage 2, and EventCounter for TitleShiftDown.
-	beq bETS_CheckAutoReturn ; No console key pressed.  So, check if return is automatic.
-	lda #0                   ; Console key input returns us to Stage 2, so zero the auto timer.
-	sta RestoreTitleTimer
-	beq EndTitleScreen
+;	jsr CheckForConsoleInput ; If Button pressed, then sets Stage 2, and EventCounter for TitleShiftDown.
+;	beq bETS_CheckAutoReturn ; No console key pressed.  So, check if return is automatic.
+;	lda #0                   ; Console key input returns us to Stage 2, so zero the auto timer.
+;	sta RestoreTitleTimer
+;	beq EndTitleScreen
 
 bETS_CheckAutoReturn
-	lda RestoreTitleTimer    ; Wait for Input timeout to expire.
-	bne EndTitleScreen       ; No timeout yet.
+;	lda RestoreTitleTimer    ; Wait for Input timeout to expire.
+;	bne EndTitleScreen       ; No timeout yet.
 
 	; Expired auto timer... Return to Stage 0.
-	jsr ToPlayFXScrollOrNot  ; Start slide sound playing if not playing now.
-	lda TITLE_UNDERLINE_FADE,x ; Return underlines to green (SELECT/OPTION faded them out.)
-	sta COLPF0_TABLE+8
-	lda #0
-	sta EventStage
+;	jsr ToPlayFXScrollOrNot  ; Start slide sound playing if not playing now.
+;	lda TITLE_UNDERLINE_FADE,x ; Return underlines to green (SELECT/OPTION faded them out.)
+;	sta COLPF0_TABLE+8
+;	lda #0
+;	sta EventStage
 
-	jsr ResetTitleColors     ; Original title colors.
+;	jsr ResetTitleColors     ; Original title colors.
 
 
 EndTitleScreen
 
 	rts
+
+
+; ==========================================================================
+; GAME COUNTDOWN
+; ==========================================================================
+;
+; --------------------------------------------------------------------------
+
+GameCountdown 
+
+	rts
+
+
+
+; ==========================================================================
+; GAME SETUP MAIN
+; ==========================================================================
+;
+; --------------------------------------------------------------------------
+
+GameSetupMain
+
+	rts
+
+
+
+; ==========================================================================
+; GAME MAIN
+; ==========================================================================
+;
+; --------------------------------------------------------------------------
+
+GameMain
+
+	rts
+
+
+
+; ==========================================================================
+; GAME LAST ROW
+; ==========================================================================
+;
+; --------------------------------------------------------------------------
+
+GameLastRow
+
+	rts
+
+
+
+; ==========================================================================
+; GAME SETUP OVER
+; ==========================================================================
+;
+; --------------------------------------------------------------------------
+
+GameSetupOver
+
+	rts
+
+
+
+; ==========================================================================
+; GAME OVER
+; ==========================================================================
+;
+; --------------------------------------------------------------------------
+
+GameOver
+
+	rts
+
+

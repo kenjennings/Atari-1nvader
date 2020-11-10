@@ -393,7 +393,30 @@ MyDeferredVBI
 
 ManageDeathOfASalesfrog
 	lda zCurrentEvent           ; Did Main code signal to change displays?
-	beq ExitMyImmediateVBI      ; If this is 0 we shoul dnot be here.
+	beq ExitMyImmediateVBI      ; If this is 0 we should not be here.
+
+; Reset P/M graphics to starting position (fake Shadow regs).
+; By default, this will probably be 0.  The game relies on the DLIs to cut 
+; up Players/Missiles to their proper horizontal positions.
+; We could loop to copy these, but I don't want to burn through eight 
+; more inc or dec, and branches.  So, do this as fast as possible.
+
+	lda SHPOSP0
+	sta HPOSP0
+	lda SHPOSP1
+	sta HPOSP1
+	lda SHPOSP2
+	sta HPOSP2
+	lda SHPOSP3
+	sta HPOSP3
+	lda SHPOSM0
+	sta HPOSP0
+	lda SHPOSP1
+	sta HPOSP1
+	lda SHPOSP2
+	sta HPOSP2
+	lda SHPOSP3
+	sta HPOSM3
 
 
 ;	lda CurrentDL                ; Get current display list
@@ -406,8 +429,11 @@ ManageDeathOfASalesfrog
 
 ;	jsr CheckRideTheBoat         ; Make sure the frog is riding the boat. Otherwise it dies.
 
+
+;	jsr Something that evaluates collisions goes here.
+
 EndOfDeathOfASalesfrog
-;	sta HITCLR                   ; Always reset the P/M collision bits for next frame.
+	sta HITCLR                   ; Always reset the P/M collision bits for next frame.
 
 
 ; ======== Manage Boat fine scrolling ========

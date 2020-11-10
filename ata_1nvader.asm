@@ -36,10 +36,14 @@
 	ORG $80
 
 
-; Game Control Values =========================================================
+; Game State Control Values ==================================================
 
 zCurrentEvent      .byte $00 ; Global Current Game Behavior.
- 
+
+zEventStage 
+
+; Game Control Values =========================================================
+
 zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player. 
 zGAME_OVER_FLAG    .byte $00 ; Set 0/1 for game over 
 zSHOW_SCORE_FLAG   .byte $00 ; Flag to update score on screen.
@@ -118,7 +122,16 @@ zPMG_IMAGE    .word 0 ; points to image data
 
 zPMG_HARDWARE .word 0 ; points to the Player/Missile memeory map.
 
- 
+SHPOSP0 .byte 0 ; Fake Shadow register for HPOSP0
+SHPOSP1 .byte 0 ; Fake Shadow register for HPOSP1
+SHPOSP2 .byte 0 ; Fake Shadow register for HPOSP2
+SHPOSP3 .byte 0 ; Fake Shadow register for HPOSP3
+SHPOSM0 .byte 0 ; Fake Shadow register for HPOSM0
+SHPOSM1 .byte 0 ; Fake Shadow register for HPOSM1
+SHPOSM2 .byte 0 ; Fake Shadow register for HPOSM2
+SHPOSM3 .byte 0 ; Fake Shadow register for HPOSM3
+
+
 ; Player/Missile object states.  X, Y, counts, etc where needed =============
 ; Note that each table is in the same order listing each visible 
 ; screen object for the Game.
@@ -213,7 +226,7 @@ zGAME_OVER_TEXT .word 0
 zThisDLI .byte 0
 
 
-; ======== V B I ======== The world's most inept sound system. 
+; ======== V B I ======== The world's most inept sound system.
 
 ; Pointer used by the VBI service routine for the current sequence under work:
 SOUND_POINTER .word $0000
