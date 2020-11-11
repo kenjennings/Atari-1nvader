@@ -248,8 +248,6 @@ b_gi_LoopFillZero
 
 GameSetupTitle
 
-	rts
-
 ;	lda AnimateFrames          ; Did animation counter reach 0 ?
 ;	bne EndTransitionToTitle   ; Nope.  Nothing to do.
 ;	lda #TITLE_SPEED           ; yes.  Reset it.
@@ -273,13 +271,11 @@ GameSetupTitle
 	; === STAGE 2 ===
 
 GoToStartEventForTitle
-;	lda #0 
-;	sta EventStage
 
-
-
-;	lda #EVENT_TITLE           ; Yes, change to event to start new game.
-;	sta zCurrentEvent
+	lda #EVENT_TITLE           
+	sta zCurrentEvent
+	lda #0 
+	sta zEventStage
 
 EndTransitionToTitle
 ;	jsr WobbleDeWobble         ; Frog following spirograph art path on the title.
@@ -310,6 +306,7 @@ EndTransitionToTitle
 ; --------------------------------------------------------------------------
 
 GameTitle
+
 
 	rts
 

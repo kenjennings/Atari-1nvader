@@ -39,8 +39,7 @@
 ; Game State Control Values ==================================================
 
 zCurrentEvent      .byte $00 ; Global Current Game Behavior.
-
-zEventStage 
+zEventStage        .byte $00 ; Substage 
 
 ; Game Control Values =========================================================
 
@@ -109,7 +108,7 @@ TITLE_LOGO_FRAME_MAX = 4 ; Five frames, Count 4, 3, 2, 1, 0
 zTITLE_LOGO_FRAME .byte 0 ; current frame for big graphic logo
 
 
-; Title Logo Values =========================================================
+;Big Mothership Values =========================================================
 
 BIG_MOTHERSHIP_START = 108 ; Starting position of the big mothership
 
@@ -211,7 +210,6 @@ zTEMP_ADD_STAR     .byte 0 ; Flag, 0 = no star to add.  !0 = Try adding a new st
 
 zTEMP_BASE_COLOR   .byte 0 ; temporary color for star
 zTEMP_BASE_COLOR2  .byte 0 ; temporary color for star
-
 
 zSTAR_COUNT        .byte 0 ; starcnt original code.
 

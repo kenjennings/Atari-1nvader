@@ -185,6 +185,7 @@ DISPLAY_LIST_TITLE                                          ; System VBI sets co
 	mDL_BLANK DL_BLANK_8                                    ; 04 (052 - 059) Blank 8   3, 2, 1, GO P/M animation
 	mDL_BLANK DL_BLANK_8                                    ;    (060 - 067) Blank 8 
 	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (068 - 070) Blank 3  (DLI vscroll hack) 
+
 DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS low byte value.    
 	mDL_LMS   DL_MAP_F|DL_VSCROLL|DL_DLI,GFX_TITLE_FRAME1   ;    (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
 	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;  
@@ -199,12 +200,15 @@ DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS
 ;	.print "dl blank+dli ",DL_BLANK_3|DL_DLI 
 	
 	mDL_BLANK DL_BLANK_3|DL_DLI                             ;       wqhy       + Blank 3  (Hscroll authors, run colors)
- 
+
+DL_LMS_SCROLL_CREDIT = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT1       ; 10 (100 - 107) (6) Author(s) Credit line
 	mDL_BLANK DL_BLANK_8                                    ; 11 (108 - 115) Blank 8
 	mDL_BLANK DL_BLANK_8                                    ; 12 (116 - 123) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8                                    ; 13 (124 - 131) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 14 (132 - 139) Blank 8
+
+DL_LMS_SCROLL_DOCS = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (140 - 147) (6) Fine scrolling docs
 	mDL_BLANK DL_BLANK_8                                    ; 16 (148 - 155) Blank 8
 	mDL_BLANK DL_BLANK_8                                    ; 17 (156 - 163) Blank 8
