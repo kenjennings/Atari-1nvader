@@ -41,6 +41,42 @@
 zCurrentEvent      .byte $00 ; Global Current Game Behavior.
 zEventStage        .byte $00 ; Substage 
 
+; Timer Values ===============================================================
+
+zAnimateFrames     .byte $00 
+zInputScanFrames   .byte $00
+
+
+
+
+; Title Logo Values =========================================================
+
+
+TITLE_SPEED             = 5                       ; jiffies to count for title color animations
+zAnimateTitle           .byte TITLE_SPEED         ; countdown jiffies. At 0 the animation changes.
+
+TITLE_LOGO_FRAME_MAX    = 4                       ; Five frames, Count 4, 3, 2, 1, 0
+zTITLE_LOGO_FRAME      .byte 0                    ; current frame for big graphic logo gfx
+
+TITLE_LOGO_PMIMAGE_MAX = 44                       ; 43 frames of images.  back to 0 when this is max.
+zTitleLogoPMFrame      .byte TITLE_LOGO_FRAME_MAX
+
+TITLE_LOGO_X_START     = 192
+TITLE_LOGO_X_END       = 64
+zTitleHPos             .byte TITLE_LOGO_X_START   ; Missile position.
+
+TITLE_LOGO_Y_POS       = 128                      ; Just a constant.  No need for variable.
+
+
+
+;Big Mothership Values =========================================================
+
+BIG_MOTHERSHIP_START = 108 ; Starting position of the big mothership
+
+zBIG_MOTHERSHIP_Y .byte BIG_MOTHERSHIP_START
+
+
+
 ; Game Control Values =========================================================
 
 zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player. 
@@ -101,18 +137,6 @@ zJOY_TWO_LAST_STATE .byte $00 ; Joystick Button Two last state
 
 zHIGH_SCORE        .byte $00,$00,$00 ; 6 digit BCD 
 
-; Title Logo Values =========================================================
-
-TITLE_LOGO_FRAME_MAX = 4 ; Five frames, Count 4, 3, 2, 1, 0
-
-zTITLE_LOGO_FRAME .byte 0 ; current frame for big graphic logo
-
-
-;Big Mothership Values =========================================================
-
-BIG_MOTHERSHIP_START = 108 ; Starting position of the big mothership
-
-zBIG_MOTHERSHIP_Y .byte BIG_MOTHERSHIP_START
 
 
 ; Generic Player/Missile Data Copying =======================================

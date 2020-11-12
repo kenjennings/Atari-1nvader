@@ -573,3 +573,28 @@ Pmg_SetAllZero
 ;	sta PRIOR_TABLE+2
 
 	rts
+	
+	
+;==============================================================================
+;												StuffitInMissiles  X
+;==============================================================================
+; Given data in  A  write into the current  X  position and increment 
+; X  for each write.
+; Three, not Four lines, because 2 color clocks x 3 scan lines looks 
+; more square on NTSC.
+; -----------------------------------------------------------------------------
+
+StuffitInMissiles
+	sta MISSILEADR,X
+	inx
+	sta MISSILEADR,X
+	inx
+	sta MISSILEADR,X
+	inx
+
+	rts
+
+
+	rts
+	
+	

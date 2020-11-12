@@ -70,15 +70,15 @@ INPUTSCAN_FRAMES = $07  ; previously $09
 
 ResetTimers
 
-	sta AnimateFrames
+	sta zAnimateFrames
 
 	pha ; preserve it for caller.
 
-	lda InputScanFrames
+	lda zInputScanFrames
 	bne EndResetTimers
 
 	lda #INPUTSCAN_FRAMES
-	sta InputScanFrames
+	sta zInputScanFrames
 
 EndResetTimers
 	pla ; get this back for the caller.
@@ -159,38 +159,38 @@ STICKEMUPORNOT_TABLE ; cooked joystick values
 
 CheckInput
 
-	lda InputScanFrames        ; Is input timer delay  0?
-	bne SetNoInput             ; No. thus nothing to scan. (and exit)
+;	lda InputScanFrames        ; Is input timer delay  0?
+;	bne SetNoInput             ; No. thus nothing to scan. (and exit)
 
-	ldx STICK0                 ; The OS nicely separates PIA nybbles for us
-	lda STICKEMUPORNOT_TABLE,x ; Convert input into workable, filtered output.
-	sta InputStick             ; Save it.
+;	ldx STICK0                 ; The OS nicely separates PIA nybbles for us
+;	lda STICKEMUPORNOT_TABLE,x ; Convert input into workable, filtered output.
+;	sta InputStick             ; Save it.
 
 ;AddTriggerInput
-	lda STRIG0                 ; 0 is button pressed., !0 is not pressed.
-	bne DoneWithBitCookery     ; if non-zero, then no button pressed.
+;	lda STRIG0                 ; 0 is button pressed., !0 is not pressed.
+;	bne DoneWithBitCookery     ; if non-zero, then no button pressed.
 
-	lda InputStick             ; The current stick input value.
-	ora #%00010000             ; Turn on 5th bit/$10 for the trigger.
-	sta InputStick             ; Save it.  (fall through for return..)
+;	lda InputStick             ; The current stick input value.
+;	ora #%00010000             ; Turn on 5th bit/$10 for the trigger.
+;	sta InputStick             ; Save it.  (fall through for return..)
 
 DoneWithBitCookery             ; Some input was captured?
-	lda InputStick             ; Return the input value?
-	beq ExitCheckInput         ; No, nothing happened here.  Just exit.
+;	lda InputStick             ; Return the input value?
+;	beq ExitCheckInput         ; No, nothing happened here.  Just exit.
 
-	lda #INPUTSCAN_FRAMES      ; Because there was input collected, then
-	sta InputScanFrames        ; Reset the input timer.
+;	lda #INPUTSCAN_FRAMES      ; Because there was input collected, then
+;	sta InputScanFrames        ; Reset the input timer.
 
 ;ExitInputCollection            ; Input occurred
 	lda #0                     ; Kill the attract mode flag
 	sta ATRACT                 ; to prevent color cycling.
 
-	lda InputStick             ; Return the input value.
+;	lda InputStick             ; Return the input value.
 	rts
 
 SetNoInput
-	lda #0
-	sta InputStick             ; Force no data for input.
+;	lda #0
+;	sta InputStick             ; Force no data for input.
 
 ExitCheckInput
 	rts
@@ -214,55 +214,55 @@ ExitCheckInput
 CheckForConsoleInput
 
 CheckOptionKey
-	lda CONSOL                 ; Get Option, Select, Start buttons
-	and #CONSOLE_OPTION        ; Is Option pressed?  0 = pressed. 1 = not
-	bne CheckSelectKey         ; No.  Try the select.
+;	lda CONSOL                 ; Get Option, Select, Start buttons
+;	and #CONSOLE_OPTION        ; Is Option pressed?  0 = pressed. 1 = not
+;	bne CheckSelectKey         ; No.  Try the select.
 
-	jsr PlayTink               ; Button pressed. Set Pokey channel 2 to tink sound.
+;	jsr PlayTink               ; Button pressed. Set Pokey channel 2 to tink sound.
 
 	; increment starting frogs.
 	; generate string for right buffer
-	ldx NewLevelStart          
-	inx
-	cpx #[MAX_FROG_SPEED+1]    ; 13 + 1
-	bne bCFCI_SkipResetLevel
-	ldx #0
+;	ldx NewLevelStart          
+;	inx
+;	cpx #[MAX_FROG_SPEED+1]    ; 13 + 1
+;	bne bCFCI_SkipResetLevel
+;	ldx #0
 bCFCI_SkipResetLevel
-	stx NewLevelStart          ; Updated starting level.
+;	stx NewLevelStart          ; Updated starting level.
 
-	jsr TitlePrepLevel
-	jsr MultiplyFrogsCrossed ; Multiply by 18, make index base, set difficulty address pointers.
-	jmp bCFCI_StartupStage2
+;	jsr TitlePrepLevel
+;	jsr MultiplyFrogsCrossed ; Multiply by 18, make index base, set difficulty address pointers.
+;	jmp bCFCI_StartupStage2
 
 
 CheckSelectKey
-	lda CONSOL                 ; Get Option, Select, Start buttons
-	and #CONSOLE_SELECT        ; Is SELECT pressed?  0 = pressed. 1 = not
-	bne bCFCI_End              ; No.  Finished with all.
+;	lda CONSOL                 ; Get Option, Select, Start buttons
+;	and #CONSOLE_SELECT        ; Is SELECT pressed?  0 = pressed. 1 = not
+;	bne bCFCI_End              ; No.  Finished with all.
 
-	jsr PlayTink               ; Button pressed. Set Pokey channel 2 to tink sound.
+;	jsr PlayTink               ; Button pressed. Set Pokey channel 2 to tink sound.
 
 	; increment lives.
 	; generate string for right buffer
-	ldx NewNumberOfLives
-	inx
-	cpx #[MAX_FROG_LIVES+1]    ; 7 + 1
-	bne bCFCI_SkipResetLives
-	ldx #1
+;	ldx NewNumberOfLives
+;	inx
+;	cpx #[MAX_FROG_LIVES+1]    ; 7 + 1
+;	bne bCFCI_SkipResetLives
+;	ldx #1
 bCFCI_SkipResetLives
-	stx NewNumberOfLives      ; Get the updated number of new lives for the next game.
-	jsr TitlePrepLives        ; Get the scrolling buffer ready.
-	jsr WriteNewLives         ; Update the status line to match the new number of frogs.
+;	stx NewNumberOfLives      ; Get the updated number of new lives for the next game.
+;	jsr TitlePrepLives        ; Get the scrolling buffer ready.
+;	jsr WriteNewLives         ; Update the status line to match the new number of frogs.
 
 bCFCI_StartupStage2
-	lda #2
-	sta EventStage            ; Stage 2 is the shift Left Buffer down.
-	lda #6
-	sta EventCounter          ; Do it six times.
-	lda #TITLE_DOWN_SPEED
-	jsr ResetTimers           ; Reset animation/input frame counter.
+;	lda #2
+;	sta EventStage            ; Stage 2 is the shift Left Buffer down.
+;	lda #6
+;	sta EventCounter          ; Do it six times.
+;	lda #TITLE_DOWN_SPEED
+;	jsr ResetTimers           ; Reset animation/input frame counter.
 
-	jsr PlayDowns             ; Play down movement sound for title graphics on OPTION and SELECT
+;	jsr PlayDowns             ; Play down movement sound for title graphics on OPTION and SELECT
 	bne bCFCI_Exit            ; Return !0 exit.
 
 bCFCI_End
@@ -391,10 +391,13 @@ MyDeferredVBI
 ; The Flag-Of-Death (FrogSafety) tells the Main code to splatter the frog 
 ; shape, and start the other activities to announce death.
 
-ManageDeathOfASalesfrog
+;ManageDeathOfASalesfrog
 	lda zCurrentEvent           ; Did Main code signal to change displays?
 	beq ExitMyImmediateVBI      ; If this is 0 we should not be here.
 
+; If this is the title screen, the Missile positions need to be managed for the 
+; color overlay on the title graphic.   
+; The main line code will do the extra work of updating the 
 ; Reset P/M graphics to starting position (fake Shadow regs).
 ; By default, this will probably be 0.  The game relies on the DLIs to cut 
 ; up Players/Missiles to their proper horizontal positions.
@@ -410,12 +413,12 @@ ManageDeathOfASalesfrog
 	lda SHPOSP3
 	sta HPOSP3
 	lda SHPOSM0
-	sta HPOSP0
-	lda SHPOSP1
-	sta HPOSP1
-	lda SHPOSP2
-	sta HPOSP2
-	lda SHPOSP3
+	sta HPOSM0
+	lda SHPOSM1
+	sta HPOSM1
+	lda SHPOSM2
+	sta HPOSM2
+	lda SHPOSM3
 	sta HPOSM3
 
 
@@ -432,10 +435,60 @@ ManageDeathOfASalesfrog
 
 ;	jsr Something that evaluates collisions goes here.
 
-EndOfDeathOfASalesfrog
+;EndOfDeathOfASalesfrog
 	sta HITCLR                   ; Always reset the P/M collision bits for next frame.
 
 
+
+; ======== Manage Title Color Animation ========
+
+	dec zAnimateTitle
+	bne b_mdv_SkipTitleColors
+	; Note that the main code is responsible for loading up the color image 
+	; in the Missile image and changing the Missile HPOS.  THEREFORE, do not
+	; reset the timer for the Title animation here.  The main code will 
+	; need to do it.
+
+	ldx ZTitleHPos              ; Move horizontally left two color clocks per animation.
+	dex                   
+	dex
+
+	ldy zTitleLogoPMFrame       ; Go to the next Missile image index
+	iny
+	cpy #TITLE_LOGO_PMIMAGE_MAX ; Did it go past the last frame?
+	bne b_gt_SkipResetPMimage   ; No.  Do not reset Missile values.
+
+	ldx #TITLE_LOGO_X_START     ; Reset horizontal position to the start
+	ldy #0                      ; Reset missile image index to start.
+
+b_gt_SkipResetPMimage
+	stx ZTitleHPos              ; Save modified Missile pos, whatever happened above.
+	sty zTitleLogoPMFrame       ; Save new Missile image index.
+
+	; Overkill.  Make sure the fake registers know the hpos, and set the hardware too.
+	stx SHPOSM3
+	stx HPOSM3
+	inx
+	inx
+	stx SHPOSM2
+	stx HPOSM2
+	inx
+	inx
+	stx SHPOSM1
+	stx HPOSM1
+	inx
+	inx
+	stx SHPOSM0
+	stx HPOSM0
+
+; Next reset the display list pointer to the next graphics animation frame.
+
+
+
+;  DL_LMS_TITLE
+
+
+b_mdv_SkipTitleColors
 ; ======== Manage Boat fine scrolling ========
 ; Atari scrolling is such low overhead. 
 ; (Evaluate frog shift if it is on a boat row).
@@ -755,11 +808,18 @@ ExitMyDeferredVBI
 	; .endm
 
 
-; ;==============================================================================
-; ; TITLE DLIs
-; ;==============================================================================
+;==============================================================================
+; TITLE DLIs
+;
+; The positioning and color for the Mothership, the 3, 2, 1, GO, and 
+; all the Missiles acting as P5 to color the title area all managed 
+; with the fake Shadow registers loaded to the hardware registers 
+; during the Deferred Vertical Blank routine.
+;
+; The first DLI 
+;==============================================================================
 
-; TITLE_DLI  ; Placeholder for VBI to restore staring address for DLI chain.
+TITLE_DLI  ; Placeholder for VBI to restore staring address for DLI chain.
 
 ; ;==============================================================================
 ; ; TITLE_DLI_BLACKOUT                                             

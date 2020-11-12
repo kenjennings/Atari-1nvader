@@ -173,8 +173,6 @@ GameInit
 	lda #>CHARACTER_SET        ; Set custom character set.  Global to game, forever.
 	sta CHBAS
 
-	jsr Pmg_Init               ; Will also reset GRACTL and SDMACTL settings for P/M DMA
-
 	; Zero all the colors.  (Except text will be turned back on to white.)
 	; Zero all Player positions (fake shadow registers for HPOS) 
 	; DLIs will (re)set them all as needed other.
@@ -192,19 +190,32 @@ b_gi_LoopFillZero
 	lda #COLOR_WHITE|$0C ; Light white
 	sta COLOR1           ; COLPF1 - Playfield 1 color (mode 2 text)
 
-	lda #NMI_VBI         ; Turn Off DLI
+	lda #0
+	sta zThisDLI         ; Init the DLI index.
+
+	; Set up the DLI.   This should be safe here without knowing what the screen is 
+	; doing, because the default OS display does not have DLI options on any 
+	; mode instructions, AND a custom screen will not be started until the bottom of the 
+	; frame AND due to the frame sync of the main loop we know that this code is 
+	; executing very close to the top of the screen.
+
+	lda #NMI_VBI           ; Turn Off DLI
 	sta NMIEN
 
-	lda #0
-	sta zThisDLI
-
-	lda #<DoNothing_DLI; TITLE_DLI ; Set DLI vector. (will be reset by VBI on screen setup)
+	lda #<DoNothing_DLI    ; TITLE_DLI ; Set DLI vector. (will be reset by VBI on screen setup)
 	sta VDSLST
-	lda #>DoNothing_DLI; TITLE_DLI
+	lda #>DoNothing_DLI    ; TITLE_DLI
 	sta VDSLST+1
 
-	lda #[NMI_DLI|NMI_VBI]     ; Turn On DLIs
+	lda #[NMI_DLI|NMI_VBI] ; Turn On DLIs
 	sta NMIEN
+
+	; Clear PM graphics memory and zero positions.
+
+	jsr Pmg_Init               ; Will also reset GRACTL and SDMACTL settings for P/M DMA
+
+	lda #PM_SIZE_DOUBLE        ; Title screen uses double Width Missiles.
+	sta SIZEM
 
 	; Changing the Display List is potentially tricky.  If the update is
 	; interrupted by the Vertical blank, then it could mess up the display
@@ -307,8 +318,51 @@ EndTransitionToTitle
 
 GameTitle
 
+; 1) Mothership if moving.
 
-	rts
+; 2) 3, 2, 1 if in progress.
+
+; 3) Animate Missiles per current frame stage.   
+;    VBI reset the missile horizontal positions.
+
+; Load animation frames into Player/Missile memory
+
+b_gt_TitleAnimation
+
+	lda zAnimateTitle;
+	bne b_gt_ExitTitleAnimation
+
+	; reset the animation clock for the title.
+	lda #TITLE_SPEED
+	sta zAnimateTitle
+
+	; The VBI actually calculated new X and frame values.
+	; Use whatever the variables say to use now.
+
+	ldy zTitleLogoPMFrame
+	ldx #TITLE_LOGO_Y_POS
+
+	lda PM_TITLE_BITMAP_LINE1,Y
+	jsr StuffitInMissiles
+
+	lda PM_TITLE_BITMAP_LINE2,Y
+	jsr StuffitInMissiles
+
+	lda PM_TITLE_BITMAP_LINE3,Y
+	jsr StuffitInMissiles
+
+	lda PM_TITLE_BITMAP_LINE4,Y
+	jsr StuffitInMissiles
+
+	lda PM_TITLE_BITMAP_LINE5,Y
+	jsr StuffitInMissiles
+
+	lda PM_TITLE_BITMAP_LINE6,Y
+	jsr StuffitInMissiles
+
+b_gt_ExitTitleAnimation
+
+
 
 ; =============== Stage * ; Always run the frog and the label flashing. . .
 
