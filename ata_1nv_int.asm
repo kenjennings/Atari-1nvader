@@ -787,21 +787,21 @@ ExitMyDeferredVBI
 	.align $0100 ; Make the DLIs start in the same page to simplify chaining. I hope.
 
 
-; ;==============================================================================
-; ;                                                           MyDLI
-; ;==============================================================================
-; ; Display List Interrupts
-; ;
-; ; Note the DLIs don't care where the ThisDLI index ends as 
-; ; this is managed by the VBI.
-; ;==============================================================================
+;==============================================================================
+;                                                           MyDLI
+;==============================================================================
+; Display List Interrupts
+;
+; Note the DLIs don't care where the ThisDLI index ends as 
+; this is managed by the VBI.
+;==============================================================================
 
-; ; shorthand for starting DLI  (that do not JMP immediately to common code)
-	; .macro mStart_DLI
-		; mregSaveAY
+; shorthand for starting DLI  (that do not JMP immediately to common code)
+	 .macro mStart_DLI
+		 mregSaveAY
 
-		; ldy ThisDLI
-	; .endm
+		 ldy ThisDLI
+	 .endm
 
 
 ;==============================================================================
@@ -812,10 +812,62 @@ ExitMyDeferredVBI
 ; with the fake Shadow registers loaded to the hardware registers 
 ; during the Deferred Vertical Blank routine.
 ;
-; The first DLI 
+; So, the first DLI needed on the Title screen sets narrow width 
+; DMA and changes the GPRIOR value to show GTI 16-greyscale mode. 
+;
 ;==============================================================================
 
 TITLE_DLI  ; Placeholder for VBI to restore staring address for DLI chain.
+
+;==============================================================================
+; TITLE_DLI_1                                             
+;==============================================================================
+; DLI to set Narrow screen DMA, and turn on GTIA mode 16 grey scale mode.
+; -----------------------------------------------------------------------------
+
+TITLE_DLI_1 
+
+	 pha
+
+	; Setup PRIOR for 16 grey-scale graphics, and Missile color overlay.
+	; The screen won;t show any noticeable change here, because the COLBK 
+	; value is black, and this won;t change for the 16-shade mode.
+	lda #[FIFTH_PLAYER|GTIA_MODE_16_SHADE] 
+	sta PRIOR
+
+	; Set all the ANTIC screen controls and DMA options.
+	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NARROW]
+	sta WSYNC            ; sync to end of scan line
+	sta SDMCTL
+
+	mChainDLI TITLE_DLI_1,TITLE_DLI_2
+
+
+;==============================================================================
+; TITLE_DLI_2                                             
+;==============================================================================
+; DLI to game the VSCROL to hack mode F into 3 scan lines tall.  
+; Runs six times for title.
+; -----------------------------------------------------------------------------
+
+TITLE_DLI_2
+
+	 mStart_DLI ; Saves A and Y
+
+	ldy #14             ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
+	lda #1
+	sta WSYNC           ; sync to end of line.
+	sta VSCROL          ; =1, default. untrigger the hack if on for prior line.
+	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
+
+	lda ZTitleLogoColor ; Set new color overlay value
+	sta COLPF3          ; Player 5, (Missile) color.
+
+	; Now, everything else is liesurely maintenance.  We have 2.5 scan lines to get 
+	; the variables in order.
+
+	mChainDLI TITLE_DLI_1,TITLE_DLI_2
+
 
 ; ;==============================================================================
 ; ; TITLE_DLI_BLACKOUT                                             

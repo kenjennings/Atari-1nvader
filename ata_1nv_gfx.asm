@@ -183,7 +183,7 @@ DISPLAY_LIST_TITLE                                          ; System VBI sets co
 	mDL_BLANK DL_BLANK_8                                    ; 02 (036 - 043) Blank 8
 	mDL_BLANK DL_BLANK_8                                    ; 03 (044 - 051) Blank 8   3, 2, 1, GO P/M animation
 	mDL_BLANK DL_BLANK_8                                    ; 04 (052 - 059) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK DL_BLANK_8                                    ;    (060 - 067) Blank 8 
+	mDL_BLANK DL_BLANK_8|DL_DLI                             ;    (060 - 067) Blank 8  Narrow screen DMA, start GTIA $9 in PRIOR 
 	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (068 - 070) Blank 3  (DLI vscroll hack) 
 
 DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS low byte value.    
@@ -192,7 +192,7 @@ DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS
 	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;    (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
 	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ; 
 	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;    (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
-	mDL       DL_MAP_F|DL_VSCROLL                           ;  
+	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;                            Turn Off VSCROL hack, reset normal screen DMA, GPRIOR
 	mDL_BLANK DL_BLANK_8                                    ;    (089 - 099) Blank 8 
 
 ;	.print "dl blank 3   ",DL_BLANK_3

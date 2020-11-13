@@ -68,7 +68,9 @@ zTitleHPos             .byte TITLE_LOGO_X_START   ; Missile position.
 
 TITLE_LOGO_Y_POS       = 128                      ; Just a constant.  No need for variable.
 
-
+zTitleLogoColorIndex   .byte $00                  ; Number of times color is used
+ZTitleLogoColor        .byte $10                  ; Loop from $10 to $E0 by 16.
+zTitleVSCHacks         .byte $00                  ; Number of times the VScroll hack is used. (6 max)
 
 ;Big Mothership Values =========================================================
 
