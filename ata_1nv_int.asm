@@ -339,7 +339,7 @@ MyImmediateVBI
 
 ; ======== Manage Changing Display List ========
 	lda zCurrentEvent           ; Did Main code signal to change displays?
-	beq ExitMyImmediateVBI      ; If this is 0 we shoul dnot be here.
+	beq ExitMyImmediateVBI      ; If this is 0 we should not be here.
 	asl                         ; Times 2 for size of address
 	tax                         ; Use as index
 
@@ -446,27 +446,23 @@ MyDeferredVBI
 	beq ExitMyImmediateVBI      ; If this is 0 we should not be here.
 
 
-
-
-
 ; Animate the Title graphics (gfx pixels)
 
 	dec zAnimateTitleGfx         ; decrement countown clock
-	bne b_gatl_SkipTitleGfx      ; has not reached 0, then no work to do. 
+	bne b_mdv_SkipTitleGfx      ; has not reached 0, then no work to do. 
 
 	jsr Gfx_Animate_Title_Logo   ; Updates the display list LMS to point to new pixels.
 
-b_gatl_SkipTitleGfx
+b_mdv_SkipTitleGfx
 
 
-; Setup specs to change the Missile animation.  Main code draws Missiles.
+; Setup specs to change the Title graphincs (Missile animation.)  Main code draws Missiles.
 
 	dec zAnimateTitlePM
 	bne b_mdv_SkipTitleMissileUpdate
-	; Note that the main code is responsible for loading up the color image 
-	; in the Missile image.  THEREFORE, do not reset the timer for the 
-	; Missile animation here.  The main code will do it, because it need to 
-	; know that the timer reached 0.
+	; Note that the main code is responsible for loading up the Missile image.  
+	; THEREFORE, do not reset the timer for the Missile animation here.  
+	; The main code will do it, because it needs to know that the timer reached 0.
 
 	ldx ZTitleHPos              ; Move horizontally left two color clocks per animation.
 	dex                   
@@ -481,24 +477,10 @@ b_gatl_SkipTitleGfx
 	ldy #0                      ; Reset missile image index to start.
 
 b_mdv_SkipResetPMImage
-	stx ZTitleHPos              ; Save modified Missile pos, whatever happened above.
+	stx ZTitleHPos              ; Save modified base Missile pos, whatever happened above.
 	sty zTitleLogoPMFrame       ; Save new Missile image index.
 
-	; Overkill.  Make sure the fake registers know the hpos, and set the hardware too.
-	stx SHPOSM3
-	stx HPOSM3
-	inx
-	inx
-	stx SHPOSM2
-	stx HPOSM2
-	inx
-	inx
-	stx SHPOSM1
-	stx HPOSM1
-	inx
-	inx
-	stx SHPOSM0
-	stx HPOSM0
+	jsr Pmg_AdustMissileHPOS    ; Update  the missile HPOS.
 
 b_mdv_SkipTitleMissileUpdate
 

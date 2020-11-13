@@ -573,8 +573,52 @@ Pmg_SetAllZero
 ;	sta PRIOR_TABLE+2
 
 	rts
-	
-	
+
+
+; ==========================================================================
+; ANIMATE TITLE LOGO (MISSILES)
+; ==========================================================================
+; Change the Title  screen's Missile bitmap displays to colorize the
+; pixels of the animated Title logo.   The VBI decremented the timer
+; so remember to reset it here.  Note that the VBI also recalculated
+; the Missile's HPOS values, so nothing else need be done here about 
+; horizontal positions.   The VBI also determined the next frame index
+; to use and reset it (and HPOS) if it had reached the end of the frames
+; So, use these values in the condition they exist in now to redraw the 
+; missiles.
+; --------------------------------------------------------------------------
+
+Pmg_Animate_Title_Logo
+
+	lda #TITLE_SPEED_PM ; reset the animation clock for the title.
+	sta zAnimateTitlePM
+
+	; The VBI actually calculated new X and frame values.
+	; Use whatever the variables say to use now.
+
+	ldy zTitleLogoPMFrame
+	ldx #TITLE_LOGO_Y_POS
+
+	lda PM_TITLE_BITMAP_LINE1,Y
+	jsr Pmg_StuffitInMissiles
+
+	lda PM_TITLE_BITMAP_LINE2,Y
+	jsr Pmg_StuffitInMissiles
+
+	lda PM_TITLE_BITMAP_LINE3,Y
+	jsr Pmg_StuffitInMissiles
+
+	lda PM_TITLE_BITMAP_LINE4,Y
+	jsr Pmg_StuffitInMissiles
+
+	lda PM_TITLE_BITMAP_LINE5,Y
+	jsr Pmg_StuffitInMissiles
+
+	lda PM_TITLE_BITMAP_LINE6,Y
+	jsr Pmg_StuffitInMissiles
+
+	rts
+
 ;==============================================================================
 ;												StuffitInMissiles  X
 ;==============================================================================
@@ -584,7 +628,8 @@ Pmg_SetAllZero
 ; more square on NTSC.
 ; -----------------------------------------------------------------------------
 
-StuffitInMissiles
+Pmg_StuffitInMissiles
+
 	sta MISSILEADR,X
 	inx
 	sta MISSILEADR,X
@@ -594,7 +639,34 @@ StuffitInMissiles
 
 	rts
 
+;==============================================================================
+;												AdustMissileHPOS  X
+;==============================================================================
+; Given data X  Write the value into the HPOS value of missiles 3, 2, 1, 0.
+; For each missile (and in that order) increment the HPOS value twice. 
+; Save the value in the fake shadow registers and the actual hardware register.
+; -----------------------------------------------------------------------------
+
+Pmg_AdustMissileHPOS
+
+	stx SHPOSM3 ; Fake shadow reg.
+	stx HPOSM3  ; Hardware position register.
+	inx         ; +1
+	inx         ; +1
+	stx SHPOSM2 ; More of the same. . . .
+	stx HPOSM2
+	inx
+	inx
+	stx SHPOSM1
+	stx HPOSM1
+	inx
+	inx
+	stx SHPOSM0
+	stx HPOSM0  ;  Yes, this is a bit of overkill.
 
 	rts
-	
-	
+
+
+
+
+

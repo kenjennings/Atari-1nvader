@@ -326,6 +326,7 @@ GameTitle
 
 ; 3) Animate Missiles per current frame stage.   
 ;    VBI reset the missile horizontal positions.
+;    The DLI applied them.
 
 ; Load animation frames into Player/Missile memory
 
@@ -334,33 +335,7 @@ b_gt_TitleAnimation
 	lda zAnimateTitlePM;
 	bne b_gt_ExitTitleAnimation
 
-	; reset the animation clock for the title.
-	lda #TITLE_SPEED_PM
-	sta zAnimateTitlePM
-
-	; The VBI actually calculated new X and frame values.
-	; Use whatever the variables say to use now.
-
-	ldy zTitleLogoPMFrame
-	ldx #TITLE_LOGO_Y_POS
-
-	lda PM_TITLE_BITMAP_LINE1,Y
-	jsr StuffitInMissiles
-
-	lda PM_TITLE_BITMAP_LINE2,Y
-	jsr StuffitInMissiles
-
-	lda PM_TITLE_BITMAP_LINE3,Y
-	jsr StuffitInMissiles
-
-	lda PM_TITLE_BITMAP_LINE4,Y
-	jsr StuffitInMissiles
-
-	lda PM_TITLE_BITMAP_LINE5,Y
-	jsr StuffitInMissiles
-
-	lda PM_TITLE_BITMAP_LINE6,Y
-	jsr StuffitInMissiles
+	jsr Pmg_Animate_Title_Logo ; This will also reset the timer for animation.
 
 b_gt_ExitTitleAnimation
 

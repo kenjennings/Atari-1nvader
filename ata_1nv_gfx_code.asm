@@ -16,9 +16,11 @@
 ; ==========================================================================
 ; ANIMATE TITLE LOGO
 ; ==========================================================================
-; Change the Ttitle screen's LMS pointer to the graphics for the big logo
+; Change the Title screen's LMS pointer to the graphics for the big logo
 ; on the screen.  Basically, page flipping.   Change one pointer to 
 ; change what the screen displays rather than copy hundreds of bytes.
+; The VBI decremented the countdown clock for animation, so remember to 
+; reset it here.
 ; --------------------------------------------------------------------------
 
 TABLE_GFX_TITLE_LOGO        ; Stored in reverse order for less iteration code.
