@@ -322,6 +322,8 @@ GameTitle
 
 ; 2) 3, 2, 1 if in progress.
 
+
+
 ; 3) Animate Missiles per current frame stage.   
 ;    VBI reset the missile horizontal positions.
 
@@ -329,12 +331,12 @@ GameTitle
 
 b_gt_TitleAnimation
 
-	lda zAnimateTitle;
+	lda zAnimateTitlePM;
 	bne b_gt_ExitTitleAnimation
 
 	; reset the animation clock for the title.
-	lda #TITLE_SPEED
-	sta zAnimateTitle
+	lda #TITLE_SPEED_PM
+	sta zAnimateTitlePM
 
 	; The VBI actually calculated new X and frame values.
 	; Use whatever the variables say to use now.

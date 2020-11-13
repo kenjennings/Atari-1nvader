@@ -442,12 +442,31 @@ MyDeferredVBI
 
 ; ======== Manage Title Color Animation ========
 
-	dec zAnimateTitle
-	bne b_mdv_SkipTitleColors
+	lda zCurrentEvent           ; Did Main code signal to change displays?
+	beq ExitMyImmediateVBI      ; If this is 0 we should not be here.
+
+
+
+
+
+; Animate the Title graphics (gfx pixels)
+
+	dec zAnimateTitleGfx         ; decrement countown clock
+	bne b_gatl_SkipTitleGfx      ; has not reached 0, then no work to do. 
+
+	jsr Gfx_Animate_Title_Logo   ; Updates the display list LMS to point to new pixels.
+
+b_gatl_SkipTitleGfx
+
+
+; Setup specs to change the Missile animation.  Main code draws Missiles.
+
+	dec zAnimateTitlePM
+	bne b_mdv_SkipTitleMissileUpdate
 	; Note that the main code is responsible for loading up the color image 
-	; in the Missile image and changing the Missile HPOS.  THEREFORE, do not
-	; reset the timer for the Title animation here.  The main code will 
-	; need to do it.
+	; in the Missile image.  THEREFORE, do not reset the timer for the 
+	; Missile animation here.  The main code will do it, because it need to 
+	; know that the timer reached 0.
 
 	ldx ZTitleHPos              ; Move horizontally left two color clocks per animation.
 	dex                   
@@ -456,12 +475,12 @@ MyDeferredVBI
 	ldy zTitleLogoPMFrame       ; Go to the next Missile image index
 	iny
 	cpy #TITLE_LOGO_PMIMAGE_MAX ; Did it go past the last frame?
-	bne b_gt_SkipResetPMimage   ; No.  Do not reset Missile values.
+	bne b_mdv_SkipResetPMImage  ; No.  Do not reset Missile image index.
 
 	ldx #TITLE_LOGO_X_START     ; Reset horizontal position to the start
 	ldy #0                      ; Reset missile image index to start.
 
-b_gt_SkipResetPMimage
+b_mdv_SkipResetPMImage
 	stx ZTitleHPos              ; Save modified Missile pos, whatever happened above.
 	sty zTitleLogoPMFrame       ; Save new Missile image index.
 
@@ -481,14 +500,9 @@ b_gt_SkipResetPMimage
 	stx SHPOSM0
 	stx HPOSM0
 
-; Next reset the display list pointer to the next graphics animation frame.
+b_mdv_SkipTitleMissileUpdate
 
 
-
-;  DL_LMS_TITLE
-
-
-b_mdv_SkipTitleColors
 ; ======== Manage Boat fine scrolling ========
 ; Atari scrolling is such low overhead. 
 ; (Evaluate frog shift if it is on a boat row).

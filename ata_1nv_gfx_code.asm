@@ -22,7 +22,6 @@
 ; --------------------------------------------------------------------------
 
 TABLE_GFX_TITLE_LOGO        ; Stored in reverse order for less iteration code.
-	.byte <GFX_TITLE_FRAME5
 	.byte <GFX_TITLE_FRAME4
 	.byte <GFX_TITLE_FRAME3	
 	.byte <GFX_TITLE_FRAME2
@@ -30,20 +29,24 @@ TABLE_GFX_TITLE_LOGO        ; Stored in reverse order for less iteration code.
 
 Gfx_Animate_Title_Logo
 
-	dec zTITLE_LOGO_FRAME         ; Subtract frame counter.
+	lda #TITLE_SPEED_GFX         ; Reset the countdown clock.  (VBI decremented it)
+	sta zAnimateTitleGfx
+
+	dec zTITLE_LOGO_FRAME        ; Subtract frame counter.
 	bpl b_gatl_SkipReset         ; If it did not go negative, then it is good.
 	
 	ldx #TITLE_LOGO_FRAME_MAX    ; Reset frame counter 
-	stx zTITLE_LOGO_FRAME         ; to max value.
+	stx zTITLE_LOGO_FRAME        ; to max value.
 	
 b_gatl_SkipReset
-	ldx zTITLE_LOGO_FRAME         ; Actually read the value to use as index.
+	ldx zTITLE_LOGO_FRAME        ; Actually read the value to use as index.
 	lda TABLE_GFX_TITLE_LOGO,X   ; Get the new graphics address low byte
 	sta DL_LMS_TITLE             ; and update the display list LMS.
-	
+
+b_gatl_SkipTitleGfx
 	rts
-	
-	
+
+
 ; ==========================================================================
 ; CHOOSE GAME OVER TEXT
 ; ==========================================================================

@@ -51,18 +51,19 @@ zInputScanFrames   .byte $00
 
 ; Title Logo Values =========================================================
 
+TITLE_SPEED_GFX        = 5                        ; jiffies to count for title color animations
+zAnimateTitleGfx       .byte TITLE_SPEED_GFX      ; countdown jiffies. At 0 the animation changes.
 
-TITLE_SPEED             = 5                       ; jiffies to count for title color animations
-zAnimateTitle           .byte TITLE_SPEED         ; countdown jiffies. At 0 the animation changes.
-
-TITLE_LOGO_FRAME_MAX    = 4                       ; Five frames, Count 4, 3, 2, 1, 0
+TITLE_LOGO_FRAME_MAX   = 3                        ; Four frames, Count 3, 2, 1, 0
 zTITLE_LOGO_FRAME      .byte 0                    ; current frame for big graphic logo gfx
+
+TITLE_SPEED_PM         = 10                       ; jiffies to count for title Missile animations
+zAnimateTitlePM        .byte TITLE_SPEED_PM       ; countdown jiffies. At 0 the animation changes.
 
 TITLE_LOGO_PMIMAGE_MAX = 44                       ; 43 frames of images.  back to 0 when this is max.
 zTitleLogoPMFrame      .byte TITLE_LOGO_FRAME_MAX
 
 TITLE_LOGO_X_START     = 192
-TITLE_LOGO_X_END       = 64
 zTitleHPos             .byte TITLE_LOGO_X_START   ; Missile position.
 
 TITLE_LOGO_Y_POS       = 128                      ; Just a constant.  No need for variable.
