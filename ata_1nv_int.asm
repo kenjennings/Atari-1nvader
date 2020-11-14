@@ -337,72 +337,34 @@ TABLE_GAME_DISPLAY_LIST_INTERRUPT
 
 MyImmediateVBI
 
-; ======== Manage Changing Display List ========
-	lda zCurrentEvent           ; Did Main code signal to change displays?
-	beq ExitMyImmediateVBI      ; If this is 0 we should not be here.
-	asl                         ; Times 2 for size of address
-	tax                         ; Use as index
+; ======== MANAGE CHANGING DISPLAY LIST ========
+	lda zCurrentEvent                       ; Is the game at 0 (INIT)?
+	beq ExitMyImmediateVBI                  ; Yes.  Then we should not be here.
+
+	asl                                     ; State value times 2 for size of address
+	tax                                     ; Use as index
 
 	lda TABLE_GAME_DISPLAY_LIST,x           ; Copy Display List Pointer for the OS
 	sta SDLSTL                              
 	lda TABLE_GAME_DISPLAY_LIST_INTERRUPT,x ; Copy Display List Interrupt chain table starting address
-	sta ThisDLIAddr
+	sta VDSLST
+	sta 
 	inx                                     ; and the high bytes.
 	lda TABLE_GAME_DISPLAY_LIST,x
 	sta SDLSTH
 	lda TABLE_GAME_DISPLAY_LIST_INTERRUPT,x
-	sta ThisDLIAddr+1
-
-ExitMyImmediateVBI
-
-	jmp SYSVBV ; Return to OS.  XITVBV for Deferred interrupt.
+	sta VDSLST+1
 
 
-
-;==============================================================================
-;                                                           MyDeferredVBI
-;==============================================================================
-; Deferred Vertical Blank Interrupt.
-;
-; Tasks that tolerate more laziness.  In fact, most of the screen activity
-; occurs here.
-;
-; Manage death of frog. 
-; Fine Scroll the boats.
-; Update Player/Missile object display.
-; Perform the boat parts animations.
-; Manage timers and countdowns.
-; Scroll the line of credit text.
-; Blink the Press Button prompt if enabled.
-;==============================================================================
-
-MyDeferredVBI
-
-; ======== Manage Frog Death  ========
-; Here we are at the end of the frame.  Collision is checked first.  
-; The actual movement processing happens last.
-; If the CURRENT row of the frog is on a moving boat row, then go collect 
-; the collision information with the "safe" area of the boat 
-; (the horizontal lines, COLPF2 are the safety color).
-; "Current" from the VBI point of view means the last place the frog was 
-; displayed on the previous frame.  ("New" is where the frog will be 
-; displayed on the next frame.)
-; The collision check code will flag the death accordingly.
-; The Flag-Of-Death (FrogSafety) tells the Main code to splatter the frog 
-; shape, and start the other activities to announce death.
-
-;ManageDeathOfASalesfrog
-	lda zCurrentEvent           ; Did Main code signal to change displays?
-	beq ExitMyImmediateVBI      ; If this is 0 we should not be here.
-
-; If this is the title screen, the Missile positions need to be managed for the 
-; color overlay on the title graphic.   
-; The main line code will do the extra work of updating the 
-; Reset P/M graphics to starting position (fake Shadow regs).
-; By default, this will probably be 0.  The game relies on the DLIs to cut 
-; up Players/Missiles to their proper horizontal positions.
+; ======== NEW SHADOW REGISTERS  ========
+; The main line code will do the extra work of updating the P/M graphics
+; to starting Horizontal position (these fake Shadow regs).
+; The game relies on the DLIs to cut up Players/Missiles to their proper 
+; horizontal positions.
 ; We could loop to copy these, but I don't want to burn through eight 
 ; more inc or dec, and branches.  So, do this as fast as possible.
+
+b_mdv_ReloadFromShadow
 
 	lda SHPOSP0
 	sta HPOSP0
@@ -421,6 +383,66 @@ MyDeferredVBI
 	lda SHPOSM3
 	sta HPOSM3
 
+ExitMyImmediateVBI
+
+	jmp SYSVBV ; Return to OS.  XITVBV for Deferred interrupt.
+
+
+
+;==============================================================================
+;                                                           MyDeferredVBI
+;==============================================================================
+; Deferred Vertical Blank Interrupt.
+;
+; Tasks that tolerate more laziness.  In fact, most of the screen activity
+; occurs here.
+;
+; TITLE SCREEN AND COUNTDOWN ACTIVITIES:
+; 1) Mothership if moving up.
+; 2) 3, 2, 1 GO, if in progress.
+; 3) Animate Missiles for Title logo
+; 4) Author scrolling
+; 5) Documentation Scrolling
+; 6) Mountain Background Scrolling.
+;
+;
+; GAME PLAY ACTIVITIES
+;
+;
+;
+; GAME OVER ACTIVITIES
+;
+;
+; Manage death of frog. 
+; Fine Scroll the boats.
+; Update Player/Missile object display.
+; Perform the boat parts animations.
+; Manage timers and countdowns.
+; Scroll the line of credit text.
+; Blink the Press Button prompt if enabled.
+;==============================================================================
+
+MyDeferredVBI
+
+	lda zCurrentEvent           ; Is this is stil 0 (INIT)? 
+	bne b_mdv_DoMyDeferredVBI   ; No.   Continue the Deferred VBI
+	jmp ExitMyDeferredVBI       ; Yes.  We should not be here.  End now.
+
+
+b_mdv_DoMyDeferredVBI
+
+; ======== Manage Frog Death  ========
+; Here we are at the end of the frame.  Collision is checked first.  
+; The actual movement processing happens last.
+; If the CURRENT row of the frog is on a moving boat row, then go collect 
+; the collision information with the "safe" area of the boat 
+; (the horizontal lines, COLPF2 are the safety color).
+; "Current" from the VBI point of view means the last place the frog was 
+; displayed on the previous frame.  ("New" is where the frog will be 
+; displayed on the next frame.)
+; The collision check code will flag the death accordingly.
+; The Flag-Of-Death (FrogSafety) tells the Main code to splatter the frog 
+; shape, and start the other activities to announce death.
 
 ;	lda CurrentDL                ; Get current display list
 ;	cmp #DISPLAY_GAME            ; Is this the Game display?
@@ -432,7 +454,6 @@ MyDeferredVBI
 
 ;	jsr CheckRideTheBoat         ; Make sure the frog is riding the boat. Otherwise it dies.
 
-
 ;	jsr Something that evaluates collisions goes here.
 
 ;EndOfDeathOfASalesfrog
@@ -440,13 +461,43 @@ MyDeferredVBI
 
 
 
-; ======== Manage Title Color Animation ========
 
-	lda zCurrentEvent           ; Did Main code signal to change displays?
-	beq ExitMyImmediateVBI      ; If this is 0 we should not be here.
+; ======== TITLE SCREEN AND COUNTDOWN ACTIVIES  ========
+	lda zCurrentEvent               ; Get current state
+	cmp #[EVENT_COUNTDOWN+1]        ; Is it TITLE or COUNTDOWN
+	bcc b_mdv_DoTitleAnimation      ; Yes. Less Than < is correct
+	jmp b_mdv_DoGameManagement      ; No. Greater Than > COUNTDOWN is GAME or GAMEOVER
 
+
+; For the Title and Countdown the work that needs to occur:
+; 1) Mothership if moving up.
+; 2) 3, 2, 1 GO, if in progress.
+; 3) Animate Missiles for Title logo
+; 4) Author scrolling
+; 5) Documentation Scrolling
+; 6) Mountain Background Scrolling.
+
+
+; ======== MANAGE TITLE MOTHERSHIP MOVING UP  ========
+
+
+
+
+; ======== MANAGE COUNTDOWN ANIMATION  ========
+
+
+
+
+; ======== MANAGE TITLE COLOR ANIMATION ========
+
+; The Missile positions need to be managed for the 
+; color overlay on the title graphic.   
+
+b_mdv_DoTitleAnimation 
 
 ; Animate the Title graphics (gfx pixels)
+	lda #6                       ; The number of times to call the color change DLI for the logo
+	sta zTitleVSCHacks           ; Update the counter read by the DLI.
 
 	dec zAnimateTitleGfx         ; decrement countown clock
 	bne b_mdv_SkipTitleGfx      ; has not reached 0, then no work to do. 
@@ -455,17 +506,46 @@ MyDeferredVBI
 
 b_mdv_SkipTitleGfx
 
-
 ; Setup specs to change the Title graphincs (Missile animation.)  Main code draws Missiles.
 
 	dec zAnimateTitlePM
 	bne b_mdv_SkipTitleMissileUpdate
+	
 	; Note that the main code is responsible for loading up the Missile image.  
 	; THEREFORE, do not reset the timer for the Missile animation here.  
 	; The main code will do it, because it needs to know that the timer reached 0.
 
+	; first update the color information
+	dec zTitleLogoBaseTries      ; reduce base counter by 1.
+	lda zTitleLogoBaseTries      
+	sta zTitleLogoTries          ; Save it for the DLI use
+	bne b_mdv_SkipColorMovement  ; Value still not 0, no color changes
+
+	lda #3                       ; Change it to new count.
+	sta zTitleLogoBaseTries      ; Resave the new update
+	sta zTitleLogoTries          ; Save it for the DLI use
+
+	lda ZTitleLogoBaseColor      ; Get the Base color
+	cmp #COLOR_ORANGE_GREEN      ; Is it the ending color?
+	bne b_mdv_AddToColor         ; No.  Add to the color component.
+
+	lda #COLOR_ORANGE1           ; Yes.  Reset to first color.
+	bne b_mdv_UpdateColor        ; Go do the update.
+
+b_mdv_AddToColor
+	clc
+	adc #$10                     ; Add 16 to color.
+
+b_mdv_UpdateColor
+	sta ZTitleLogoBaseColor      ; Resave the new update
+	sta ZTitleLogoColor          ; Save it for the DLI use
+
+b_mdv_SkipColorMovement
+
+	; Now, change the Missile animation images and position.
+
 	ldx ZTitleHPos              ; Move horizontally left two color clocks per animation.
-	dex                   
+	dex
 	dex
 
 	ldy zTitleLogoPMFrame       ; Go to the next Missile image index
@@ -483,6 +563,10 @@ b_mdv_SkipResetPMImage
 	jsr Pmg_AdustMissileHPOS    ; Update  the missile HPOS.
 
 b_mdv_SkipTitleMissileUpdate
+
+b_mdv_DoGameManagement
+
+
 
 
 ; ======== Manage Boat fine scrolling ========
@@ -838,7 +922,7 @@ TITLE_DLI_1
 	; Set all the ANTIC screen controls and DMA options.
 	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NARROW]
 	sta WSYNC            ; sync to end of scan line
-	sta SDMCTL
+	sta DMACTL
 
 	mChainDLI TITLE_DLI_1,TITLE_DLI_2
 
@@ -863,10 +947,69 @@ TITLE_DLI_2
 	lda ZTitleLogoColor ; Set new color overlay value
 	sta COLPF3          ; Player 5, (Missile) color.
 
-	; Now, everything else is liesurely maintenance.  We have 2.5 scan lines to get 
-	; the variables in order.
+	; Now, everything else is liesurely-like maintenance.  
+	; We have 2 scan lines to get the variables in order.
 
-	mChainDLI TITLE_DLI_1,TITLE_DLI_2
+	dec zTitleLogoTries          ; count 3, 2, 1, 0
+	bne b_td2_SkipTryReset
+	lda #3
+	sta zTitleLogoTries
+
+	lda ZTitleLogoColor     ; Get the Base color
+	cmp #COLOR_ORANGE_GREEN ; Is it the ending color?
+	bne b_td2_AddToColor    ; No.  Add to the color component.
+
+	lda #COLOR_ORANGE1      ; Yes.  Reset to first color.
+	bne b_td2_UpdateColor   ; Go do the update.
+
+b_td2_AddToColor
+	clc
+	adc #$10                ; Add 16 to color.
+
+b_td2_UpdateColor
+	sta ZTitleLogoColor     ; Save it for the next DLI use
+
+b_td2_SkipTryReset
+	dec zTitleVSCHacks      ; Count the number of times we've been here.
+	beq b_td2_ExitToChain   ; If not zero then just exit to repeat this DLI..
+
+	pla                     ; Exit DLI without chaining, making this repeat.
+	tay
+	pla
+
+	rti
+
+b_td2_ExitToChain
+	mChainDLI TITLE_DLI_2,TITLE_DLI_3 ; Done here.  Finally go to next DLI.
+
+
+;==============================================================================
+; TITLE_DLI_3                                             
+;==============================================================================
+; DLI to stop the VSCROL hack, restore the normal DMA width and turn off 
+; the GTIA 16-grey scale value.
+; Also, reset 
+; -----------------------------------------------------------------------------
+
+TITLE_DLI_3
+
+	 mStart_DLI ; Saves A and Y
+
+	lda #0
+	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
+	sta WSYNC           ; sync to end of scan line
+	sta VSCROL          ; =0, default. untrigger the hack if on for prior line.
+
+	; Set all the ANTIC screen controls and DMA options.
+	sty DMACTL
+
+	; Return to normal color interpretation.
+	lda #[GTIA_MODE_DEFAULT] 
+	sta PRIOR
+
+	mChainDLI TITLE_DLI_3,DoNothing_DLI
+
+
 
 
 ; ;==============================================================================

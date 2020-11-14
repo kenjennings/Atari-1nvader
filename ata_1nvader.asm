@@ -41,12 +41,11 @@
 zCurrentEvent      .byte $00 ; Global Current Game Behavior.
 zEventStage        .byte $00 ; Substage 
 
+
 ; Timer Values ===============================================================
 
 zAnimateFrames     .byte $00 
 zInputScanFrames   .byte $00
-
-
 
 
 ; Title Logo Values =========================================================
@@ -68,16 +67,20 @@ zTitleHPos             .byte TITLE_LOGO_X_START   ; Missile position.
 
 TITLE_LOGO_Y_POS       = 128                      ; Just a constant.  No need for variable.
 
-zTitleLogoColorIndex   .byte $00                  ; Number of times color is used
-ZTitleLogoColor        .byte $10                  ; Loop from $10 to $E0 by 16.
-zTitleVSCHacks         .byte $00                  ; Number of times the VScroll hack is used. (6 max)
+zTitleLogoBaseTries   .byte $00                   ; Starting value for first DLI
+zTitleLogoTries       .byte $00                   ; Working value for repeated DLIs
+
+ZTitleLogoBaseColor   .byte $10                   ; Starting value for first DLI. 
+ZTitleLogoColor       .byte $10                   ; Value for DLI. Loop from $10 to $E0 by 16.
+
+zTitleVSCHacks        .byte $00                   ; Number of times the VScroll hack is used. (6 max)
+
 
 ;Big Mothership Values =========================================================
 
 BIG_MOTHERSHIP_START = 108 ; Starting position of the big mothership
 
 zBIG_MOTHERSHIP_Y .byte BIG_MOTHERSHIP_START
-
 
 
 ; Game Control Values =========================================================
@@ -159,6 +162,7 @@ SHPOSM3 .byte 0 ; Fake Shadow register for HPOSM3
 
 
 ; Player/Missile object states.  X, Y, counts, etc where needed =============
+
 ; Note that each table is in the same order listing each visible 
 ; screen object for the Game.
 ; (Note the title screen components as the mother ship and the animated 
@@ -312,6 +316,7 @@ SOUND_DURATION3 .byte $00
 SAVEA = $FD
 SAVEX = $FE
 SAVEY = $FF
+
 
 ; ======== E N D   O F   P A G E   Z E R O ======== 
 
