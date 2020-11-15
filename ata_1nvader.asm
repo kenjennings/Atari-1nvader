@@ -56,16 +56,16 @@ zAnimateTitleGfx       .byte TITLE_SPEED_GFX      ; countdown jiffies. At 0 the 
 TITLE_LOGO_FRAME_MAX   = 3                        ; Four frames, Count 3, 2, 1, 0
 zTITLE_LOGO_FRAME      .byte 0                    ; current frame for big graphic logo gfx
 
-TITLE_SPEED_PM         = 10                       ; jiffies to count for title Missile animations
+TITLE_SPEED_PM         = 4                       ; jiffies to count for title Missile animations
 zAnimateTitlePM        .byte TITLE_SPEED_PM       ; countdown jiffies. At 0 the animation changes.
 
 TITLE_LOGO_PMIMAGE_MAX = 44                       ; 43 frames of images.  back to 0 when this is max.
-zTitleLogoPMFrame      .byte TITLE_LOGO_FRAME_MAX
+zTitleLogoPMFrame      .byte $00
 
-TITLE_LOGO_X_START     = 192
+TITLE_LOGO_X_START     = 78
 zTitleHPos             .byte TITLE_LOGO_X_START   ; Missile position.
 
-TITLE_LOGO_Y_POS       = 128                      ; Just a constant.  No need for variable.
+TITLE_LOGO_Y_POS       = 79                       ; Just a constant.  No need for variable.
 
 zTitleLogoBaseTries   .byte $00                   ; Starting value for first DLI
 zTitleLogoTries       .byte $00                   ; Working value for repeated DLIs
@@ -103,7 +103,9 @@ zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction
 zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
 zPLAYER_ONE_SCORE  .byte $00,$00,$00 ; Player 1 score, 6 digit BCD 
 zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color
+zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
 
+zLASER_ONE_ON      .byte $00 ; whether or not the laser is shooting
 zLASER_ONE_X       .byte $00 ; Laser 1 X coord
 zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
 
@@ -114,7 +116,9 @@ zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction
 zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
 zPLAYER_TWO_SCORE  .byte $00,$00,$00 ; Player 2 score, 6 digit BCD 
 zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color
+zPLAYER_TWO_BUMP   .byte $00 ; Player 2 collision
 
+zLASER_TWO_ON      .byte $00 ; whether or not the laser is shooting
 zLASER_TWO_X       .byte $00 ; Laser 1 X coord
 zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
  
@@ -126,6 +130,8 @@ zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter
 zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threahold 
 zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
 zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
+zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
+
 ; Note that the original game dealt with some things in BCD values, 
 ; such as the Mothership row here making it a little more convenient to 
 ; convert hex values to printable characters on the screen.  This makes 
@@ -346,6 +352,7 @@ SAVEY = $FF
 ;         *= $4000
 
 gVICII        = 53248 ; v 
+VICII        = 53248 ; v 
 gJOY          = 56320 ; joy
 gCHAR_MEM     = $0400 ; cm  ; screen memory
 gCHAR_MEM2    = $04f0 ; cm2 ; was $0662/$0702
@@ -408,9 +415,9 @@ gSTAR_CHAR_MEM2 = $0530 ; sf2 ; +8 to fill botrow
 	icl "ata_1nv_pmg_code.asm"  ; Routines for Player/Missile graphics animation.
 
 
-;	icl "ata_1nv_int.asm"       ; Code for I/O, Isplay List Interrupts, and Vertical Blank Interrupt.
+	icl "ata_1nv_int.asm"       ; Code for I/O, Isplay List Interrupts, and Vertical Blank Interrupt.
 	
-;	icl "ata_1nv_game.asm"      ; Code for game logic.
+	icl "ata_1nv_game.asm"      ; Code for game logic.
 
  	icl "ata_1nv_audio.asm"     ; The world's lamest sound sequencer.
 	
@@ -488,7 +495,7 @@ title
 	sta zMOTHERSHIP_Y
 	
 	lda #11
-	sta zMOTHERHIP_ROW  ; row 11 = 146
+	sta ZMOTHERSHIP_ROW  ; row 11 = 146
 
 	lda #1     ; make ms биг
 	sta VICII+29   ; expand x
@@ -613,7 +620,7 @@ drawtitle
 ;;	ldx #0    ; draw title
 	ldx #240  ;  count in reverse to eliminate cmp.
 drawti2  
-	lda tichar-1,x
+	lda GFX_TITLE_FRAME1,x ;  it was tichar-1,x  this is only placeholder until Atari version is complete.
 	sta gTI_CHAR_MEM-1,x
 ;;	inx
 ;;	cpx #240
@@ -804,7 +811,7 @@ titlinit
 ;;	sta zMOTHERSHIP_X+1
 ;;	sta zPLAYER_ONE_X+1
 ;;	sta zPLAYER_TWO_X+1
-;;	sta zMOTHERHIP_ROW
+;;	sta ZMOTHERSHIP_ROW
 
 ;;	lda #1
 ;;	sta zPLAYER_TWO_DIR
@@ -839,7 +846,7 @@ titlinit
 		 
 ; ==========================================================================
 
-gameinit 
+;gameinit 
 	sed ; Why?   Decimal 0 is the same as binary 0.
 	lda #0
 	sta zPLAYER_ONE_SCORE
@@ -868,8 +875,8 @@ gameinit
 	lda #2                         ; initial ms speed
 	sta zMOTHERSHIP_MOVE_SPEED
 	lda #10                        ; should be 10
-	sta zMOTHERHIP_SPEEDUP_THRESH  ; speedup threshld
-	sta zMOTHERHIP_SPEEDUP_COUNTER ; speedup count
+	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
+	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
 		 
 gameintz 
 	rts
@@ -1018,11 +1025,11 @@ cntdwnj
 	sta zPLAYER_TWO_FIRE
 	sta zLASER_ONE_ON
 	sta zLASER_TWO_ON
-	sta zMOTHERHIP_ROW
+	sta ZMOTHERSHIP_ROW
 
 ;;	lda #58              ; should be 58
 ;;	sta zMOTHERSHIP_Y    ; 202 for testing
-	ldx zMOTHERHIP_ROW   ; get msy from
+	ldx ZMOTHERSHIP_ROW   ; get msy from
 	lda TABLE_ROW_TO_Y,x ; row 2 y table
 	sta zMOTHERSHIP_Y
 
@@ -1125,7 +1132,7 @@ inputz
 ; ==========================================================================
 
 fire1    
-	lda joy+1          ; remember: 0=fire
+	lda gJOY+1          ; remember: 0=fire
 	and #16
 ;;	cmp #0
 	beq f1maybe
@@ -1156,7 +1163,7 @@ f1nope2
 ; ==========================================================================
 
 fire2    
-	lda joy     ; remember: 0=fire
+	lda gJOY     ; remember: 0=fire
 	and #16
 ;;	cmp #0
 	beq f2maybe
@@ -1468,8 +1475,8 @@ lz2hitb
 lzhitb               ; ms was hit, popup
 	jsr expnoz  ; make ноисе
 	
-	dec zMOTHERHIP_SPEEDUP_COUNTER   ; speedup counter
-	lda zMOTHERHIP_SPEEDUP_COUNTER
+	dec zMOTHERSHIP_SPEEDUP_COUNTER   ; speedup counter
+	lda zMOTHERSHIP_SPEEDUP_COUNTER
 ;;	cmp #0      ; time to speedup?
 	bne lzhite  ; no
 	
@@ -1483,8 +1490,8 @@ lzhitb               ; ms was hit, popup
          sta zSHIP_HITS    ; reset hit cout
 
 lzhitr   
-	lda zMOTHERHIP_SPEEDUP_THRESH
-         sta zMOTHERHIP_SPEEDUP_COUNTER   ; reset counter
+	lda zMOTHERSHIP_SPEEDUP_THRESH
+         sta zMOTHERSHIP_SPEEDUP_COUNTER   ; reset counter
 		 
 lzhite   
 	lda #1
@@ -1495,16 +1502,16 @@ lzhite
 
 	sed                ; set dec flag
 	clc
-	lda zMOTHERHIP_ROW ; why sbc #1 ?????
+	lda ZMOTHERSHIP_ROW ; why sbc #1 ?????
 	sbc #1             ; pop msrow up 2
-	sta zMOTHERHIP_ROW
+	sta ZMOTHERSHIP_ROW
 	cld                ; clr dec flag
 	
 	lda #30            ; check msrow
-	cmp zMOTHERHIP_ROW ; is msrow < 30?
+	cmp ZMOTHERSHIP_ROW ; is msrow < 30?
 	bcs lzhitf         ; no, skip
 	lda #0             ; yes, make it 0
-	sta zMOTHERHIP_ROW
+	sta ZMOTHERSHIP_ROW
 
 lzhitf 
 ;	lda #58            ; is msy >= 58?
@@ -1513,7 +1520,7 @@ lzhitf
 ;	lda #58            ; no, make it 58
 ;	sta zMOTHERSHIP_Y
 ;	lda #0             ; msrow to 0 too
-;	sta zMOTHERHIP_ROW
+;	sta ZMOTHERSHIP_ROW
 
 lzhitc   
 	jsr GetMothershipPoints ; set new x ; X will contain Mothership Row
@@ -1657,9 +1664,9 @@ msbrtl
 	
 	sed                ; drop down msrow
 	clc                ; set dec+clr carry
-	lda zMOTHERHIP_ROW
+	lda ZMOTHERSHIP_ROW
 	adc #1
-	sta zMOTHERHIP_ROW
+	sta ZMOTHERSHIP_ROW
 	cld                     ; clr dec flag
 	
 	jsr GetMothershipPoints ; update points ; X will contain Mothership Row
@@ -1684,9 +1691,9 @@ msbltr
 	
 	sed                     ; drop msrow down
 	clc                     ; set dec+clr carry
-	lda zMOTHERHIP_ROW
+	lda ZMOTHERSHIP_ROW
 	adc #1
-	sta zMOTHERHIP_ROW
+	sta ZMOTHERSHIP_ROW
 	cld                     ; clr dec flag
 	
 	jsr GetMothershipPoints ; update points ; X will contain Mothership Row
@@ -1695,7 +1702,7 @@ msbltr
 promsz 
 	; lda zMOTHERSHIP_Y ; check bottom
 	; cmp #234
-	lda zMOTHERHIP_ROW
+	lda ZMOTHERSHIP_ROW
 	cmp #34
 	bcs promsb          ; row = 23 (бцд 34)
 	
@@ -2035,10 +2042,10 @@ shsca
 	adc #48
 	sta gCHAR_MEM+6
 	lda zPLAYER_ONE_SCORE
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gCHAR_MEM+5
@@ -2049,10 +2056,10 @@ shsca
 	adc #48
 	sta gCHAR_MEM+4
 	lda zPLAYER_ONE_SCORE+1
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gCHAR_MEM+3
@@ -2063,10 +2070,10 @@ shsca
 	adc #48
 	sta gCHAR_MEM+2
 	lda zPLAYER_ONE_SCORE+2
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gCHAR_MEM+1    ; end p1score
@@ -2077,10 +2084,10 @@ shsca
 	adc #48
 	sta gCHAR_MEM+38
 	lda zPLAYER_TWO_SCORE
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gCHAR_MEM+37
@@ -2091,10 +2098,10 @@ shsca
 	adc #48
 	sta gCHAR_MEM+36
 	lda zPLAYER_TWO_SCORE+1
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gCHAR_MEM+35
@@ -2105,10 +2112,10 @@ shsca
 	adc #48
 	sta gCHAR_MEM+34
 	lda zPLAYER_TWO_SCORE+2
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gCHAR_MEM+33   ; end p2score
@@ -2168,10 +2175,10 @@ shscc
 	adc #48
 	sta gCHAR_MEM+22
 	lda zHIGH_SCORE
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gCHAR_MEM+21
@@ -2182,10 +2189,10 @@ shscc
 	adc #48
 	sta gCHAR_MEM+20
 	lda zHIGH_SCORE+1
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gCHAR_MEM+19
@@ -2196,10 +2203,10 @@ shscc
 	adc #48
 	sta gCHAR_MEM+18
 	lda zHIGH_SCORE+2
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gCHAR_MEM+17   ; end zHIGH_SCORE
@@ -2216,7 +2223,7 @@ outms
 	; lda zMOTHERSHIP_Y   ; get msy
 	; sta VICII+1         ; set spr1 y
 
-	ldy zMOTHERHIP_ROW    ; get msrow
+	ldy ZMOTHERSHIP_ROW    ; get msrow
 	lda TABLE_ROW_TO_Y,y  ; get y from table
 	; sta zMOTHERSHIP_Y   ; store in msy
 	sta VICII+1           ; set spr1 y
@@ -2378,16 +2385,16 @@ outl2b               ; s5 off
 
 shwstats ; msrow mspts msmov etc
 shwmsrow 
-	lda zMOTHERHIP_ROW       ; stored as bcd
+	lda ZMOTHERSHIP_ROW       ; stored as bcd
 	and #%00001111
 	clc
 	adc #48
 	sta gBOTTOM_ROW+16
-	lda zMOTHERHIP_ROW
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lda ZMOTHERSHIP_ROW
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gBOTTOM_ROW+15
@@ -2398,10 +2405,10 @@ shwmsrow
 	adc #48
 	sta gBOTTOM_ROW+21
 	lda zMOTHERSHIP_POINTS
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gBOTTOM_ROW+20
@@ -2412,10 +2419,10 @@ shwmsrow
 	adc #48
 	sta gBOTTOM_ROW+19
 	lda zMOTHERSHIP_POINTS+1
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gBOTTOM_ROW+18
@@ -2426,10 +2433,10 @@ shwmsrow
 	adc #48
 	sta gBOTTOM_ROW+24
 	lda zSHIP_HITS
-	lsr a
-	lsr a
-	lsr a
-	lsr a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
 	clc
 	adc #48
 	sta gBOTTOM_ROW+23
@@ -2459,7 +2466,7 @@ clrstsa
 ; ==========================================================================
 ;-- game over --------------------------
 
-gameover 
+;gameover 
 	lda #0      ; fancy ending
 	sta zGAME_OVER_FLAG
 
@@ -2700,13 +2707,13 @@ getpoints
 	sta zMOTHERSHIP_POINTS
 	sta zMOTHERSHIP_POINTS+1
 
-	ldx zMOTHERHIP_ROW
+	ldx ZMOTHERSHIP_ROW
 	lda TABLE_MOTHERSHIP_POINTS_LOW,X
 	sta zMOTHERSHIP_POINTS
 	lda TABLE_MOTHERSHIP_POINTS_HIGH,X
 	sta zMOTHERSHIP_POINTS+1
 
-;	lda zMOTHERHIP_ROW
+;	lda ZMOTHERSHIP_ROW
 ;	cmp #0     ; check for row 0
 ;	bne gp1
 
@@ -3280,9 +3287,9 @@ prndneor
 ; mscol    .byte 0   ; zMOTHERSHIP_COLOR
 ; msmovs   .byte 0   ; zMOTHERSHIP_MOVE_SPEED  how many moves
 ; msm      .byte 0   ; zMOTHERSHIP_MOVE_COUNTER move counter
-; mssut    .byte 0   ; zMOTHERHIP_SPEEDUP_THRESH ms supeedup thresh
-; mssuc    .byte 0   ; zMOTHERHIP_SPEEDUP_COUNTER ms sp count
-; msrow    .byte 0   ; zMOTHERHIP_ROW
+; mssut    .byte 0   ; zMOTHERSHIP_SPEEDUP_THRESH ms supeedup thresh
+; mssuc    .byte 0   ; zMOTHERSHIP_SPEEDUP_COUNTER ms sp count
+; msrow    .byte 0   ; ZMOTHERSHIP_ROW
 
 ; j1       .byte 0 ; unused
 ; j1z      .byte 0 ; zJOY_ONE_LAST_STATE
@@ -3335,7 +3342,7 @@ GameStart
 ; GameStart is in the "Game.asm' file.
 ; --------------------------------------------------------------------------
 
-	mDiskDPoke DOS_RUN_ADDR, GameStart
+	mDiskDPoke DOS_RUN_ADDR,GameStart
 
 	END
 

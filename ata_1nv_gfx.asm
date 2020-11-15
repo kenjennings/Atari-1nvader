@@ -14,7 +14,7 @@
 ; --------------------------------------------------------------------------
 
 	.align $0800 ; Align graphics data to 2K boundary.
-	
+
 ; ==========================================================================
 ; Title Screen C64
 ; --------------------------------------------------------------------------
@@ -123,8 +123,6 @@
 ; align to 1K then we know nothing will run over the 1K or the 4K boundary.
 ; --------------------------------------------------------------------------
 
-	.align $0400
-
 
 ; ==========================================================================
 ; Title Screen Atari
@@ -183,16 +181,24 @@ DISPLAY_LIST_TITLE                                          ; System VBI sets co
 	mDL_BLANK DL_BLANK_8                                    ; 02 (036 - 043) Blank 8
 	mDL_BLANK DL_BLANK_8                                    ; 03 (044 - 051) Blank 8   3, 2, 1, GO P/M animation
 	mDL_BLANK DL_BLANK_8                                    ; 04 (052 - 059) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK DL_BLANK_8|DL_DLI                             ;    (060 - 067) Blank 8  Narrow screen DMA, start GTIA $9 in PRIOR 
+	mDL_BLANK [DL_BLANK_7|DL_DLI]                           ;    (060 - 066) Blank 7  Narrow screen DMA, start GTIA $4 in PRIOR 
+	mDL_BLANK DL_BLANK_1                                    ;    (067 - 067) Blank 1  Allow time for prior DLI to act. 
 	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (068 - 070) Blank 3  (DLI vscroll hack) 
 
 DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS low byte value.    
-	mDL_LMS   DL_MAP_F|DL_VSCROLL|DL_DLI,GFX_TITLE_FRAME1   ;    (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;  
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;    (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ; 
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;    (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
-	mDL       DL_MAP_F|DL_VSCROLL|DL_DLI                    ;                            Turn Off VSCROL hack, reset normal screen DMA, GPRIOR
+	mDL_LMS   DL_MAP_F|DL_VSCROLL,GFX_TITLE_FRAME1   ;    (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
+	
+	mDL       DL_MAP_F                    ;  
+	mDL       DL_MAP_F|DL_VSCROLL                    ;    (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
+	mDL       DL_MAP_F                    ; 
+	mDL       DL_MAP_F|DL_VSCROLL                    ;    (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
+	mDL       DL_MAP_F                    ;                            Turn Off VSCROL hack, reset 
+
+;	mDL       DL_MAP_F|DL_DLI                    ;  
+;	mDL       DL_MAP_F|DL_VSCROLL                    ;    (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
+;	mDL       DL_MAP_F|DL_DLI                    ; 
+;	mDL       DL_MAP_F|DL_VSCROLL                    ;    (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
+;	mDL       DL_MAP_F|DL_DLI                    ;                            Turn Off VSCROL hack, reset normal screen DMA, PRIOR
 	mDL_BLANK DL_BLANK_8                                    ;    (089 - 099) Blank 8 
 
 ;	.print "dl blank 3   ",DL_BLANK_3
@@ -404,9 +410,9 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over
 GFX_SCORE_LINE ; | 000000 P1      HI 000000     P2 000000 | 
 	.sb " "
 GFX_SCORE_P1 
-	.sb "000000            "
+	.sb "012345            "
 GFX_SCORE_HI 
-	.sb "000000        "
+	.sb "678900        "
 GFX_SCORE_P2
 	.sb "000000 "
 

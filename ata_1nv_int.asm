@@ -54,7 +54,7 @@ INPUTSCAN_FRAMES = $07  ; previously $09
 ; About 7 keys per second.
 ; KEYSCAN_FRAMES = $07
 ; based on number of frogs, how many frames between boat movements...
-;ANIMATION_FRAMES .byte 25,21,17,14,12,11,10,9,8,7,6,5
+; ANIMATION_FRAMES .byte 25,21,17,14,12,11,10,9,8,7,6,5
 ; Not really sure what to do about the new model using the 
 ; BOAT_FRAMES/BOAT_SHIFT lists.
 ; PAL would definitely be a different set of speeds.
@@ -249,6 +249,7 @@ CheckSelectKey
 ;	cpx #[MAX_FROG_LIVES+1]    ; 7 + 1
 ;	bne bCFCI_SkipResetLives
 ;	ldx #1
+
 bCFCI_SkipResetLives
 ;	stx NewNumberOfLives      ; Get the updated number of new lives for the next game.
 ;	jsr TitlePrepLives        ; Get the scrolling buffer ready.
@@ -326,8 +327,8 @@ TABLE_GAME_DISPLAY_LIST
 TABLE_GAME_DISPLAY_LIST_INTERRUPT
 	.word DoNothing_DLI ; 0  = EVENT_INIT            one time globals setup
 	.word DoNothing_DLI ; 1  = EVENT_SETUP_TITLE
-	.word DoNothing_DLI ; 2  = EVENT_TITLE           run title and get player start button
-	.word DoNothing_DLI ; 3  = EVENT_COUNTDOWN       then move mothership
+	.word TITLE_DLI     ; 2  = EVENT_TITLE           run title and get player start button
+	.word TITLE_DLI     ; 3  = EVENT_COUNTDOWN       then move mothership
 	.word DoNothing_DLI ; 4  = EVENT_SETUP_GAME
 	.word DoNothing_DLI ; 5  = EVENT_GAME            regular game play.  boom boom boom
 	.word DoNothing_DLI ; 6  = EVENT_LAST_ROW        forced player shove off screen
@@ -348,7 +349,6 @@ MyImmediateVBI
 	sta SDLSTL                              
 	lda TABLE_GAME_DISPLAY_LIST_INTERRUPT,x ; Copy Display List Interrupt chain table starting address
 	sta VDSLST
-	sta 
 	inx                                     ; and the high bytes.
 	lda TABLE_GAME_DISPLAY_LIST,x
 	sta SDLSTH
@@ -500,7 +500,7 @@ b_mdv_DoTitleAnimation
 	sta zTitleVSCHacks           ; Update the counter read by the DLI.
 
 	dec zAnimateTitleGfx         ; decrement countown clock
-	bne b_mdv_SkipTitleGfx      ; has not reached 0, then no work to do. 
+	bne b_mdv_SkipTitleGfx       ; has not reached 0, then no work to do. 
 
 	jsr Gfx_Animate_Title_Logo   ; Updates the display list LMS to point to new pixels.
 
@@ -510,7 +510,7 @@ b_mdv_SkipTitleGfx
 
 	dec zAnimateTitlePM
 	bne b_mdv_SkipTitleMissileUpdate
-	
+
 	; Note that the main code is responsible for loading up the Missile image.  
 	; THEREFORE, do not reset the timer for the Missile animation here.  
 	; The main code will do it, because it needs to know that the timer reached 0.
@@ -539,14 +539,16 @@ b_mdv_AddToColor
 b_mdv_UpdateColor
 	sta ZTitleLogoBaseColor      ; Resave the new update
 	sta ZTitleLogoColor          ; Save it for the DLI use
-
+	sta COLOR3
+	sta COLPF3
+	
 b_mdv_SkipColorMovement
 
 	; Now, change the Missile animation images and position.
 
 	ldx ZTitleHPos              ; Move horizontally left two color clocks per animation.
-	dex
-	dex
+	inx
+	inx
 
 	ldy zTitleLogoPMFrame       ; Go to the next Missile image index
 	iny
@@ -560,6 +562,7 @@ b_mdv_SkipResetPMImage
 	stx ZTitleHPos              ; Save modified base Missile pos, whatever happened above.
 	sty zTitleLogoPMFrame       ; Save new Missile image index.
 
+	txa
 	jsr Pmg_AdustMissileHPOS    ; Update  the missile HPOS.
 
 b_mdv_SkipTitleMissileUpdate
@@ -884,7 +887,7 @@ ExitMyDeferredVBI
 	 .macro mStart_DLI
 		 mregSaveAY
 
-		 ldy ThisDLI
+;		 ldy zThisDLI
 	 .endm
 
 
@@ -911,18 +914,18 @@ TITLE_DLI  ; Placeholder for VBI to restore staring address for DLI chain.
 
 TITLE_DLI_1 
 
-	 pha
-
-	; Setup PRIOR for 16 grey-scale graphics, and Missile color overlay.
-	; The screen won;t show any noticeable change here, because the COLBK 
-	; value is black, and this won;t change for the 16-shade mode.
-	lda #[FIFTH_PLAYER|GTIA_MODE_16_SHADE] 
-	sta PRIOR
+	pha
 
 	; Set all the ANTIC screen controls and DMA options.
 	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NARROW]
 	sta WSYNC            ; sync to end of scan line
 	sta DMACTL
+	
+	; Setup PRIOR for 16 grey-scale graphics, and Missile color overlay.
+	; The screen won;t show any noticeable change here, because the COLBK 
+	; value is black, and this won;t change for the 16-shade mode.
+	lda #[FIFTH_PLAYER|GTIA_MODE_16_SHADE] 
+	sta PRIOR
 
 	mChainDLI TITLE_DLI_1,TITLE_DLI_2
 
@@ -938,24 +941,108 @@ TITLE_DLI_2
 
 	 mStart_DLI ; Saves A and Y
 
+b_td2_LoopForLines
+;1
 	ldy #14             ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
-	lda #1
+	lda #2
 	sta WSYNC           ; sync to end of line.
-	sta VSCROL          ; =1, default. untrigger the hack if on for prior line.
+	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
+	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
+	lda zTitleLogoColor
+	sta COLPF3
+;2
+	sta WSYNC
+	jsr DLI_INC_PF3_COLOR
+	sta WSYNC           ; sync to end of line.
+	sta WSYNC           ; sync to end of line.
+	lda zTitleLogoColor
+	sta COLPF3
+
+
+;3
+	sta WSYNC
+	jsr DLI_INC_PF3_COLOR
+	sta WSYNC           ; sync to end of line.
+	ldy #14             ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
+	lda #2
+	sta WSYNC           ; sync to end of line.
+	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
+	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
+	lda zTitleLogoColor
+	sta COLPF3
+;4
+	sta WSYNC
+	jsr DLI_INC_PF3_COLOR
+	sta WSYNC           ; sync to end of line.
+	sta WSYNC           ; sync to end of line.
+	lda zTitleLogoColor
+	sta COLPF3
+
+
+;5
+	sta WSYNC
+	jsr DLI_INC_PF3_COLOR
+	sta WSYNC           ; sync to end of line.
+	ldy #14             ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
+	lda #2
+	sta WSYNC           ; sync to end of line.
+	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
+	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
+	lda zTitleLogoColor
+	sta COLPF3
+;6
+	sta WSYNC
+	jsr DLI_INC_PF3_COLOR
+	sta WSYNC           ; sync to end of line.
+	sta WSYNC           ; sync to end of line.
+	lda zTitleLogoColor
+	sta COLPF3
+
+	sta WSYNC
+	sta WSYNC           ; sync to end of line.
+	ldy #14             ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
+	lda #2
+	sta WSYNC           ; sync to end of line.
+
+	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
 	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
 
-	lda ZTitleLogoColor ; Set new color overlay value
-	sta COLPF3          ; Player 5, (Missile) color.
+
 
 	; Now, everything else is liesurely-like maintenance.  
 	; We have 2 scan lines to get the variables in order.
 
-	dec zTitleLogoTries          ; count 3, 2, 1, 0
-	bne b_td2_SkipTryReset
+;	jsr DLI_INC_PF3_COLOR
+;	sta WSYNC
+;	sta WSYNC
+;	bne b_td2_LoopForLines
+;	beq b_td2_ExitToChain   ; If not zero then just exit to repeat this DLI..
+
+;	sta WSYNC
+;	bne b_td2_LoopForLines
+
+;	pla                     ; Exit DLI without chaining, making this repeat.
+;	tay
+;	pla
+
+;	rti
+
+b_td2_ExitToChain
+	pla
+	tay
+
+	mChainDLI TITLE_DLI_2,TITLE_DLI_3 ; Done here.  Finally go to next DLI.
+
+
+
+
+DLI_INC_PF3_COLOR
+	dec zTitleLogoTries     ; count 3, 2, 1, 0
+	bne b_td2_SkipTryReset  ; Not 0, do not reset.
 	lda #3
 	sta zTitleLogoTries
 
-	lda ZTitleLogoColor     ; Get the Base color
+	lda zTitleLogoColor     ; Get the Base color
 	cmp #COLOR_ORANGE_GREEN ; Is it the ending color?
 	bne b_td2_AddToColor    ; No.  Add to the color component.
 
@@ -967,20 +1054,12 @@ b_td2_AddToColor
 	adc #$10                ; Add 16 to color.
 
 b_td2_UpdateColor
-	sta ZTitleLogoColor     ; Save it for the next DLI use
+	sta zTitleLogoColor     ; Save it for the next DLI use
 
 b_td2_SkipTryReset
-	dec zTitleVSCHacks      ; Count the number of times we've been here.
-	beq b_td2_ExitToChain   ; If not zero then just exit to repeat this DLI..
-
-	pla                     ; Exit DLI without chaining, making this repeat.
-	tay
-	pla
-
-	rti
-
-b_td2_ExitToChain
-	mChainDLI TITLE_DLI_2,TITLE_DLI_3 ; Done here.  Finally go to next DLI.
+;	dec zTitleVSCHacks      ; Count the number of times we've been here.
+	
+	rts
 
 
 ;==============================================================================
@@ -1006,6 +1085,16 @@ TITLE_DLI_3
 	; Return to normal color interpretation.
 	lda #[GTIA_MODE_DEFAULT] 
 	sta PRIOR
+
+	lda #$02
+	sta COLBK
+	lda #$88
+	sta COLPF0
+	lda $84
+	sta COLPF2
+
+	pla
+	tay
 
 	mChainDLI TITLE_DLI_3,DoNothing_DLI
 

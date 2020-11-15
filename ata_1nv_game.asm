@@ -214,7 +214,7 @@ b_gi_LoopFillZero
 
 	jsr Pmg_Init               ; Will also reset GRACTL and SDMACTL settings for P/M DMA
 
-	lda #PM_SIZE_DOUBLE        ; Title screen uses double Width Missiles.
+	lda #%01010101 ; PM_SIZE_DOUBLE all missiles ; Title screen uses double Width Missiles.
 	sta SIZEM
 
 	; Changing the Display List is potentially tricky.  If the update is
@@ -267,8 +267,8 @@ GameSetupTitle
 ;	lda EventStage             ; What stage are we in?
 ;	cmp #1
 ;	bne GoToStartEventForTitle
- 
-	; === STAGE 1 ===
+
+; === STAGE 1 ===
 
 ;	jsr ToPlayFXScrollOrNot    ; Start slide sound playing if not playing now.
 
@@ -279,9 +279,25 @@ GameSetupTitle
 ;	sta EventStage
 ;	bne EndTransitionToTitle
 
+GoToStartEventForTitle
+
+
 	; === STAGE 2 ===
 
-GoToStartEventForTitle
+	lda #$88
+	sta COLPF0
+	lda #$84
+	sta COLPF2
+
+	lda #3
+	sta zTitleLogoTries
+	sta zTitleLogoBaseTries
+
+	lda #TITLE_LOGO_X_START
+	sta zTitleHPos
+
+	lda #0
+	sta zTitleLogoPMFrame
 
 	lda #EVENT_TITLE           
 	sta zCurrentEvent

@@ -79,12 +79,12 @@ Pmg_Draw_Big_Mothership
 	bmi b_pdbs_Zero       ; If negative, then 0 the image
 
 b_pdbm_LoopDraw
-	lda PMG_BIGGERSHIP_L,X ; Get byte from saved image
+	lda PMG_IMG_BIGGERSHIP_L,X ; Get byte from saved image
 	sta PLAYERADR0,Y       ; Write to P/M memory
 	iny                    ; One position lower.
     sta PLAYERADR0,Y       ; and write the same image again.
 	dey                    ; Move back up to prior line.
-	lda PMG_BIGGERSHIP_R,X ; Get byte from saved image
+	lda PMG_IMG_BIGGERSHIP_R,X ; Get byte from saved image
 	sta PLAYERADR1,Y       ; Write to P/M memory
 	iny                    ; One position lower.
     sta PLAYERADR1,Y       ; and write the same image again.
@@ -640,29 +640,27 @@ Pmg_StuffitInMissiles
 	rts
 
 ;==============================================================================
-;												AdustMissileHPOS  X
+;												AdustMissileHPOS  A
 ;==============================================================================
-; Given data X  Write the value into the HPOS value of missiles 3, 2, 1, 0.
-; For each missile (and in that order) increment the HPOS value twice. 
+; Given data (A)  Write the value into the HPOS value of missiles 3, 2, 1, 0.
+; For each missile (and in that order) increment the HPOS value +4. 
 ; Save the value in the fake shadow registers and the actual hardware register.
 ; -----------------------------------------------------------------------------
 
 Pmg_AdustMissileHPOS
 
-	stx SHPOSM3 ; Fake shadow reg.
-	stx HPOSM3  ; Hardware position register.
-	inx         ; +1
-	inx         ; +1
-	stx SHPOSM2 ; More of the same. . . .
-	stx HPOSM2
-	inx
-	inx
-	stx SHPOSM1
-	stx HPOSM1
-	inx
-	inx
-	stx SHPOSM0
-	stx HPOSM0  ;  Yes, this is a bit of overkill.
+	sta SHPOSM3 ; Fake shadow reg.
+	sta HPOSM3  ; Hardware position register.
+	clc
+	adc #4      ; +4
+	sta SHPOSM2 ; More of the same. . . .
+	sta HPOSM2
+	adc #4      ; +4
+	sta SHPOSM1
+	sta HPOSM1
+	adc #4      ; +4
+	sta SHPOSM0
+	sta HPOSM0  ;  Yes, this is a bit of overkill.
 
 	rts
 

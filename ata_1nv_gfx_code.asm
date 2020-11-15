@@ -24,10 +24,10 @@
 ; --------------------------------------------------------------------------
 
 TABLE_GFX_TITLE_LOGO        ; Stored in reverse order for less iteration code.
-	.byte <GFX_TITLE_FRAME4
-	.byte <GFX_TITLE_FRAME3	
-	.byte <GFX_TITLE_FRAME2
-	.byte <GFX_TITLE_FRAME1
+	.word GFX_TITLE_FRAME4
+	.word GFX_TITLE_FRAME3
+	.word GFX_TITLE_FRAME2
+	.word GFX_TITLE_FRAME1
 
 Gfx_Animate_Title_Logo
 
@@ -35,15 +35,19 @@ Gfx_Animate_Title_Logo
 	sta zAnimateTitleGfx
 
 	dec zTITLE_LOGO_FRAME        ; Subtract frame counter.
+	lda zTITLE_LOGO_FRAME
 	bpl b_gatl_SkipReset         ; If it did not go negative, then it is good.
-	
-	ldx #TITLE_LOGO_FRAME_MAX    ; Reset frame counter 
-	stx zTITLE_LOGO_FRAME        ; to max value.
-	
+
+	lda #TITLE_LOGO_FRAME_MAX    ; Reset frame counter 
+
 b_gatl_SkipReset
-	ldx zTITLE_LOGO_FRAME        ; Actually read the value to use as index.
+	sta zTITLE_LOGO_FRAME        ; to max value.
+	asl                          ; *2 for word size
+	tax                          ; Now use the  value *2 as index.
 	lda TABLE_GFX_TITLE_LOGO,X   ; Get the new graphics address low byte
 	sta DL_LMS_TITLE             ; and update the display list LMS.
+	lda TABLE_GFX_TITLE_LOGO+1,X ; Get the new graphics address high byte
+	sta DL_LMS_TITLE+1           ; and update the display list LMS.
 
 b_gatl_SkipTitleGfx
 	rts
