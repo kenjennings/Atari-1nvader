@@ -459,9 +459,6 @@ b_mdv_DoMyDeferredVBI
 ;EndOfDeathOfASalesfrog
 	sta HITCLR                   ; Always reset the P/M collision bits for next frame.
 
-
-
-
 ; ======== TITLE SCREEN AND COUNTDOWN ACTIVIES  ========
 	lda zCurrentEvent               ; Get current state
 	cmp #[EVENT_COUNTDOWN+1]        ; Is it TITLE or COUNTDOWN
@@ -490,14 +487,13 @@ b_mdv_DoMyDeferredVBI
 
 ; ======== MANAGE TITLE COLOR ANIMATION ========
 
-; The Missile positions need to be managed for the 
-; color overlay on the title graphic.   
+; Swap the graphics image to make it appear the text is animated.
+; Manage the Missile positions and base color used for the color overlay.
+; Main code draws Missiles images.
 
 b_mdv_DoTitleAnimation 
 
-; Animate the Title graphics (gfx pixels)
-	lda #6                       ; The number of times to call the color change DLI for the logo
-	sta zTitleVSCHacks           ; Update the counter read by the DLI.
+	; First, Animate the Title graphics (gfx pixels)
 
 	dec zAnimateTitleGfx         ; decrement countown clock
 	bne b_mdv_SkipTitleGfx       ; has not reached 0, then no work to do. 
@@ -506,24 +502,17 @@ b_mdv_DoTitleAnimation
 
 b_mdv_SkipTitleGfx
 
-; Setup specs to change the Title graphincs (Missile animation.)  Main code draws Missiles.
+	; Second, update the color information
+
+	lda ZTitleLogoBaseColor      ; Always restore this from the base.
+	sta ZTitleLogoColor          ; Save it for the DLI use
 
 	dec zAnimateTitlePM
-	bne b_mdv_SkipTitleMissileUpdate
-
 	; Note that the main code is responsible for loading up the Missile image.  
-	; THEREFORE, do not reset the timer for the Missile animation here.  
+	; THEREFORE, do not reset the zAnimateTitlePM timer for the Missile animation here.  
 	; The main code will do it, because it needs to know that the timer reached 0.
-
-	; first update the color information
-	dec zTitleLogoBaseTries      ; reduce base counter by 1.
-	lda zTitleLogoBaseTries      
-	sta zTitleLogoTries          ; Save it for the DLI use
-	bne b_mdv_SkipColorMovement  ; Value still not 0, no color changes
-
-	lda #3                       ; Change it to new count.
-	sta zTitleLogoBaseTries      ; Resave the new update
-	sta zTitleLogoTries          ; Save it for the DLI use
+	
+	bne b_mdv_SkipTitleMissileUpdate ; !0 is not time to animate missiles?
 
 	lda ZTitleLogoBaseColor      ; Get the Base color
 	cmp #COLOR_ORANGE_GREEN      ; Is it the ending color?
@@ -534,19 +523,17 @@ b_mdv_SkipTitleGfx
 
 b_mdv_AddToColor
 	clc
-	adc #$10                     ; Add 16 to color.
+	adc #$10                      ; Add 16 to color.
 
 b_mdv_UpdateColor
 	sta ZTitleLogoBaseColor      ; Resave the new update
 	sta ZTitleLogoColor          ; Save it for the DLI use
-	sta COLOR3
-	sta COLPF3
-	
-b_mdv_SkipColorMovement
+	sta COLOR3                   ; Make sure it starts in the OS shadow and 
+	sta COLPF3                   ; the hardware registers.
 
-	; Now, change the Missile animation images and position.
+	; Third, change the Missile animation images and position.
 
-	ldx ZTitleHPos              ; Move horizontally left two color clocks per animation.
+	ldx ZTitleHPos              ; Move horizontally right two color clocks per animation.
 	inx
 	inx
 
@@ -563,13 +550,11 @@ b_mdv_SkipResetPMImage
 	sty zTitleLogoPMFrame       ; Save new Missile image index.
 
 	txa
-	jsr Pmg_AdustMissileHPOS    ; Update  the missile HPOS.
+	jsr Pmg_AdustMissileHPOS    ; Update the missile HPOS.
 
 b_mdv_SkipTitleMissileUpdate
 
 b_mdv_DoGameManagement
-
-
 
 
 ; ======== Manage Boat fine scrolling ========
@@ -923,124 +908,127 @@ TITLE_DLI_1
 	
 	; Setup PRIOR for 16 grey-scale graphics, and Missile color overlay.
 	; The screen won;t show any noticeable change here, because the COLBK 
-	; value is black, and this won;t change for the 16-shade mode.
+	; value is black, and this won't change for the 16-shade mode.
 	lda #[FIFTH_PLAYER|GTIA_MODE_16_SHADE] 
 	sta PRIOR
 
 	mChainDLI TITLE_DLI_1,TITLE_DLI_2
 
-
 ;==============================================================================
 ; TITLE_DLI_2                                             
 ;==============================================================================
 ; DLI to game the VSCROL to hack mode F into 3 scan lines tall.  
-; Runs six times for title.
+; Runs six times for title.  (2 * 3)
+; Gruesome debugging cycle on this.  Could not get this to run as a couple
+; smaller DLIs that repeat.  no matter what.  So, bludgeon VSCROL and 
+; WSYNC our way down the six extended mode F lines.
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_2
 
 	 mStart_DLI ; Saves A and Y
 
-b_td2_LoopForLines
 ;1
 	ldy #14             ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
 	lda #2
-	sta WSYNC           ; sync to end of line.
+	sta WSYNC           ; (1.0) sync to end of line.
 	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
+	nop
 	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
 	lda zTitleLogoColor
+;	lda #$10
 	sta COLPF3
-;2
-	sta WSYNC
+	sta WSYNC           ; (1.1) sync to end of line.
 	jsr DLI_INC_PF3_COLOR
-	sta WSYNC           ; sync to end of line.
-	sta WSYNC           ; sync to end of line.
+	sta WSYNC           ; (1.2) sync to end of line.
+
+;2
+	sta WSYNC           ; (2.0) sync to end of line.
+;	lda #$20
 	lda zTitleLogoColor
 	sta COLPF3
-
+	sta WSYNC           ; (2.1) sync to end of line.
+	jsr DLI_INC_PF3_COLOR
+	sta WSYNC           ; (2.2) sync to end of line.
 
 ;3
-	sta WSYNC
-	jsr DLI_INC_PF3_COLOR
-	sta WSYNC           ; sync to end of line.
-	ldy #14             ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
 	lda #2
-	sta WSYNC           ; sync to end of line.
+	sta WSYNC           ; (3.0) sync to end of line.
 	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
+	nop
 	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
+;	lda #$30
 	lda zTitleLogoColor
 	sta COLPF3
-;4
-	sta WSYNC
+	sta WSYNC           ; (3.1) sync to end of line.
 	jsr DLI_INC_PF3_COLOR
-	sta WSYNC           ; sync to end of line.
-	sta WSYNC           ; sync to end of line.
+	sta WSYNC           ; (3.2) sync to end of line.
+
+;4
+	sta WSYNC           ; (4.0) sync to end of line.
+;	lda #$40
 	lda zTitleLogoColor
 	sta COLPF3
-
+	sta WSYNC           ; (4.1) sync to end of line.
+	jsr DLI_INC_PF3_COLOR
+	sta WSYNC           ; (4.2) sync to end of line.
 
 ;5
-	sta WSYNC
-	jsr DLI_INC_PF3_COLOR
-	sta WSYNC           ; sync to end of line.
-	ldy #14             ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
 	lda #2
-	sta WSYNC           ; sync to end of line.
+	sta WSYNC           ; (5.0) sync to end of line.
 	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
+	nop
 	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
+;	lda #$50
 	lda zTitleLogoColor
 	sta COLPF3
+	sta WSYNC           ; (5.1) sync to end of line.
+	jsr DLI_INC_PF3_COLOR
+	sta WSYNC           ; (5.2) sync to end of line.
+
 ;6
-	sta WSYNC
-	jsr DLI_INC_PF3_COLOR
-	sta WSYNC           ; sync to end of line.
-	sta WSYNC           ; sync to end of line.
+	sta WSYNC           ; (6.0) sync to end of line.
+;	lda #$60
 	lda zTitleLogoColor
 	sta COLPF3
+	sta WSYNC           ; (6.1) sync to end of line.
+	sta WSYNC           ; (6.2) sync to end of line.
 
-	sta WSYNC
-	sta WSYNC           ; sync to end of line.
-	ldy #14             ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
+; FINISHED
 	lda #2
-	sta WSYNC           ; sync to end of line.
+	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
+	sta WSYNC           ; (7.0) sync to end of scan line
+	sta VSCROL          ; =2, default. untrigger the hack.
+	sty DMACTL          ; Set all the ANTIC screen controls and DMA options.
 
-	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
-	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
+	; Return to normal color interpretation.
+	lda #[GTIA_MODE_DEFAULT] 
+	sta PRIOR
 
+	lda #$88
+	sta COLPF0
+	lda #$84
+	sta COLPF2
+	lda #$0C
+	sta COLPF3
 
-
-	; Now, everything else is liesurely-like maintenance.  
-	; We have 2 scan lines to get the variables in order.
-
-;	jsr DLI_INC_PF3_COLOR
-;	sta WSYNC
-;	sta WSYNC
-;	bne b_td2_LoopForLines
-;	beq b_td2_ExitToChain   ; If not zero then just exit to repeat this DLI..
-
-;	sta WSYNC
-;	bne b_td2_LoopForLines
-
-;	pla                     ; Exit DLI without chaining, making this repeat.
-;	tay
-;	pla
-
-;	rti
-
-b_td2_ExitToChain
 	pla
 	tay
 
 	mChainDLI TITLE_DLI_2,TITLE_DLI_3 ; Done here.  Finally go to next DLI.
 
 
-
+;==============================================================================
+; DLI_INC_PF3_COLOR                                             
+;==============================================================================
+; Supporting routine used by DLI_2 and DLI_3 to increment the Missiles'
+; color for the overlay on the big logo.
+; This also coounts the number of time this has occurred and returns 
+; Z flag when this series has been called the number of times needed 
+; for the screen.
+; -----------------------------------------------------------------------------
 
 DLI_INC_PF3_COLOR
-	dec zTitleLogoTries     ; count 3, 2, 1, 0
-	bne b_td2_SkipTryReset  ; Not 0, do not reset.
-	lda #3
-	sta zTitleLogoTries
 
 	lda zTitleLogoColor     ; Get the Base color
 	cmp #COLOR_ORANGE_GREEN ; Is it the ending color?
@@ -1056,9 +1044,6 @@ b_td2_AddToColor
 b_td2_UpdateColor
 	sta zTitleLogoColor     ; Save it for the next DLI use
 
-b_td2_SkipTryReset
-;	dec zTitleVSCHacks      ; Count the number of times we've been here.
-	
 	rts
 
 
@@ -1074,24 +1059,18 @@ TITLE_DLI_3
 
 	 mStart_DLI ; Saves A and Y
 
-	lda #0
-	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
-	sta WSYNC           ; sync to end of scan line
-	sta VSCROL          ; =0, default. untrigger the hack if on for prior line.
-
-	; Set all the ANTIC screen controls and DMA options.
-	sty DMACTL
+;	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
+;	sta WSYNC           ; sync to end of scan line
+;	sty DMACTL          ; Set all the ANTIC screen controls and DMA options.
 
 	; Return to normal color interpretation.
-	lda #[GTIA_MODE_DEFAULT] 
-	sta PRIOR
+;	lda #[GTIA_MODE_DEFAULT] 
+;	sta PRIOR
 
-	lda #$02
-	sta COLBK
 	lda #$88
-	sta COLPF0
-	lda $84
-	sta COLPF2
+	sta COLBK
+	lda #$00
+	sta COLBK
 
 	pla
 	tay

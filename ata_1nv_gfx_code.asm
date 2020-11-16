@@ -49,7 +49,6 @@ b_gatl_SkipReset
 	lda TABLE_GFX_TITLE_LOGO+1,X ; Get the new graphics address high byte
 	sta DL_LMS_TITLE+1           ; and update the display list LMS.
 
-b_gatl_SkipTitleGfx
 	rts
 
 

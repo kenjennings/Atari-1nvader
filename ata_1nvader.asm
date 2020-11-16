@@ -56,7 +56,7 @@ zAnimateTitleGfx       .byte TITLE_SPEED_GFX      ; countdown jiffies. At 0 the 
 TITLE_LOGO_FRAME_MAX   = 3                        ; Four frames, Count 3, 2, 1, 0
 zTITLE_LOGO_FRAME      .byte 0                    ; current frame for big graphic logo gfx
 
-TITLE_SPEED_PM         = 4                       ; jiffies to count for title Missile animations
+TITLE_SPEED_PM         = 10                       ; jiffies to count for title Missile animations
 zAnimateTitlePM        .byte TITLE_SPEED_PM       ; countdown jiffies. At 0 the animation changes.
 
 TITLE_LOGO_PMIMAGE_MAX = 44                       ; 43 frames of images.  back to 0 when this is max.
@@ -67,11 +67,8 @@ zTitleHPos             .byte TITLE_LOGO_X_START   ; Missile position.
 
 TITLE_LOGO_Y_POS       = 79                       ; Just a constant.  No need for variable.
 
-zTitleLogoBaseTries   .byte $00                   ; Starting value for first DLI
-zTitleLogoTries       .byte $00                   ; Working value for repeated DLIs
-
-ZTitleLogoBaseColor   .byte $10                   ; Starting value for first DLI. 
-ZTitleLogoColor       .byte $10                   ; Value for DLI. Loop from $10 to $E0 by 16.
+ZTitleLogoBaseColor   .byte COLOR_ORANGE1         ; Starting value for first DLI. 
+ZTitleLogoColor       .byte COLOR_ORANGE1         ; Value for DLI. Loop from $10 to $E0 by 16.
 
 zTitleVSCHacks        .byte $00                   ; Number of times the VScroll hack is used. (6 max)
 

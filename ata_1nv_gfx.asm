@@ -181,31 +181,20 @@ DISPLAY_LIST_TITLE                                          ; System VBI sets co
 	mDL_BLANK DL_BLANK_8                                    ; 02 (036 - 043) Blank 8
 	mDL_BLANK DL_BLANK_8                                    ; 03 (044 - 051) Blank 8   3, 2, 1, GO P/M animation
 	mDL_BLANK DL_BLANK_8                                    ; 04 (052 - 059) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK [DL_BLANK_7|DL_DLI]                           ;    (060 - 066) Blank 7  Narrow screen DMA, start GTIA $4 in PRIOR 
-	mDL_BLANK DL_BLANK_1                                    ;    (067 - 067) Blank 1  Allow time for prior DLI to act. 
-	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (068 - 070) Blank 3  (DLI vscroll hack) 
+	mDL_BLANK DL_BLANK_7|DL_DLI                             ;    (060 - 066) (DLI 1) Blank 7   Narrow screen DMA, start GTIA $4 in PRIOR 
+	mDL_BLANK DL_BLANK_1                                    ;    (067 - 067) Blank 1 Allow time for prior DLI to act. 
+	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (068 - 070) (DLI 2) Blank 3   (DLI vscroll hack next lines) 
 
 DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS low byte value.    
-	mDL_LMS   DL_MAP_F|DL_VSCROLL,GFX_TITLE_FRAME1   ;    (071 - 073) (074 - 076) Mode F * 3 Animated Gfx
-	
-	mDL       DL_MAP_F                    ;  
-	mDL       DL_MAP_F|DL_VSCROLL                    ;    (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
-	mDL       DL_MAP_F                    ; 
-	mDL       DL_MAP_F|DL_VSCROLL                    ;    (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
-	mDL       DL_MAP_F                    ;                            Turn Off VSCROL hack, reset 
+	mDL_LMS   DL_MAP_F|DL_VSCROLL,GFX_TITLE_FRAME1          ;    (071 - 073)  Mode F * 3 Animated Gfx  
+	mDL       DL_MAP_F                                      ;    (074 - 076)  Mode F * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL                           ;    (077 - 079)  Mode F * 3 Animated Gfx 
+	mDL       DL_MAP_F                                      ;    (080 - 082)  Mode F * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL                           ;    (083 - 085)  Mode F * 3 Animated Gfx 
+	mDL       DL_MAP_F                                      ;    (086 - 088)  Mode F * 3 Animated Gfx  Turn Off VSCROL hack, reset 
 
-;	mDL       DL_MAP_F|DL_DLI                    ;  
-;	mDL       DL_MAP_F|DL_VSCROLL                    ;    (077 - 079) (080 - 082) Mode F * 3 Animated Gfx
-;	mDL       DL_MAP_F|DL_DLI                    ; 
-;	mDL       DL_MAP_F|DL_VSCROLL                    ;    (083 - 085) (086 - 088) Mode F * 3 Animated Gfx 
-;	mDL       DL_MAP_F|DL_DLI                    ;                            Turn Off VSCROL hack, reset normal screen DMA, PRIOR
 	mDL_BLANK DL_BLANK_8                                    ;    (089 - 099) Blank 8 
-
-;	.print "dl blank 3   ",DL_BLANK_3
-;	.print "dl dli       ",DL_DLI
-;	.print "dl blank+dli ",DL_BLANK_3|DL_DLI 
-	
-	mDL_BLANK DL_BLANK_3|DL_DLI                             ;       wqhy       + Blank 3  (Hscroll authors, run colors)
+	mDL_BLANK [DL_BLANK_3|DL_DLI]                           ;              + Blank 3  (DLI 5) (Hscroll authors, run colors)
 
 DL_LMS_SCROLL_CREDIT = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT1       ; 10 (100 - 107) (6) Author(s) Credit line
@@ -218,7 +207,7 @@ DL_LMS_SCROLL_DOCS = [ * + 1 ]
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (140 - 147) (6) Fine scrolling docs
 	mDL_BLANK DL_BLANK_8                                    ; 16 (148 - 155) Blank 8
 	mDL_BLANK DL_BLANK_8                                    ; 17 (156 - 163) Blank 8
-	mDL_BLANK DL_BLANK_8|DL_DLI                           ; 18 (164 - 171) Blank 8
+	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 18 (164 - 171) Blank 8
 
 
 BOTTOM_OF_DISPLAY                                 

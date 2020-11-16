@@ -289,15 +289,20 @@ GoToStartEventForTitle
 	lda #$84
 	sta COLPF2
 
-	lda #3
-	sta zTitleLogoTries
-	sta zTitleLogoBaseTries
-
 	lda #TITLE_LOGO_X_START
 	sta zTitleHPos
 
 	lda #0
 	sta zTitleLogoPMFrame
+
+	lda #TITLE_SPEED_PM
+	sta zAnimateTitlePM
+
+	lda #COLOR_ORANGE1           ; Yes.  Reset to first color.
+	sta ZTitleLogoBaseColor      ; Resave the new update
+	sta ZTitleLogoColor          ; Save it for the DLI use
+	sta COLOR3                   ; Make sure it starts in the OS shadow and 
+	sta COLPF3                   ; the hardware registers.
 
 	lda #EVENT_TITLE           
 	sta zCurrentEvent

@@ -439,9 +439,6 @@ bAZ_LoopZeroPMSpecs
 
 	sta SIZEM
 
-;	lda #[GTIA_MODE_DEFAULT|%0001] ; Default priority 
-;	sta GPRIOR
-
 	rts
 
 
