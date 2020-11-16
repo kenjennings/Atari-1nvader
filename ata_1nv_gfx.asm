@@ -194,11 +194,12 @@ DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS
 	mDL       DL_MAP_F                                      ;    (086 - 088)  Mode F * 3 Animated Gfx  Turn Off VSCROL hack, reset 
 
 	mDL_BLANK DL_BLANK_8                                    ;    (089 - 099) Blank 8 
-	mDL_BLANK [DL_BLANK_3|DL_DLI]                           ;              + Blank 3  (DLI 5) (Hscroll authors, run colors)
+	mDL_BLANK [DL_BLANK_3|DL_DLI]                           ;              + Blank 3  (DLI 3) (Hscroll authors, run colors)
 
-DL_LMS_SCROLL_CREDIT = [ * + 1 ]   
+DL_LMS_SCROLL_CREDIT1 = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT1       ; 10 (100 - 107) (6) Author(s) Credit line
-	mDL_BLANK DL_BLANK_8                                    ; 11 (108 - 115) Blank 8
+DL_LMS_SCROLL_CREDIT2 = [ * + 1 ]
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT2       ; 10 (108 - 115) (6) Author(s) Credit line
 	mDL_BLANK DL_BLANK_8                                    ; 12 (116 - 123) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8                                    ; 13 (124 - 131) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 14 (132 - 139) Blank 8
@@ -483,17 +484,19 @@ GFX_TITLE_FRAME4
 	.by $00 $00 $00 $00 $00 $00 $00 $06 $03 $00 $06 $09 $30 $09 $03 $C6 $06 $00 $03 $06 $00 $00 $03 $00 $03 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $09 $0C $00 $03 $0C $00 $06 $00 $09 $03 $0C $96 $09 $C3 $69 $0C $00 $06 $00 $00 $00 $00 $00 $00 $00
 
+	.align $0100
+
 ; Text line for the two major authors, C64, Atari.
 
 GFX_SCROLL_CREDIT1
-	.sb "     2019 - C64     "
-	.sb "           " ; Padding to allow values to leave before changing DLI colors.
-	.sb "    2020 - ATARI    "
-	
-GFX_SCROLL_CREDIT2	
-	.sb "    DARREN FOULDS   "
-	.sb "             " ; Padding to allow values to leave before changing DLI colors.
-	.sb "    KEN JENNINGS    "
+	.sb "    DARREN FOULDS   "  ; +0, HSCROL 12
+	.sb "             "         ; Padding to allow values to leave.
+	.sb "    ken jennings    "  ; +30, HSCROL 12
+
+GFX_SCROLL_CREDIT2
+	.sb " 2020 - atari 8-bits"  ; +0, HSCROL 12
+	.sb "           "           ; Padding to allow values to leave before changing DLI colors.
+	.sb "2019 - COMMODORE 64 "  ; +30, HSCROL 12
 
 
 ; GFX_SCROLL_DOCS on Atari.  

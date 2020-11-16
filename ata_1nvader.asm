@@ -50,13 +50,13 @@ zInputScanFrames   .byte $00
 
 ; Title Logo Values =========================================================
 
-TITLE_SPEED_GFX        = 5                        ; jiffies to count for title color animations
+TITLE_SPEED_GFX        = 6                        ; jiffies to count for title color animations
 zAnimateTitleGfx       .byte TITLE_SPEED_GFX      ; countdown jiffies. At 0 the animation changes.
 
 TITLE_LOGO_FRAME_MAX   = 3                        ; Four frames, Count 3, 2, 1, 0
 zTITLE_LOGO_FRAME      .byte 0                    ; current frame for big graphic logo gfx
 
-TITLE_SPEED_PM         = 10                       ; jiffies to count for title Missile animations
+TITLE_SPEED_PM         = 3                       ; jiffies to count for title Missile animations
 zAnimateTitlePM        .byte TITLE_SPEED_PM       ; countdown jiffies. At 0 the animation changes.
 
 TITLE_LOGO_PMIMAGE_MAX = 44                       ; 43 frames of images.  back to 0 when this is max.
@@ -68,19 +68,33 @@ zTitleHPos             .byte TITLE_LOGO_X_START   ; Missile position.
 TITLE_LOGO_Y_POS       = 79                       ; Just a constant.  No need for variable.
 
 ZTitleLogoBaseColor   .byte COLOR_ORANGE1         ; Starting value for first DLI. 
-ZTitleLogoColor       .byte COLOR_ORANGE1         ; Value for DLI. Loop from $10 to $E0 by 16.
-
-zTitleVSCHacks        .byte $00                   ; Number of times the VScroll hack is used. (6 max)
+ZTitleLogoColor       .byte COLOR_ORANGE1         ; Value for DLI. Loop from $10 to $E0 by 16
 
 
-;Big Mothership Values =========================================================
+; Scrolling Credits Values ==================================================
+
+; GFX_SCROLL_CREDIT1  ;   +0, HSCROL 12   ; +30, HSCROL 12
+; GFX_SCROLL_CREDIT2  ;  +30, HSCROL 12   ;   +0, HSCROL 12
+
+; DL_LMS_SCROLL_CREDIT1  +0 to +30   - inc LMS, dec HS ("Move" data left)
+; DL_LMS_SCROLL_CREDIT2  +30 to +0     dec LMS, inc HS ("move" data right)
+
+zCreditsTimer    .byte $FF  ; Number of jiffies to Pause.  When 0, run scroll.
+zCreditsMotion   .byte $00  ; 0 = left/right != = right/left
+zCredit1HS       .byte 12   ; fine horizontal scroll value.
+zCredit2HS       .byte 12   ; fine horizontal scroll value.
+
+
+
+
+; Big Mothership Values =====================================================
 
 BIG_MOTHERSHIP_START = 108 ; Starting position of the big mothership
 
 zBIG_MOTHERSHIP_Y .byte BIG_MOTHERSHIP_START
 
 
-; Game Control Values =========================================================
+; Game Control Values =======================================================
 
 zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player. 
 zGAME_OVER_FLAG    .byte $00 ; Set 0/1 for game over 

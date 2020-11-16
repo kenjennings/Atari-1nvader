@@ -936,7 +936,6 @@ TITLE_DLI_2
 	nop
 	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
 	lda zTitleLogoColor
-;	lda #$10
 	sta COLPF3
 	sta WSYNC           ; (1.1) sync to end of line.
 	jsr DLI_INC_PF3_COLOR
@@ -944,7 +943,6 @@ TITLE_DLI_2
 
 ;2
 	sta WSYNC           ; (2.0) sync to end of line.
-;	lda #$20
 	lda zTitleLogoColor
 	sta COLPF3
 	sta WSYNC           ; (2.1) sync to end of line.
@@ -957,7 +955,6 @@ TITLE_DLI_2
 	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
 	nop
 	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
-;	lda #$30
 	lda zTitleLogoColor
 	sta COLPF3
 	sta WSYNC           ; (3.1) sync to end of line.
@@ -966,7 +963,6 @@ TITLE_DLI_2
 
 ;4
 	sta WSYNC           ; (4.0) sync to end of line.
-;	lda #$40
 	lda zTitleLogoColor
 	sta COLPF3
 	sta WSYNC           ; (4.1) sync to end of line.
@@ -979,7 +975,6 @@ TITLE_DLI_2
 	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
 	nop
 	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
-;	lda #$50
 	lda zTitleLogoColor
 	sta COLPF3
 	sta WSYNC           ; (5.1) sync to end of line.
@@ -988,13 +983,13 @@ TITLE_DLI_2
 
 ;6
 	sta WSYNC           ; (6.0) sync to end of line.
-;	lda #$60
 	lda zTitleLogoColor
 	sta COLPF3
 	sta WSYNC           ; (6.1) sync to end of line.
 	sta WSYNC           ; (6.2) sync to end of line.
 
-; FINISHED
+; FINISHED - Turn off the VSCROL hack, restore normal screen .
+
 	lda #2
 	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
 	sta WSYNC           ; (7.0) sync to end of scan line
@@ -1009,7 +1004,7 @@ TITLE_DLI_2
 	sta COLPF0
 	lda #$84
 	sta COLPF2
-	lda #$0C
+	lda #$8E
 	sta COLPF3
 
 	pla
