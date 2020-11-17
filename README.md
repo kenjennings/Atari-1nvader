@@ -43,6 +43,8 @@ Finished the VBI code supporting fine scrolling the two lines of author credits.
 
 The real fine scrolling need a Display List Interrupt added to set the HSCROL value for each scrolling line.   That will be for another day.  And, as long as I'm in there in the Display List interrupt code, I may as well make pretty gradient colors on the text.
 
+(I accidentally restored the previous verion of the character set.  You can see the zero (0) character doesn't look right. The way the character is designed it will not look right on real hardware using a CRT monitor which is my baseline for acceptable appearance.   Also, the scores use alternate versions of the numbers, so that they look properly white on NTSC, and not pink and green.
+
 ---
 
 **DD MMM 2020 -- TO-DO**
