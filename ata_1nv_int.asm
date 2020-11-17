@@ -554,6 +554,128 @@ b_mdv_SkipResetPMImage
 
 b_mdv_SkipTitleMissileUpdate
 
+
+; ======== MANAGE CREDITS SCROLLING ========
+
+; Two lines of author credits.   
+; When the first line scrolls left the second line scrolls right.   
+; Pause for a few seconds for reading comprehension.
+; Then reverse directions.
+; Rinse.  Repeat.
+
+; 1) If waiting, continue to wait.
+; 2) if not waiting, then do motion.  
+; 3) Wait for motion timer.
+; 4) Execute motion. Either
+; 4)a) top row to the left, bottom row to the right, OR
+; 4)b) top row to the right, bottom row to the left
+; 5) At end, then reset
+; 5)a) toggle motion direction.
+; 5)b) restart the waiting phase.
+
+b_mdv_DoCreditScrolling
+
+	lda zCreditsPhase            ; 0 == waiting    1  == scrolling
+	bne b_mdv_RunCreditScrolling
+
+	; Waiting....
+	dec zCreditsTimer
+	bne b_mdv_EndCreditScrolling  ; Timer still >0
+
+	; Reset timer.  And start scrolling.
+	inc zCreditsPhase             ; To get here we know this was 0.
+	lda #CREDITS_MAX_PAUSE
+	sta zCreditsTimer
+	
+	; We are moving the credits...
+
+b_mdv_RunCreditScrolling
+
+	dec zCreditsScrollTimer      ; Delay to not scroll to quickly.
+	bne b_mdv_EndCreditScrolling
+
+	lda #CREDITS_STEP_TIMER      ; Reset the scroll timer
+	sta zCreditsScrollTimer
+
+	lda zCreditsMotion           ; What direction are we moving in?
+	beq b_mdv_CreditLeftRight    ; 0 is moving Left/Right
+
+	; Otherwise, we're going in the opposite direction here.  (Right/Left)
+
+	inc zCredit1HS            ; Credit 1 Right
+	lda zCredit1HS
+	cmp #16                   ; Reach the end of fine scrolling 16 color clocks?
+	bne b_mdv_Credit2_Left    ; No, go do the Credit2 line.
+	lda #0                    ; Yes. 
+	sta zCredit1HS            ; Reset the fine scroll, and...
+	dec DL_LMS_SCROLL_CREDIT1 ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_CREDIT1 ; and another 8 color clocks.
+
+b_mdv_Credit2_Left
+	dec zCredit2HS             ; Credit 2 Left
+	lda zCredit2HS             ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
+	bpl b_mdv_TestEndRightLeft ; Nope.  End of scrolling, check end position
+	lda #15                    ; Yes. 
+	sta zCredit2HS             ; Reset the fine scroll, and...
+	inc DL_LMS_SCROLL_CREDIT2  ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_CREDIT2  ; and another 8 color clocks.
+
+b_mdv_TestEndRightLeft            ; They both scroll the same distance.  Check Line2's end position.
+	lda zCredit2HS                ; Get fine scroll position
+	cmp #12                       ; At the stopping point?
+	bne b_mdv_EndCreditScrolling  ; nope.  We're done with checking.
+	lda DL_LMS_SCROLL_CREDIT2     ; Get the coarse scroll position
+	cmp #<[GFX_SCROLL_CREDIT2+30] ; at the ending coarse scroll position?
+	bne b_mdv_EndCreditScrolling  ; nope.  We're done with checking.
+
+	; reset to do left/right, then re-enable the reading comprehension timer.
+	dec zCreditsMotion           ; It was 1 to do right/left scrolling. swap.
+	dec zCreditsPhase            ; It was 1 to do scrolling.  switch to waiting.
+	bne b_mdv_EndCreditScrolling ; Finally done with this scroll direction. 
+
+;  we're going in the Left/Right direction. 
+
+b_mdv_CreditLeftRight
+	dec zCredit1HS             ; Credit 1 Left
+	lda zCredit1HS             ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
+	bpl b_mdv_Credit2_Right    ; No, go do the Credit2 line. 
+	lda #15                    ; Yes. 
+	sta zCredit1HS             ; Reset the fine scroll, and...
+	inc DL_LMS_SCROLL_CREDIT1  ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_CREDIT1  ; and another 8 color clocks.
+
+b_mdv_Credit2_Right
+	inc zCredit2HS            ; Credit 1 Right
+	lda zCredit2HS
+	cmp #16                   ; Reach the end of fine scrolling 16 color clocks?
+	bne b_mdv_TestEndLeftRight; Nope.  End of scrolling, check end position
+	lda #0                    ; Yes. 
+	sta zCredit2HS            ; Reset the fine scroll, and...
+	dec DL_LMS_SCROLL_CREDIT2 ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_CREDIT2 ; and another 8 color clocks.
+
+
+b_mdv_TestEndLeftRight           ; They both scroll the same distance.  Check Line2's end position.
+	lda zCredit2HS               ; Get fine scroll position
+	cmp #12                      ; At the stopping point?
+	bne b_mdv_EndCreditScrolling ; nope.  We're done with checking.
+	lda DL_LMS_SCROLL_CREDIT2    ; Get the coarse scroll position
+	cmp #<GFX_SCROLL_CREDIT2     ; at the ending coarse scroll position?
+	bne b_mdv_EndCreditScrolling ; nope.  We're done with checking.
+
+	; reset to do left/right, then re-enable the reading comprehension timer.
+	inc zCreditsMotion           ; It was 0 to do left/right scrolling. swap.
+	dec zCreditsPhase            ; It was 1 to do scrolling.  switch to waiting.
+	bne b_mdv_EndCreditScrolling ; Finally done with this scroll direction. 
+
+b_mdv_EndCreditScrolling
+
+
+
+
+
+
+
 b_mdv_DoGameManagement
 
 

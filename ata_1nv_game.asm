@@ -259,35 +259,15 @@ b_gi_LoopFillZero
 
 GameSetupTitle
 
-;	lda AnimateFrames          ; Did animation counter reach 0 ?
-;	bne EndTransitionToTitle   ; Nope.  Nothing to do.
-;	lda #TITLE_SPEED           ; yes.  Reset it.
-;	jsr ResetTimers
-
-;	lda EventStage             ; What stage are we in?
-;	cmp #1
-;	bne GoToStartEventForTitle
-
-; === STAGE 1 ===
-
-;	jsr ToPlayFXScrollOrNot    ; Start slide sound playing if not playing now.
-
-;FinishedNowSetupStage2
-;	jsr PlaySaberHum           ; Play light saber hum using two channels.
-
-;	lda #2                     ; Set stage 2 as next part of Title screen event...
-;	sta EventStage
-;	bne EndTransitionToTitle
-
-GoToStartEventForTitle
-
-
-	; === STAGE 2 ===
+	; ===== Basics =====
 
 	lda #$88
 	sta COLPF0
 	lda #$84
 	sta COLPF2
+
+
+	; ===== The Big Logo =====
 
 	lda #TITLE_LOGO_X_START
 	sta zTitleHPos
@@ -304,13 +284,42 @@ GoToStartEventForTitle
 	sta COLOR3                   ; Make sure it starts in the OS shadow and 
 	sta COLPF3                   ; the hardware registers.
 
+
+	; ===== The scrolling credits =====
+
+; GFX_SCROLL_CREDIT1  ;   +0, HSCROL 12   ; +30, HSCROL 12
+; GFX_SCROLL_CREDIT2  ;  +30, HSCROL 12   ;   +0, HSCROL 12
+
+; DL_LMS_SCROLL_CREDIT1  +0 to +30   - inc LMS, dec HS ("Move" data left)
+; DL_LMS_SCROLL_CREDIT2  +30 to +0     dec LMS, inc HS ("move" data right)
+
+	lda #<GFX_SCROLL_CREDIT1      ; Init the starting LMS positions.
+	sta DL_LMS_SCROLL_CREDIT1
+
+	lda #<[GFX_SCROLL_CREDIT2+30]
+	sta DL_LMS_SCROLL_CREDIT2
+
+	lda #12                       ; Set fine scroll starting point
+	sta zCredit1HS
+	sta zCredit2HS
+
+	lda #CREDITS_MAX_PAUSE        ; Set the wait timer.
+	sta zCreditsTimer 
+
+	lda #CREDITS_STEP_TIMER       ; How many frames to wait for each fine scroll.
+	sta zCreditsScrollTimer
+
+	lda #$00
+	sta zCreditsPhase             ; 0 == waiting    (1  == scrolling)
+	sta zCreditsMotion            ; 0 == left/right (1 == right/left)
+
+
+	; ===== Start the Title running on the next frame =====
+
 	lda #EVENT_TITLE           
 	sta zCurrentEvent
 	lda #0 
 	sta zEventStage
-
-EndTransitionToTitle
-;	jsr WobbleDeWobble         ; Frog following spirograph art path on the title.
 
 	rts
 

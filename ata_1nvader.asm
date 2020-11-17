@@ -79,12 +79,17 @@ ZTitleLogoColor       .byte COLOR_ORANGE1         ; Value for DLI. Loop from $10
 ; DL_LMS_SCROLL_CREDIT1  +0 to +30   - inc LMS, dec HS ("Move" data left)
 ; DL_LMS_SCROLL_CREDIT2  +30 to +0     dec LMS, inc HS ("move" data right)
 
-zCreditsTimer    .byte $FF  ; Number of jiffies to Pause.  When 0, run scroll.
-zCreditsMotion   .byte $00  ; 0 = left/right != = right/left
-zCredit1HS       .byte 12   ; fine horizontal scroll value.
-zCredit2HS       .byte 12   ; fine horizontal scroll value.
+CREDITS_MAX_PAUSE   = $FF
+zCreditsTimer       .byte CREDITS_MAX_PAUSE  ; Number of jiffies to Pause.  When 0, run scroll.
 
+CREDITS_STEP_TIMER   = 2
+zCreditsScrollTimer .byte CREDITS_STEP_TIMER ; How many frames to wait for each fine scroll.
 
+zCreditsPhase       .byte $00  ; 0 == waiting  1 == scrolling.
+zCreditsMotion      .byte $00  ; 0 == left/right !0 == right/left
+
+zCredit1HS          .byte 12   ; fine horizontal scroll value start.
+zCredit2HS          .byte 12   ; fine horizontal scroll value start.
 
 
 ; Big Mothership Values =====================================================
@@ -92,73 +97,6 @@ zCredit2HS       .byte 12   ; fine horizontal scroll value.
 BIG_MOTHERSHIP_START = 108 ; Starting position of the big mothership
 
 zBIG_MOTHERSHIP_Y .byte BIG_MOTHERSHIP_START
-
-
-; Game Control Values =======================================================
-
-zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player. 
-zGAME_OVER_FLAG    .byte $00 ; Set 0/1 for game over 
-zSHOW_SCORE_FLAG   .byte $00 ; Flag to update score on screen.
-zVIC_COLLISION     .byte $00 ; VIC II Sprite Collision Flag. (lda VIC_BASE+30)  (Atari has several registers)
-zCHAR_COLOR        .byte $00 ; Character Color. (probably no use for Atari)
-zSCROLL_COUNTER    .byte $00 ; Documentation scroll counter. (probably no use for Atari)
-zCOUNTDOWN_SECS    .byte $00 ; Countdown seconds for game transition (51 to 48 as the 3, 2, 1)
-zJIFFY_COUNTER     .byte $00 ; Jiffy clock for countdown seconds for title transition.
-zSCROLL_JIFFY      .byte $00 ; Jiffy clock for scrolling directions.
-zSHIP_HITS         .byte $00 ; 
-
-zPLAYER_ONE_ON     .byte $00 ; (0) not playing. (1) playing.
-zPLAYER_ONE_X      .byte $00 ; Player 1 gun X coord
-zPLAYER_ONE_Y      .byte $00 ; Player 1 Y position (slight animation, but usually fixed.)
-zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction
-zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
-zPLAYER_ONE_SCORE  .byte $00,$00,$00 ; Player 1 score, 6 digit BCD 
-zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color
-zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
-
-zLASER_ONE_ON      .byte $00 ; whether or not the laser is shooting
-zLASER_ONE_X       .byte $00 ; Laser 1 X coord
-zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
-
-zPLAYER_TWO_ON     .byte $00 ; (0) not playing. (1) playing.
-zPLAYER_TWO_X      .byte $00 ; Player 2 gun X coord
-zPLAYER_TWO_Y      .byte $00 ; Player 2 Y position (slight animation, but usually fixed.)
-zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction
-zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
-zPLAYER_TWO_SCORE  .byte $00,$00,$00 ; Player 2 score, 6 digit BCD 
-zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color
-zPLAYER_TWO_BUMP   .byte $00 ; Player 2 collision
-
-zLASER_TWO_ON      .byte $00 ; whether or not the laser is shooting
-zLASER_TWO_X       .byte $00 ; Laser 1 X coord
-zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
- 
-zMOTHERSHIP_X               .byte $00 ; Game mothership X coord 
-zMOTHERSHIP_Y               .byte $00 ; Game mothership Y coord 
-zMOTHERSHIP_DIR             .byte $00 ; Mothership direction 
-zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed  
-zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter 
-zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threahold 
-zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
-zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
-zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
-
-; Note that the original game dealt with some things in BCD values, 
-; such as the Mothership row here making it a little more convenient to 
-; convert hex values to printable characters on the screen.  This makes 
-; using the value as an index a royal pain.  For sanity's sake this 
-; port is going to use it as a plain integer/binary byte value and do 
-; the special handling for the screen display part.
-; This is why the original code has weird gaps in some lookup tables.
-
-zMOTHERSHIP_POINTS          .word $0000 ; Current Points for hitting mothership
-
-zJOY_ONE_LAST_STATE .byte $00 ; Joystick Button One last state.
-zJOY_TWO_LAST_STATE .byte $00 ; Joystick Button Two last state
-
-
-
-zHIGH_SCORE        .byte $00,$00,$00 ; 6 digit BCD 
 
 
 
@@ -352,6 +290,81 @@ SAVEY = $FF
 	.by "** ATARI 1NVADER "
 	.by "** Atari 8-bit computer systems. "
 	.by "** Ken Jennings  2020 **"
+
+
+
+; TEMPORARILY RELOACATE TO HIGHER MEMORY AS PAGE ZERO BECME FILLED WITH CRUFTY TEMPORARY VARIABLES
+
+
+; Game Control Values =======================================================
+
+zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player. 
+zGAME_OVER_FLAG    .byte $00 ; Set 0/1 for game over 
+zSHOW_SCORE_FLAG   .byte $00 ; Flag to update score on screen.
+zVIC_COLLISION     .byte $00 ; VIC II Sprite Collision Flag. (lda VIC_BASE+30)  (Atari has several registers)
+zCHAR_COLOR        .byte $00 ; Character Color. (probably no use for Atari)
+zSCROLL_COUNTER    .byte $00 ; Documentation scroll counter. (probably no use for Atari)
+zCOUNTDOWN_SECS    .byte $00 ; Countdown seconds for game transition (51 to 48 as the 3, 2, 1)
+zJIFFY_COUNTER     .byte $00 ; Jiffy clock for countdown seconds for title transition.
+zSCROLL_JIFFY      .byte $00 ; Jiffy clock for scrolling directions.
+zSHIP_HITS         .byte $00 ; 
+
+zPLAYER_ONE_ON     .byte $00 ; (0) not playing. (1) playing.
+zPLAYER_ONE_X      .byte $00 ; Player 1 gun X coord
+zPLAYER_ONE_Y      .byte $00 ; Player 1 Y position (slight animation, but usually fixed.)
+zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction
+zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
+zPLAYER_ONE_SCORE  .byte $00,$00,$00 ; Player 1 score, 6 digit BCD 
+zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color
+zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
+
+zLASER_ONE_ON      .byte $00 ; whether or not the laser is shooting
+zLASER_ONE_X       .byte $00 ; Laser 1 X coord
+zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
+
+zPLAYER_TWO_ON     .byte $00 ; (0) not playing. (1) playing.
+zPLAYER_TWO_X      .byte $00 ; Player 2 gun X coord
+zPLAYER_TWO_Y      .byte $00 ; Player 2 Y position (slight animation, but usually fixed.)
+zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction
+zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
+zPLAYER_TWO_SCORE  .byte $00,$00,$00 ; Player 2 score, 6 digit BCD 
+zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color
+zPLAYER_TWO_BUMP   .byte $00 ; Player 2 collision
+
+zLASER_TWO_ON      .byte $00 ; whether or not the laser is shooting
+zLASER_TWO_X       .byte $00 ; Laser 1 X coord
+zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
+ 
+zMOTHERSHIP_X               .byte $00 ; Game mothership X coord 
+zMOTHERSHIP_Y               .byte $00 ; Game mothership Y coord 
+zMOTHERSHIP_DIR             .byte $00 ; Mothership direction 
+zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed  
+zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter 
+zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threahold 
+zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
+zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
+zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
+
+; Note that the original game dealt with some things in BCD values, 
+; such as the Mothership row here making it a little more convenient to 
+; convert hex values to printable characters on the screen.  This makes 
+; using the value as an index a royal pain.  For sanity's sake this 
+; port is going to use it as a plain integer/binary byte value and do 
+; the special handling for the screen display part.
+; This is why the original code has weird gaps in some lookup tables.
+
+zMOTHERSHIP_POINTS          .word $0000 ; Current Points for hitting mothership
+
+zJOY_ONE_LAST_STATE .byte $00 ; Joystick Button One last state.
+zJOY_TWO_LAST_STATE .byte $00 ; Joystick Button Two last state
+
+
+
+zHIGH_SCORE        .byte $00,$00,$00 ; 6 digit BCD 
+
+
+
+
 
 
 ;*******************************************************************************
