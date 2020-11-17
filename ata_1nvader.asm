@@ -82,7 +82,7 @@ ZTitleLogoColor       .byte COLOR_ORANGE1         ; Value for DLI. Loop from $10
 CREDITS_MAX_PAUSE   = $FF
 zCreditsTimer       .byte CREDITS_MAX_PAUSE  ; Number of jiffies to Pause.  When 0, run scroll.
 
-CREDITS_STEP_TIMER   = 2
+CREDITS_STEP_TIMER   = 1
 zCreditsScrollTimer .byte CREDITS_STEP_TIMER ; How many frames to wait for each fine scroll.
 
 zCreditsPhase       .byte $00  ; 0 == waiting  1 == scrolling.

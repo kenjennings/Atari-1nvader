@@ -217,7 +217,7 @@ BOTTOM_OF_DISPLAY
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; 21 (188 - 195) (6) Fine scrolling mountains to random position.
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; 22 (196 - 203) (6) Fine scrolling mountains to random position.
 	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; 23 (204 - 211) (6) ground and bumpers
-	mDL_LMS   DL_TEXT_6,GFX_STATSLINE                       ; 24 (212 - 219) (6) Stats line follows bumper line in memory.
+	mDL_LMS   DL_TEXT_2,GFX_STATSLINE                       ; 24 (212 - 219) (6) Stats line follows bumper line in memory.
 
 ; Note that as long as the system VBI is functioning the address 
 ; provided for JVB does not matter at all.  The system VBI will update
@@ -400,22 +400,14 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over
 GFX_SCORE_LINE ; | 000000 P1      HI 000000     P2 000000 | 
 	.sb " "
 GFX_SCORE_P1 
-	.sb "012345            "
+	.sb $00,$01,$02,$03,$04,$05
+	.sb "          "
 GFX_SCORE_HI 
-	.sb "678900        "
+	.sb $06,$07,$08,$09,$00,$00
+	.sb "          "
 GFX_SCORE_P2
-	.sb "000000 "
-
-
-
-;tichar   ; title characters -- ; Handled with GTIA graphics on Atari
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$ff,$e1,$7b,$e1,$e1,$20,$e1,$20,$fe,$e1,$e2,$7b,$e1,$e2,$e2,$e1,$e2,$7f,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$e1,$e1,$7c,$fe,$e1,$6c,$7e,$ff,$e1,$e1,$20,$e1,$e1,$7c,$7e,$e1,$6c,$ff,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$e1,$e1,$20,$e1,$e1,$7e,$e1,$7c,$fb,$e1,$6c,$fe,$e1,$62,$62,$e1,$20,$e1,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$32,$30,$31,$39,$20,$44,$41,$52,$52,$45,$4e,$20,$46,$4f,$55,$4c,$44,$53,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-;	.byte $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-
+	.sb $00,$00,$00,$00,$00,$00
+	.sb " "
 
 
 ; Title graphics are ANTIC F+GTIA $4 (aka BASIC mode 9, 16-grey scale) 
@@ -498,27 +490,12 @@ GFX_SCROLL_CREDIT2
 	.sb "           "           ; Padding to allow values to leave before changing DLI colors.
 	.sb "2019 - COMMODORE 64 "  ; +30, HSCROL 12
 
+	.align $0100
 
 ; GFX_SCROLL_DOCS on Atari.  
 ; Declared in gfx.asm aligned in memory to accommodate 
 ; fine scrolling directly from where it is declared. 
-;scrtxt   .text "                "
-;         .text "                "
-;         .text "      press fire"
-;         .text " to play     fir"
-;         .text "e shoots and cha"
-;         .text "nges cannon dire"
-;         .text "ction     more p"
-;         .text "oints when 1nvad"
-;         .text "er is high up   "
-;         .text "  1nvader slows "
-;         .text "down after eight"
-;         .text "y hits     'darr"
-;         .text "enthefoulds     "
-;         .text "thx 'bedfordlvle"
-;         .text "xp     hi nate a"
-;         .text "nd tbone/       "
-	
+
 ; Scrolling text for the directions, credits, etc.
 ; Since this is in Mode 6 it only needs 
 ; 20 blank characters for padding.
@@ -622,11 +599,14 @@ GFX_BUMPERLINE
 GFX_STATSLINE  ; "          L:00   PT:0000   H:00         "  ; "L:", "PT:", "H:" Use P/M graphics
 	.sb "            "
 GFX_STAT_LINE
-	.sb "00      "
+	.sb $00,$00
+	.sb "      "
 GFX_STAT_POINTS
-	.sb "0000     "
+	.sb $00,$00,$00,$00
+	.sb "     "
 GFX_STAT_HITS
-	.sb "00         " 
+	.sb $00,$00
+	.sb "         " 
 
 ; The first 21 bytes of data are blank which is used to show no star. 
 ; That is, LMS=Line+0, and HSCROLL=15.  
