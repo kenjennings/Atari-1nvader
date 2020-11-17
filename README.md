@@ -35,11 +35,13 @@ The color masking was not working properly.  In the first screen shot it looks c
 
 ---
 
-**16 Nov 2020 -- TO-DO**
+**16 Nov 2020 -- Credit Scrolling**
 
-[![V02 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/02-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V02 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/02-WIP-CoarseScrollCredits.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
-WIP
+Finished the VBI code supporting fine scrolling the two lines of author credits.  Amazingly it appears to be working correctly the first time I assembled it.  It moves the text, pauses, then moves the text in the other direction.
+
+The real fine scrolling need a Display List Interrupt added to set the HSCROL value for each scrolling line.   That will be for another day.  And, as long as I'm in there in the Display List interrupt code, I may as well make pretty gradient colors on the text.
 
 ---
 
