@@ -5,7 +5,7 @@ WORK IN PROGRESS - Atari port (parody) of C64 1nvader
 
 **13 Nov 2020 -- It Lives!   Muah-ha-ha-ha!**
 
-[![V00 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/00-WIP-FirstSuccessfulRun.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V00 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/00-WIP-FirstSuccessfulRun.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 Finally got something that assembles.  This broken title screen is all it does right now.  Basically, all it does is initialize itself and loops on the Title screen forever.
 
@@ -27,7 +27,7 @@ That's it for now.   You can see other parts of the display below this are messe
 
 **15 Nov 2020 -- Improved Color Masking**
 
-[![V01 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/01-WIP-ImprovedColorOverlay.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V01 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/01-WIP-ImprovedColorOverlay.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 For the life of me I could not figure out how to optimize the code for managing the VSCROL hack to build 3-scan-line mode F lines.  I tried various ways of breaking the changes up into separate Display List Interrupts, but everything turned out badly.  Best case was a couple lines working, and then the next line was 14 scan lines tall.   I tried following several methods in online tutorials and they did not help.  So, the big logo is managed with one DLI running the entire 18 scan lines, plus some.
 
@@ -37,7 +37,7 @@ The color masking was not working properly.  In the first screen shot it looks c
 
 **16 Nov 2020 -- TO-DO**
 
-[![V02 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/02-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V02 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/02-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
 
@@ -45,7 +45,7 @@ WIP
 
 **DD MMM 2020 -- TO-DO**
 
-[![V03 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/03-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V03 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/03-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
 
