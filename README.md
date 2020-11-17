@@ -33,11 +33,15 @@ For the life of me I could not figure out how to optimize the code for managing 
 
 The color masking was not working properly.  In the first screen shot it looks correct, but in the actual running version the colors are barely visible on screen.  It turns out a stupid programming trick was changing the colors so rapidly that they were only partly present on screen.
 
+---
+
 **16 Nov 2020 -- TO-DO**
 
 [![V02 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/02-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
+
+---
 
 **DD MMM 2020 -- TO-DO**
 
@@ -45,5 +49,4 @@ WIP
 
 WIP
 
-
-
+---
