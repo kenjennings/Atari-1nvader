@@ -43,14 +43,25 @@ Finished the VBI code supporting fine scrolling the two lines of author credits.
 
 The real fine scrolling need a Display List Interrupt added to set the HSCROL value for each scrolling line.   That will be for another day.  And, as long as I'm in there in the Display List interrupt code, I may as well make pretty gradient colors on the text.
 
-(I accidentally restored the previous verion of the character set.  You can see the zero (0) character doesn't look right in the score line. The way the character is designed it will not look right on real hardware using a CRT monitor which is my baseline for acceptable appearance.   Therefore, the scores use alternate versions of the numbers, so that they look properly white on NTSC, and not blotches of pink and green.)
+Note that the font shown here for the scores is not the font that will be used.  In the screen shot examples above you see that the font appears legible, but this is only because these are screen shots taken from an emulator which achieves a very limited impersonation of a real CRT display.   On actual hardware using an NTSC CRT display the font is mostly illegible, because single-pixel-wide vertical lines are smaller than a color clock and so appear as a color artifact.  The next version screen shot will show a redesign to correct this.
+
+You can see the zero (0) character in the score doesn't look right. The character is designed with a single-width dot in the center of two vertical lines, also single-width lines.  The Atari800 emulator is at least smart enough to realize these pixels will blend together on screen.  It will not look right on real hardware.  Actually, all these numbers and text characters done with single-width pixels do not look right on real hardware and display as pink and green blobs.  This will also be fixed soon.
+
+---
+
+**DD MMM 2020 -- TBD**
+
+[![V03 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/03-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+Display list interrupt blah blah.
+
+The font problem for the scores has been addressed.  There are now two versions of number characters in the font.   The version with single-pixel-wide vertical lines is acceptable for the Mode 6 text on screen.   The alternate version of numbers designed with two-pixel-wide vertical lines will be used for the occurrences of Mode 2 text on the screen (the scores at the top and the status at the bottom.  
 
 ---
 
 **DD MMM 2020 -- TO-DO**
 
-[![V03 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/03-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V04 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/03-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
 
----
