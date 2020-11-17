@@ -1,7 +1,9 @@
 # Atari-1nvader
 WORK IN PROGRESS - Atari port (parody) of C64 1nvader
 
-It Lives!   Muah-ha-ha-ha!
+---
+
+**13 Nov 2020 -- It Lives!   Muah-ha-ha-ha!**
 
 [![V00 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/00-WIP-FirstSuccessfulRun.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
@@ -20,4 +22,28 @@ The animated greyscale pixels is done by page flipping between four separate ima
 A color mask travels across the letters from left to right, colorizing the grey pixels.  This is done using the missiles configured for Fifth Player.   A bitmap of the letters is written to the missile memory, and the horizontal position of the missiles is moved from left to right in sync with the graphics letters made of GTIA pixels. 
 
 That's it for now.   You can see other parts of the display below this are messed up as little coding work has been done to support this. 
+
+---
+
+**15 Nov 2020 -- Improved Color Masking**
+
+[![V01 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/01-WIP-ImprovedColorOverlay.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+For the life of me I could not figure out how to manage the VSCROL hack to build 3-scan-line mode F lines using separate Display List Interrupts.  Best case was a couple lines, and then the next line was 14 scan lines tall.   I tried following several methods in online tutorials and they did not help.  So, the big logo is managed with one DLI running the entire 18 scan lines, plus some.
+
+The color masking was also not working properly.   In the first picture it looks correct, but in the actual running version the colors were barely visible.  It turns out a stupid programming trick was changing the colors too so rapidly that they were only partly present on screen.
+
+**16 Nov 2020 -- TO-DO**
+
+[![V02 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/02-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+WIP
+
+**DD MMM 2020 -- TO-DO**
+
+[![V03 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/03-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+WIP
+
+
 
