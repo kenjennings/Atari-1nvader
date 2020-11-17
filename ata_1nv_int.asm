@@ -992,7 +992,7 @@ ExitMyDeferredVBI
 
 ; shorthand for starting DLI  (that do not JMP immediately to common code)
 	 .macro mStart_DLI
-		 mregSaveAY
+		 mRegSaveAY
 
 ;		 ldy zThisDLI
 	 .endm
@@ -1040,10 +1040,16 @@ TITLE_DLI_1
 ; TITLE_DLI_2                                             
 ;==============================================================================
 ; DLI to game the VSCROL to hack mode F into 3 scan lines tall.  
-; Runs six times for title.  (2 * 3)
+; Runs VSCROL hacks on 3 pairs of Mode F lines for the title (six lines).
 ; Gruesome debugging cycle on this.  Could not get this to run as a couple
-; smaller DLIs that repeat.  no matter what.  So, bludgeon VSCROL and 
-; WSYNC our way down the six extended mode F lines.
+; smaller DLIs that repeat.  no matter what.  So, here one DLI bludgeons
+; the  VSCROL and WSYNCs its way down the six extended mode F lines.
+;
+; At the same time, it is incrementing and reloading the COLPF3 value 
+; for the Missiles/5th Player color overlay.   Each line is a different base
+; color. In theory that's 4 grey shades + (6 lines * 4 shades) + background
+; which is 29 colors possible on the logo.  In reality its probably closer
+; to 18 to 20 given the shape of text v the overlay. 
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_2
@@ -1051,83 +1057,49 @@ TITLE_DLI_2
 	 mStart_DLI ; Saves A and Y
 
 ;1
-	ldy #14             ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
+	ldy #14                        ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
 	lda #2
-	sta WSYNC           ; (1.0) sync to end of line.
-	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
+	sta WSYNC                      ; (1.0) sync to end of line.
+	sta VSCROL                     ; =2, default. untrigger the hack if on for prior line.
 	nop
-	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
-	lda zTitleLogoColor
-	sta COLPF3
-	sta WSYNC           ; (1.1) sync to end of line.
-	jsr DLI_INC_PF3_COLOR
-	sta WSYNC           ; (1.2) sync to end of line.
+	sty VSCROL                     ; =14, 15, 0, trick it into 3 scan lines.
+	jsr DLI_PF3_SYNC_INC_SYNC      ; (1.1 and 1.2 scan lines)
 
 ;2
-	sta WSYNC           ; (2.0) sync to end of line.
-	lda zTitleLogoColor
-	sta COLPF3
-	sta WSYNC           ; (2.1) sync to end of line.
-	jsr DLI_INC_PF3_COLOR
-	sta WSYNC           ; (2.2) sync to end of line.
+	jsr DLI_SYNC_PF3_SYNC_INC_SYNC ; (2.0, 2.1 and 2.2 scan lines)
 
 ;3
 	lda #2
-	sta WSYNC           ; (3.0) sync to end of line.
-	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
+	sta WSYNC                      ; (3.0) sync to end of line.
+	sta VSCROL                     ; =2, default. untrigger the hack if on for prior line.
 	nop
-	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
-	lda zTitleLogoColor
-	sta COLPF3
-	sta WSYNC           ; (3.1) sync to end of line.
-	jsr DLI_INC_PF3_COLOR
-	sta WSYNC           ; (3.2) sync to end of line.
+	sty VSCROL                     ; =14, 15, 0, trick it into 3 scan lines.
+	jsr DLI_PF3_SYNC_INC_SYNC      ; (3.1 and 3.2 scan lines)
 
 ;4
-	sta WSYNC           ; (4.0) sync to end of line.
-	lda zTitleLogoColor
-	sta COLPF3
-	sta WSYNC           ; (4.1) sync to end of line.
-	jsr DLI_INC_PF3_COLOR
-	sta WSYNC           ; (4.2) sync to end of line.
+	jsr DLI_SYNC_PF3_SYNC_INC_SYNC ; (4.0, 4.1 and 4.2 scan lines)
 
 ;5
 	lda #2
-	sta WSYNC           ; (5.0) sync to end of line.
-	sta VSCROL          ; =2, default. untrigger the hack if on for prior line.
+	sta WSYNC                      ; (5.0) sync to end of line.
+	sta VSCROL                     ; =2, default. untrigger the hack if on for prior line.
 	nop
-	sty VSCROL          ; =14, 15, 0, trick it into 3 scan lines.
-	lda zTitleLogoColor
-	sta COLPF3
-	sta WSYNC           ; (5.1) sync to end of line.
-	jsr DLI_INC_PF3_COLOR
-	sta WSYNC           ; (5.2) sync to end of line.
+	sty VSCROL                     ; =14, 15, 0, trick it into 3 scan lines.
+	jsr DLI_PF3_SYNC_INC_SYNC      ; (3.1 and 3.2 scan lines)
 
 ;6
-	sta WSYNC           ; (6.0) sync to end of line.
-	lda zTitleLogoColor
-	sta COLPF3
-	sta WSYNC           ; (6.1) sync to end of line.
-	sta WSYNC           ; (6.2) sync to end of line.
+	jsr DLI_SYNC_PF3_SYNC_INC_SYNC ; (6.0, 6.1 and 6.2 scan lines)
 
 ; FINISHED - Turn off the VSCROL hack, restore normal screen .
 
 	lda #2
 	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
-	sta WSYNC           ; (7.0) sync to end of scan line
-	sta VSCROL          ; =2, default. untrigger the hack.
-	sty DMACTL          ; Set all the ANTIC screen controls and DMA options.
+	sta WSYNC                      ; (7.0) sync to end of scan line
+	sta VSCROL                     ; =2, default. untrigger the hack.
+	sty DMACTL                     ; Set all the ANTIC screen controls and DMA options.
 
-	; Return to normal color interpretation.
-	lda #[GTIA_MODE_DEFAULT] 
+	lda #[GTIA_MODE_DEFAULT]       ; Return to normal color interpretation.
 	sta PRIOR
-
-	lda #$88
-	sta COLPF0
-	lda #$84
-	sta COLPF2
-	lda #$8E
-	sta COLPF3
 
 	pla
 	tay
@@ -1135,65 +1107,198 @@ TITLE_DLI_2
 	mChainDLI TITLE_DLI_2,TITLE_DLI_3 ; Done here.  Finally go to next DLI.
 
 
-;==============================================================================
-; DLI_INC_PF3_COLOR                                             
-;==============================================================================
-; Supporting routine used by DLI_2 and DLI_3 to increment the Missiles'
-; color for the overlay on the big logo.
-; This also coounts the number of time this has occurred and returns 
-; Z flag when this series has been called the number of times needed 
-; for the screen.
-; -----------------------------------------------------------------------------
-
-DLI_INC_PF3_COLOR
-
-	lda zTitleLogoColor     ; Get the Base color
-	cmp #COLOR_ORANGE_GREEN ; Is it the ending color?
-	bne b_td2_AddToColor    ; No.  Add to the color component.
-
-	lda #COLOR_ORANGE1      ; Yes.  Reset to first color.
-	bne b_td2_UpdateColor   ; Go do the update.
-
-b_td2_AddToColor
-	clc
-	adc #$10                ; Add 16 to color.
-
-b_td2_UpdateColor
-	sta zTitleLogoColor     ; Save it for the next DLI use
-
-	rts
-
 
 ;==============================================================================
 ; TITLE_DLI_3                                             
 ;==============================================================================
-; DLI to stop the VSCROL hack, restore the normal DMA width and turn off 
-; the GTIA 16-grey scale value.
-; Also, reset 
+; DLI to run the horizontally scrolling Author Credits and  stuff a gradient 
+; color into COLPF0 and COLPF1 for the text on the two lines.
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_3
 
-	 mStart_DLI ; Saves A and Y
+	mResSaveAYX ; Saves regs 
 
-;	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
-;	sta WSYNC           ; sync to end of scan line
-;	sty DMACTL          ; Set all the ANTIC screen controls and DMA options.
+	lda zCredit1HS ;
+	ldx #[COLOR_BLUE1+6]      ; COLPF0 Darren
+	ldy #[COLOR_RED_ORANGE+6] ; COLPF1 Ken
 
-	; Return to normal color interpretation.
-;	lda #[GTIA_MODE_DEFAULT] 
-;	sta PRIOR
+	sta WSYNC           ; 1.0 
+	sta HSCROL
+	stx COLPF0
+	sty COLPF1          ; No dex/dey.  Keep it +6 brighness for scan lines 1.0 and 1.1
 
-	lda #$88
-	sta COLBK
-	lda #$00
-	sta COLBK
+	jsr DLI_SYNC_PF_DEC ; 1.1
+
+	jsr DLI_SYNC_PF_DEC ; 1.2 
+
+	sta WSYNC           ; 1.3 
+	stx COLPF0
+	sty COLPF1
+	ldx #[COLOR_GREEN+12]        ; COLPF0 Darren
+	ldy #[COLOR_ORANGE_GREEN+12] ; COLPF1 Ken
+
+	jsr DLI_SYNC_PF_DEC ; 1.4
+
+	jsr DLI_SYNC_PF_DEC ; 1.5
+
+	jsr DLI_SYNC_PF_DEC ; 1.6
+
+	jsr DLI_SYNC_PF_DEC ; 1.7 (The DECrement part is not actually needed.)
+
+
+	lda zCredit2HS ;
+	ldx #[COLOR_LITE_BLUE+6] ; COLPF0 Darren
+	ldy #[COLOR_PINK+6]      ; COLPF1 Ken
+
+	sta WSYNC            ; 2.0
+	sta HSCROL
+	stx COLPF0
+	sty COLPF1
+
+	jsr DLI_SYNC_PF_DEC ; 2.1
+
+	jsr DLI_SYNC_PF_DEC ; 2.2 
+
+	sta WSYNC           ; 2.3 
+	stx COLPF0
+	sty COLPF1
+	ldx #[COLOR_PURPLE_BLUE+12]  ; COLPF0 Darren
+	ldy #[COLOR_ORANGE1+12]      ; COLPF1 Ken
+
+	jsr DLI_SYNC_PF_DEC ; 2.4
+
+	jsr DLI_SYNC_PF_DEC ; 2.5
+
+	jsr DLI_SYNC_PF_DEC ; 2.6
+
+	jsr DLI_SYNC_PF_DEC ; 2.7 (The DECrement part is not actually needed.)
+
+
+	pla
+	tax
+	pla
+	tay
+
+	mChainDLI TITLE_DLI_3,TITLE_DLI_4
+
+
+
+;==============================================================================
+; TITLE_DLI_4                                             
+;==============================================================================
+; DLI to run the horizontally scrolling Documentation  and  stuff a gradient 
+; color into COLPF0 for the text on the line.
+; -----------------------------------------------------------------------------
+
+TITLE_DLI_4
+
+	mStart_DLI ; Saves A and Y
+
+	lda zCredit1HS ;
+	ldy #[COLOR_ORANGE2+6]  ; COLPF0 Documentation
+
+	sta WSYNC            ; 1.0 
+	sta HSCROL
+	sty COLPF0           ; No dex/dey.  Keep it +6 brighness for scan lines 1.0 and 1.1
+
+	jsr DLI_SYNC_PF0_DEC ; 1.1
+
+	jsr DLI_SYNC_PF0_DEC ; 1.2 
+
+	sta WSYNC            ; 1.3 
+	sty COLPF0
+	ldy #[COLOR_AQUA+12]    ; COLPF0 Documentation
+
+
+	jsr DLI_SYNC_PF0_DEC ; 1.4
+
+	jsr DLI_SYNC_PF0_DEC ; 1.5
+
+	jsr DLI_SYNC_PF0_DEC ; 1.6
+
+	jsr DLI_SYNC_PF0_DEC ; 1.7 (The DECrement part is not actually needed.)
 
 	pla
 	tay
 
-	mChainDLI TITLE_DLI_3,DoNothing_DLI
+	mChainDLI TITLE_DLI_4,DoNothing_DLI ; Done here.  Finally go to next DLI.
 
+
+
+;==============================================================================
+;                                              DLI_(SYNC)_PF3_SYNC_INC_SYNC
+;==============================================================================
+; Supporting routine used by DLI_2 to manage COLPF3 and consume a 
+; couple scan lines of the display.
+; This is moved into a function, because the same pattern is repeated 
+; for each of the rows of pixels.
+; There are two entry points.  The first adds an extra WSYNC at the start.
+; -----------------------------------------------------------------------------
+
+DLI_SYNC_PF3_SYNC_INC_SYNC 
+
+	sta WSYNC               ; SYNC  (1.0) sync to end of line.
+
+DLI_PF3_SYNC_INC_SYNC 
+
+	lda zTitleLogoColor     ; PF3   Update color register.
+	sta COLPF3
+	sta WSYNC               ; SYNC  (1.1) sync to end of line.
+
+	cmp #COLOR_ORANGE_GREEN ; INC   Is it the ending color?
+	bne b_td2_AddToColor    ;       No. Add to the color component.
+
+	lda #COLOR_ORANGE1      ;       Yes.  Reset to first color.
+	bne b_td2_UpdateColor   ;       Go do the update.
+
+b_td2_AddToColor
+	clc
+	adc #$10                ;       Add 16 to color.
+
+b_td2_UpdateColor
+	sta zTitleLogoColor     ;       Save it for the next DLI use
+
+	sta WSYNC               ; SYNC  (1.2) sync to end of line.
+
+	rts
+
+
+
+;==============================================================================
+;                                              DLI_SYNC_PF_DEC
+;==============================================================================
+; Supporting routine used by DLI_3 to manage COLPF0 and 
+; COLPF1 colors on the two scrolling lines.
+; -----------------------------------------------------------------------------
+
+DLI_SYNC_PF_DEC
+
+	sta WSYNC    
+	stx COLPF0
+	sty COLPF1
+	dex
+	dex
+	dey
+	dey
+
+	rts
+
+;==============================================================================
+;                                              DLI_SYNC_PF_DEC
+;==============================================================================
+; Supporting routine used by DLI_4 to manage COLPF0 and 
+; on the scrolling documentation line.
+; -----------------------------------------------------------------------------
+
+DLI_SYNC_PF0_DEC
+
+	sta WSYNC    
+	stx COLPF0
+	dey
+	dey
+
+	rts
 
 
 

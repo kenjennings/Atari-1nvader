@@ -92,12 +92,20 @@ zCredit1HS          .byte 12   ; fine horizontal scroll value start.
 zCredit2HS          .byte 12   ; fine horizontal scroll value start.
 
 
+
 ; Big Mothership Values =====================================================
 
 BIG_MOTHERSHIP_START = 108 ; Starting position of the big mothership
 
 zBIG_MOTHERSHIP_Y .byte BIG_MOTHERSHIP_START
 
+
+; Scrolling Documentation Values ==================================================
+
+DOCS_STEP_TIMER  = 2
+zDocsScrollTimer .byte DOCS_STEP_TIMER ; How many frames to wait for each fine scroll.
+
+zDocsHS          .byte 15   ; fine horizontal scroll value start.
 
 
 ; Generic Player/Missile Data Copying =======================================

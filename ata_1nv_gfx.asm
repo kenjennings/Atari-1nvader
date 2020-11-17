@@ -186,12 +186,12 @@ DISPLAY_LIST_TITLE                                          ; System VBI sets co
 	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (068 - 070) (DLI 2) Blank 3   (DLI vscroll hack next lines) 
 
 DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS low byte value.    
-	mDL_LMS   DL_MAP_F|DL_VSCROLL,GFX_TITLE_FRAME1          ;    (071 - 073)  Mode F * 3 Animated Gfx  
-	mDL       DL_MAP_F                                      ;    (074 - 076)  Mode F * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL                           ;    (077 - 079)  Mode F * 3 Animated Gfx 
-	mDL       DL_MAP_F                                      ;    (080 - 082)  Mode F * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL                           ;    (083 - 085)  Mode F * 3 Animated Gfx 
-	mDL       DL_MAP_F                                      ;    (086 - 088)  Mode F * 3 Animated Gfx  Turn Off VSCROL hack, reset 
+	mDL_LMS   DL_MAP_F|DL_VSCROLL,GFX_TITLE_FRAME1          ;    (071 - 073)  (Mode F) * 3 Animated Gfx  
+	mDL       DL_MAP_F                                      ;    (074 - 076)  (Mode F) * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL                           ;    (077 - 079)  (Mode F) * 3 Animated Gfx 
+	mDL       DL_MAP_F                                      ;    (080 - 082)  (Mode F) * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL                           ;    (083 - 085)  (Mode F) * 3 Animated Gfx 
+	mDL       DL_MAP_F                                      ;    (086 - 088)  (Mode F) * 3 Animated Gfx  Turn Off VSCROL hack, reset 
 
 	mDL_BLANK DL_BLANK_8                                    ;    (089 - 099) Blank 8 
 	mDL_BLANK [DL_BLANK_3|DL_DLI]                           ;              + Blank 3  (DLI 3) (Hscroll authors, run colors)
@@ -202,21 +202,21 @@ DL_LMS_SCROLL_CREDIT2 = [ * + 1 ]
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT2       ; 10 (108 - 115) (6) Author(s) Credit line
 	mDL_BLANK DL_BLANK_8                                    ; 12 (116 - 123) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8                                    ; 13 (124 - 131) Blank 8 Mothership graphic (PMG)
-	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 14 (132 - 139) Blank 8
+	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 14 (132 - 139) (DLI 4) Blank 8
 
 DL_LMS_SCROLL_DOCS = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (140 - 147) (6) Fine scrolling docs
 	mDL_BLANK DL_BLANK_8                                    ; 16 (148 - 155) Blank 8
 	mDL_BLANK DL_BLANK_8                                    ; 17 (156 - 163) Blank 8
-	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 18 (164 - 171) Blank 8
+	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 18 (164 - 171) (DLI 5+6) Blank 8
 
 
 BOTTOM_OF_DISPLAY                                 
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; 19 (172 - 179) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; 20 (180 - 187) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; 21 (188 - 195) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; 22 (196 - 203) (6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; 23 (204 - 211) (6) ground and bumpers
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; 19 (172 - 179) (6) (DLI 6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; 20 (180 - 187) (6) (DLI 6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; 21 (188 - 195) (6) (DLI 6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; 22 (196 - 203) (6) (DLI 7) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; 23 (204 - 211) (6) (DLI 7) ground and bumpers
 	mDL_LMS   DL_TEXT_2,GFX_STATSLINE                       ; 24 (212 - 219) (6) Stats line follows bumper line in memory.
 
 ; Note that as long as the system VBI is functioning the address 
