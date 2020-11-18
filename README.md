@@ -47,23 +47,23 @@ The color masking was not working properly.  In the first screen shot it looks c
 
 [![V02 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/02-WIP-CoarseScrollCredits.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
-Finished the VBI code supporting fine scrolling the two lines of author credits.  Amazingly it appears to be working correctly the first time I assembled it.  It moves the text, pauses, then moves the text in the other direction.
+Finished the VBI code supporting fine scrolling the two lines of author credits.  The actual fine scrolling isn't implemented yet as this needs another DLI to do that work.  However, all the work done in the Vertical Blank Interrutpt appears to be working correctly.  It coarse scrolls the text, pauses, then moves the text in the other direction.
 
-The real fine scrolling need a Display List Interrupt added to set the HSCROL value for each scrolling line.   That will be for another day.  And, as long as I'm in there in the Display List interrupt code, I may as well make pretty gradient colors on the text.
+The real fine scrolling on the display needs a Display List Interrupt added to set the HSCROL value for each scrolling line.  That will be for another day. And, as long as I'm in there in the Display List interrupt code, I may as well make pretty gradient colors on the text.
 
-Note that the font shown here for the scores is not the font that will be used.  In the screen shot examples above you see that the font appears legible, but this is only because these are screen shots taken from an emulator which achieves a very limited impersonation of a real CRT display.   On actual hardware using an NTSC CRT display the font is mostly illegible, because single-pixel-wide vertical lines are smaller than a color clock and so appear as a color artifact.  The next version screen shot will show a redesign to correct this.
+Note that the font shown here for the scores is not the font that will be used.  In the screen shot examples above you see that the font appears legible, but this is only because these screen shots were taken from an emulator which achieves a very limited impersonation of a real CRT display.   On actual hardware using an NTSC CRT display the font is mostly illegible, because single-pixel-wide vertical lines are smaller than a color clock and so appear as a color artifact.  The next version screen shot will show a redesign to correct this.
 
-You can see the zero (0) character in the score doesn't look right. The character is designed with a single-width dot in the center of two vertical lines, also single-width lines.  The Atari800 emulator is at least smart enough to realize these pixels will blend together on screen.  It will not look right on real hardware.  Actually, all these numbers and text characters done with single-width pixels do not look right on real hardware and display as pink and green blobs.  This will also be fixed soon.
+You can see the zero (0) character in the score doesn't look right. The character is designed with a single-width dot in the center of two vertical lines, also single-width lines.  The Atari800 emulator is at least smart enough to realize these pixels will blend together on screen.  It will not look right on real hardware. This will also be fixed soon.
 
 ---
 
-**DD MMM 2020 -- TBD**
+**17 Nov 2020 -- Fine Scrolling Credits and Docs**
 
-[![V03 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/03-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V03 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/03-0-WIP-FineScrollCredits.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
-Display list interrupt blah blah.
+The fine scrolling is working for the author credits, and for the documentation lines.   Each line of text also has its own color gradient/banding.  The creadit lines do double duty to advertise two authors.  The DLI for these lines are changing the color values for two registers.   This is more evident when the lines are partially scrolled between both author's credits.
 
-The font problem for the scores has been addressed.  There are now two versions of number characters in the font.   The version with single-pixel-wide vertical lines is acceptable for the Mode 6 text on screen.   The alternate version of numbers designed with two-pixel-wide vertical lines will be used for the occurrences of Mode 2 text on the screen (the scores at the top and the status at the bottom.  
+The font problem for the scores has been addressed.  There are now two versions of number characters in the font.   The version with single-pixel-wide vertical lines is acceptable for the Mode 6 text on screen.   The alternate numbers are designed using two-pixel-wide vertical lines and will be utilized wherever Mode 2 text occurs (the scores at the top and the status at the bottom.  
 
 ---
 
