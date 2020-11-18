@@ -61,7 +61,7 @@ You can see the zero (0) character in the score doesn't look right. The characte
 
 [![V03 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/03-0-WIP-FineScrollCredits.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
-The fine scrolling is working for the author credits, and for the documentation lines.   Each line of text also has its own color gradient/banding.  The creadit lines do double duty to advertise two authors.  The DLI for these lines are changing the color values for two registers.   This is more evident when the lines are partially scrolled between both author's credits.
+The fine scrolling is working for the author credits, and for the documentation lines.   Each line of text also has its own color gradient/banding.  The credit lines do double duty to advertise two authors.  The DLI for these lines are changing the color values for two registers.   This is more evident when the lines are partially scrolled between both author's credits.
 
 The font problem for the scores has been addressed.  There are now two versions of number characters in the font.   The version with single-pixel-wide vertical lines is acceptable for the Mode 6 text on screen.   The alternate numbers are designed using two-pixel-wide vertical lines and will be utilized wherever Mode 2 text occurs (the scores at the top and the status at the bottom.  
 
