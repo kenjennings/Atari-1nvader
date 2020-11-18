@@ -208,7 +208,7 @@ DL_LMS_SCROLL_DOCS = [ * + 1 ]
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (140 - 147) (6) Fine scrolling docs
 	mDL_BLANK DL_BLANK_8                                    ; 16 (148 - 155) Blank 8
 	mDL_BLANK DL_BLANK_8                                    ; 17 (156 - 163) Blank 8
-	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 18 (164 - 171) (DLI 5+6) Blank 8
+	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 18 (164 - 171) (DLI 5) Blank 8
 
 
 BOTTOM_OF_DISPLAY                                 
@@ -482,13 +482,16 @@ GFX_TITLE_FRAME4
 
 GFX_SCROLL_CREDIT1
 	.sb "    DARREN FOULDS   "  ; +0, HSCROL 12
-	.sb "             "         ; Padding to allow values to leave.
-	.sb "    ken jennings    "  ; +30, HSCROL 12
+	.sb "           "           ; Padding to allow values to leave.
+	.sb "   ken jennings     "  ; +30, HSCROL 12
 
 GFX_SCROLL_CREDIT2
-	.sb " 2020 - atari 8-bits"  ; +0, HSCROL 12
-	.sb "           "           ; Padding to allow values to leave before changing DLI colors.
-	.sb "2019 - COMMODORE 64 "  ; +30, HSCROL 12
+	.by $00,$52,$50,$52,$50,$00,$4D ; "2020 -"
+	.sb " atari "
+	.by $58,$4d                     ; "8-"
+	.sb "bits"                      ; +0, HSCROL 12
+	.sb "           "               ; Padding to allow values to leave before changing DLI colors.
+	.sb "2019 - COMMODORE 64 "      ; +30, HSCROL 12
 
 	.align $0100
 
@@ -502,14 +505,15 @@ GFX_SCROLL_CREDIT2
 
 GFX_SCROLL_DOCS
 scrtxt   
-	.sb "                    PRESS FIRE TO PLAY"
-	.sb "     FIRE SHOOTS AND CHANGES CANNON DIRECTION"
+	.sb "         :  :  :  :  :  : PRESS FIRE TO PLAY"
+	.sb "     FIRE SHOOTS AND CHANGES CANNON DIRECTION "
 	.sb "     MORE POINTS WHEN 1NVADER IS HIGH UP"
-	.sb "     1NVADER SLOWS DOWN AFTER EIGHTY HITS"
-	.sb "     C64 VERSION 2019 - DARREN FOULDS  @DARRENTHEFOULDS"
+	.sb "     1NVADER SLOWS DOWN AFTER EIGHTY HITS "
+	.sb "     C64 VERSION 2019 - DARREN FOULDS  @DARRENTHEFOULDS "
 	.sb "     THX @BEDFORDLVLEXP     HI NATE AND TBONE!"
-	.sb "     ATARI VERSION 2020 - KEN JENNINGS HTTPS://GITHUB.COM/KENJENNINGS/ATARI-1NVADER"
-	.sb "                    "
+	.sb "     ATARI VERSION 2020 - KEN JENNINGS HTTPS://GITHUB.COM/KENJENNINGS/ATARI-1NVADER "
+GFX_END_DOCS
+	.sb "                      "
 
 
 

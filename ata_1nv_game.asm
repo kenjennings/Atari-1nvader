@@ -314,6 +314,21 @@ GameSetupTitle
 	sta zCreditsMotion            ; 0 == left/right (1 == right/left)
 
 
+	; ===== The scrolling documentation =====
+
+	lda #<GFX_SCROLL_DOCS         ; Load low bytes of starting position.
+	sta DL_LMS_SCROLL_DOCS
+	
+	lda #>GFX_SCROLL_DOCS         ; Load high bytes of starting position.
+	sta DL_LMS_SCROLL_DOCS+1
+
+	lda #15                    ;   Reset the fine scroll starting point
+	sta zDocsHS                ;
+
+	lda #DOCS_STEP_TIMER       ; Reset timer.  And start scrolling.
+	sta zDocsScrollTimer
+
+
 	; ===== Start the Title running on the next frame =====
 
 	lda #EVENT_TITLE           

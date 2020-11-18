@@ -457,6 +457,8 @@ b_mdv_DoMyDeferredVBI
 ;	jsr Something that evaluates collisions goes here.
 
 ;EndOfDeathOfASalesfrog
+	lda #0
+	sta ATRACT
 	sta HITCLR                   ; Always reset the P/M collision bits for next frame.
 
 ; ======== TITLE SCREEN AND COUNTDOWN ACTIVIES  ========
@@ -613,7 +615,7 @@ b_mdv_RunCreditScrolling
 
 b_mdv_Credit2_Left
 	dec zCredit2HS             ; Credit 2 Left
-	lda zCredit2HS             ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
+;	lda zCredit2HS             ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
 	bpl b_mdv_TestEndRightLeft ; Nope.  End of scrolling, check end position
 	lda #15                    ; Yes. 
 	sta zCredit2HS             ; Reset the fine scroll, and...
@@ -637,7 +639,7 @@ b_mdv_TestEndRightLeft            ; They both scroll the same distance.  Check L
 
 b_mdv_CreditLeftRight
 	dec zCredit1HS             ; Credit 1 Left
-	lda zCredit1HS             ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
+;	lda zCredit1HS             ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
 	bpl b_mdv_Credit2_Right    ; No, go do the Credit2 line. 
 	lda #15                    ; Yes. 
 	sta zCredit1HS             ; Reset the fine scroll, and...
@@ -672,9 +674,59 @@ b_mdv_EndCreditScrolling
 
 
 
+; ======== MANAGE DOCUMENTATION SCROLLING ========
+
+; 1) Wait for motion timer.
+; 2) Execute motion.
+; 3)a) dec fine scroll to move left 
+; 3)b) if at end of fine scroll then increment LMS pointer.
+; 4) if at end of scrolling region, reset to start
+
+b_mdv_DocsScrolling
+
+	; Waiting....
+	dec zDocsScrollTimer
+	bne b_mdv_EndDocsScrolling  ; Timer still >0
+
+	; Reset timer.  And start scrolling.
+	lda #DOCS_STEP_TIMER
+	sta zDocsScrollTimer
+	
+	; We are moving the documentation...
+	dec zDocsHS                ; Docs 1 pixel Left.  Did it wrap from 0 to -1?
+	bpl b_mdv_EndDocsScrolling ; No.  We're done doing fine scrolling for this frame. 
+	lda #15                    ; Yes...
+	sta zDocsHS                ; Reset the fine scroll, and...
+	
+	lda DL_LMS_SCROLL_DOCS     
+	cmp #<GFX_END_DOCS         ; Test if low byte is the ending position.
+	bne b_mdv_AddDocsLMS       ; No.  Ok to increment LMS
+	
+	lda DL_LMS_SCROLL_DOCS+1     
+	cmp #>GFX_END_DOCS         ; Test if high byte is the ending position.
+	bne b_mdv_AddDocsLMS       ; No.  Ok to increment LMS
+
+	lda #<GFX_SCROLL_DOCS      ; Load low bytes of starting position.
+	sta DL_LMS_SCROLL_DOCS
+	lda #>GFX_SCROLL_DOCS      ; Load high bytes of starting position.
+	sta DL_LMS_SCROLL_DOCS+1
+
+	jmp b_mdv_EndDocsScrolling
+
+b_mdv_AddDocsLMS ; Coarse scroll the text... 8 color clocks.
+
+	clc
+	lda #2                     ; 16 color clocks is 2 characters.
+	adc DL_LMS_SCROLL_DOCS     ; add to low byte of LMS
+	sta DL_LMS_SCROLL_DOCS
+	bcc b_mdv_EndDocsScrolling ; If there is carry
+	inc DL_LMS_SCROLL_DOCS+1   ; incrememnt high byte of LMS
+
+b_mdv_EndDocsScrolling
 
 
 
+; ======== Do SOMETHING ELSE MAGICAL ========
 
 b_mdv_DoGameManagement
 
@@ -1111,32 +1163,30 @@ TITLE_DLI_2
 ;==============================================================================
 ; TITLE_DLI_3                                             
 ;==============================================================================
-; DLI to run the horizontally scrolling Author Credits and  stuff a gradient 
+; DLI to run the horizontally scrolling Author Credits and stuff a gradient 
 ; color into COLPF0 and COLPF1 for the text on the two lines.
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_3
 
-	mResSaveAYX ; Saves regs 
+	mRegSaveAYX ; Saves regs 
 
 	lda zCredit1HS ;
-	ldx #[COLOR_BLUE1+6]      ; COLPF0 Darren
-	ldy #[COLOR_RED_ORANGE+6] ; COLPF1 Ken
+	ldx #[COLOR_BLUE1+8]      ; COLPF0 Darren
+	ldy #[COLOR_ORANGE2+8] ; COLPF1 Ken
 
 	sta WSYNC           ; 1.0 
 	sta HSCROL
-	stx COLPF0
-	sty COLPF1          ; No dex/dey.  Keep it +6 brighness for scan lines 1.0 and 1.1
+	jsr DLI_PF_DEC      ; 1.0
 
 	jsr DLI_SYNC_PF_DEC ; 1.1
 
 	jsr DLI_SYNC_PF_DEC ; 1.2 
 
-	sta WSYNC           ; 1.3 
-	stx COLPF0
-	sty COLPF1
-	ldx #[COLOR_GREEN+12]        ; COLPF0 Darren
-	ldy #[COLOR_ORANGE_GREEN+12] ; COLPF1 Ken
+	jsr DLI_SYNC_PF_DEC ; 1.3 
+
+	ldx #[COLOR_GREEN+14]     ; COLPF0 Darren
+	ldy #[COLOR_PURPLE+14]    ; COLPF1 Ken
 
 	jsr DLI_SYNC_PF_DEC ; 1.4
 
@@ -1146,25 +1196,22 @@ TITLE_DLI_3
 
 	jsr DLI_SYNC_PF_DEC ; 1.7 (The DECrement part is not actually needed.)
 
-
 	lda zCredit2HS ;
-	ldx #[COLOR_LITE_BLUE+6] ; COLPF0 Darren
-	ldy #[COLOR_PINK+6]      ; COLPF1 Ken
+	ldx #[COLOR_LITE_BLUE+8]       ; COLPF0 Darren
+	ldy #[COLOR_RED_ORANGE+8]       ; COLPF1 Ken
 
-	sta WSYNC            ; 2.0
+	sta WSYNC           ; 2.0
 	sta HSCROL
-	stx COLPF0
-	sty COLPF1
+	jsr DLI_PF_DEC      ; 2.0
 
 	jsr DLI_SYNC_PF_DEC ; 2.1
 
 	jsr DLI_SYNC_PF_DEC ; 2.2 
 
-	sta WSYNC           ; 2.3 
-	stx COLPF0
-	sty COLPF1
-	ldx #[COLOR_PURPLE_BLUE+12]  ; COLPF0 Darren
-	ldy #[COLOR_ORANGE1+12]      ; COLPF1 Ken
+	jsr DLI_SYNC_PF_DEC ; 2.3 
+
+	ldx #[COLOR_ORANGE_GREEN+14]  ; COLPF0 Darren
+	ldy #[COLOR_PINK+14]       ; COLPF1 Ken
 
 	jsr DLI_SYNC_PF_DEC ; 2.4
 
@@ -1173,7 +1220,6 @@ TITLE_DLI_3
 	jsr DLI_SYNC_PF_DEC ; 2.6
 
 	jsr DLI_SYNC_PF_DEC ; 2.7 (The DECrement part is not actually needed.)
-
 
 	pla
 	tax
@@ -1195,21 +1241,20 @@ TITLE_DLI_4
 
 	mStart_DLI ; Saves A and Y
 
-	lda zCredit1HS ;
-	ldy #[COLOR_ORANGE2+6]  ; COLPF0 Documentation
+	lda zDocsHS ;
+	ldy #[COLOR_BLUE_GREEN+8]  ; COLPF0 Documentation
 
 	sta WSYNC            ; 1.0 
 	sta HSCROL
-	sty COLPF0           ; No dex/dey.  Keep it +6 brighness for scan lines 1.0 and 1.1
+	jsr DLI_PF0_DEC      ; 1.0
 
 	jsr DLI_SYNC_PF0_DEC ; 1.1
 
 	jsr DLI_SYNC_PF0_DEC ; 1.2 
 
-	sta WSYNC            ; 1.3 
-	sty COLPF0
-	ldy #[COLOR_AQUA+12]    ; COLPF0 Documentation
+	jsr DLI_SYNC_PF0_DEC ; 1.3 
 
+	ldy #[COLOR_ORANGE1+14]    ; COLPF0 Documentation
 
 	jsr DLI_SYNC_PF0_DEC ; 1.4
 
@@ -1219,11 +1264,33 @@ TITLE_DLI_4
 
 	jsr DLI_SYNC_PF0_DEC ; 1.7 (The DECrement part is not actually needed.)
 
+
+; Temporary.  Do a little tidy work to make the rest of the screen stable.
+
+	sta WSYNC
+	lda #15
+	sta HSCROL
+
+	lda #$0E
+	sta COLPF0
+	lda #$8A
+	sta COLPF1
+	lda #$C8
+	sta COLPF2
+	lda #16
+	sta COLPF3
+	
 	pla
 	tay
 
 	mChainDLI TITLE_DLI_4,DoNothing_DLI ; Done here.  Finally go to next DLI.
 
+
+; " ^              ^           ^         ^ " PF0 white14, grey12 |
+; "/T\^        ^  /T\       /\/T\^     ^/T\" PF0 blue10, blue8   | PF1 white14, grey12    |
+; "^  \\    /\/T\/   \     /  \ /T\   /T\ ^" PF0 blue6, blue4    | PF1 green8, green6     | PF2 white14, grey12
+; "_\   \  /  \ /     \   /        \ /   /_" PF0 grey4, grey2    | PF1 green4, green2     | PF2 tan6, tan4
+; 
 
 
 ;==============================================================================
@@ -1268,13 +1335,16 @@ b_td2_UpdateColor
 ;==============================================================================
 ;                                              DLI_SYNC_PF_DEC
 ;==============================================================================
-; Supporting routine used by DLI_3 to manage COLPF0 and 
-; COLPF1 colors on the two scrolling lines.
+; Supporting routine used by DLI_3 to manage COLPF0 and COLPF1 
+; colors on the two scrolling author credits lines.
 ; -----------------------------------------------------------------------------
 
 DLI_SYNC_PF_DEC
 
-	sta WSYNC    
+	sta WSYNC
+
+DLI_PF_DEC
+
 	stx COLPF0
 	sty COLPF1
 	dex
@@ -1287,14 +1357,17 @@ DLI_SYNC_PF_DEC
 ;==============================================================================
 ;                                              DLI_SYNC_PF_DEC
 ;==============================================================================
-; Supporting routine used by DLI_4 to manage COLPF0 and 
-; on the scrolling documentation line.
+; Supporting routine used by DLI_4 to manage COLPF0 on the 
+; scrolling documentation line.
 ; -----------------------------------------------------------------------------
 
 DLI_SYNC_PF0_DEC
 
-	sta WSYNC    
-	stx COLPF0
+	sta WSYNC  
+
+DLI_PF0_DEC
+
+	sty COLPF0
 	dey
 	dey
 
