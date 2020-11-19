@@ -63,7 +63,7 @@ b_pzpm_LoopZero
 ; else in the game.
 ;
 ; Each of the 8 bytes is copied twice to make a 16 scan line image followed 
-; by two 0 bytes to erase and trailing bytes assuming the image is being
+; by two 0 bytes to erase any trailing bytes assuming the image is being
 ; animated to fly up the screen.
 ;
 ; If the Y value is negative, then the image is overwritten with 0 bytes
@@ -76,18 +76,18 @@ Pmg_Draw_Big_Mothership
 	lda #0                ; Prep with 0
 	ldx #0                ; Copy 8 times.
 	ldy zBIG_MOTHERSHIP_Y ; Current Y position
-	bmi b_pdbs_Zero       ; If negative, then 0 the image
+	bmi b_pdbs_Zero       ; If negative, then 0 the top image memory
 
 b_pdbm_LoopDraw
 	lda PMG_IMG_BIGGERSHIP_L,X ; Get byte from saved image
-	sta PLAYERADR0,Y       ; Write to P/M memory
+	sta PLAYERADR2,Y       ; Write to P/M memory
 	iny                    ; One position lower.
-    sta PLAYERADR0,Y       ; and write the same image again.
+	sta PLAYERADR2,Y       ; and write the same image again.
 	dey                    ; Move back up to prior line.
 	lda PMG_IMG_BIGGERSHIP_R,X ; Get byte from saved image
-	sta PLAYERADR1,Y       ; Write to P/M memory
+	sta PLAYERADR3,Y       ; Write to P/M memory
 	iny                    ; One position lower.
-    sta PLAYERADR1,Y       ; and write the same image again.
+	sta PLAYERADR3,Y       ; and write the same image again.
 	iny                    ; One position lower for the next write.
 
 	inx                    ; next byte
@@ -96,14 +96,14 @@ b_pdbm_LoopDraw
 
 	; End by zeroing the next two bytes to erase a prior image.
 	lda #0
-	sta PLAYERADR0,Y       ; Write to P/M memory
-	sta PLAYERADR1,Y       ; Write to the other P/M memory
+	sta PLAYERADR2,Y       ; Write to P/M memory
+	sta PLAYERADR3,Y       ; Write to the other P/M memory
 	iny
-	sta PLAYERADR0,Y       ; Write to P/M memory
-	sta PLAYERADR1,Y       ; Write to the other P/M memory
-	
+	sta PLAYERADR2,Y       ; Write to P/M memory
+	sta PLAYERADR3,Y       ; Write to the other P/M memory
+
 	rts
-	
+
 	; Useless trivia -- The P/M DMA does not read the first 8 bytes of the
 	; tmemeory map, so we really only need to zero the second 8 bytes.
 	
@@ -112,8 +112,8 @@ b_pdbs_Zero                ; Zero 8 bytes from position 8 to 15
 	ldx #7                 ; 7, 6, 5 . . . 0
 
 b_pdbs_LoopZero
-	sta PLAYERADR0,X       ; Zero Player memory
-	sta PLAYERADR1,X       ; Zero Player memory
+	sta PLAYERADR2+8,Y       ; Zero Player memory
+	sta PLAYERADR3+8,Y       ; Zero Player memory
 	dex
 	bpl b_pdbs_LoopZero    ; Loop until X is -1
 

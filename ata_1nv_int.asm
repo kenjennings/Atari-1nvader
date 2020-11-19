@@ -725,6 +725,34 @@ b_mdv_AddDocsLMS ; Coarse scroll the text... 8 color clocks.
 b_mdv_EndDocsScrolling
 
 
+; ======== MANAGE BIG MOTHERSHIP  ========
+
+; 1) Wait for Motion Phase
+; 2) Execute motion if positive Y position.
+; 3) Wait for motion timer.
+; 4)a) dec Y
+; 4)b) 	jsr Pmg_Draw_Big_Mothership
+; 5) DO NOT RESET
+
+b_mdv_BigMothership
+
+	lda zBigMothershipPhase      ; Is it moving (1)  or standing still (0)?
+	beq b_mdv_EndBigMothership   ; Standing still.  So, nothing else to do.
+
+	lda zBIG_MOTHERSHIP_Y        ; Get Y coord
+	bmi b_mdv_EndBigMothership   ; Negative Y means it is offscreen.
+
+	dec zBigMothershipSpeed      ; Wait for motion timer to expire
+	bne b_mdv_EndBigMothership   ; Timer is still running.
+
+	lda #BIG_MOTHERSHIP_SPEED    ; Reset the speed timer
+	sta zBigMothershipSpeed
+
+	dec zBIG_MOTHERSHIP_Y        ; Subtract Y, (move up) one scan line.
+	jsr Pmg_Draw_Big_Mothership
+
+b_mdv_EndBigMothership
+
 
 ; ======== Do SOMETHING ELSE MAGICAL ========
 

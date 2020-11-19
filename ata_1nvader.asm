@@ -95,9 +95,14 @@ zCredit2HS          .byte 12   ; fine horizontal scroll value start.
 
 ; Big Mothership Values =====================================================
 
-BIG_MOTHERSHIP_START = 108 ; Starting position of the big mothership
+BIG_MOTHERSHIP_START = 108 
+zBIG_MOTHERSHIP_Y   .byte BIG_MOTHERSHIP_START ; Starting position of the big mothership
 
-zBIG_MOTHERSHIP_Y .byte BIG_MOTHERSHIP_START
+BIG_MOTHERSHIP_SPEED = 3 ; Number of frames to count per move.
+zBigMothershipSpeed .byte BIG_MOTHERSHIP_SPEED ; How many frames to wait per mothership move.
+
+zBigMothershipPhase .byte 0 ;  0 = steady  !0 = Moving up.
+
 
 
 ; Scrolling Documentation Values ==================================================

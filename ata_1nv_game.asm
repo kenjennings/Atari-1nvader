@@ -329,6 +329,33 @@ GameSetupTitle
 	sta zDocsScrollTimer
 
 
+	; ===== The giant mothership  =====
+
+	lda #BIG_MOTHERSHIP_START ; Starting position of the big mothership
+	sta zBIG_MOTHERSHIP_Y
+
+	lda #BIG_MOTHERSHIP_SPEED ; How many frames to wait per mothership move.
+	sta zBigMothershipSpeed
+
+	lda #1                    ;  0 = standing still  !0 = Moving up.
+	sta zBigMothershipPhase
+
+	lda #114
+	sta HPOSP2
+	lda #128
+	sta HPOSP3
+
+	lda #$36
+	sta PCOLOR2
+	sta PCOLOR3
+
+	lda #PM_SIZE_DOUBLE
+	sta SIZEP2
+	sta SIZEP3
+
+	jsr Pmg_Draw_Big_Mothership
+
+
 	; ===== Start the Title running on the next frame =====
 
 	lda #EVENT_TITLE           
