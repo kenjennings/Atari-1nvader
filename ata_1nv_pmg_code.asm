@@ -112,8 +112,8 @@ b_pdbm_Zero                ; Zero 8 bytes from position 8 to 15
 	ldx #7                 ; 7, 6, 5 . . . 0
 
 b_pdbm_LoopZero
-	sta PLAYERADR2+8,Y       ; Zero Player memory
-	sta PLAYERADR3+8,Y       ; Zero Player memory
+	sta PLAYERADR2+8,X       ; Zero Player memory
+	sta PLAYERADR3+8,X       ; Zero Player memory
 	dex
 	bpl b_pdbm_LoopZero    ; Loop until X is -1
 
