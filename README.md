@@ -67,9 +67,17 @@ The font problem for the scores has been addressed.  There are now two versions 
 
 ---
 
+**18 Nov 2020 -- Title Screen Mothership**
+
+[![V04 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/04-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+Worked on the movement of the giant mothership on the Title screen.  Because the game does not yet accept user input, for demonstration purposes the mothership begins in the state to move up the screen as if a new game is starting. 
+
+---
+
 **DD MMM 2020 -- TO-DO**
 
-[![V04 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/03-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V05 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/05-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
 
