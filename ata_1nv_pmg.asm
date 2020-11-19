@@ -49,14 +49,14 @@ spr1     ; mothership sprite
 ;	.byte 0,0,0,255
 
 PMG_IMG_MOTHERSHIP
-	.BYTE $00  ; ...11...
-	.BYTE $00  ; ..1111..
-	.BYTE $00  ; .111111.
-	.BYTE $00  ; .1.11.1.
-	.BYTE $00  ; 11111111
-	.BYTE $00  ; 11111111
-	.BYTE $00  ; .111111.
-	.BYTE $00  ; ..1..1..
+	.BYTE $18  ; ...11...
+	.BYTE $3c  ; ..1111..
+	.BYTE $7e  ; .111111.
+	.BYTE $5A  ; .1.11.1.
+	.BYTE $ff  ; 11111111
+	.BYTE $ff  ; 11111111
+	.BYTE $7e  ; .111111.
+	.BYTE $24  ; ..1..1..
 
 PMG_IMG_BIGGERSHIP_L ; Title Screen version.  
 	.byte $07  ; .....111 111.....
@@ -72,10 +72,10 @@ PMG_IMG_BIGGERSHIP_R ; Title Screen version.
 	.byte $e0  ; .....111 111.....
 	.byte $f8  ; ...11111 11111...
 	.byte $fc  ; ..111111 111111..
-	.byte $b6  ; .11.11.1 1.11.11.
+	.byte $d6  ; .11.1.11 11.1.11.
 	.byte $ff  ; 11111111 11111111
 	.byte $ff  ; 11111111 11111111
-	.byte $3f  ; ..111111 111111..
+	.byte $fc  ; ..111111 111111..
 	.byte $08  ; ...1.... ....1...
 
 spr2     ; cannon sprite

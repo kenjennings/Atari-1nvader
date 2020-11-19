@@ -1111,7 +1111,7 @@ TITLE_DLI_1
 	; Setup PRIOR for 16 grey-scale graphics, and Missile color overlay.
 	; The screen won;t show any noticeable change here, because the COLBK 
 	; value is black, and this won't change for the 16-shade mode.
-	lda #[FIFTH_PLAYER|GTIA_MODE_16_SHADE] 
+	lda #[FIFTH_PLAYER|GTIA_MODE_16_SHADE|1] 
 	sta PRIOR
 
 	mChainDLI TITLE_DLI_1,TITLE_DLI_2
@@ -1178,7 +1178,7 @@ TITLE_DLI_2
 	sta VSCROL                     ; =2, default. untrigger the hack.
 	sty DMACTL                     ; Set all the ANTIC screen controls and DMA options.
 
-	lda #[GTIA_MODE_DEFAULT]       ; Return to normal color interpretation.
+	lda #[GTIA_MODE_DEFAULT|1]       ; Return to normal color interpretation.
 	sta PRIOR
 
 	pla

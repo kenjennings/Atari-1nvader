@@ -341,11 +341,11 @@ GameSetupTitle
 	sta zBigMothershipPhase
 
 	lda #114
-	sta HPOSP2
+	sta SHPOSP2
 	lda #128
-	sta HPOSP3
+	sta SHPOSP3
 
-	lda #$36
+	lda #$46
 	sta PCOLOR2
 	sta PCOLOR3
 
@@ -353,7 +353,7 @@ GameSetupTitle
 	sta SIZEP2
 	sta SIZEP3
 
-	jsr Pmg_Draw_Big_Mothership
+;	jsr Pmg_Draw_Big_Mothership
 
 
 	; ===== Start the Title running on the next frame =====

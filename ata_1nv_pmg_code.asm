@@ -76,7 +76,7 @@ Pmg_Draw_Big_Mothership
 	lda #0                ; Prep with 0
 	ldx #0                ; Copy 8 times.
 	ldy zBIG_MOTHERSHIP_Y ; Current Y position
-	bmi b_pdbs_Zero       ; If negative, then 0 the top image memory
+	bmi b_pdbm_Zero       ; If negative, then 0 the top image memory
 
 b_pdbm_LoopDraw
 	lda PMG_IMG_BIGGERSHIP_L,X ; Get byte from saved image
@@ -107,15 +107,15 @@ b_pdbm_LoopDraw
 	; Useless trivia -- The P/M DMA does not read the first 8 bytes of the
 	; tmemeory map, so we really only need to zero the second 8 bytes.
 	
-b_pdbs_Zero                ; Zero 8 bytes from position 8 to 15 
+b_pdbm_Zero                ; Zero 8 bytes from position 8 to 15 
 
 	ldx #7                 ; 7, 6, 5 . . . 0
 
-b_pdbs_LoopZero
+b_pdbm_LoopZero
 	sta PLAYERADR2+8,Y       ; Zero Player memory
 	sta PLAYERADR3+8,Y       ; Zero Player memory
 	dex
-	bpl b_pdbs_LoopZero    ; Loop until X is -1
+	bpl b_pdbm_LoopZero    ; Loop until X is -1
 
 	rts
 
@@ -377,7 +377,7 @@ Pmg_Init
 	sta SDMCTL
 
 	; Setup PRIOR 
-	lda #[FIFTH_PLAYER|GTIA_MODE_DEFAULT] ; Normal CTIA color interpretation
+	lda #[FIFTH_PLAYER|GTIA_MODE_DEFAULT|1] ; Normal CTIA color interpretation
 	sta GPRIOR
 
 	jsr Pmg_SetColors

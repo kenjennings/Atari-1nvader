@@ -476,6 +476,7 @@ GFX_TITLE_FRAME4
 	.by $00 $00 $00 $00 $00 $00 $00 $06 $03 $00 $06 $09 $30 $09 $03 $C6 $06 $00 $03 $06 $00 $00 $03 $00 $03 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $09 $0C $00 $03 $0C $00 $06 $00 $09 $03 $0C $96 $09 $C3 $69 $0C $00 $06 $00 $00 $00 $00 $00 $00 $00
 
+
 	.align $0100
 
 ; Text line for the two major authors, C64, Atari.
@@ -492,6 +493,7 @@ GFX_SCROLL_CREDIT2
 	.sb "bits"                      ; +0, HSCROL 12
 	.sb "           "               ; Padding to allow values to leave before changing DLI colors.
 	.sb "2019 - COMMODORE 64 "      ; +30, HSCROL 12
+
 
 	.align $0100
 
