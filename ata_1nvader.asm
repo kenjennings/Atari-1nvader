@@ -92,7 +92,6 @@ zCredit1HS          .byte 12   ; fine horizontal scroll value start.
 zCredit2HS          .byte 12   ; fine horizontal scroll value start.
 
 
-
 ; Big Mothership Values =====================================================
 
 BIG_MOTHERSHIP_START = 127 
@@ -104,7 +103,6 @@ zBigMothershipSpeed .byte BIG_MOTHERSHIP_SPEED ; How many frames to wait per mot
 zBigMothershipPhase .byte 0 ;  0 = steady  !0 = Moving up.
 
 
-
 ; Scrolling Documentation Values ==================================================
 
 DOCS_STEP_TIMER  = 2
@@ -112,6 +110,26 @@ zDocsScrollTimer .byte DOCS_STEP_TIMER ; How many frames to wait for each fine s
 
 zDocsHS          .byte 15   ; fine horizontal scroll value start.
 
+
+; Scrolling Terrain Values ==================================================
+
+; Gfx Rows and LMS are 1, 2, 3, 4...  
+; GFX_MOUNTAINS1  ;   +0, HSCROL 8   ; +20, HSCROL 0
+
+; DL_LMS_SCROLL_LAND1 ;  +0 to +20   - inc LMS, dec HS ("Move" data left)
+;                     ;  +20 to +0     dec LMS, inc HS ("move" data right)
+
+LAND_MAX_PAUSE   = $FF
+zLandTimer       .byte LAND_MAX_PAUSE  ; Number of jiffies to Pause.  When 0, run scroll.
+
+LAND_STEP_TIMER   = 4
+zLandScrollTimer .byte LAND_STEP_TIMER ; How many frames to wait for each fine scroll.
+
+zLandPhase       .byte $00  ; 0 == waiting  1 == scrolling.
+zLandMotion      .byte $00  ; 0 == left/right !0 == right/left
+
+zLandHS          .byte 8   ; fine horizontal scroll value start.
+zLandColor       .byte 0   ; index for repeat DLIs on the scrolling land 
 
 ; Generic Player/Missile Data Copying =======================================
 

@@ -175,31 +175,34 @@
 DISPLAY_LIST_TITLE                                          ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
-	mDL_BLANK DL_BLANK_4   
+	mDL_BLANK DL_BLANK_4
+
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00 (020 - 027) (2) P1 score, High score, P2 score
 	mDL_BLANK DL_BLANK_8                                    ; 01 (028 - 035) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; 02 (036 - 043) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; 03 (044 - 051) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK DL_BLANK_8                                    ; 04 (052 - 059) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK DL_BLANK_7|DL_DLI                             ;    (060 - 066) (DLI 1) Blank 7   Narrow screen DMA, start GTIA $4 in PRIOR 
-	mDL_BLANK DL_BLANK_1                                    ;    (067 - 067) Blank 1 Allow time for prior DLI to act. 
-	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (068 - 070) (DLI 2) Blank 3   (DLI vscroll hack next lines) 
+	mDL_BLANK DL_BLANK_8                                    ; 03 (036 - 043) Blank 8   3, 2, 1, GO P/M animation
+	mDL_BLANK DL_BLANK_8                                    ; 04 (044 - 051) Blank 8   3, 2, 1, GO P/M animation
+
+	mDL_BLANK DL_BLANK_7|DL_DLI                             ;    (052 - 058) (DLI 1) Blank 7   Narrow screen DMA, start GTIA $4 in PRIOR 
+	mDL_BLANK DL_BLANK_1                                    ;    (059 - 059) Blank 1 Allow time for prior DLI to act. 
+	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (060 - 062) (DLI 2) Blank 3   (DLI vscroll hack next lines) 
 
 DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS low byte value.    
-	mDL_LMS   DL_MAP_F|DL_VSCROLL,GFX_TITLE_FRAME1          ;    (071 - 073)  (Mode F) * 3 Animated Gfx  
-	mDL       DL_MAP_F                                      ;    (074 - 076)  (Mode F) * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL                           ;    (077 - 079)  (Mode F) * 3 Animated Gfx 
-	mDL       DL_MAP_F                                      ;    (080 - 082)  (Mode F) * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL                           ;    (083 - 085)  (Mode F) * 3 Animated Gfx 
-	mDL       DL_MAP_F                                      ;    (086 - 088)  (Mode F) * 3 Animated Gfx  Turn Off VSCROL hack, reset 
+	mDL_LMS   DL_MAP_F|DL_VSCROLL,GFX_TITLE_FRAME1          ;    (063 - 065)  (Mode F) * 3 Animated Gfx  
+	mDL       DL_MAP_F                                      ;    (066 - 068)  (Mode F) * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL                           ;    (069 - 071)  (Mode F) * 3 Animated Gfx 
+	mDL       DL_MAP_F                                      ;    (072 - 074)  (Mode F) * 3 Animated Gfx
+	mDL       DL_MAP_F|DL_VSCROLL                           ;    (075 - 077)  (Mode F) * 3 Animated Gfx 
+	mDL       DL_MAP_F                                      ;    (078 - 080)  (Mode F) * 3 Animated Gfx  Turn Off VSCROL hack, reset 
 
-	mDL_BLANK DL_BLANK_8                                    ;    (089 - 099) Blank 8 
+	mDL_BLANK DL_BLANK_8                                    ;    (081 - 091) Blank 8 
 	mDL_BLANK [DL_BLANK_3|DL_DLI]                           ;              + Blank 3  (DLI 3) (Hscroll authors, run colors)
 
 DL_LMS_SCROLL_CREDIT1 = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT1       ; 10 (100 - 107) (6) Author(s) Credit line
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT1       ; 10 (092 - 099) (6) Author(s) Credit line
 DL_LMS_SCROLL_CREDIT2 = [ * + 1 ]
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT2       ; 10 (108 - 115) (6) Author(s) Credit line
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT2       ; 10 (100 - 107) (6) Author(s) Credit line
+
+	mDL_BLANK DL_BLANK_8                                    ; 12 (108 - 115) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8                                    ; 12 (116 - 123) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8                                    ; 13 (124 - 131) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 14 (132 - 139) (DLI 4) Blank 8
@@ -210,11 +213,14 @@ DL_LMS_SCROLL_DOCS = [ * + 1 ]
 	mDL_BLANK DL_BLANK_8                                    ; 17 (156 - 163) Blank 8
 	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 18 (164 - 171) (DLI 5) Blank 8
 
-
-BOTTOM_OF_DISPLAY                                 
+BOTTOM_OF_DISPLAY 
+DL_LMS_SCROLL_LAND1 = [ * + 1 ]                                  
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; 19 (172 - 179) (6) (DLI 6) Fine scrolling mountains to random position.
+DL_LMS_SCROLL_LAND2 = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; 20 (180 - 187) (6) (DLI 6) Fine scrolling mountains to random position.
+DL_LMS_SCROLL_LAND3 = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; 21 (188 - 195) (6) (DLI 6) Fine scrolling mountains to random position.
+DL_LMS_SCROLL_LAND4 = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; 22 (196 - 203) (6) (DLI 7) Fine scrolling mountains to random position.
 	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; 23 (204 - 211) (6) (DLI 7) ground and bumpers
 	mDL_LMS   DL_TEXT_2,GFX_STATSLINE                       ; 24 (212 - 219) (6) Stats line follows bumper line in memory.
@@ -576,21 +582,27 @@ GFX_END_DOCS
 ; "8  04    884440   0     4  4 444   444 8"
 ; "88   4  8  8 0     0   4        4 4   88"
 
+	.align $0100  ; Align to a page, so only low bytes need to be changed.
+	
 mountc	; mountain screen view chars
 		; Note all values modified -$20 for Atari character codes.
 GFX_MOUNTAINS1
+	.byte $00 ; One extra byte here, so LMS +1/HS 0 will show the entire char at +1 in the buffer.
 	.byte $00,$3d,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$3d,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$3d,$00,$00,$00,$00,$00,$00,$00,$00,$00,$3d,$00
 
 GFX_MOUNTAINS2
+	.byte $00 ; One extra byte here, so LMS +1/HS 0 will show the entire char at +1 in the buffer.
 	.byte $3b,$3e,$3c,$7d,$00,$00,$00,$00,$00,$00,$00,$00,$7d,$00,$00,$3b,$3e,$3c,$00,$00
 	.byte $00,$00,$00,$00,$00,$7b,$7c,$3b,$3e,$3c,$7d,$00,$00,$00,$00,$00,$7d,$3b,$3e,$3c
 
 GFX_MOUNTAINS3
+	.byte $00 ; One extra byte here, so LMS +1/HS 0 will show the entire char at +1 in the buffer.
 	.byte $bd,$00,$00,$3c,$7c,$00,$00,$00,$00,$bb,$bc,$7b,$7e,$7c,$3b,$00,$00,$00,$3c,$00
 	.byte $00,$00,$00,$00,$7b,$00,$00,$7c,$00,$7b,$7e,$7c,$00,$00,$00,$7b,$7e,$7c,$00,$bd
 
 GFX_MOUNTAINS4
+	.byte $00 ; One extra byte here, so LMS +1/HS 0 will show the entire char at +1 in the buffer.
 	.byte $bf,$bc,$00,$00,$00,$7c,$00,$00,$bb,$00,$00,$bc,$00,$3b,$00,$00,$00,$00,$00,$3c
 	.byte $00,$00,$00,$7b,$00,$00,$00,$00,$00,$00,$00,$00,$7c,$00,$7b,$00,$00,$00,$bb,$bf
 

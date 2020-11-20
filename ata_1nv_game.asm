@@ -353,12 +353,41 @@ GameSetupTitle
 	sta SIZEP2
 	sta SIZEP3
 
-;	jsr Pmg_Draw_Big_Mothership
+	jsr Pmg_Draw_Big_Mothership
+
+; Scrolling Terrain Values ==================================================
+
+	lda #<GFX_MOUNTAINS1
+	sta DL_LMS_SCROLL_LAND1
+
+	lda #<GFX_MOUNTAINS2
+	sta DL_LMS_SCROLL_LAND2
+
+	lda #<GFX_MOUNTAINS3
+	sta DL_LMS_SCROLL_LAND3
+
+	lda #<GFX_MOUNTAINS4
+	sta DL_LMS_SCROLL_LAND4
+
+	lda #0
+	sta zLandColor
+	lda #8 
+	sta zLandHS
+
+	lda #LAND_MAX_PAUSE
+	sta zLandTimer
+
+	lda #LAND_STEP_TIMER
+	sta zLandScrollTimer
+
+	lda #0
+	sta zLandPhase
+	sta zLandMotion
 
 
 	; ===== Start the Title running on the next frame =====
 
-	lda #EVENT_TITLE           
+	lda #EVENT_TITLE
 	sta zCurrentEvent
 	lda #0 
 	sta zEventStage

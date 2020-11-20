@@ -673,6 +673,34 @@ b_mdv_TestEndLeftRight           ; They both scroll the same distance.  Check Li
 b_mdv_EndCreditScrolling
 
 
+; ======== MANAGE BIG MOTHERSHIP  ========
+
+; 1) Wait for Motion Phase
+; 2) Execute motion if positive Y position.
+; 3) Wait for motion timer.
+; 4)a) dec Y
+; 4)b) 	jsr Pmg_Draw_Big_Mothership
+; 5) DO NOT RESET
+
+b_mdv_BigMothership
+
+	lda zBigMothershipPhase      ; Is it moving (1)  or standing still (0)?
+	beq b_mdv_EndBigMothership   ; Standing still.  So, nothing else to do.
+
+	lda zBIG_MOTHERSHIP_Y        ; Get Y coord
+	bmi b_mdv_EndBigMothership   ; Negative Y means it is offscreen.
+
+	dec zBigMothershipSpeed      ; Wait for motion timer to expire
+	bne b_mdv_EndBigMothership   ; Timer is still running.
+
+	lda #BIG_MOTHERSHIP_SPEED    ; Reset the speed timer
+	sta zBigMothershipSpeed
+
+	dec zBIG_MOTHERSHIP_Y        ; Subtract Y, (move up) one scan line.
+	jsr Pmg_Draw_Big_Mothership
+
+b_mdv_EndBigMothership
+
 
 ; ======== MANAGE DOCUMENTATION SCROLLING ========
 
@@ -725,36 +753,128 @@ b_mdv_AddDocsLMS ; Coarse scroll the text... 8 color clocks.
 b_mdv_EndDocsScrolling
 
 
-; ======== MANAGE BIG MOTHERSHIP  ========
+; ======== MANAGE TERRAIN SCROLLING ========
 
-; 1) Wait for Motion Phase
-; 2) Execute motion if positive Y position.
+; Scroll all four lines of terrain back and forth.
+; All four move in the same direction/same speed.
+; Pause for a few seconds at the end of a move.
+; Then reverse directions.
+; Rinse.  Repeat.
+
+; 1) If waiting, continue to wait.
+; 2) if not waiting, then do motion.  
 ; 3) Wait for motion timer.
-; 4)a) dec Y
-; 4)b) 	jsr Pmg_Draw_Big_Mothership
-; 5) DO NOT RESET
+; 4) Execute motion. Either
+; 4)a) Move Left, OR
+; 4)b) Move Right. 
+; 5) At end, then reset
+; 5)a) toggle motion direction.
+; 5)b) restart the waiting phase.
 
-b_mdv_BigMothership
+b_mdv_DoLandScrolling
 
-	lda zBigMothershipPhase      ; Is it moving (1)  or standing still (0)?
-	beq b_mdv_EndBigMothership   ; Standing still.  So, nothing else to do.
+	lda #0
+	sta zLandColor
 
-	lda zBIG_MOTHERSHIP_Y        ; Get Y coord
-	bmi b_mdv_EndBigMothership   ; Negative Y means it is offscreen.
+	lda zLandPhase            ; 0 == waiting    1  == scrolling
+	bne b_mdv_RunLandScrolling
 
-	dec zBigMothershipSpeed      ; Wait for motion timer to expire
-	bne b_mdv_EndBigMothership   ; Timer is still running.
+	; Waiting....
+	dec zLandTimer
+	bne b_mdv_EndLandScrolling  ; Timer still >0
 
-	lda #BIG_MOTHERSHIP_SPEED    ; Reset the speed timer
-	sta zBigMothershipSpeed
+	; Reset timer.  And start scrolling.
+	inc zLandPhase             ; To get here we know this was 0.
+	lda #LAND_MAX_PAUSE
+	sta zLandTimer
+	
+	; We are moving the credits...
 
-	dec zBIG_MOTHERSHIP_Y        ; Subtract Y, (move up) one scan line.
-	jsr Pmg_Draw_Big_Mothership
+b_mdv_RunLandScrolling
 
-b_mdv_EndBigMothership
+	dec zLandScrollTimer      ; Delay to not scroll to quickly.
+	bne b_mdv_EndLandScrolling
+
+	lda #LAND_STEP_TIMER      ; Reset the scroll timer
+	sta zLandScrollTimer
+
+	lda zLandMotion           ; What direction are we moving in?
+	beq b_mdv_LandLeft        ; 0 is moving Left
+
+	; Otherwise, we're going in the opposite direction here.  (Right)
+
+	inc zLandHS            ; Land Right
+	lda zLandHS
+	cmp #16                   ; Reach the end of fine scrolling 16 color clocks?
+	bne b_mdv_TestEndRight    ; No, Test for end of scrolling.
+	lda #0                    ; Yes. 
+	sta zLand1HS            ; Reset the fine scroll, and...
+	dec DL_LMS_SCROLL_LAND1  ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND1  ; and another 8 color clocks.
+	dec DL_LMS_SCROLL_LAND2  ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND2  ; and another 8 color clocks.
+	dec DL_LMS_SCROLL_LAND3  ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND4  ; and another 8 color clocks.
+	dec DL_LMS_SCROLL_LAND4  ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND4  ; and another 8 color clocks.
+
+b_mdv_TestEndRight                 ; Check the Land's end position.
+	lda zLandHS                    ; Get fine scroll position.  0 is the end
+	bne b_mdv_EndLandScrolling     ; Not 0..  We're done with checking.
+	lda DL_LMS_SCROLL_LAND1        ; Get the coarse scroll position
+	cmp #<[DL_LMS_SCROLL_LAND1] ; at the ending coarse scroll position?
+	bne b_mdv_EndLandScrolling     ; nope.  We're done with checking.
+
+	; reset to do left, then re-enable the reading comprehension timer.
+	dec zLandsMotion           ; It was 1 to do right scrolling. Make it 0 for left.
+	dec zLandsPhase            ; It was 1 to do scrolling.  switch to waiting.
+	bne b_mdv_EndLandScrolling ; Finally done with this scroll direction. 
+
+;  we're going in the Left direction. 
+
+b_mdv_LandLeft
+	dec zLandHS             ; Land 1 Left
+	bpl b_mdv_TestEndLeft    ; No, go do the Land2 line. 
+	lda #15                    ; Yes. 
+	sta zLandHS             ; Reset the fine scroll, and...
+	inc DL_LMS_SCROLL_LAND1  ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND1  ; and another 8 color clocks.
+	inc DL_LMS_SCROLL_LAND2  ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND2  ; and another 8 color clocks.
+	inc DL_LMS_SCROLL_LAND3  ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND4  ; and another 8 color clocks.
+	inc DL_LMS_SCROLL_LAND4  ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND4  ; and another 8 color clocks.
+
+b_mdv_TestEndLeft           ; They both scroll the same distance.  Check Line2's end position.
+	lda zLandHS               ; Get fine scroll position.  Is it 0?
+	bne b_mdv_EndLandScrolling ; Not 0.  We're done with checking.
+	lda DL_LMS_SCROLL_LAND1    ; Get the coarse scroll position
+	cmp #<[DL_LMS_SCROLL_LAND1+20]     ; at the ending coarse scroll position?
+	bne b_mdv_EndLandScrolling ; nope.  We're done with checking.
+
+	; reset to do right, then re-enable the reading comprehension timer.
+	inc zLandsMotion           ; It was 0 to do left.  Make it non-zero for right scrolling.
+	dec zLandsPhase            ; It was 1 to do scrolling.  switch to waiting.
+	bne b_mdv_EndLandScrolling ; Finally done with this scroll direction. 
+
+b_mdv_EndLandScrolling
+
+
+
+
+
+
+
 
 
 ; ======== Do SOMETHING ELSE MAGICAL ========
+
+
+
+
+
+
 
 b_mdv_DoGameManagement
 
@@ -1296,7 +1416,7 @@ TITLE_DLI_4
 ; Temporary.  Do a little tidy work to make the rest of the screen stable.
 
 	sta WSYNC
-	lda #15
+	lda zLandHS
 	sta HSCROL
 
 	lda #$0E
@@ -1311,14 +1431,87 @@ TITLE_DLI_4
 	pla
 	tay
 
-	mChainDLI TITLE_DLI_4,DoNothing_DLI ; Done here.  Finally go to next DLI.
+	mChainDLI TITLE_DLI_4,TITLE_DLI_5 ; Done here.  Finally go to next DLI.
+
+
+;==============================================================================
+; TITLE_DLI_5                                             
+;==============================================================================
+; DLI to run the colors for the horizontally scrolling land.
+; Fine scroll is already set, so, this just sets COLPF0, 1, 2.
+; -----------------------------------------------------------------------------
+
+TITLE_DLI_5
+
+	mStart_DLI ; Saves A and Y
+
+	ldy zLandColor
+	lda TABLE_LAND_COLPF0,y
+	sta WSYNC   ; (1.0)
+	sta COLPF0
+
+	lda TABLE_LAND_COLPF1,y
+	sta COLPF1
+
+	lda TABLE_LAND_COLPF2,y
+	sta COLPF2
+
+	iny
+
+	lda TABLE_LAND_COLPF0,y
+
+	sta WSYNC   ; (1.1)
+	sta WSYNC   ; (1.2)
+	sta WSYNC   ; (1.3)
+
+	sta COLPF0
+
+	lda TABLE_LAND_COLPF1,y
+	sta COLPF1
+
+	lda TABLE_LAND_COLPF2,y
+	sta COLPF2
+
+	iny
+
+	cpy #8 
+	bne b_dli5_Repeat
+
+;	ldy #0
+;	sty zLandColor ; Well, not really needed.  VBI will take care of it.
+
+	pla
+	tay
+
+	mChainDLI TITLE_DLI_5,TITLE_DLI_5 ; Done here.  Finally go to next DLI.
+
+b_dli5_Repeat
+	sty zLandColor
+
+	pla
+	tay
+	pla
+
+	rti
+
+
 
 
 ; " ^              ^           ^         ^ " PF0 white14, grey12 |
 ; "/T\^        ^  /T\       /\/T\^     ^/T\" PF0 blue10, blue8   | PF1 white14, grey12    |
 ; "^  \\    /\/T\/   \     /  \ /T\   /T\ ^" PF0 blue6, blue4    | PF1 green8, green6     | PF2 white14, grey12
 ; "_\   \  /  \ /     \   /        \ /   /_" PF0 grey4, grey2    | PF1 green4, green2     | PF2 tan6, tan4
-; 
+
+TABLE_LAND_COLPF0
+	.byte $0E,$0C,$8A,$88,$86,$84,$04,$02
+
+TABLE_LAND_COLPF1
+	.byte $0E,$0e,$0e,$0c,$c8,$c6,$c4,$c2
+
+TABLE_LAND_COLPF2
+	.byte $0e,$0e,$0e,$0e,$0e,$0c,$16,$14
+
+
 
 
 ;==============================================================================
@@ -1400,6 +1593,17 @@ DLI_PF0_DEC
 	dey
 
 	rts
+
+
+
+
+
+
+
+
+DoNothing_DLI ; In testing mode jump here to not do anything or to stop the DLI chain.
+	 rti
+
 
 
 
@@ -1715,8 +1919,7 @@ DLI_PF0_DEC
 
 	; mRegRestoreAY
 
-DoNothing_DLI ; In testing mode jump here to not do anything or to stop the DLI chain.
-	 rti
+;	 rti
 
 
 ; ;==============================================================================
