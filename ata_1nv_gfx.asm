@@ -215,13 +215,13 @@ DL_LMS_SCROLL_DOCS = [ * + 1 ]
 
 BOTTOM_OF_DISPLAY 
 DL_LMS_SCROLL_LAND1 = [ * + 1 ]                                  
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; 19 (172 - 179) (6) (DLI 6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; 19 (172 - 179) (6) (DLI 5) Fine scrolling mountains to random position.
 DL_LMS_SCROLL_LAND2 = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; 20 (180 - 187) (6) (DLI 6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; 20 (180 - 187) (6) (DLI 5) Fine scrolling mountains to random position.
 DL_LMS_SCROLL_LAND3 = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; 21 (188 - 195) (6) (DLI 6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; 21 (188 - 195) (6) (DLI 5) Fine scrolling mountains to random position.
 DL_LMS_SCROLL_LAND4 = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; 22 (196 - 203) (6) (DLI 7) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; 22 (196 - 203) (6) (DLI 6) Fine scrolling mountains to random position.
 	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; 23 (204 - 211) (6) (DLI 7) ground and bumpers
 	mDL_LMS   DL_TEXT_2,GFX_STATSLINE                       ; 24 (212 - 219) (6) Stats line follows bumper line in memory.
 
@@ -513,7 +513,7 @@ GFX_SCROLL_CREDIT2
 
 GFX_SCROLL_DOCS
 scrtxt   
-	.sb "         :  :  :  :  :  : PRESS FIRE TO PLAY"
+	.sb "                     PRESS FIRE TO PLAY"
 	.sb "     FIRE SHOOTS AND CHANGES CANNON DIRECTION "
 	.sb "     MORE POINTS WHEN 1NVADER IS HIGH UP"
 	.sb "     1NVADER SLOWS DOWN AFTER EIGHTY HITS "
@@ -582,8 +582,18 @@ GFX_END_DOCS
 ; "8  04    884440   0     4  4 444   444 8"
 ; "88   4  8  8 0     0   4        4 4   88"
 
-	.align $0100  ; Align to a page, so only low bytes need to be changed.
-	
+TABLE_LAND_COLPF0
+	.byte $0E,$0C,$8A,$88,$86,$84,$04,$02
+
+TABLE_LAND_COLPF1
+	.byte $0E,$0e,$0e,$0c,$c8,$c6,$c4,$c2
+
+TABLE_LAND_COLPF2
+	.byte $0e,$0e,$0e,$0e,$0e,$0c,$16,$14
+
+
+	.align $0100  ; Align to a page, so only low bytes need to be changed for scrolling
+
 mountc	; mountain screen view chars
 		; Note all values modified -$20 for Atari character codes.
 GFX_MOUNTAINS1

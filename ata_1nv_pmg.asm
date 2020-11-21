@@ -72,7 +72,7 @@ PMG_IMG_BIGGERSHIP_R ; Title Screen version.
 	.byte $e0  ; .....111 111.....
 	.byte $f8  ; ...11111 11111...
 	.byte $fc  ; ..111111 111111..
-	.byte $d6  ; .11.1.11 11.1.11.
+	.byte $6b  ; .11.1.11 11.1.11.
 	.byte $ff  ; 11111111 11111111
 	.byte $ff  ; 11111111 11111111
 	.byte $fc  ; ..111111 111111..

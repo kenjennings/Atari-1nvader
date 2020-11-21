@@ -1439,6 +1439,7 @@ TITLE_DLI_4
 ;==============================================================================
 ; DLI to run the colors for the horizontally scrolling land.
 ; Fine scroll is already set, so, this just sets COLPF0, 1, 2.
+; The color tables refereced are in gfx.asm.
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_5
@@ -1483,7 +1484,7 @@ TITLE_DLI_5
 	pla
 	tay
 
-	mChainDLI TITLE_DLI_5,TITLE_DLI_5 ; Done here.  Finally go to next DLI.
+	mChainDLI TITLE_DLI_5,TITLE_DLI_6 ; Done here.  Finally go to next DLI.
 
 b_dli5_Repeat
 	sty zLandColor
@@ -1495,21 +1496,67 @@ b_dli5_Repeat
 	rti
 
 
+;==============================================================================
+; TITLE_DLI_6                                             
+;==============================================================================
+; Do the colors for the non-scrolling land under the mountains.
+; Start the background from darkest dirt color and increment brighness.
+; Start COLPF0 at a lighter tan and increment to lighter color at same speed.
+; 
+; At the end, reset colors for the bottom status line.
+; -----------------------------------------------------------------------------
+
+TITLE_DLI_6
+
+	mRegSaveAYX ; Saves regs 
+
+	ldx #$30 ; COLBK
+	ldy #$12 ; COLBK
+
+b_dli6_NextLoop
+	stx WSYNC
+	stx COLBK
+	sty COLPF0
+
+	inx
+	iny
+	iny
+
+	cpy #$1C
+	bne b_dli5_NextLoop
+
+	pla
+	tax
+	pla
+	tay
+
+	mChainDLI TITLE_DLI_6,TITLE_DLI_7 ; Done here.  Go to next DLI.
 
 
-; " ^              ^           ^         ^ " PF0 white14, grey12 |
-; "/T\^        ^  /T\       /\/T\^     ^/T\" PF0 blue10, blue8   | PF1 white14, grey12    |
-; "^  \\    /\/T\/   \     /  \ /T\   /T\ ^" PF0 blue6, blue4    | PF1 green8, green6     | PF2 white14, grey12
-; "_\   \  /  \ /     \   /        \ /   /_" PF0 grey4, grey2    | PF1 green4, green2     | PF2 tan6, tan4
 
-TABLE_LAND_COLPF0
-	.byte $0E,$0C,$8A,$88,$86,$84,$04,$02
 
-TABLE_LAND_COLPF1
-	.byte $0E,$0e,$0e,$0c,$c8,$c6,$c4,$c2
+;==============================================================================
+; TITLE_DLI_7
+;==============================================================================
+; Do the colors for the non-scrolling land under the mountains.
+; Start the background from darkest dirt color and increment brighness.
+; Start COLPF0 at a lighter tan and increment to lighter color at same speed.
+; 
+; At the end, reset colors for the bottom status line.
+; -----------------------------------------------------------------------------
 
-TABLE_LAND_COLPF2
-	.byte $0e,$0e,$0e,$0e,$0e,$0c,$16,$14
+TITLE_DLI_7
+
+	pha
+
+	lda #$00
+	sta WSYNC
+	sta COLBK
+	sta COLPF2
+	lda #$0C
+	sta COLPF1
+
+	mChainDLI TITLE_DLI_7,DoNothing_DLI ; Done here.  Go to next DLI.
 
 
 

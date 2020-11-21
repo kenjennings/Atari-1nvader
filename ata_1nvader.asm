@@ -131,6 +131,7 @@ zLandMotion      .byte $00  ; 0 == left/right !0 == right/left
 zLandHS          .byte 8   ; fine horizontal scroll value start.
 zLandColor       .byte 0   ; index for repeat DLIs on the scrolling land 
 
+
 ; Generic Player/Missile Data Copying =======================================
 
 zPMG_IMAGE    .word 0 ; points to image data
