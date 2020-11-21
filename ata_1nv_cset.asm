@@ -120,6 +120,7 @@ cdat1 ; the first 32 characters
 		; .......*
 		; .......*
 		; ........
+
 	.byte $00,$10,$10,$10 ; ! ;    Atari uses as exclamation point. 
 	.byte $10,$00,$10,$00
 	; $00 ........
@@ -134,6 +135,23 @@ cdat1 ; the first 32 characters
 ; $02
 ;	.byte $00,$1f,$00,$07 ; " ; thick left 2.  double size 2, left
 ;	.byte $18,$18,$1f,$00
+
+; Atari Version.
+;The bouncer was moved, so the Atari can have the single tick and
+; at sign @ at the proper places in its font.
+;
+; $02
+	.byte $ff,$76,$2c,$34 ; @ ;     bouncer.   Left/Right line end.
+	.byte $2c,$76,$ff,$00
+	; $ff ********
+	; $76 .***.**.
+	; $2C ..*.**..
+	; $34 ..**.*..
+	; $2C ..*.**..
+	; $76 .***.**.
+	; $ff ********
+	; $00 ........
+
 ; $03
 ;	.byte $00,$1f,$00,$01 ; # ; thick left 3.  double size 3, left
 ;	.byte $00,$00,$1f,$00
@@ -432,15 +450,14 @@ cdat1 ; the first 32 characters
 
 		ORG CHARACTER_SET + [ $20 * 8 ]
 		
-; This is the image originally at $20
-; On the Atari I the bouncer image is displayed as Missiles (P5 parts)
-; This allows accommodating the single tick (') and the at (@) at the 
-; correct positions in the Atari font.
-;	.byte $ff,$76,$2c,$34 ; @ ;     bouncer.   Left/Right line end.
-;	.byte $2c,$76,$ff,$00
-	
 
 cdat2 ; next 32 characters.
+
+; This is the image originally at $20
+; On the Atari this is moved to $02 
+; I like to have the  single tick (') and the at (@) at the 
+; correct positions in the Atari font.
+
 ; $20
 ;	.byte $ff,$76,$2c,$34 ; @ ;     bouncer.   Left/Right line end.
 ;	.byte $2c,$76,$ff,$00

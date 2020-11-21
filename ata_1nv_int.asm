@@ -803,59 +803,62 @@ b_mdv_RunLandScrolling
 
 	; Otherwise, we're going in the opposite direction here.  (Right)
 
-	inc zLandHS            ; Land Right
+	inc zLandHS                ; Land Right
 	lda zLandHS
-	cmp #16                   ; Reach the end of fine scrolling 16 color clocks?
-	bne b_mdv_TestEndRight    ; No, Test for end of scrolling.
-	lda #0                    ; Yes. 
-	sta zLand1HS            ; Reset the fine scroll, and...
-	dec DL_LMS_SCROLL_LAND1  ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_LAND1  ; and another 8 color clocks.
-	dec DL_LMS_SCROLL_LAND2  ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_LAND2  ; and another 8 color clocks.
-	dec DL_LMS_SCROLL_LAND3  ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_LAND4  ; and another 8 color clocks.
-	dec DL_LMS_SCROLL_LAND4  ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_LAND4  ; and another 8 color clocks.
+	cmp #16                    ; Reach the end of fine scrolling 16 color clocks?
+	bne b_mdv_EndLandScrolling ; No, Nothing else to do here.
+	lda #0                     ; Yes. 
+	sta zLandHS                ; Reset the fine scroll, and...
+	dec DL_LMS_SCROLL_LAND1    ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND1    ; and another 8 color clocks.
+	dec DL_LMS_SCROLL_LAND2    ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND2    ; and another 8 color clocks.
+	dec DL_LMS_SCROLL_LAND3    ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND3    ; and another 8 color clocks.
+	dec DL_LMS_SCROLL_LAND4    ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND4    ; and another 8 color clocks.
 
-b_mdv_TestEndRight                 ; Check the Land's end position.
-	lda zLandHS                    ; Get fine scroll position.  0 is the end
-	bne b_mdv_EndLandScrolling     ; Not 0..  We're done with checking.
-	lda DL_LMS_SCROLL_LAND1        ; Get the coarse scroll position
-	cmp #<[DL_LMS_SCROLL_LAND1] ; at the ending coarse scroll position?
-	bne b_mdv_EndLandScrolling     ; nope.  We're done with checking.
+b_mdv_TestEndRight              ; Check the Land's end position.
+	lda zLandHS                 ; Get fine scroll position.  0 is the end
+	bne b_mdv_EndLandScrolling  ; Not 0..  We're done with checking.
+	lda DL_LMS_SCROLL_LAND1     ; Get the coarse scroll position
+	cmp #<[GFX_MOUNTAINS1]      ; at the ending coarse scroll position?
+	bne b_mdv_EndLandScrolling  ; nope.  We're done with checking.
 
-	; reset to do left, then re-enable the reading comprehension timer.
-	dec zLandsMotion           ; It was 1 to do right scrolling. Make it 0 for left.
-	dec zLandsPhase            ; It was 1 to do scrolling.  switch to waiting.
+	; reset to do left, then re-enable the pause
+	dec zLandMotion           ; It was 1 to do right scrolling. Make it 0 for left.
+	dec zLandPhase            ; It was 1 to do scrolling.  switch to waiting.
 	bne b_mdv_EndLandScrolling ; Finally done with this scroll direction. 
 
 ;  we're going in the Left direction. 
 
 b_mdv_LandLeft
-	dec zLandHS             ; Land 1 Left
-	bpl b_mdv_TestEndLeft    ; No, go do the Land2 line. 
-	lda #15                    ; Yes. 
-	sta zLandHS             ; Reset the fine scroll, and...
-	inc DL_LMS_SCROLL_LAND1  ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_LAND1  ; and another 8 color clocks.
-	inc DL_LMS_SCROLL_LAND2  ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_LAND2  ; and another 8 color clocks.
-	inc DL_LMS_SCROLL_LAND3  ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_LAND4  ; and another 8 color clocks.
-	inc DL_LMS_SCROLL_LAND4  ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_LAND4  ; and another 8 color clocks.
+	dec zLandHS                    ; Land 1 Left
+	bmi b_mdv_HSReset              ; At -1 means time to reset HSCROLL
+	beq b_mdv_TestEndLeft          ; if 0, then possibly at an end boundary.  Go test for end.
+	bne b_mdv_EndLandScrolling     ; Not 0, then not at a boundary test, so nothing more to do.
 
-b_mdv_TestEndLeft           ; They both scroll the same distance.  Check Line2's end position.
-	lda zLandHS               ; Get fine scroll position.  Is it 0?
-	bne b_mdv_EndLandScrolling ; Not 0.  We're done with checking.
-	lda DL_LMS_SCROLL_LAND1    ; Get the coarse scroll position
-	cmp #<[DL_LMS_SCROLL_LAND1+20]     ; at the ending coarse scroll position?
-	bne b_mdv_EndLandScrolling ; nope.  We're done with checking.
+b_mdv_HSReset	                   ; Reached -1 for fines croll.  Coarse Scroll and reset.
+	inc DL_LMS_SCROLL_LAND1        ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND1        ; and another 8 color clocks.
+	inc DL_LMS_SCROLL_LAND2        ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND2        ; and another 8 color clocks.
+	inc DL_LMS_SCROLL_LAND3        ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND3        ; and another 8 color clocks.
+	inc DL_LMS_SCROLL_LAND4        ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND4        ; and another 8 color clocks.
+	lda #15                        ; Reset to start HSCROLL
+	sta zLandHS                    ; Reset the fine scroll, and...
+	bne b_mdv_EndLandScrolling     ; Nothing more to do.
 
-	; reset to do right, then re-enable the reading comprehension timer.
-	inc zLandsMotion           ; It was 0 to do left.  Make it non-zero for right scrolling.
-	dec zLandsPhase            ; It was 1 to do scrolling.  switch to waiting.
+b_mdv_TestEndLeft                  ; At HSCROL 0.  This may be a boundary.
+	lda DL_LMS_SCROLL_LAND1        ; Get the coarse scroll position
+	cmp #<[GFX_MOUNTAINS1+20]      ; at the ending coarse scroll position?
+	bne b_mdv_EndLandScrolling     ; Nothing more to do.
+
+	; reset to do right, then re-enable the pause.
+	inc zLandMotion           ; It was 0 to do left.  Make it non-zero for right scrolling.
+	dec zLandPhase            ; It was 1 to do scrolling.  switch to waiting.
 	bne b_mdv_EndLandScrolling ; Finally done with this scroll direction. 
 
 b_mdv_EndLandScrolling
@@ -1511,7 +1514,10 @@ TITLE_DLI_6
 	mRegSaveAYX ; Saves regs 
 
 	ldx #$30 ; COLBK
-	ldy #$12 ; COLBK
+	ldy #$22 ; COLPF0
+	lda #$78 ; COLPF3
+
+	sta COLPF3 ; should be able to get away with this, because there is no PF3 in the mountains.
 
 b_dli6_NextLoop
 	stx WSYNC
@@ -1522,8 +1528,8 @@ b_dli6_NextLoop
 	iny
 	iny
 
-	cpy #$1C
-	bne b_dli5_NextLoop
+	cpy #$2C
+	bne b_dli6_NextLoop
 
 	pla
 	tax

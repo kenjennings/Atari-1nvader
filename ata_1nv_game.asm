@@ -337,10 +337,10 @@ GameSetupTitle
 	lda #BIG_MOTHERSHIP_SPEED ; How many frames to wait per mothership move.
 	sta zBigMothershipSpeed
 
-	lda #1                    ;  0 = standing still  !0 = Moving up.
+	lda #0                    ;  0 = standing still  !0 = Moving up.
 	sta zBigMothershipPhase
 
-	lda #114
+	lda #112
 	sta SHPOSP2
 	lda #128
 	sta SHPOSP3
@@ -371,7 +371,6 @@ GameSetupTitle
 
 	lda #0
 	sta zLandColor
-	lda #8 
 	sta zLandHS
 
 	lda #LAND_MAX_PAUSE

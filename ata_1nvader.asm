@@ -65,7 +65,7 @@ zTitleLogoPMFrame      .byte $00
 TITLE_LOGO_X_START     = 78
 zTitleHPos             .byte TITLE_LOGO_X_START   ; Missile position.
 
-TITLE_LOGO_Y_POS       = 79                       ; Just a constant.  No need for variable.
+TITLE_LOGO_Y_POS       = 71                       ; Just a constant.  No need for variable.
 
 ZTitleLogoBaseColor   .byte COLOR_ORANGE1         ; Starting value for first DLI. 
 ZTitleLogoColor       .byte COLOR_ORANGE1         ; Value for DLI. Loop from $10 to $E0 by 16
@@ -122,7 +122,7 @@ zDocsHS          .byte 15   ; fine horizontal scroll value start.
 LAND_MAX_PAUSE   = $FF
 zLandTimer       .byte LAND_MAX_PAUSE  ; Number of jiffies to Pause.  When 0, run scroll.
 
-LAND_STEP_TIMER   = 4
+LAND_STEP_TIMER   = 5
 zLandScrollTimer .byte LAND_STEP_TIMER ; How many frames to wait for each fine scroll.
 
 zLandPhase       .byte $00  ; 0 == waiting  1 == scrolling.

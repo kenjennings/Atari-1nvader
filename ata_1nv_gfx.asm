@@ -513,7 +513,7 @@ GFX_SCROLL_CREDIT2
 
 GFX_SCROLL_DOCS
 scrtxt   
-	.sb "                     PRESS FIRE TO PLAY"
+	.sb "                      PRESS FIRE TO PLAY"
 	.sb "     FIRE SHOOTS AND CHANGES CANNON DIRECTION "
 	.sb "     MORE POINTS WHEN 1NVADER IS HIGH UP"
 	.sb "     1NVADER SLOWS DOWN AFTER EIGHTY HITS "
@@ -583,13 +583,13 @@ GFX_END_DOCS
 ; "88   4  8  8 0     0   4        4 4   88"
 
 TABLE_LAND_COLPF0
-	.byte $0E,$0C,$8A,$88,$86,$84,$04,$02
+	.byte $0E,$0C,$9A,$98,$96,$94,$92,$90
 
 TABLE_LAND_COLPF1
-	.byte $0E,$0e,$0e,$0c,$c8,$c6,$c4,$c2
+	.byte $0E,$0e,$0e,$0c,$d8,$d6,$d4,$d2
 
 TABLE_LAND_COLPF2
-	.byte $0e,$0e,$0e,$0e,$0e,$0c,$16,$14
+	.byte $0e,$0e,$0e,$0e,$0c,$38,$36,$34
 
 
 	.align $0100  ; Align to a page, so only low bytes need to be changed for scrolling
@@ -597,44 +597,44 @@ TABLE_LAND_COLPF2
 mountc	; mountain screen view chars
 		; Note all values modified -$20 for Atari character codes.
 GFX_MOUNTAINS1
-	.byte $00 ; One extra byte here, so LMS +1/HS 0 will show the entire char at +1 in the buffer.
+	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
 	.byte $00,$3d,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$3d,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$3d,$00,$00,$00,$00,$00,$00,$00,$00,$00,$3d,$00
 
 GFX_MOUNTAINS2
-	.byte $00 ; One extra byte here, so LMS +1/HS 0 will show the entire char at +1 in the buffer.
+	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
 	.byte $3b,$3e,$3c,$7d,$00,$00,$00,$00,$00,$00,$00,$00,$7d,$00,$00,$3b,$3e,$3c,$00,$00
 	.byte $00,$00,$00,$00,$00,$7b,$7c,$3b,$3e,$3c,$7d,$00,$00,$00,$00,$00,$7d,$3b,$3e,$3c
 
 GFX_MOUNTAINS3
-	.byte $00 ; One extra byte here, so LMS +1/HS 0 will show the entire char at +1 in the buffer.
+	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
 	.byte $bd,$00,$00,$3c,$7c,$00,$00,$00,$00,$bb,$bc,$7b,$7e,$7c,$3b,$00,$00,$00,$3c,$00
 	.byte $00,$00,$00,$00,$7b,$00,$00,$7c,$00,$7b,$7e,$7c,$00,$00,$00,$7b,$7e,$7c,$00,$bd
 
 GFX_MOUNTAINS4
-	.byte $00 ; One extra byte here, so LMS +1/HS 0 will show the entire char at +1 in the buffer.
+	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
 	.byte $bf,$bc,$00,$00,$00,$7c,$00,$00,$bb,$00,$00,$bc,$00,$3b,$00,$00,$00,$00,$00,$3c
 	.byte $00,$00,$00,$7b,$00,$00,$00,$00,$00,$00,$00,$00,$7c,$00,$7b,$00,$00,$00,$bb,$bf
 
 
 ; This is not 40 chars, because it won't "move" by LMS changes.
 GFX_BUMPERLINE
-	.byte $00,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$00
+	.byte $C2,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$C2
 	
 
 ; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left
 
 GFX_STATSLINE  ; "          L:00   PT:0000   H:00         "  ; "L:", "PT:", "H:" Use P/M graphics
-	.sb "            "
+	.sb "          "
 GFX_STAT_LINE
 	.sb $00,$00
 	.sb "      "
 GFX_STAT_POINTS
 	.sb $00,$00,$00,$00
-	.sb "     "
+	.sb "      "
 GFX_STAT_HITS
 	.sb $00,$00
-	.sb "         " 
+	.sb "          " 
 
 ; The first 21 bytes of data are blank which is used to show no star. 
 ; That is, LMS=Line+0, and HSCROLL=15.  

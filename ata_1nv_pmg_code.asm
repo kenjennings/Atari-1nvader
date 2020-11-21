@@ -81,18 +81,14 @@ Pmg_Draw_Big_Mothership
 b_pdbm_LoopDraw
 	lda PMG_IMG_BIGGERSHIP_L,X ; Get byte from saved image
 	sta PLAYERADR2,Y       ; Write to P/M memory
-	iny                    ; One position lower.
-	sta PLAYERADR2,Y       ; and write the same image again.
-	dey                    ; Move back up to prior line.
 	lda PMG_IMG_BIGGERSHIP_R,X ; Get byte from saved image
 	sta PLAYERADR3,Y       ; Write to P/M memory
-	iny                    ; One position lower.
-	sta PLAYERADR3,Y       ; and write the same image again.
-	iny                    ; One position lower for the next write.
 
+	iny                    ; One position lower.
 	inx                    ; next byte
-	cpx #8                 
-	bne b_pdbm_LoopDraw    ; End after copying 8.
+
+	cpx #16                 
+	bne b_pdbm_LoopDraw    ; End after copying 16.
 
 	; End by zeroing the next two bytes to erase a prior image.
 	lda #0
