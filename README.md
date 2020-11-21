@@ -75,9 +75,28 @@ Worked on the movement of the giant mothership on the Title screen.  Because the
 
 ---
 
+**21 Nov 2020 -- Mountains Majesty**
+
+[![V05 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/05-WIP-Mountains.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+The mountains are set up.  A DLI changes the colors from the top of mountains down to the bottom.
+
+I made some minor tweaks to the image for the big mothership.
+
+Fixed a problem with the long documentation.  It turned out the scrolling was broken and did not end at the correct enpoint, scrolling off into memory endlessly.
+
+A DLI sets the colors for the static ground line at the bottom where the ships will be placed.  Also, a DLI sets the proper colors for the Mode 2 line of text at the bottom which shows the line statistics.
+
+Further TO-DO: 
+
+I will be changing the shape of the bumper. In the Mode 6 text the character is twice as wide as it appears on the C64 versions.  To give the Atari the same size of playfield for the guns I need to change the character image to fit into half the character.  This also means a special bumper character will be needed for the left and right sides of the line.
+
+I will also change the characters in the ground line below the mountains to present rolling hills. 
+
+---
+
 **DD MMM 2020 -- TO-DO**
 
 [![V05 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/05-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
-
