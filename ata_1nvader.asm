@@ -122,13 +122,13 @@ zDocsHS          .byte 15   ; fine horizontal scroll value start.
 LAND_MAX_PAUSE   = $FF
 zLandTimer       .byte LAND_MAX_PAUSE  ; Number of jiffies to Pause.  When 0, run scroll.
 
-LAND_STEP_TIMER   = 5
+LAND_STEP_TIMER   = 6
 zLandScrollTimer .byte LAND_STEP_TIMER ; How many frames to wait for each fine scroll.
 
 zLandPhase       .byte $00  ; 0 == waiting  1 == scrolling.
 zLandMotion      .byte $00  ; 0 == left/right !0 == right/left
 
-zLandHS          .byte 8   ; fine horizontal scroll value start.
+zLandHS          .byte 0   ; fine horizontal scroll value start.
 zLandColor       .byte 0   ; index for repeat DLIs on the scrolling land 
 
 

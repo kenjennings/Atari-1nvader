@@ -109,6 +109,7 @@ cdat1 ; the first 32 characters
 ; $00
 	.byte $00,$00,$00,$00 ; [спаце].  blank space
 	.byte $00,$00,$00,$00
+	
 ; $01
 ;	.byte $00,$01,$06,$01 ; ! ; thick left 1.  double size 1, left
 ;	.byte $01,$01,$01,$00
@@ -141,8 +142,8 @@ cdat1 ; the first 32 characters
 ; at sign @ at the proper places in its font.
 ;
 ; $02
-	.byte $ff,$76,$2c,$34 ; @ ;     bouncer.   Left/Right line end.
-	.byte $2c,$76,$ff,$00
+;	.byte $ff,$76,$2c,$34 ; @ ;     bouncer.   Left/Right line end.
+;	.byte $2c,$76,$ff,$00
 	; $ff ********
 	; $76 .***.**.
 	; $2C ..*.**..
@@ -151,19 +152,82 @@ cdat1 ; the first 32 characters
 	; $76 .***.**.
 	; $ff ********
 	; $00 ........
+;
+; $02 ;     LEFT bouncer.   Left/Right line end.
+	.byte $f0,$e0,$c0,$c0
+	.byte $c0,$e0,$f0,$00 
+	; $f0 ****....
+	; $e0 ***.....
+	; $c0 **......
+	; $c0 **......
+	; $c0 **......
+	; $e0 ***.....
+	; $f0 ****....
+	; $00 ........
 
 ; $03
 ;	.byte $00,$1f,$00,$01 ; # ; thick left 3.  double size 3, left
 ;	.byte $00,$00,$1f,$00
+;
+; $03 ;     RIGHT bouncer.   Left/Right line end.
+	.byte $0f,$07,$03,$03
+	.byte $03,$07,$0f,$00
+	; $0f ....****
+	; $07 .....***
+	; $03 ......**
+	; $03 ......**
+	; $03 ......**
+	; $07 .....***
+	; $0f ....****
+	; $00 ........
+
 ; $04
 ;	.byte $00,$80,$00,$80 ; $ ; thick right 1.  double size 1, right
 ;	.byte $80,$80,$80,$00
+
+; Atari - a piece of rolling hills
+	.byte $00,$00,$00,$00
+	.byte $c0,$f0,$fC,$ff
+	; $00 ........
+	; $00 ........
+	; $00 ........
+	; $00 ........
+	; $c0 **......
+	; $f0 ****....
+	; $fc ******..
+	; $ff ********
+
 ; $05
 ;	.byte $00,$e0,$18,$e0 ; % ; thick right 2.  double size 2, right
 ;	.byte $00,$00,$f8,$00
+
+; Atari - a piece of rolling hills
+	.byte $c0,$f0,$f8,$fc
+	.byte $ff,$ff,$ff,$ff
+	; $80 **......
+	; $e0 ****...
+	; $f8 *****...
+	; $fc ******..
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+
 ; $06
 ;	.byte $00,$e0,$18,$e0 ; & ; thick right 3.  double size 3, right
 ;	.byte $18,$18,$e0,$00
+
+; Atari - a piece of rolling hills
+	.byte $c0,$e0,$f0,$f0
+	.byte $f0,$f8,$fc,$ff
+	; $c0 **......
+	; $e0 ***.....
+	; $f0 ****....
+	; $f0 ****....
+	; $f0 ****....
+	; $f8 *****...
+	; $fc ******..
+	; $ff ********
 
 	ORG CHARACTER_SET + [ $07 * 8 ]
 	
@@ -178,6 +242,7 @@ cdat1 ; the first 32 characters
 	; $40 .*......
 	; $3C ..****..
 	; $00 ........
+
 	; On the Atari this is the single tick/apostrophe for Mode 6
 	.byte $00,$08,$08,$10
 	.byte $00,$00,$00,$00
@@ -201,7 +266,20 @@ cdat1 ; the first 32 characters
 	; $44 .*...*..
 	; $38 ..***...
 	; $ff ********
-	
+
+; Atari - a piece of rolling hills
+	.byte $00,$00,$c0,$f0
+	.byte $f0,$f8,$fc,$ff
+	; $00 ........
+	; $00 ........
+	; $c0 **......
+	; $f0 ****....
+	; $f0 ****....
+	; $f8 *****...
+	; $fc ******..
+	; $ff ********
+
+
 ; $09
 ;	.byte $ff,$38,$44,$44 ; ) ;   9 with bars above, below?
 ;	.byte $34,$04,$04,$ff
@@ -212,6 +290,18 @@ cdat1 ; the first 32 characters
 	; $34 ..**.*..
 	; $04 .....*..
 	; $38 ..*..
+	; $ff ********
+
+; Atari - a piece of rolling hills
+	.byte $00,$00,$00,$00
+	.byte $c0,$f0,$fc,$ff
+	; $00 ........
+	; $00 ........
+	; $00 ........
+	; $00 ........
+	; $c0 **......
+	; $f0 ****....
+	; $f8 *****...
 	; $ff ********
 
 		ORG CHARACTER_SET + [ $0A * 8 ]
@@ -419,15 +509,27 @@ cdat1 ; the first 32 characters
 	; $10 ...*....
 	; $00 ........
 
-
-
-	
 ; $1B
 ;	.byte $00,$01,$02,$03 ; ; ;        ? Placeholder?  Unused?
 ;	.byte $04,$05,$06,$07
+
+; Atari - a piece of rolling hills
+	.byte $00,$00,$80,$f0
+	.byte $ff,$ff,$ff,$ff
+	; $00 ........
+	; $00 ........
+	; $80 *.......
+	; $f0 ****....
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+
 ; $1C
 ;	.byte $00,$01,$02,$03 ; < ;        ? Placeholder?  Unused?
 ;	.byte $04,$05,$06,$07
+
+
 ; $1D
 ;	.byte $00,$01,$02,$03 ; = ;        ? Placeholder?  Unused?
 ;	.byte $04,$05,$06,$07

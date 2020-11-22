@@ -222,7 +222,7 @@ DL_LMS_SCROLL_LAND3 = [ * + 1 ]
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; 21 (188 - 195) (6) (DLI 5) Fine scrolling mountains to random position.
 DL_LMS_SCROLL_LAND4 = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; 22 (196 - 203) (6) (DLI 6) Fine scrolling mountains to random position.
-	mDL_LMS   DL_TEXT_6|DL_DLI,GFX_BUMPERLINE               ; 23 (204 - 211) (6) (DLI 7) ground and bumpers
+	mDL_LMS   DL_TEXT_6,GFX_BUMPERLINE                      ; 23 (204 - 211) (6) (DLI 7) ground and bumpers
 	mDL_LMS   DL_TEXT_2,GFX_STATSLINE                       ; 24 (212 - 219) (6) Stats line follows bumper line in memory.
 
 ; Note that as long as the system VBI is functioning the address 
@@ -619,7 +619,7 @@ GFX_MOUNTAINS4
 
 ; This is not 40 chars, because it won't "move" by LMS changes.
 GFX_BUMPERLINE
-	.byte $C2,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$C2
+	.byte $c2,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$00,$09,$00,$08,$00,$06,$00,$05,$04,$C3
 	
 
 ; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left

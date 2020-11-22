@@ -577,7 +577,7 @@ b_mdv_SkipTitleMissileUpdate
 
 b_mdv_DoCreditScrolling
 
-	lda zCreditsPhase            ; 0 == waiting    1  == scrolling
+	lda zCreditsPhase             ; 0 == waiting    1  == scrolling
 	bne b_mdv_RunCreditScrolling
 
 	; Waiting....
@@ -593,34 +593,34 @@ b_mdv_DoCreditScrolling
 
 b_mdv_RunCreditScrolling
 
-	dec zCreditsScrollTimer      ; Delay to not scroll to quickly.
+	dec zCreditsScrollTimer       ; Delay to not scroll to quickly.
 	bne b_mdv_EndCreditScrolling
 
-	lda #CREDITS_STEP_TIMER      ; Reset the scroll timer
+	lda #CREDITS_STEP_TIMER       ; Reset the scroll timer
 	sta zCreditsScrollTimer
 
-	lda zCreditsMotion           ; What direction are we moving in?
-	beq b_mdv_CreditLeftRight    ; 0 is moving Left/Right
+	lda zCreditsMotion            ; What direction are we moving in?
+	beq b_mdv_CreditLeftRight     ; 0 is moving Left/Right
 
 	; Otherwise, we're going in the opposite direction here.  (Right/Left)
 
-	inc zCredit1HS            ; Credit 1 Right
+	inc zCredit1HS                ; Credit 1 Right
 	lda zCredit1HS
-	cmp #16                   ; Reach the end of fine scrolling 16 color clocks?
-	bne b_mdv_Credit2_Left    ; No, go do the Credit2 line.
-	lda #0                    ; Yes. 
-	sta zCredit1HS            ; Reset the fine scroll, and...
-	dec DL_LMS_SCROLL_CREDIT1 ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_CREDIT1 ; and another 8 color clocks.
+	cmp #16                       ; Reach the end of fine scrolling 16 color clocks?
+	bne b_mdv_Credit2_Left        ; No, go do the Credit2 line.
+	lda #0                        ; Yes. 
+	sta zCredit1HS                ; Reset the fine scroll, and...
+	dec DL_LMS_SCROLL_CREDIT1     ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_CREDIT1     ; and another 8 color clocks.
 
 b_mdv_Credit2_Left
-	dec zCredit2HS             ; Credit 2 Left
-;	lda zCredit2HS             ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
-	bpl b_mdv_TestEndRightLeft ; Nope.  End of scrolling, check end position
-	lda #15                    ; Yes. 
-	sta zCredit2HS             ; Reset the fine scroll, and...
-	inc DL_LMS_SCROLL_CREDIT2  ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_CREDIT2  ; and another 8 color clocks.
+	dec zCredit2HS                ; Credit 2 Left
+;	lda zCredit2HS                ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
+	bpl b_mdv_TestEndRightLeft    ; Nope.  End of scrolling, check end position
+	lda #15                       ; Yes. 
+	sta zCredit2HS                ; Reset the fine scroll, and...
+	inc DL_LMS_SCROLL_CREDIT2     ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_CREDIT2     ; and another 8 color clocks.
 
 b_mdv_TestEndRightLeft            ; They both scroll the same distance.  Check Line2's end position.
 	lda zCredit2HS                ; Get fine scroll position
@@ -631,44 +631,44 @@ b_mdv_TestEndRightLeft            ; They both scroll the same distance.  Check L
 	bne b_mdv_EndCreditScrolling  ; nope.  We're done with checking.
 
 	; reset to do left/right, then re-enable the reading comprehension timer.
-	dec zCreditsMotion           ; It was 1 to do right/left scrolling. swap.
-	dec zCreditsPhase            ; It was 1 to do scrolling.  switch to waiting.
-	bne b_mdv_EndCreditScrolling ; Finally done with this scroll direction. 
+	dec zCreditsMotion            ; It was 1 to do right/left scrolling. swap.
+	dec zCreditsPhase             ; It was 1 to do scrolling.  switch to waiting.
+	bne b_mdv_EndCreditScrolling  ; Finally done with this scroll direction. 
 
 ;  we're going in the Left/Right direction. 
 
 b_mdv_CreditLeftRight
-	dec zCredit1HS             ; Credit 1 Left
-;	lda zCredit1HS             ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
-	bpl b_mdv_Credit2_Right    ; No, go do the Credit2 line. 
-	lda #15                    ; Yes. 
-	sta zCredit1HS             ; Reset the fine scroll, and...
-	inc DL_LMS_SCROLL_CREDIT1  ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_CREDIT1  ; and another 8 color clocks.
+	dec zCredit1HS                ; Credit 1 Left
+;	lda zCredit1HS                ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
+	bpl b_mdv_Credit2_Right       ; No, go do the Credit2 line. 
+	lda #15                       ; Yes. 
+	sta zCredit1HS                ; Reset the fine scroll, and...
+	inc DL_LMS_SCROLL_CREDIT1     ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_CREDIT1     ; and another 8 color clocks.
 
 b_mdv_Credit2_Right
-	inc zCredit2HS            ; Credit 1 Right
+	inc zCredit2HS                ; Credit 1 Right
 	lda zCredit2HS
-	cmp #16                   ; Reach the end of fine scrolling 16 color clocks?
-	bne b_mdv_TestEndLeftRight; Nope.  End of scrolling, check end position
-	lda #0                    ; Yes. 
-	sta zCredit2HS            ; Reset the fine scroll, and...
-	dec DL_LMS_SCROLL_CREDIT2 ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_CREDIT2 ; and another 8 color clocks.
+	cmp #16                       ; Reach the end of fine scrolling 16 color clocks?
+	bne b_mdv_TestEndLeftRight    ; Nope.  End of scrolling, check end position
+	lda #0                        ; Yes. 
+	sta zCredit2HS                ; Reset the fine scroll, and...
+	dec DL_LMS_SCROLL_CREDIT2     ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_CREDIT2     ; and another 8 color clocks.
 
 
-b_mdv_TestEndLeftRight           ; They both scroll the same distance.  Check Line2's end position.
-	lda zCredit2HS               ; Get fine scroll position
-	cmp #12                      ; At the stopping point?
-	bne b_mdv_EndCreditScrolling ; nope.  We're done with checking.
-	lda DL_LMS_SCROLL_CREDIT2    ; Get the coarse scroll position
-	cmp #<GFX_SCROLL_CREDIT2     ; at the ending coarse scroll position?
-	bne b_mdv_EndCreditScrolling ; nope.  We're done with checking.
+b_mdv_TestEndLeftRight            ; They both scroll the same distance.  Check Line2's end position.
+	lda zCredit2HS                ; Get fine scroll position
+	cmp #12                       ; At the stopping point?
+	bne b_mdv_EndCreditScrolling  ; nope.  We're done with checking.
+	lda DL_LMS_SCROLL_CREDIT2     ; Get the coarse scroll position
+	cmp #<GFX_SCROLL_CREDIT2      ; at the ending coarse scroll position?
+	bne b_mdv_EndCreditScrolling  ; nope.  We're done with checking.
 
 	; reset to do left/right, then re-enable the reading comprehension timer.
-	inc zCreditsMotion           ; It was 0 to do left/right scrolling. swap.
-	dec zCreditsPhase            ; It was 1 to do scrolling.  switch to waiting.
-	bne b_mdv_EndCreditScrolling ; Finally done with this scroll direction. 
+	inc zCreditsMotion            ; It was 0 to do left/right scrolling. swap.
+	dec zCreditsPhase             ; It was 1 to do scrolling.  switch to waiting.
+	bne b_mdv_EndCreditScrolling  ; Finally done with this scroll direction. 
 
 b_mdv_EndCreditScrolling
 
@@ -684,19 +684,19 @@ b_mdv_EndCreditScrolling
 
 b_mdv_BigMothership
 
-	lda zBigMothershipPhase      ; Is it moving (1)  or standing still (0)?
-	beq b_mdv_EndBigMothership   ; Standing still.  So, nothing else to do.
+	lda zBigMothershipPhase       ; Is it moving (1)  or standing still (0)?
+	beq b_mdv_EndBigMothership    ; Standing still.  So, nothing else to do.
 
-	lda zBIG_MOTHERSHIP_Y        ; Get Y coord
-	bmi b_mdv_EndBigMothership   ; Negative Y means it is offscreen.
+	lda zBIG_MOTHERSHIP_Y         ; Get Y coord
+	bmi b_mdv_EndBigMothership    ; Negative Y means it is offscreen.
 
-	dec zBigMothershipSpeed      ; Wait for motion timer to expire
-	bne b_mdv_EndBigMothership   ; Timer is still running.
+	dec zBigMothershipSpeed       ; Wait for motion timer to expire
+	bne b_mdv_EndBigMothership    ; Timer is still running.
 
-	lda #BIG_MOTHERSHIP_SPEED    ; Reset the speed timer
+	lda #BIG_MOTHERSHIP_SPEED     ; Reset the speed timer
 	sta zBigMothershipSpeed
 
-	dec zBIG_MOTHERSHIP_Y        ; Subtract Y, (move up) one scan line.
+	dec zBIG_MOTHERSHIP_Y         ; Subtract Y, (move up) one scan line.
 	jsr Pmg_Draw_Big_Mothership
 
 b_mdv_EndBigMothership
@@ -1323,8 +1323,11 @@ TITLE_DLI_3
 	mRegSaveAYX ; Saves regs 
 
 	lda zCredit1HS ;
-	ldx #[COLOR_BLUE1+8]      ; COLPF0 Darren
-	ldy #[COLOR_ORANGE2+8] ; COLPF1 Ken
+;	ldx #[COLOR_BLUE1+8]      ; COLPF0 Darren
+;	ldy #[COLOR_ORANGE2+8] ; COLPF1 Ken
+
+	ldx #[$80+8]      ; COLPF0 Darren
+	ldy #[$20+8] ; COLPF1 Ken
 
 	sta WSYNC           ; 1.0 
 	sta HSCROL
@@ -1336,8 +1339,12 @@ TITLE_DLI_3
 
 	jsr DLI_SYNC_PF_DEC ; 1.3 
 
-	ldx #[COLOR_GREEN+14]     ; COLPF0 Darren
-	ldy #[COLOR_PURPLE+14]    ; COLPF1 Ken
+;	ldx #[COLOR_GREEN+14]     ; COLPF0 Darren
+;	ldy #[COLOR_PURPLE+14]    ; COLPF1 Ken
+
+	ldx #[$90+14]     ; COLPF0 Darren
+	ldy #[$30+14]    ; COLPF1 Ken
+
 
 	jsr DLI_SYNC_PF_DEC ; 1.4
 
@@ -1348,8 +1355,11 @@ TITLE_DLI_3
 	jsr DLI_SYNC_PF_DEC ; 1.7 (The DECrement part is not actually needed.)
 
 	lda zCredit2HS ;
-	ldx #[COLOR_LITE_BLUE+8]       ; COLPF0 Darren
-	ldy #[COLOR_RED_ORANGE+8]       ; COLPF1 Ken
+;	ldx #[COLOR_LITE_BLUE+8]       ; COLPF0 Darren
+;	ldy #[COLOR_RED_ORANGE+8]       ; COLPF1 Ken
+
+	ldx #[$a0+8]       ; COLPF0 Darren
+	ldy #[$40+8]       ; COLPF1 Ken
 
 	sta WSYNC           ; 2.0
 	sta HSCROL
@@ -1361,8 +1371,11 @@ TITLE_DLI_3
 
 	jsr DLI_SYNC_PF_DEC ; 2.3 
 
-	ldx #[COLOR_ORANGE_GREEN+14]  ; COLPF0 Darren
-	ldy #[COLOR_PINK+14]       ; COLPF1 Ken
+;	ldx #[COLOR_ORANGE_GREEN+14]  ; COLPF0 Darren
+;	ldy #[COLOR_PINK+14]       ; COLPF1 Ken
+
+	ldx #[$b0+14]  ; COLPF0 Darren
+	ldy #[$50+14]       ; COLPF1 Ken
 
 	jsr DLI_SYNC_PF_DEC ; 2.4
 
@@ -1393,7 +1406,7 @@ TITLE_DLI_4
 	mStart_DLI ; Saves A and Y
 
 	lda zDocsHS ;
-	ldy #[COLOR_BLUE_GREEN+8]  ; COLPF0 Documentation
+	ldy #[$c0+8]  ; COLPF0 Documentation
 
 	sta WSYNC            ; 1.0 
 	sta HSCROL
@@ -1405,7 +1418,7 @@ TITLE_DLI_4
 
 	jsr DLI_SYNC_PF0_DEC ; 1.3 
 
-	ldy #[COLOR_ORANGE1+14]    ; COLPF0 Documentation
+	ldy #[$d0+14]    ; COLPF0 Documentation
 
 	jsr DLI_SYNC_PF0_DEC ; 1.4
 
@@ -1511,58 +1524,46 @@ b_dli5_Repeat
 
 TITLE_DLI_6
 
-	mRegSaveAYX ; Saves regs 
+	mRegSaveAYX    ; Saves regs 
 
-	ldx #$30 ; COLBK
-	ldy #$22 ; COLPF0
-	lda #$78 ; COLPF3
+	ldx #$20       ; COLBK
+	ldy #$32       ; COLPF0
+	lda #$78       ; COLPF3
 
-	sta COLPF3 ; should be able to get away with this, because there is no PF3 in the mountains.
+	sta COLPF3     ; should be able to get away with this, because there is no PF3 in the mountains.
 
 b_dli6_NextLoop
 	stx WSYNC
 	stx COLBK
 	sty COLPF0
 
-	inx
-	iny
-	iny
+	inx            ; Background +1
+	iny            ; Foreground +1
+	iny            ; Foreground +1
 
-	cpy #$2C
+	cpy #$3e       ; Did foreground reach $3E?
 	bne b_dli6_NextLoop
+
+	dey
+	dey
+	
+	sty WSYNC
+	sty WSYNC      ; now make background match the last ground color.
+	sty COLBK
+	
+	lda #$00       ; Now set the colors for the Stats line.
+	sta WSYNC
+	sta COLBK      ; Background/border
+	sta COLPF2     ; Text background
+	lda #$0C       
+	sta COLPF1     ; Text luminance
 
 	pla
 	tax
 	pla
 	tay
 
-	mChainDLI TITLE_DLI_6,TITLE_DLI_7 ; Done here.  Go to next DLI.
-
-
-
-
-;==============================================================================
-; TITLE_DLI_7
-;==============================================================================
-; Do the colors for the non-scrolling land under the mountains.
-; Start the background from darkest dirt color and increment brighness.
-; Start COLPF0 at a lighter tan and increment to lighter color at same speed.
-; 
-; At the end, reset colors for the bottom status line.
-; -----------------------------------------------------------------------------
-
-TITLE_DLI_7
-
-	pha
-
-	lda #$00
-	sta WSYNC
-	sta COLBK
-	sta COLPF2
-	lda #$0C
-	sta COLPF1
-
-	mChainDLI TITLE_DLI_7,DoNothing_DLI ; Done here.  Go to next DLI.
+	mChainDLI TITLE_DLI_6,DoNothing_DLI ; Done here.  Park it until VBI restarts it.
 
 
 
@@ -1605,7 +1606,6 @@ b_td2_UpdateColor
 	rts
 
 
-
 ;==============================================================================
 ;                                              DLI_SYNC_PF_DEC
 ;==============================================================================
@@ -1627,6 +1627,7 @@ DLI_PF_DEC
 	dey
 
 	rts
+
 
 ;==============================================================================
 ;                                              DLI_SYNC_PF_DEC
@@ -1660,1150 +1661,7 @@ DoNothing_DLI ; In testing mode jump here to not do anything or to stop the DLI 
 
 
 
-; ;==============================================================================
-; ; TITLE_DLI_BLACKOUT                                             
-; ;==============================================================================
-; ; DLI Sets background to Black for blank areas.
-; ;
-; ; Note that the Title screen uses the COLBK table for both COLBK and COLPF2.
-; ; -----------------------------------------------------------------------------
 
-; TITLE_DLI_BLACKOUT  ; DLI Sets background to Black for blank area.
-
-	; pha
-
-	; lda #COLOR_BLACK     ; Black for background and text background.
-	; sta WSYNC            ; sync to end of scan line
-	; sta COLBK            ; Write new border color.
-	; sta COLPF2           ; Write new background color
-
-	; tya
-	; pha
-	; ldy ThisDLI
-
-	; jmp SetupAllOnNextLine_DLI ; Load colors for next DLI and end.
-
-
-; ;==============================================================================
-; ; TITLE_DLI_TEXTBLOCK                                             
-; ;==============================================================================
-; ; DLI sets COLPF1 text luminance from the table, COLBK and COLPF2 to 
-; ; start a text block.
-; ; Since there is no text in blank lines, it does not matter that COLPF1 is 
-; ; written before WSYNC.
-; ; Also, since text characters are not defined to the top/bottom edge of the 
-; ; character it is  safe to change COLPF1 in a sloppy way.
-; ; -----------------------------------------------------------------------------
-
-; TITLE_DLI_TEXTBLOCK
-
-	; mStart_DLI
-
-	; lda ColorPf1         ; Get text luminance from zero page.
-	; sta COLPF1           ; write new text luminance.
-
-	; lda ColorBak         ; Get background from zero page.
-	; sta WSYNC
-	; sta COLBK
-	; sta COLPF2
-
-	; jmp SetupAllOnNextLine_DLI ; Load colors for next DLI and end.
-
-
-; ;==============================================================================
-; ; GAME DLIs
-; ;==============================================================================
-
-; ;==============================================================================
-; ; SCORE 1 DLI                                                            A 
-; ;==============================================================================
-; ; Used on Game displays.  
-; ; This is called on a blank before the text line. 
-; ; The VBI should have loaded up the Page zero staged colors. 
-; ; Only ColorPF1 matters for the playfield as the background and border will 
-; ; be forced to black. 
-; ; This also sets Player/Missile parameters for P0,P1,P2, M0 and M1 to show 
-; ; the "Score" and "Hi" text.
-; ; Since all of this takes place in the blank space then it does not 
-; ; matter that there is no WSYNC.  
-; ; -----------------------------------------------------------------------------
-
-; Score1_DLI
-
-	; mStart_DLI
-
-	; lda ColorPF1         ; Get text color (luminance)
-	; sta COLPF1           ; write new text color.
-
-	; lda #COLOR_BLACK     ; Black for background and text background.
-	; sta COLBK            ; Write new border color.
-	; sta COLPF2           ; Write new background color
-
-	; jsr LoadPMSpecs0     ; Load the first table entry into PM registers
-
-; ; Finish by loading the next DLI's colors.  The second score line preps the Beach.
-; ; This is redundant (useless) (time-wasting) work when not on the game display, 
-; ; but this is also not damaging.
-
-	; jmp SetupAllOnNextLine_DLI ; Load colors for next DLI and end.
-
-
-; ;==============================================================================
-; ; SCORE 2 DLI                                                            A 
-; ;==============================================================================
-; ; Used on Game displays.  
-; ; This is called on a blank before the text line. 
-; ; The VBI should have loaded up the Page zero staged colors. 
-; ; Only ColorPF1 matters for the playfield as the background and border will 
-; ; be forced to black. 
-; ; This also sets Player/Missile parameters for P0,P1,P2, M0 and M1 to show 
-; ; the "Frogs" and "Saved" text.
-; ; Since all of this takes place in the blank space then it does not 
-; ; matter that there is no WSYNC.  
-; ; -----------------------------------------------------------------------------
-
-; Score2_DLI
-
-	; mStart_DLI
-
-	; lda ColorPF1         ; Get text color (luminance)
-	; sta COLPF1           ; write new text color.
-
-	; jsr LoadPMSpecs1     ; Load the first table entry into PM registers
-
-	; ; Load HSCROL for the Title display. It should be non-impacting on other displays.
-	; lda TitleHSCROL      ; Get Title fine scrolling value.
-	; sta HSCROL           ; Set fine scrolling.
-
-; ; Finish by loading the next DLI's colors.  The second score line preps the Beach.
-; ; This is redundant (useless) (time-wasting) work when not on the game display, 
-; ; but this is also not damaging.
-
-	; jmp SetupAllOnNextLine_DLI ; Load colors for next DLI and end.
-
-
-; ;==============================================================================
-; ; GAME_DLI_BEACH0                                               
-; ;==============================================================================
-; ; BEACH 0
-; ; Sets COLPF0,1,2,3,BK for the first Beach line. 
-; ; This is a little different from the other transitions to Beaches.  
-; ; Here, ALL colors must be set. 
-; ; In the later transitions from Boats to the Beach COLPF0 should 
-; ; be setup as the same color as in the previous line of boats.
-; ; COLBAK is temporarily set to the value of COLPF0 to make a full
-; ; scan line of "sky" color matching the COLPF0 sky color for the 
-; ; beach line that follows.
-; ; COLBAK's real land color is set last as it is the color used in the 
-; ; lower part of the beach characters.
-; ; -----------------------------------------------------------------------------
-
-; GAME_DLI_BEACH0 
-
-	; pha   	; custom startup to deal with a possible timing problem.
-
-	; jsr LoadPmSpecs2 ; Copy all entries from column 2 to PM registers 
-	
-	; sta HITCLR       ; Because this is the one and only time this DLI is called.
-
-	; lda ColorPF0 ; from Page 0.
-	; sta WSYNC
-	; ; Top of the line is sky or blue water from row above. 
-	; ; Make background temporarily match the playfield drawn on the next line.
-	; sta COLBK
-	; sta COLPF0
-
-	; tya
-	; pha
-	; ldy ThisDLI
-	; sty WSYNC
-
-	; jmp LoadAlmostAllColors_DLI
-
-
-; ;==============================================================================
-; ; GAME_DLI_BEACH2BOAT 
-; ; GAME_DLI_BOAT2BOAT                                                 
-; ;==============================================================================
-; ; After much hackery, code gymnastics, and refactoring, these two 
-; ; routines for boats now work out to the same code.
-; ;
-; ; Boats Right 1, 4, 7, 10 . . . .
-; ; Sets colors for the Boat lines coming from a Beach line.
-; ; This starts on the Beach line which is followed by one blank scan line 
-; ; before the Right Boats.
-; ;
-; ; Boats Left 2, 5, 8, 11 . . . .
-; ; Sets colors for the Left Boat lines coming from a Right Boat line.
-; ; This starts on the ModeC line which is followed by one blank scan line 
-; ; before the Left Boats.
-; ; The Mode C line uses only COLPF0 to match the previous water, and the 
-; ; following "sky".
-; ; Therefore, the color of the line is automatically matched to both prior and 
-; ; the next lines without changing COLPF0.  (For the fading purpose COLPF0
-; ; does need to get reset on the following blank line. 
-; ; HSCROL is set early for the boats.  Followed by all color registers.
-; ; -----------------------------------------------------------------------------
-
-; GAME_DLI_BEACH2BOAT ; DLI sets HS, BK, COLPF3,2,1,0 for the Right Boats.
-; GAME_DLI_BOAT2BOAT  ; DLI sets HS, BK, COLPF3,2,1,0 for the Left Boats.
-
-	; mStart_DLI
-
-	; lda NextHSCROL    ; Get boat fine scroll.
-	; pha
-
-	; lda ColorBak
-	; sta WSYNC
-	; sta COLBK
-
-	; pla 
-	; sta HSCROL        ; Ok to set now as this line does not scroll.
-
-	; jmp LoadAlmostAllBoatColors_DLI ; set colors.  then setup next row.
-
-
-; ;==============================================================================
-; ; GAME_DLI_BOAT2BEACH                                                     
-; ;==============================================================================
-; ; BEACH 3, 6, 9, 12 . . . .
-; ; Sets colors for the Beach lines coming from a boat line. 
-; ; This is different from line 0, because the DLI starts with only one scan 
-; ; line of Mode C pixels (COLPF0) between the boats, and the Beach.
-; ; The Mode C line uses COLPF0 to match the previous water, with the 
-; ; following "sky".
-; ; Therefore, the color of the line is automatically matched to both prior and 
-; ; the next lines without changing COLPF0.  (For the fading purpose it does 
-; ; need to get set. )
-; ; Since the beam is in the middle of an already matching color this routine 
-; ; can operate without WSYNC up front to set all the color registers as quickly 
-; ; as possible. 
-; ; COLBAK can be re-set to its beach color last as it is the color used in the 
-; ; lower part of the characters.
-; ; -----------------------------------------------------------------------------
-
-; GAME_DLI_BOAT2BEACH ; DLI sets COLPF1,2,3,COLPF0, BK for the Beach.
-
-	; mStart_DLI
-
-	; lda ColorPF0 ; from Page 0.
-	; ; Different from BEACH0, because no WSYNC right here.
-	; ; Top of the line is sky or blue water from row above.   
-	; ; Make background temporarily match the playfield drawn on the next line.
-	; sta COLBK
-	; sta COLPF0
-
-	; jmp LoadAlmostAllColors_DLI
-
-
-; ;==============================================================================
-; ; SPLASH DLIs
-; ;==============================================================================
-
-; ;==============================================================================
-; ; COLPF0_COLBK_DLI                                                     A
-; ;==============================================================================
-; ; The three graphics screen (Saved, Dead Frog, and Game Over) have exactly the
-; ; same display list structure and DLIs.  
-; ; Sets background color and the COLPF0 pixel color.  
-; ; Table driven.  
-; ; Perfectly re-usable for anywhere Map Mode 9 or Blank instructions are 
-; ; being managed.  In the case of blank lines you just don't see the pixel 
-; ; color change, so it does not matter what is in the COLPF0 color table. 
-; ; -----------------------------------------------------------------------------
-
-; COLPF0_COLBK_DLI
-
-	; jmp DO_COLPF0_COLBK_DLI
-
-
-; ;==============================================================================
-; ; SPLASH_PMGZERO_DLI                                                     A
-; ;==============================================================================
-; ; The three graphics screen (Saved, Dead Frog, and Game Over) have exactly the
-; ; same display list structure and DLIs.  
-; ;
-; ; This first DLI on the title screen needs to do extra work on the 
-; ; player/missiles to remove all the "text" labels from the screen.
-; ; -----------------------------------------------------------------------------
-
-; SPLASH_PMGZERO_DLI
-
-	; jmp DO_SPLASH_PMGZERO_DLI
-
-
-; ;==============================================================================
-; ; SPLASH PMGSPECS2 DLI                                                  A
-; ;==============================================================================
-; ; The three graphics screen (Saved, Dead Frog, and Game Over) have exactly the
-; ; same display list structure and DLIs.  
-; ; Sets background color and the COLPF0 pixel color.
-; ;
-; ; Table driven.  
-; ; Perfectly re-usable for anywhere Map Mode 9 or Blank instructions are 
-; ; being managed.  In the case of blank lines you just don't see the pixel 
-; ; color change, so it does not matter what is in the COLPF0 color table. 
-; ;
-; ; The first DLI on the title screen needs to do extra work 
-; ; on the player/missile data, so I needed another DLI here.
-; ; -----------------------------------------------------------------------------
-
-; SPLASH_PMGSPECS2_DLI
-
-	; jmp DO_SPLASH_PMGSPECS2_DLI ; DO_COLPF0_COLBK_TITLE_DLI
-
-
-; ;==============================================================================
-; ; EXIT DLI.
-; ;==============================================================================
-; ; Common code called/jumped to by most DLIs.
-; ; JMP here is 3 byte instruction to execute 11 bytes of common DLI closure.
-; ; Update the interrupt pointer to the address of the next DLI.
-; ; Increment the DLI counter used to index the various tables.
-; ; Restore registers and exit.
-; ; -----------------------------------------------------------------------------
-
-; Exit_DLI
-
-	; lda (ThisDLIAddr), y ; update low byte for next chained DLI.
-	; sta VDSLST
-
-	; inc ThisDLI          ; next DLI.
-
-	; mRegRestoreAY
-
-;	 rti
-
-
-; ;==============================================================================
-; ; DLI_SPC1                                                            A 
-; ;==============================================================================
-; ; DLI to set colors for the Prompt line.  
-; ; And while we're here do the HSCROLL for the scrolling credits.
-; ; Then link to DLI_SPC2 to set colors for the scrolling line.
-; ; Since there is no text here (running in blank line), it does not matter 
-; ; that COLPF1 is written before WSYNC.
-; ; -----------------------------------------------------------------------------
-
-; DLI_SPC1  ; DLI sets COLPF1, COLPF2, COLBK for Prompt text. 
-
-	; pha                   ; aka pha
-
-	; lda PressAButtonText  ; Get text color (luminance)
-	; sta COLPF1            ; write new text luminance.
-
-	; lda PressAButtonColor ; For background and text background.
-	; sta WSYNC             ; sync to end of scan line
-	; sta COLBK             ; Write new border color.
-	; sta COLPF2            ; Write new background color
-
-	; ; Overriding the table-driven addresses now to go to DLI_SPC2
-	; lda #<DLI_SPC2        ; Update the DLI vector for the last routine for credit color.
-	; sta VDSLST
-	; lda #>DLI_SPC2        ; Update the DLI vector for the last routine for credit color.
-	; sta VDSLST+1
-
-	; pla                   ; aka pla
-
-	; rti
-
-
-; ;==============================================================================
-; ; DLI_SPC2                                                            A  Y
-; ;==============================================================================
-; ; DLI to set colors for the Scrolling credits.   
-; ; ALWAYS the last DLI on screen.
-; ; Squeezing screen geometry eliminated a blank line here, so the 
-; ; lazy way HSCROL was set no longer works and causes bizarre 
-; ; corruption at the bottom of the screen.  The routine needed to be 
-; ; optimized to avoid overhead and set HSCROL as soon as possible. 
-; ; -----------------------------------------------------------------------------
-
-; DLI_SPC2  ; DLI sets black for background COLBK, COLPF2, and text luminance for scrolling text.
-
-	; pha
-
-	; lda CreditHSCROL     ; HScroll for credits.
-	; sta HSCROL
-
-	; lda #COLOR_BLACK     ; color for background.
-	; sta WSYNC            ; sync to end of scan line
-	; sta COLBK            ; Write new border color.
-	; sta COLPF2           ; Write new background color
-
-	; lda #$0C             ; luminance for text.  Hardcoded.  Always visible on all screens.
-	; sta COLPF1           ; Write text luminance for credits.
-
-	; lda #<DoNothing_DLI  ; Stop DLI Chain.  VBI will restart the chain.
-	; sta VDSLST
-	; lda #>DoNothing_DLI
-	; sta VDSLST+1
-
-	; pla 
-
-	; rti
-
-
-; ;==============================================================================
-; ; LOAD COLORS -- Common targets JMP'd here from other places.
-; ;==============================================================================
-; ; LOAD ALL COLORS_DLI             - load PF0, then BAK, PF1, PF2, PF3.
-; ; LOAD ALMOST ALL COLORS_DLI      - load BAK, PF1, PF2, PF3 (not PF0).
-; ; SETUP ALL ON NEXT LINE_DLI      - increment line index, then prep colors for 
-; ;                                   the next DLI.
-; ; SETUP ALL COLORS_DLI            - prep colors for DLI based on current line 
-; ;                                   index.
-; ; LOAD ALMOST ALL BOAT COLORS_DLI - load PF0, PF1, PF2, PF3 from Page zero.
-; ;
-; ; Common code called/jumped to by DLIs.
-; ; JMP here is 3 byte instruction to execute 11 bytes of common DLI closure.
-; ; Load the staged values, store in the color registers.
-; ; -----------------------------------------------------------------------------
-
-; LoadAlmostAllColors_DLI
-
-	; lda ColorBak   ; Get real background color again. (To repair the color for the Beach background)
-	; sta WSYNC
-	; sta COLBK
-
-	; lda ColorPF1   ; Get color Rocks 2
-	; sta COLPF1
-	; lda ColorPF2   ; Get color Rocks 3 
-	; sta COLPF2
-	; lda ColorPF3   ; Get color water (needed for fade-in)
-	; sta COLPF3
-
-
-; SetupAllOnNextLine_DLI
-
-	; iny
-
-	; jsr SetupAllColors
-
-	; dey
-
-	; jmp Exit_DLI
-
-
-; ; Called by Beach 2 Boat
-; LoadAlmostAllBoatColors_DLI
-
-	; lda ColorPF1   
-	; sta COLPF1
-	; lda ColorPF2   
-	; sta COLPF2
-	; lda ColorPF3   
-	; sta COLPF3
-	; lda ColorPF0 
-	; sta COLPF0
-
-	; jmp SetupAllOnNextLine_DLI
-
-
-; ;==============================================================================
-; ; SET UP ALL COLORS                                                       A  Y
-; ;==============================================================================
-; ; Given value of Y, pull that entry from the color and scroll tables
-; ; and store in the page 0 copies.
-; ; This is called at the end of a DLI to prepare for the next DLI in an attempt
-; ; to optimize the start of the next DLI's using the values.  
-; ; (Because for some reason Altirra is glitching the game screen, but 
-; ; Atari800 seems OK.)
-; ; -----------------------------------------------------------------------------
-
-; SetupAllColors
-
-	; lda COLPF0_TABLE,y   ; Get color Rocks 1   
-	; sta ColorPF0
-	; lda COLPF1_TABLE,y   ; Get color Rocks 2
-	; sta ColorPF1
-	; lda COLPF2_TABLE,y   ; Get color Rocks 3 
-	; sta ColorPF2
-	; lda COLPF3_TABLE,y   ; Get color water (needed for fade-in)
-	; sta ColorPF3
-	; lda HSCROL_TABLE,y   ; Get boat fine scroll.
-	; sta NextHSCROL
-	; lda COLBK_TABLE,y    ; Get background color .
-	; sta ColorBak
-
-	; rts
-
-
-; ;==============================================================================
-; ; DO_COLPF0_COLBK_DLI                                                     A
-; ;==============================================================================
-; ; The three graphics screen (Saved, Dead Frog, and Game Over) have exactly the
-; ; same display list structure and DLIs.  
-; ; Sets background color and the COLPF0 pixel color.  
-; ; Table driven.  
-; ; Perfectly re-usable for anywhere Map Mode 9 or Blank instructions are 
-; ; being managed.  In the case of blank lines you just don't see the pixel 
-; ; color change, so it does not matter what is in the COLPF0 color table. 
-; ; -----------------------------------------------------------------------------
-
-; DO_COLPF0_COLBK_DLI
-
-	; mStart_DLI
-
-	; lda COLPF0_TABLE,y   ; Get pixels color
-	; pha
-	; lda COLBK_TABLE,y    ; Get background color
-
-	; sta WSYNC
-	
-	; sta COLBK            ; Set background
-	; pla
-	; sta COLPF0           ; Set pixels.
-
-	; jmp Exit_DLI
-
-
-; ;==============================================================================
-; ; DO_SPLASH_PMGZERO_DLI                                              A
-; ;==============================================================================
-; ; The three graphics screen (Saved, Dead Frog, and Game Over) have exactly the
-; ; same display list structure and DLIs.  
-; ; Sets PM HPOS to 0 for all objects.
-; ; This is needed early on splash screens because the first group of 
-; ; objects extend below the first colored background lines.   This causes
-; ; bits of the PMG text labels to appear on the splash screen.
-; ; -----------------------------------------------------------------------------
-
-; DO_SPLASH_PMGZERO_DLI
-
-	; mStart_DLI
-
-	; jsr libSetPmgHPOSZero 
-
-	; jmp Exit_DLI
-
-
-; ;==============================================================================
-; ; DO_SPLASH_PMGSPECS2_DLI                                               A
-; ;==============================================================================
-; ; The three graphics screen (Saved, Dead Frog, and Game Over) have exactly the
-; ; same display list structure and DLIs.  
-; ; Sets background color and the COLPF0 pixel color.  
-; ; Table driven.  
-; ; Perfectly re-usable for anywhere Map Mode 9 or Blank instructions are 
-; ; being managed.  In the case of blank lines you just don't see the pixel 
-; ; color change, so it does not matter what is in the COLPF0 color table. 
-; ; -----------------------------------------------------------------------------
-
-; DO_SPLASH_PMGSPECS2_DLI
-
-	; mStart_DLI
-
-	; lda COLPF0_TABLE,y   ; Get pixels color
-	; pha
-	; lda COLBK_TABLE,y    ; Get background color
-	
-	; sta WSYNC
-	
-	; sta COLBK            ; Set background
-	; pla
-	; sta COLPF0           ; Set pixels.
-
-	; jsr LoadPmSpecs2     ; Load the first table entry into 
-
-	; jmp Exit_DLI
-
-
-
-
-
-
-
-
-
-
-
-;===============================================================================
-; Breakout Arcade -- 1976
-; Conceptualized by Nolan Bushnell and Steve Bristow.
-; Built by Steve Wozniak.
-; https://en.wikipedia.org/wiki/Breakout_(video_game)
-;===============================================================================
-; C64 Breakout clone -- 2016
-; Written by Darren Du Vall aka Sausage-Toes
-; source at:
-; Github: https://github.com/Sausage-Toes/C64_Breakout
-;===============================================================================
-; C64 Breakout clone ported to Atari 8-bit -- 2017
-; Atari-fied by Ken Jennings
-; Build for Atari using eclipse/wudsn/atasm on linux
-; Source at:
-; Github: https://github.com/kenjennings/C64-Breakout-for-Atari
-; Google Drive: https://drive.google.com/drive/folders/0B2m-YU97EHFESGVkTXp3WUdKUGM
-;===============================================================================
-; Breakout: Gratuitous Eye Candy Edition -- 2017
-; Written by Ken Jennings
-; Build for Atari using eclipse/wudsn/atasm on linux
-; Source at:
-; Github: https://github.com/kenjennings/Atari-Breakout-GECE
-; Google Drive: https://drive.google.com/drive/folders/
-;===============================================================================
-
-;===============================================================================
-; History V 1.0
-;===============================================================================
-; dli.asm contains all the Display List Interupts.
-; See display.asm for all the display list data.
-; See screen.asm for the 6502 code managing the display.
-;===============================================================================
-
-; DISPLAY_LIST_INTERRUPT
-
-
-; ; Do the color bars in the scrolling title text.
-; ; Since the line scrolls, the beginning of the color
-; ; bars changes.  Also, the number of visible scan
-; ; lines of the title changes as the title scrolls
-; ; up.  The VBI maintains the reference for these
-; ; so the DLI doesn't have to figure out anything.
-
-; DLI_1 ; Save registers
-	; pha
-	; txa
-	; pha
-	; tya
-	; pha
-
-	; ldy TITLE_WSYNC_OFFSET ; Number of lines to skip above the text
-
-	; beq DLI_Color_Bars ; no lines to skip; do color bars.
-; DLI_Delay_Top
-	; sty WSYNC
-	; dey
-	; bne DLI_Delay_Top
-
-	; ; This used to have a lot of junk including value testing
-	; ; to figure out how to color the Player/flying character.
-	; ; However, giving the player a permanent page 0 pointer to
-	; ; a color table (ZTITLE_COLPM0) and having the VBI decide
-	; ; which to use simplified this logic considerably.
-
-; DLI_Color_Bars
-	; ldx TITLE_WSYNC_COLOR ; Number of lines in color bars.
-
-	; beq End_DLI_1 ; No lines, so the DLI is finished.
-
-	; ldy TITLE_COLOR_COUNTER
-
-	; ; Here's to hoping that the badline is short enough to allow
-	; ; the player color and four playfield color registers to change 
-	; ; before they are displayed.  This is part of the reason 
-	; ; for the narrow playfield.
-; DLI_Loop_Color_Bars
-	; lda (ZTITLE_COLPM0),y ; Set by VBI to point at one of the COLPF tables
-	; sta WSYNC
-	; sta COLPM0
-
-	; lda TITLE_COLPF1,y
-	; sta COLPF0
-
-	; lda TITLE_COLPF1,y
-	; sta COLPF1
-
-	; lda TITLE_COLPF2,y
-	; sta COLPF2
-
-	; lda TITLE_COLPF3,y
-	; sta COLPF3
-
-	; iny
-	; dex
-	; bne DLI_Loop_Color_Bars
-
-; End_DLI_1 ; End of routine.  Point to next routine.
-	; lda #<DLI_2
-	; sta VDSLST
-	; lda >#DLI_2
-	; sta VDSLST+1
-
-	; pla ; Restore registers for exit
-	; tay
-	; pla
-	; tax
-	; pla
-
-	; rti
-
-
-; ; DLI2: Occurs as the last line of the Display List in the Title Scroll section.
-; ; Set Normal Screen, VSCROLL=0, COLPF0 for horizontal bumper.
-; ; Set PRIOR for Fifth Player.
-; ; Set HPOSP3/HPOSM0, COLPM3/COLPF3, SIZEP3, SIZEM
-; ; for left and right Thumper-bumpers.
-; ; set HITCLR for Playfield.
-; ;-------------------------------------------
-; ; Set HPOSP0/P1/P2, COLPM0/PM1/PM2, SIZEP0/P1/P2 for top row Boom objects.
-; ;
-; ;-------------------------------------------
-; ; color 1 = horizontal/top bumper.
-; ; Player 3 = Left bumper
-; ; Missile (5th Player) = Right Bumper
-; ;-------------------------------------------
-; ; COLPF0,
-; ; COLPM3, COLPF3
-; ; HPOSP3, HPOSM0
-; ; SIZEP3, SIZEM0
-; ;-------------------------------------------
-
-; DLI_2
-	; pha
-	; txa
-	; pha
-	; tya
-	; pha
-
-	; ; GTIA Fifth Player.
-	; lda #[FIFTH_PLAYER|1] ; Missiles = COLPF3.  Player/Missiles Priority on top.
-	; sta PRIOR
-	; sta HITCLR
-
-	; ; Screen parameters...
-	; lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PLAYFIELD_WIDTH_NORMAL|PM_1LINE_RESOLUTION]
-	; STA WSYNC
-	; sta DMACTL
-
-	; ; Top thumper-bumper.  Only set color.  The rest of the animation is
-	; ; done in the Display list and set by the VBI.
-	; lda THUMPER_COLOR_TOP
-	; sta COLPF0
-
-	; ; Left thumper-bumper -- Player 3. P/M color, position, and size.
-	; lda THUMPER_COLOR_LEFT
-	; sta COLPM3
-
-	; ldy THUMPER_FRAME_LEFT        ; Get animation frame
-	; lda THUMPER_LEFT_HPOS_TABLE,y ; P/M position
-	; sta HPOSP3
-	; lda THUMPER_LEFT_SIZE_TABLE,y ; P/M size
-	; sta SIZEP3
-
-	; ; Right thumper-bumper -- Missile 0.  Set P/M color, position, and size.
-	; lda THUMPER_COLOR_RIGHT
-	; sta COLPF3 ; because 5th player is enabled.
-
-	; ldy THUMPER_FRAME_RIGHT        ; Get animation frame
-	; lda THUMPER_RIGHT_HPOS_TABLE,y ; P/M position
-	; sta HPOSM0
-	; lda THUMPER_RIGHT_SIZE_TABLE,y ; P/M size
-	; sta SIZEM
-
-	; ; Magic here
-
-; End_DLI_2 ; End of routine.  Point to next routine.
-	; lda #<DLI_3
-	; sta VDSLST
-	; lda >#DLI_3
-	; sta VDSLST+1
-
-	; pla
-	; tay
-	; pla
-	; tax
-	; pla
-
-	; rti
-
-; ; DLI3: Hkernel 8 times....
-; ;      Set HSCROLL for line, VSCROLL = 5, then Set COLPF0 for 5 lines.
-; ;      Reset VScroll to 1 (allowing 2 blank lines.)
-; ;      Set P/M Boom objects, HPOS, COLPM, SIZE
-; ;      Repeat HKernel.
-; ;
-; ; Define 8 rows of Bricks.
-; ; Each is 5 lines of mode C graphics, plus 2 blank line.
-; ; The 5 rows of graphics are defined by using the VSCROL
-; ; exploit to expand one line of mode C into five lines.
-; ;
-; ; This:
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL
-; ;   .byte DL_BLANK_2
-; ; Becomes this:
-; ;   DL_MAP_C
-; ;   DL_MAP_C
-; ;   DL_MAP_C
-; ;   DL_MAP_C
-; ;   DL_MAP_C
-; ;   Blank Line
-; ;   Blank Line
-; ;
-; ; The Blank lines provide space for expansion of the boom blocks over the bricks.
-; ; Therefore they must be positioned in the blank line before the brick line.
-; ; (An extra blank scan line follows the line starting the DLI to allow for this
-; ; space on the first line)
-; ;
-; ; So, here is the DLI line change order:
-; ;   DL_BLANK_1|DL_DLI                      Set hpos, size, color for Boom 1 and Boom2 (1)
-; ;   DL_BLANK_1                             Set Vscroll 11 and HSCROLL for Brick Line 1 - set color COLPF0 (1)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (1)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (1)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (1)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (1)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set VScroll 0
-; ;   DL_BLANK_1                             Set hpos, size, color for Boom 1 and Boom2 (2)
-; ;   DL_BLANK_1                             Set Vscroll and HSCROLL for Brick Line 2 - set color COLPF0 (2)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (2)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (2)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (2)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (2)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set VScroll 0
-; ;   DL_BLANK_1                             Set hpos, size, color for Boom 1 and Boom2 (3)
-; ;   DL_BLANK_1                             Set Vscroll and HSCROLL for Brick Line 3 - set color COLPF0
-; ; etc. . . .
-; ;   DL_BLANK_1                             Set hpos, size, color for Boom 1 and Boom2 (8)
-; ;   DL_BLANK_1                             Set Vscroll and HSCROLL for Brick Line 8 - set color COLPF0 (8)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (8)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (8)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (8)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set color COLPF0 (8)
-; ;   DL_MAP_C|DL_LMS|DL_VSCROLL|DL_HSCROLL  Set VScroll 0
-; ;   DL_BLANK_1
-; ;   DL_BLANK_1
-; ;-------------------------------------------
-; ; color 1 = bricks.
-; ; Player 1 = Boom animation 1
-; ; Player 2 = Boom animation 2
-; ;-------------------------------------------
-; ; per brick line
-; ; COLPM1, COLPM2
-; ; HPOSP1, HPOSP2
-; ; SIZEP1, SIZEP2
-; ; COLPF0, HSCROLL
-; ;-------------------------------------------
-; DLI_3
-	; pha
-	; txa
-	; pha
-	; tya
-	; pha
-
-	; ldx #0  ; Starting at line 0 first line of bricks.
-	; ;
-	; ; Set the Boom animation postitions.
-	; ; Hopefully, this is enough load/stores to cross the end of the blank scan line...
-	; ; If not then a wsync needs to be inserted.  somewhere.  hope not.  The end
-	; ;  of the loop already did a wsync when it corrected the scrolling, so
-	; ; it might mean the rows from 2 to 8 have the boom animations setting
-	; ; written one scan line too high....  thinking.   thinking....
-; DLI3_DO_BOOM_AND_BRICKS
-	; lda BOOM_1_HPOS,x
-	; ldy BOOM_2_HPOS,x
-	; sta WSYNC ; need to drop one line more to line up with boom lines.
-	; ; six store, four load after wsync.   This is unlikely to work well.
-	; ; At least there's no graphics or character set DMA on this line.
-	; ; Highly possible that this will need to be reduced to 1 Boom animation
-	; ; object which is the least desireable choice.
-	; ; Otherwise, the the Boom animation height cannot exceed the height of the
-	; ; bricks.  The alternate plan means there would be two completely blank
-	; ; scan line to affect all the changes, so that will definitely work well.
-	; ; (And, this could be used to reduce the gap between brick lines to one scan
-	; ; line compressing the brick playfield by 7 scan lines, nearly one full text line.)
-	; sta HPOSP1
-	; sty HPOSP2
-
-	; lda BOOM_1_SIZE,x
-	; sta SIZEP1
-	; lda BOOM_2_SIZE,x
-	; sta SIZEP2
-
-	; lda BOOM_1_COLPM,x
-	; sta COLPM1
-	; lda BOOM_2_COLPM,x
-	; sta COLPM2
-
-	; ; Still in the blank line area.  (I hope.)
-	; ; Set hscroll for brick line which is next.
-	; lda BRICK_CURRENT_HSCROL,x
-	; sta HSCROL
-	; ; Because we are toggling VSCROL values to trigger unnatural behavior
-	; ; in ANTIC, stricter timing may be required here.  The WSYNC below 
-	; ; may need to move up here before updating VSCROL.
-	; lda #11  ; Trick Antic into extending the line.  11, 12, 13, 14, 15.
-	; sta VSCROL
-
-	; ; Due to the VSCROL set large than the number of scan lines in 
-	; ; this graphics mode ANTIC is now having a small brain fart and 
-	; ; stuttering out the same line of graphics for several scan lines.  
-	; ; Apply color to those lines.
-	; ldy BRICK_CURRENT_COLOR,x
-	; sta WSYNC
-	; sta COLPF0                ; scan line 1
-	; iny
-	; iny
-	; sta WSYNC
-	; sta COLPF0                ; scan line 2
-	; iny
-	; iny
-	; sta WSYNC
-	; sta COLPF0                ; scan line 3
-	; iny
-	; iny
-	; sta WSYNC
-	; sta COLPF0                ; scan line 4
-	; iny
-	; iny
-	; sta WSYNC
-	; sta COLPF0                ; scan line 5
-
-	; ; Fix VSCROL for the  two blank lines that follow
-	; lda #0
-	; sta WSYNC
-	; sta VSCROL
-
-	; ; thinking...  that vscroll correction happens at the last line
-	; ; a brick line.  therefore , this jump to loop happens on the
-	; ; first blank line after the bricks...  This means the loop writes
-	; ; new boom animation settings one line too high...  So, there
-	; ; needs to be a wsync either here, or at the  beginning of the
-	; ; loop  to drop down one more line.
-	; inx                   ; next line
-	; cpx #8
-	; bne DLI3_DO_BOOM_AND_BRICKS
-
-; End_DLI_3 ; End of routine.  Point to next routine.
-	; lda #<DLI_4
-	; sta VDSLST
-	; lda >#DLI_4
-	; sta VDSLST+1
-
-	; pla
-	; tay
-	; pla
-	; tax
-	; pla
-
-	; rti
-
-
-; ; DLI4: Set Narrow Width, Set the mode 3 chracter set.
-; ; Set VSCROLL for window.
-; ; Fade text in.
-
-; ; Sets the narrow screen size for the scrolling credits window.
-; ; It provides a few more cycles for the MAIN code, but its not
-; ; like I'm counting cycles.  (Yet.)
-
-; DLI_4
-	; pha
-	; txa
-	; pha
-	; tya
-	; pha
-
-	; ; set the Mode 3 character set.
-	; lda #>CHARACTER_SET_00
-	; sta CHBASE
-	; ; set the fine scroll for the credits.
-	; lda SCROLL_CURRENT_VSCROLL
-	; sty VSCROL
-	; ; Set Narrow screen.
-	; lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PLAYFIELD_WIDTH_NARROW|PM_1LINE_RESOLUTION]
-	; sta DMACTL
-	; ; set black text background.
-	; ldx #$00
-	; stx COLPF2
-
-	; ldy #$06  ; to read 6 table entries
-	; ldx SCROLL_CURRENT_FADE
-	
-	; ; 10 instructions of loads and stores should put this past 
-	; ; the end of the scan line that started the DLI.
-	
-	; ; Fade in the scrolling text window.
-
-; Loop_Fade_In_Scroll_Text
-	; lda SCROLL_FADE_START_LINE_TABLE,x
-	; sta WSYNC
-	; sta COLPF1   ; Set new text color (luminance)
-	; inx          ; Next luminance value
-	; dey          ; reached the end?  0 ?
-	; bne Loop_Fade_In_Scroll_Text ; No.  Continue updates.
-
-; End_DLI_4 ; End of routine.  Point to next routine.
-	; lda #<DLI_5
-	; sta VDSLST
-	; lda >#DLI_5
-	; sta VDSLST+1
-
-	; pla
-	; tay
-	; pla
-	; tax
-	; pla
-
-	; rti
-
-
-
-; ; DLI5: Fade text out at bottom of scrolling text.
-; ; The trick here is that the start of the fade changes
-; ; based on the value of vscroll.
-; DLI_5
-	; pha
-	; txa
-	; pha
-	; tya
-	; pha
-
-	; ; Because the DLI is moving away while VSCROL 
-	; ; increments, the DLI needs to skip a variable number
-	; ; of scan lines before starting to fade out the text.
-	; lda SCROLL_CURRENT_VSCROLL
-	; clc
-	; adc #3
-	; tax
-; Loop_Fade_Out_Skip_Lines
-	; sta WSYNC
-	; dex
-	; bne Loop_Fade_Out_Skip_Lines
-	
-	; ldx SCROLL_CURRENT_FADE
-
-; Loop_Fade_Out_Scroll_Text
-	; lda SCROLL_FADE_END_LINE_TABLE,x
-	; sta WSYNC
-	; sta COLPF1   ; Set new text color (luminance)
-	; dex          ; Next luminance value.  Reached end?
-	; bpl Loop_Fade_Out_Scroll_Text
-	
-	; ; Do a couple of preliminary things for 
-	; ; the Paddle to simplify what needs to be 
-	; ; done in DLI6.
-	; ; Set parameters for PM1 and PM2 here. 
-	; ; DLI6 will work on only PM3.
-	; lda PADDLE_HPOS    ; Horizontal position(s)
-	; sta HPOSP1
-	; sta HPOSP2
-
-	; lda #$00           ; Normal Hosrizontal Size(s)
-	; sta SIZEP1
-	; sta SIZEP2
-	
-	
-; End_DLI_5 ; End of routine.  Point to next routine.
-	; lda #<DLI_6
-	; sta VDSLST
-	; lda >#DLI_6
-	; sta VDSLST+1
-
-	; pla
-	; tay
-	; pla
-	; tax
-	; pla
-
-	; rti
-
-
-; ; DLI6: Sets Paddle specs. 
-; ; PMWIDTH, HPOS,changes colors for paddle.
-; ; Then set HSCROLL for Scores.
-; ; 
-; ; The initial states for Player1 and Player2 
-; ; were set at the end of the prior DLI to 
-; ; simplify what goes on here.
-; ; This routine only adjusts the Player3 state. 
-; ; This is a little more time critical, because 
-; ; there is no gap between the last scan line of 
-; ; the left thumper-bumper and the first scan 
-; ; line of the paddle.
-; ;
-; ; Finish up by re-setting the character set back
-; ; to the custom set for mode 6 color text and
-; ; normal playfield width.
-; DLI_6
-	; pha
-	; txa
-	; pha
-
-	; lda PADDLE_HPOS ; Horizontal position
-	; ldx #$00        ; For size
-	
-	; sta WSYNC       ; sync to end of line
-	; sta HPOSP3      ; stuff in postion
-	; sta SIZEP3      ; stuff in size
-	
-	; ldx PADDLE_FRAME               ; Get the animated 
-	; lda PADDLE_STRIKE_COLOR_ANIM,x ;  pddle color.
-
-	; sta COLPM3      ; Stuff in color. 
-	; sta WSYNC       ; sync to end of line.
-	
-	; ldx #$94        ; For second  scan line reset paddle color 
-	; sta COLPM3      ; to its intended default. 
-	
-	; lda #>CHARACTER_SET_01 ; Mode 6 text. Title and score.
-	; sta CHBASE
-	
-; End_DLI_6 ; End of routine.  Point to next routine.
-	; lda #<DLI_7
-	; sta VDSLST
-	; lda >#DLI_7
-	; sta VDSLST+1
-
-	; pla
-	; tay
-	; pla
-	; tax
-	; pla
-
-	; rti
-
-
-
-
-; ; DLI7: Fairly basic.  Just prettify the text.
-; ; "BALLS" is a little indicator in the top left 
-; ; corner of the last row of text.
-; ; The other two colors are for the score.
-
-; DLI_7
-	; pha
-	; txa
-	; pha
-	; tya
-	; pha
-	
-	; ; Since the "Balls" is at the top of the line, and 
-	; ; the Score is 12 scan lines centered over two lines
-	; ; then we don;t have to count out 16 entire sca lines.
-	; ; Therefore 13...
-	; ldy #13    
-	; ldx DISPLAYED_BALLS_SCORE_COLOR_INDEX
-
-; Loop_Color_Balls_Score	
-	; lda DISPLAYED_BALLS_COLOR,x      ; "Balls" indicator color
-	; sta WSYNC
-	; sta COLPF3
-	
-	; lda DISPLAYED_SCORE_COLOR0,x     ; Score digits are two colors...
-	; sta COLPF0
-
-	; lda DISPLAYED_SCORE_COLOR1,x
-	; sta COLPF1
-
-	; inx
-	; dey 
-	; bpl Loop_Color_Balls_Score
-	
-
-; End_DLI_7 ; End of routines.  Point to first routine.
-	; lda #<DLI_1
-	; sta VDSLST
-	; lda >#DLI_1
-	; sta VDSLST+1
-
-	; pla
-	; tay
-	; pla
-	; tax
-	; pla
-
-	; rti
 
 
 
