@@ -1264,7 +1264,7 @@ TITLE_DLI_2
 	lda #2
 	sta WSYNC                      ; (1.0) sync to end of line.
 	sta VSCROL                     ; =2, default. untrigger the hack if on for prior line.
-	nop
+;	nop
 	sty VSCROL                     ; =14, 15, 0, trick it into 3 scan lines.
 	jsr DLI_PF3_SYNC_INC_SYNC      ; (1.1 and 1.2 scan lines)
 
@@ -1275,7 +1275,7 @@ TITLE_DLI_2
 	lda #2
 	sta WSYNC                      ; (3.0) sync to end of line.
 	sta VSCROL                     ; =2, default. untrigger the hack if on for prior line.
-	nop
+;	nop
 	sty VSCROL                     ; =14, 15, 0, trick it into 3 scan lines.
 	jsr DLI_PF3_SYNC_INC_SYNC      ; (3.1 and 3.2 scan lines)
 
@@ -1286,7 +1286,7 @@ TITLE_DLI_2
 	lda #2
 	sta WSYNC                      ; (5.0) sync to end of line.
 	sta VSCROL                     ; =2, default. untrigger the hack if on for prior line.
-	nop
+;	nop
 	sty VSCROL                     ; =14, 15, 0, trick it into 3 scan lines.
 	jsr DLI_PF3_SYNC_INC_SYNC      ; (3.1 and 3.2 scan lines)
 
@@ -1296,9 +1296,12 @@ TITLE_DLI_2
 ; FINISHED - Turn off the VSCROL hack, restore normal screen .
 
 	lda #2
-	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
+	ldy #0
 	sta WSYNC                      ; (7.0) sync to end of scan line
 	sta VSCROL                     ; =2, default. untrigger the hack.
+	sty VSCROL
+
+	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
 	sty DMACTL                     ; Set all the ANTIC screen controls and DMA options.
 
 	lda #[GTIA_MODE_DEFAULT|1]       ; Return to normal color interpretation.
@@ -1331,6 +1334,7 @@ TITLE_DLI_3
 
 	sta WSYNC           ; 1.0 
 	sta HSCROL
+	
 	jsr DLI_PF_DEC      ; 1.0
 
 	jsr DLI_SYNC_PF_DEC ; 1.1
@@ -1339,8 +1343,6 @@ TITLE_DLI_3
 
 	jsr DLI_SYNC_PF_DEC ; 1.3 
 
-;	ldx #[COLOR_GREEN+14]     ; COLPF0 Darren
-;	ldy #[COLOR_PURPLE+14]    ; COLPF1 Ken
 
 	ldx #[$90+14]     ; COLPF0 Darren
 	ldy #[$30+14]    ; COLPF1 Ken
@@ -1353,6 +1355,24 @@ TITLE_DLI_3
 	jsr DLI_SYNC_PF_DEC ; 1.6
 
 	jsr DLI_SYNC_PF_DEC ; 1.7 (The DECrement part is not actually needed.)
+
+	pla
+	tax
+	pla
+	tay
+
+	mChainDLI TITLE_DLI_3,TITLE_DLI_3_2
+
+;==============================================================================
+; TITLE_DLI_3_2                                             
+;==============================================================================
+; DLI to run the horizontally scrolling Author Credits and stuff a gradient 
+; color into COLPF0 and COLPF1 for the text on the two lines.
+; -----------------------------------------------------------------------------
+
+TITLE_DLI_3_2
+
+	mRegSaveAYX ; Saves regs 
 
 	lda zCredit2HS ;
 ;	ldx #[COLOR_LITE_BLUE+8]       ; COLPF0 Darren
@@ -1390,7 +1410,7 @@ TITLE_DLI_3
 	pla
 	tay
 
-	mChainDLI TITLE_DLI_3,TITLE_DLI_4
+	mChainDLI TITLE_DLI_3_2,TITLE_DLI_4
 
 
 
@@ -1432,17 +1452,18 @@ TITLE_DLI_4
 ; Temporary.  Do a little tidy work to make the rest of the screen stable.
 
 	sta WSYNC
+	sta WSYNC
 	lda zLandHS
 	sta HSCROL
 
-	lda #$0E
-	sta COLPF0
-	lda #$8A
-	sta COLPF1
-	lda #$C8
-	sta COLPF2
-	lda #16
-	sta COLPF3
+;	lda #$0E
+;	sta COLPF0
+;	lda #$8A
+;	sta COLPF1
+;	lda #$C8
+;	sta COLPF2
+;	lda #16
+;	sta COLPF3
 	
 	pla
 	tay
@@ -1492,17 +1513,8 @@ TITLE_DLI_5
 	iny
 
 	cpy #8 
-	bne b_dli5_Repeat
+	beq b_dli5_FinalExit
 
-;	ldy #0
-;	sty zLandColor ; Well, not really needed.  VBI will take care of it.
-
-	pla
-	tay
-
-	mChainDLI TITLE_DLI_5,TITLE_DLI_6 ; Done here.  Finally go to next DLI.
-
-b_dli5_Repeat
 	sty zLandColor
 
 	pla
@@ -1510,6 +1522,16 @@ b_dli5_Repeat
 	pla
 
 	rti
+
+
+b_dli5_FinalExit
+;	ldy #0
+;	sty zLandColor ; Well, not really needed.  VBI will take care of it.
+
+	pla
+	tay
+
+	mChainDLI TITLE_DLI_5,TITLE_DLI_6 ; Done here.  Finally go to next DLI.
 
 
 ;==============================================================================

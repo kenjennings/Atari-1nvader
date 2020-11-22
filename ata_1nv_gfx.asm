@@ -194,18 +194,19 @@ DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS
 	mDL       DL_MAP_F|DL_VSCROLL                           ;    (075 - 077)  (Mode F) * 3 Animated Gfx 
 	mDL       DL_MAP_F                                      ;    (078 - 080)  (Mode F) * 3 Animated Gfx  Turn Off VSCROL hack, reset 
 
-	mDL_BLANK DL_BLANK_8                                    ;    (081 - 091) Blank 8 
+	mDL_BLANK DL_BLANK_7                                    ;    (081 - 090) Blank 7 
 	mDL_BLANK [DL_BLANK_3|DL_DLI]                           ;              + Blank 3  (DLI 3) (Hscroll authors, run colors)
 
 DL_LMS_SCROLL_CREDIT1 = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT1       ; 10 (092 - 099) (6) Author(s) Credit line
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT1       ; 10 (091 - 098) (6) Author(s) Credit line
+	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ;    (099 - 099  Blank1  (DLI 3.2) (Hscroll authors, run colors)
 DL_LMS_SCROLL_CREDIT2 = [ * + 1 ]
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT2       ; 10 (100 - 107) (6) Author(s) Credit line
 
 	mDL_BLANK DL_BLANK_8                                    ; 12 (108 - 115) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8                                    ; 12 (116 - 123) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8                                    ; 13 (124 - 131) Blank 8 Mothership graphic (PMG)
-	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 14 (132 - 139) (DLI 4) Blank 8
+	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 14 (132 - 139) (DLI 4) Blank 8 (Hscroll docs, run colors).
 
 DL_LMS_SCROLL_DOCS = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (140 - 147) (6) Fine scrolling docs
