@@ -95,7 +95,7 @@ I will also change the characters in the ground line below the mountains to pres
 
 ---
 
-**22 Nov 2020 -- TO-DO**
+**22 Nov 2020 -- We need guns.  Lots of guns.**
 
 [![V06 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/06-WIP-LandAndGuns.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
