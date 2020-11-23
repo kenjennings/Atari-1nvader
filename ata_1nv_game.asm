@@ -437,6 +437,8 @@ b_gt_TitleAnimation
 
 	jsr Pmg_Animate_Title_Logo ; This will also reset the timer for animation.
 
+
+
 	inc zPLAYER_ONE_X
 	lda zPLAYER_ONE_X
 	cmp #197

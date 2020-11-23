@@ -116,7 +116,7 @@ PMG_IMG_CANNON
 	.BYTE $ff  ; 11111111
 	.BYTE $ff  ; 11111111
 	.BYTE $ff  ; 11111111
-	.BYTE $ff  ; 11111111
+	.BYTE $00  ; ........
 
 
 spr3     ; laser sprite

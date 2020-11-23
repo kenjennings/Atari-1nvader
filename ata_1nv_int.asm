@@ -1220,6 +1220,7 @@ TITLE_DLI  ; Placeholder for VBI to restore staring address for DLI chain.
 ; TITLE_DLI_1                                             
 ;==============================================================================
 ; DLI to set Narrow screen DMA, and turn on GTIA mode 16 grey scale mode.
+; This is preparing the screen for the big title logo done in GTIA pixels.
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_1 
@@ -1232,12 +1233,13 @@ TITLE_DLI_1
 	sta DMACTL
 	
 	; Setup PRIOR for 16 grey-scale graphics, and Missile color overlay.
-	; The screen won;t show any noticeable change here, because the COLBK 
+	; The screen won't show any noticeable change here, because the COLBK 
 	; value is black, and this won't change for the 16-shade mode.
 	lda #[FIFTH_PLAYER|GTIA_MODE_16_SHADE|1] 
 	sta PRIOR
 
 	mChainDLI TITLE_DLI_1,TITLE_DLI_2
+
 
 ;==============================================================================
 ; TITLE_DLI_2                                             
@@ -1313,157 +1315,100 @@ TITLE_DLI_2
 	mChainDLI TITLE_DLI_2,TITLE_DLI_3 ; Done here.  Finally go to next DLI.
 
 
-
 ;==============================================================================
 ; TITLE_DLI_3                                             
 ;==============================================================================
 ; DLI to run the horizontally scrolling Author Credits and stuff a gradient 
-; color into COLPF0 and COLPF1 for the text on the two lines.
+; color into COLPF0 and COLPF1 for the text.
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_3
 
-	mRegSaveAYX ; Saves regs 
+	 mStart_DLI ; Saves A and Y
+
+	ldy #7
 
 	lda zCredit1HS ;
-;	ldx #[COLOR_BLUE1+8]      ; COLPF0 Darren
-;	ldy #[COLOR_ORANGE2+8] ; COLPF1 Ken
-
-	ldx #[$80+8]      ; COLPF0 Darren
-	ldy #[$20+8] ; COLPF1 Ken
-
-	sta WSYNC           ; 1.0 
 	sta HSCROL
+
+b_dli3_LoopColors	
+	lda TABLE_COLOR_AUTHOR1,y
+	sta WSYNC    
+	sta COLPF0
+	lda TABLE_COLOR_AUTHOR2,y
+	sta COLPF1
 	
-	jsr DLI_PF_DEC      ; 1.0
+	dey
+	bpl b_dli3_LoopColors
 
-	jsr DLI_SYNC_PF_DEC ; 1.1
-
-	jsr DLI_SYNC_PF_DEC ; 1.2 
-
-	jsr DLI_SYNC_PF_DEC ; 1.3 
-
-
-	ldx #[$90+14]     ; COLPF0 Darren
-	ldy #[$30+14]    ; COLPF1 Ken
-
-
-	jsr DLI_SYNC_PF_DEC ; 1.4
-
-	jsr DLI_SYNC_PF_DEC ; 1.5
-
-	jsr DLI_SYNC_PF_DEC ; 1.6
-
-	jsr DLI_SYNC_PF_DEC ; 1.7 (The DECrement part is not actually needed.)
-
-	pla
-	tax
 	pla
 	tay
 
 	mChainDLI TITLE_DLI_3,TITLE_DLI_3_2
 
+
 ;==============================================================================
 ; TITLE_DLI_3_2                                             
 ;==============================================================================
-; DLI to run the horizontally scrolling Author Credits and stuff a gradient 
-; color into COLPF0 and COLPF1 for the text on the two lines.
+; DLI to run the horizontally scrolling Computer Credits and stuff a gradient 
+; color into COLPF0 and COLPF1 for the text.
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_3_2
 
-	mRegSaveAYX ; Saves regs 
+	 mStart_DLI ; Saves A and Y
+
+	ldy #7
 
 	lda zCredit2HS ;
-;	ldx #[COLOR_LITE_BLUE+8]       ; COLPF0 Darren
-;	ldy #[COLOR_RED_ORANGE+8]       ; COLPF1 Ken
-
-	ldx #[$a0+8]       ; COLPF0 Darren
-	ldy #[$40+8]       ; COLPF1 Ken
-
-	sta WSYNC           ; 2.0
 	sta HSCROL
-	jsr DLI_PF_DEC      ; 2.0
 
-	jsr DLI_SYNC_PF_DEC ; 2.1
+b_dli32_LoopColors	
+	lda TABLE_COLOR_COMP1,y
+	sta WSYNC    
+	sta COLPF0
+	lda TABLE_COLOR_COMP2,y
+	sta COLPF1
+	
+	dey
+	bpl b_dli32_LoopColors
 
-	jsr DLI_SYNC_PF_DEC ; 2.2 
-
-	jsr DLI_SYNC_PF_DEC ; 2.3 
-
-;	ldx #[COLOR_ORANGE_GREEN+14]  ; COLPF0 Darren
-;	ldy #[COLOR_PINK+14]       ; COLPF1 Ken
-
-	ldx #[$b0+14]  ; COLPF0 Darren
-	ldy #[$50+14]       ; COLPF1 Ken
-
-	jsr DLI_SYNC_PF_DEC ; 2.4
-
-	jsr DLI_SYNC_PF_DEC ; 2.5
-
-	jsr DLI_SYNC_PF_DEC ; 2.6
-
-	jsr DLI_SYNC_PF_DEC ; 2.7 (The DECrement part is not actually needed.)
-
-	pla
-	tax
 	pla
 	tay
 
 	mChainDLI TITLE_DLI_3_2,TITLE_DLI_4
 
 
-
 ;==============================================================================
 ; TITLE_DLI_4                                             
 ;==============================================================================
-; DLI to run the horizontally scrolling Documentation  and  stuff a gradient 
-; color into COLPF0 for the text on the line.
+; DLI to run the horizontally scrolling Documentation  and  stuff  gradient 
+; colors into COLPF0 for the text on the line.
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_4
 
-	mStart_DLI ; Saves A and Y
+	 mStart_DLI ; Saves A and Y
 
-	lda zDocsHS ;
-	ldy #[$c0+8]  ; COLPF0 Documentation
+	ldy #7
 
-	sta WSYNC            ; 1.0 
+	lda zDocsHS 
 	sta HSCROL
-	jsr DLI_PF0_DEC      ; 1.0
 
-	jsr DLI_SYNC_PF0_DEC ; 1.1
-
-	jsr DLI_SYNC_PF0_DEC ; 1.2 
-
-	jsr DLI_SYNC_PF0_DEC ; 1.3 
-
-	ldy #[$d0+14]    ; COLPF0 Documentation
-
-	jsr DLI_SYNC_PF0_DEC ; 1.4
-
-	jsr DLI_SYNC_PF0_DEC ; 1.5
-
-	jsr DLI_SYNC_PF0_DEC ; 1.6
-
-	jsr DLI_SYNC_PF0_DEC ; 1.7 (The DECrement part is not actually needed.)
-
-
+b_dli4_LoopColors	
+	lda TABLE_COLOR_DOCS,y
+	sta WSYNC    
+	sta COLPF0
+	
+	dey
+	bpl b_dli4_LoopColors
+	
 ; Temporary.  Do a little tidy work to make the rest of the screen stable.
 
-	sta WSYNC
-	sta WSYNC
-	lda zLandHS
-	sta HSCROL
-
-;	lda #$0E
-;	sta COLPF0
-;	lda #$8A
-;	sta COLPF1
-;	lda #$C8
-;	sta COLPF2
-;	lda #16
-;	sta COLPF3
+;	lda zLandHS
+;	sta WSYNC
+;	sta WSYNC
+;	sta HSCROL
 	
 	pla
 	tay
@@ -1477,14 +1422,22 @@ TITLE_DLI_4
 ; DLI to run the colors for the horizontally scrolling land.
 ; Fine scroll is already set, so, this just sets COLPF0, 1, 2.
 ; The color tables refereced are in gfx.asm.
+; Note that this indexes TWICE and changes the colors at the 
+; top of the line, and in the middle of the line of text.
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_5
 
 	mStart_DLI ; Saves A and Y
 
-	ldy zLandColor
-	lda TABLE_LAND_COLPF0,y
+	lda zLandHS
+;	sta WSYNC
+;	sta WSYNC
+	sta HSCROL
+	
+	ldy zLandColor           ; Get color index.
+	
+	lda TABLE_LAND_COLPF0,y  ; Load the three registers for PF0, PF1, PF2
 	sta WSYNC   ; (1.0)
 	sta COLPF0
 
@@ -1494,15 +1447,15 @@ TITLE_DLI_5
 	lda TABLE_LAND_COLPF2,y
 	sta COLPF2
 
-	iny
+	iny                      ; Next index
 
-	lda TABLE_LAND_COLPF0,y
+	lda TABLE_LAND_COLPF0,y  ; Prep for first update below...
 
-	sta WSYNC   ; (1.1)
+	sta WSYNC   ; (1.1)      ; Skip 3 more scan lines.
 	sta WSYNC   ; (1.2)
 	sta WSYNC   ; (1.3)
 
-	sta COLPF0
+	sta COLPF0               ; Load the three registers for PF0, PF1, PF2 
 
 	lda TABLE_LAND_COLPF1,y
 	sta COLPF1
@@ -1510,23 +1463,21 @@ TITLE_DLI_5
 	lda TABLE_LAND_COLPF2,y
 	sta COLPF2
 
-	iny
+	iny                      ; Next index.
 
-	cpy #8 
-	beq b_dli5_FinalExit
+	cpy #8                   ; Have we done this 4 times?   (4 * 2 iny == 8)
+	beq b_dli5_FinalExit     ; Yup.   can chani to the next DLI now.
 
-	sty zLandColor
+	sty zLandColor           ; FYI: VBI will reset index to 0.
 
-	pla
+	pla                      ; Clean up. Normal Exit.  Next DLI calls this same routine.
 	tay
 	pla
 
 	rti
 
 
-b_dli5_FinalExit
-;	ldy #0
-;	sty zLandColor ; Well, not really needed.  VBI will take care of it.
+b_dli5_FinalExit            ; Chain to next DLI
 
 	pla
 	tay
@@ -1549,45 +1500,50 @@ TITLE_DLI_6
 
 	mStart_DLI ; Saves A and Y
 
-	ldy #6
-	lda zPLAYER_ONE_X
-	sta HPOSP0
+	ldy #6 ; Yup, 6 counting down to 0 is 7 scan lines, not 8.
+	
+	lda zPLAYER_ONE_X        ; Cut Player/Missile object to use player's HPOS 
+	sta HPOSP0               ; to separate the guns from the missiles.
 	lda zPLAYER_TWO_X
 	sta HPOSP1
-	lda #$24
+	
+	lda #$24    ; Change COLPF1 to use as alternate ground color.
 	sta WSYNC
-	sta COLBK
+	sta COLPF1
 
 b_dli6_NextLoop
-	lda TABLE_COLOR_BLINE_BUMPER,y
+	lda TABLE_COLOR_BLINE_BUMPER,y ; bumper first
 	sta COLPF3
 
-	lda TABLE_COLOR_BLINE_PM0,y
+	lda TABLE_COLOR_BLINE_PM0,y    ; Player 1 gun
 	sta COLPM0
 			
 ;	lda TABLE_COLOR_BLINE_PF0,y
 ;	sta COLPF0
 
-	lda TABLE_COLOR_BLINE_PM1,y
+	lda TABLE_COLOR_BLINE_PM1,y   ; Player 2 gun
 	sta COLPM1
 
 	dey
 	sta WSYNC
-	bpl b_dli6_NextLoop
+	bpl b_dli6_NextLoop          ; Stop looping on the 7th scan line
 
-	lda #$34  ; should match brown mountains above.
-	sta COLBK
+	lda TABLE_LAND_COLPF0+7      ; make the background match PF0's color 
+;	sta WSYNC                    ; from the scrolling mountains 
+	sta COLBK                    ; for one scan line
 	
-	; COLPF1 and COLPF2 are not on the bumper line.
+	lda #$00
+	ldy #$04       ; Set guns to grey on the stats line.
+	
+	sta WSYNC      ; Next scan line set the colors for the stats line of text. 
+	sta COLBK      ; Background/border to black, too.
+	sta COLPF2     ; Text background
+	sty COLPM0
+	sty COLPM1
 	lda #$0C
 	sta COLPF1     ; Text luminance
 
-	lda #$00       ; Now set the colors for the Stats line.
-	sta COLPF2     ; Text background
 	
-	sta WSYNC
-	sta COLBK      ; Background/border
-
 	pla
 	tay
 
@@ -1658,7 +1614,7 @@ DLI_PF_DEC
 
 
 ;==============================================================================
-;                                              DLI_SYNC_PF_DEC
+;                                              DLI_SYNC_PF0_DEC
 ;==============================================================================
 ; Supporting routine used by DLI_4 to manage COLPF0 on the 
 ; scrolling documentation line.
