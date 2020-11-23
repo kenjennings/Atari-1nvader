@@ -95,8 +95,24 @@ I will also change the characters in the ground line below the mountains to pres
 
 ---
 
+**22 Nov 2020 -- TO-DO**
+
+[![V06 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/06-WIP-LandAndGuns.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+Fixed DLI timings.  Now the display is stable on the Altirra emulator.
+
+Adjusted the pairs of base colors for each row of the scrolling author credits and documentation to be more compatible/matching values.
+
+Added the guns to the display in the ground view.  For demonstration purposes the guns travel across the screen and wrap around to the other side of the playfield.
+
+Added color changes for the guns and the bumpers to the DLI.  It turned out there is not enough time available to transisiton the colors for five color registers per line (the background, ground, the two guns and the bumpers).  Reducing it to four was also not quite good enough -- the second gun had a visible color issue when it moved too far to the left side of the screen.  For the time being the DLI sets only the base color for the background one time, and runs a color gradient for the bumper and the two guns.   The ground color is actually the last value set from the mountains above.
+
+The font was reworked to change the shape of the bumpers, and to make the ground characters look like rolling hills.  Initially, the ground looked great when the DLI was transitioning the colors for the background and the ground.  I may remove the gradient on the bumpers which then allows time for the ground gradient.   Another idea is to remove the background color entirely from the ground line, and change the ground characters to show pointed hill shapes instead.
+
+---
+
 **DD MMM 2020 -- TO-DO**
 
-[![V05 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/05-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V07 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/07-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
