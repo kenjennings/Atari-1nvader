@@ -109,10 +109,10 @@ spr2     ; cannon sprite
 ;	.byte 0,0,0,255
 
 PMG_IMG_CANNON
-	.BYTE $18  ; ...11...
+	.BYTE $00  ; ........
 	.BYTE $18  ; ...11...
 	.BYTE $7e  ; .111111.
-	.BYTE $7e  ; .111111.
+	.BYTE $ff  ; 11111111
 	.BYTE $ff  ; 11111111
 	.BYTE $ff  ; 11111111
 	.BYTE $ff  ; 11111111

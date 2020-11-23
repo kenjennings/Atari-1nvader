@@ -68,7 +68,7 @@ b_pzpm_LoopZero
 ;
 ; If the Y value is negative, then the image is overwritten with 0 bytes
 ; starting from the 0th position assuming that the intent is to remove 
-; the image from the screen.
+; the image from the top of the screen.
 ; --------------------------------------------------------------------------
 
 Pmg_Draw_Big_Mothership
@@ -115,6 +115,79 @@ b_pdbm_LoopZero
 
 	rts
 
+
+
+; ==========================================================================
+; DRAW PLAYERS
+; ==========================================================================
+; Copy the image bitmaps for the guns to the player Y positions.
+; zPLAYER_ONE_Y and zPLAYER_TWO_Y 
+;
+; If the Player is Off, then copy 8 bytes instead.
+; --------------------------------------------------------------------------
+
+Pmg_Draw_Players
+
+	; Process Player 1
+	ldy zPLAYER_ONE_Y
+	ldx #7
+	
+	lda zPLAYER_ONE_ON
+	bne b_pdp_DrawPlayer1
+	
+	; Erase Player 1
+	lda #0
+
+b_pdp_LoopErasePlayer1	
+	sta PLAYERADR0,Y
+	iny
+	dex
+	bpl b_pdp_LoopErasePlayer1
+	bmi b_pdp_ProcessPlayer2
+
+b_pdp_DrawPlayer1
+	ldx #0
+b_pdp_LoopDrawPlayer1	
+	lda PMG_IMG_CANNON,x
+	sta PLAYERADR0,y
+	iny
+	inx
+	cpx #8
+	bne b_pdp_LoopDrawPlayer1
+	
+
+
+b_pdp_ProcessPlayer2
+	ldy zPLAYER_TWO_Y
+	ldx #7
+	lda zPLAYER_TWO_ON
+	bne b_pdp_DrawPlayer2
+	
+	; Erase Player 1
+	lda #0
+
+b_pdp_LoopErasePlayer2
+	sta PLAYERADR1,Y
+	iny
+	dex
+	bpl b_pdp_LoopErasePlayer2
+	bmi b_pdp_Exit
+
+b_pdp_DrawPlayer2
+	ldx #0
+b_pdp_LoopDrawPlayer2	
+	lda PMG_IMG_CANNON,x
+	sta PLAYERADR1,y
+	iny
+	inx
+	cpx #8
+	bne b_pdp_LoopDrawPlayer2
+
+b_pdp_Exit
+	rts
+	
+	
+	
 
 ; ==========================================================================
 ; COPY OBJECT

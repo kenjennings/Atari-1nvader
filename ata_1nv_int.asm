@@ -1544,44 +1544,50 @@ b_dli5_FinalExit
 ; At the end, reset colors for the bottom status line.
 ; -----------------------------------------------------------------------------
 
+
 TITLE_DLI_6
 
-	mRegSaveAYX    ; Saves regs 
+	mStart_DLI ; Saves A and Y
 
-	ldx #$20       ; COLBK
-	ldy #$32       ; COLPF0
-	lda #$78       ; COLPF3
-
-	sta COLPF3     ; should be able to get away with this, because there is no PF3 in the mountains.
+	ldy #6
+	lda zPLAYER_ONE_X
+	sta HPOSP0
+	lda zPLAYER_TWO_X
+	sta HPOSP1
+	lda #$24
+	sta WSYNC
+	sta COLBK
 
 b_dli6_NextLoop
-	stx WSYNC
-	stx COLBK
-	sty COLPF0
+	lda TABLE_COLOR_BLINE_BUMPER,y
+	sta COLPF3
 
-	inx            ; Background +1
-	iny            ; Foreground +1
-	iny            ; Foreground +1
+	lda TABLE_COLOR_BLINE_PM0,y
+	sta COLPM0
+			
+;	lda TABLE_COLOR_BLINE_PF0,y
+;	sta COLPF0
 
-	cpy #$3e       ; Did foreground reach $3E?
-	bne b_dli6_NextLoop
+	lda TABLE_COLOR_BLINE_PM1,y
+	sta COLPM1
 
 	dey
-	dey
-	
-	sty WSYNC
-	sty WSYNC      ; now make background match the last ground color.
-	sty COLBK
-	
-	lda #$00       ; Now set the colors for the Stats line.
 	sta WSYNC
-	sta COLBK      ; Background/border
-	sta COLPF2     ; Text background
-	lda #$0C       
+	bpl b_dli6_NextLoop
+
+	lda #$34  ; should match brown mountains above.
+	sta COLBK
+	
+	; COLPF1 and COLPF2 are not on the bumper line.
+	lda #$0C
 	sta COLPF1     ; Text luminance
 
-	pla
-	tax
+	lda #$00       ; Now set the colors for the Stats line.
+	sta COLPF2     ; Text background
+	
+	sta WSYNC
+	sta COLBK      ; Background/border
+
 	pla
 	tay
 

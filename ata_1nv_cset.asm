@@ -154,8 +154,8 @@ cdat1 ; the first 32 characters
 	; $00 ........
 ;
 ; $02 ;     LEFT bouncer.   Left/Right line end.
-	.byte $f0,$e0,$c0,$c0
-	.byte $c0,$e0,$f0,$00 
+;	.byte $f0,$e0,$c0,$c0
+;	.byte $c0,$e0,$f0,$00 
 	; $f0 ****....
 	; $e0 ***.....
 	; $c0 **......
@@ -163,6 +163,17 @@ cdat1 ; the first 32 characters
 	; $c0 **......
 	; $e0 ***.....
 	; $f0 ****....
+	; $00 ........
+
+	.byte $e0,$f0,$f0,$f0
+	.byte $f0,$f0,$e0,$00 
+	; $e0 ***.....
+	; $f0 ****....
+	; $f0 ****....
+	; $f0 ****....
+	; $f0 ****....
+	; $f0 ****....
+	; $e0 ***.....
 	; $00 ........
 
 ; $03
@@ -170,8 +181,8 @@ cdat1 ; the first 32 characters
 ;	.byte $00,$00,$1f,$00
 ;
 ; $03 ;     RIGHT bouncer.   Left/Right line end.
-	.byte $0f,$07,$03,$03
-	.byte $03,$07,$0f,$00
+;	.byte $0f,$07,$03,$03
+;	.byte $03,$07,$0f,$00
 	; $0f ....****
 	; $07 .....***
 	; $03 ......**
@@ -180,6 +191,18 @@ cdat1 ; the first 32 characters
 	; $07 .....***
 	; $0f ....****
 	; $00 ........
+
+	.byte $07,$0f,$0f,$0f
+	.byte $0f,$0f,$07,$00 
+	; $07 .....***
+	; $0f ....****
+	; $0f ....****
+	; $0f ....****
+	; $0f ....****
+	; $0f ....****
+	; $07 .....***
+	; $00 ........
+
 
 ; $04
 ;	.byte $00,$80,$00,$80 ; $ ; thick right 1.  double size 1, right
@@ -187,14 +210,14 @@ cdat1 ; the first 32 characters
 
 ; Atari - a piece of rolling hills
 	.byte $00,$00,$00,$00
-	.byte $c0,$f0,$fC,$ff
+	.byte $00,$c0,$f8,$ff
 	; $00 ........
 	; $00 ........
 	; $00 ........
 	; $00 ........
-	; $c0 **......
-	; $f0 ****....
-	; $fc ******..
+	; $00 ........
+	; $co **......
+	; $f8 *****...
 	; $ff ********
 
 ; $05
@@ -202,15 +225,15 @@ cdat1 ; the first 32 characters
 ;	.byte $00,$00,$f8,$00
 
 ; Atari - a piece of rolling hills
-	.byte $c0,$f0,$f8,$fc
-	.byte $ff,$ff,$ff,$ff
-	; $80 **......
-	; $e0 ****...
-	; $f8 *****...
-	; $fc ******..
-	; $ff ********
-	; $ff ********
-	; $ff ********
+	.byte $00,$00,$00,$00
+	.byte $00,$03,$1f,$ff
+	; $00 ........
+	; $00 ........
+	; $00 ........
+	; $00 ........
+	; $00 ........
+	; $03 ......**
+	; $1f ...*****
 	; $ff ********
 
 ; $06
@@ -218,15 +241,15 @@ cdat1 ; the first 32 characters
 ;	.byte $18,$18,$e0,$00
 
 ; Atari - a piece of rolling hills
-	.byte $c0,$e0,$f0,$f0
-	.byte $f0,$f8,$fc,$ff
-	; $c0 **......
-	; $e0 ***.....
-	; $f0 ****....
-	; $f0 ****....
-	; $f0 ****....
+	.byte $00,$00,$c0,$f8
+	.byte $ff,$ff,$ff,$ff
+	; $00 ........
+	; $00 ........
+	; $co **......
 	; $f8 *****...
-	; $fc ******..
+	; $ff ********
+	; $ff ********
+	; $ff ********
 	; $ff ********
 
 	ORG CHARACTER_SET + [ $07 * 8 ]
@@ -268,16 +291,17 @@ cdat1 ; the first 32 characters
 	; $ff ********
 
 ; Atari - a piece of rolling hills
-	.byte $00,$00,$c0,$f0
-	.byte $f0,$f8,$fc,$ff
+	.byte $00,$00,$03,$1f
+	.byte $ff,$ff,$ff,$ff
 	; $00 ........
 	; $00 ........
-	; $c0 **......
-	; $f0 ****....
-	; $f0 ****....
-	; $f8 *****...
-	; $fc ******..
+	; $03 ......**
+	; $1f ...*****
 	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+
 
 
 ; $09
@@ -293,15 +317,15 @@ cdat1 ; the first 32 characters
 	; $ff ********
 
 ; Atari - a piece of rolling hills
-	.byte $00,$00,$00,$00
-	.byte $c0,$f0,$fc,$ff
-	; $00 ........
-	; $00 ........
-	; $00 ........
-	; $00 ........
-	; $c0 **......
-	; $f0 ****....
-	; $f8 *****...
+	.byte $e0,$fc,$ff,$ff
+	.byte $ff,$ff,$ff,$ff
+	; $e0 ***.....
+	; $fc ******..
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
 	; $ff ********
 
 		ORG CHARACTER_SET + [ $0A * 8 ]
@@ -514,28 +538,68 @@ cdat1 ; the first 32 characters
 ;	.byte $04,$05,$06,$07
 
 ; Atari - a piece of rolling hills
-	.byte $00,$00,$80,$f0
+	.byte $07,$3f,$ff,$ff
 	.byte $ff,$ff,$ff,$ff
-	; $00 ........
-	; $00 ........
-	; $80 *.......
-	; $f0 ****....
+	; $03 .....***
+	; $0f ..******
 	; $ff ********
 	; $ff ********
 	; $ff ********
 	; $ff ********
+	; $ff ********
+	; $ff ********
+
 
 ; $1C
 ;	.byte $00,$01,$02,$03 ; < ;        ? Placeholder?  Unused?
 ;	.byte $04,$05,$06,$07
 
+; Atari - a piece of rolling hills
+	.byte $00,$00,$00,$00
+	.byte $00,$ff,$ff,$ff
+	; $00 ........
+	; $00 ........
+	; $00 ........
+	; $00 ........
+	; $00 ........
+	; $ff ********
+	; $ff ********
+	; $ff ********
+
 
 ; $1D
 ;	.byte $00,$01,$02,$03 ; = ;        ? Placeholder?  Unused?
 ;	.byte $04,$05,$06,$07
+
+; Atari - a piece of rolling hills
+	.byte $00,$00,$ff,$ff
+	.byte $ff,$ff,$ff,$ff
+	; $00 ........
+	; $00 ........
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+
 ; $1E
 ;	.byte $00,$01,$02,$03 ; > ;        ? Placeholder?  Unused?
 ;	.byte $04,$05,$06,$07
+
+; Atari - a piece of rolling hills
+	.byte $ff,$ff,$ff,$ff
+	.byte $ff,$ff,$ff,$ff
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+	; $ff ********
+
+
 ; $1F
 ;	.byte $00,$01,$02,$03 ; ? ;        ? Placeholder?  Unused?
 ;	.byte $04,$05,$06,$07

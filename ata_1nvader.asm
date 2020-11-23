@@ -341,22 +341,22 @@ zJIFFY_COUNTER     .byte $00 ; Jiffy clock for countdown seconds for title trans
 zSCROLL_JIFFY      .byte $00 ; Jiffy clock for scrolling directions.
 zSHIP_HITS         .byte $00 ; 
 
-zPLAYER_ONE_ON     .byte $00 ; (0) not playing. (1) playing.
-zPLAYER_ONE_X      .byte $00 ; Player 1 gun X coord
-zPLAYER_ONE_Y      .byte $00 ; Player 1 Y position (slight animation, but usually fixed.)
+zPLAYER_ONE_ON     .byte $01 ; (0) not playing. (1) playing.
+zPLAYER_ONE_X      .byte 52 ; Player 1 gun X coord
+zPLAYER_ONE_Y      .byte 212 ; Player 1 Y position (slight animation, but usually fixed.)
 zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction
 zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
 zPLAYER_ONE_SCORE  .byte $00,$00,$00 ; Player 1 score, 6 digit BCD 
 zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color
 zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
 
-zLASER_ONE_ON      .byte $00 ; whether or not the laser is shooting
+zLASER_ONE_ON      .byte $01 ; whether or not the laser is shooting
 zLASER_ONE_X       .byte $00 ; Laser 1 X coord
 zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
 
-zPLAYER_TWO_ON     .byte $00 ; (0) not playing. (1) playing.
-zPLAYER_TWO_X      .byte $00 ; Player 2 gun X coord
-zPLAYER_TWO_Y      .byte $00 ; Player 2 Y position (slight animation, but usually fixed.)
+zPLAYER_TWO_ON     .byte $01 ; (0) not playing. (1) playing.
+zPLAYER_TWO_X      .byte 128 ; Player 2 gun X coord (196 max)
+zPLAYER_TWO_Y      .byte 212 ; Player 2 Y position (slight animation, but usually fixed.)
 zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction
 zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
 zPLAYER_TWO_SCORE  .byte $00,$00,$00 ; Player 2 score, 6 digit BCD 

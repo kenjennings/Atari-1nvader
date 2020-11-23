@@ -526,19 +526,6 @@ GFX_END_DOCS
 
 
 
-; mountc   ; mountain screen view chars
-;	.byte $20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20
-
-;	.byte $5b,$5e,$5c,$5d,$20,$20,$20,$20,$20,$20,$20,$20,$5d,$20,$20,$5b,$5e,$5c,$20,$20,$20,$20,$20,$20,$20,$5b,$5c,$5b,$5e,$5c,$5d,$20,$20,$20,$20,$20,$5d,$5b,$5e,$5c
-
-;	.byte $5d,$20,$20,$5c,$5c,$20,$20,$20,$20,$5b,$5c,$5b,$5e,$5c,$5b,$20,$20,$20,$5c,$20,$20,$20,$20,$20,$5b,$20,$20,$5c,$20,$5b,$5e,$5c,$20,$20,$20,$5b,$5e,$5c,$20,$5d
-
-;	.byte $5f,$5c,$20,$20,$20,$5c,$20,$20,$5b,$20,$20,$5c,$20,$5b,$20,$20,$20,$20,$20,$5c,$20,$20,$20,$5b,$20,$20,$20,$20,$20,$20,$20,$20,$5c,$20,$5b,$20,$20,$20,$5b,$5f
-
-;	.byte $40,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$5f,$40
-
-;	.byte $5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e,$5e
-
 ; Since Mode 6 characters are twice the width, then only half the 
 ; screen data is needed.  What to do with the rest....?
 ; I'd prefer to not remove the data.
@@ -583,15 +570,6 @@ GFX_END_DOCS
 ; "8  04    884440   0     4  4 444   444 8"
 ; "88   4  8  8 0     0   4        4 4   88"
 
-TABLE_LAND_COLPF0
-	.byte $0E,$0C,$9A,$98,$96,$94,$92,$90
-
-TABLE_LAND_COLPF1
-	.byte $0E,$0e,$0e,$0c,$d8,$d6,$d4,$d2
-
-TABLE_LAND_COLPF2
-	.byte $0e,$0e,$0e,$0e,$0c,$38,$36,$34
-
 
 	.align $0100  ; Align to a page, so only low bytes need to be changed for scrolling
 
@@ -599,29 +577,57 @@ mountc	; mountain screen view chars
 		; Note all values modified -$20 for Atari character codes.
 GFX_MOUNTAINS1
 	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
-	.byte $00,$3d,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$3d,$00,$00,$00
-	.byte $00,$00,$00,$00,$00,$00,$00,$00,$3d,$00,$00,$00,$00,$00,$00,$00,$00,$00,$3d,$00
+	.byte $00,$bd,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$bd,$00,$00,$00 
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$bd,$00,$00,$00,$00,$00,$00,$00,$00,$00,$3d,$00
 
 GFX_MOUNTAINS2
 	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
-	.byte $3b,$3e,$3c,$7d,$00,$00,$00,$00,$00,$00,$00,$00,$7d,$00,$00,$3b,$3e,$3c,$00,$00
-	.byte $00,$00,$00,$00,$00,$7b,$7c,$3b,$3e,$3c,$7d,$00,$00,$00,$00,$00,$7d,$3b,$3e,$3c
+	.byte $bb,$be,$bc,$7d,$00,$00,$00,$00,$00,$00,$00,$00,$7d,$00,$00,$bb,$be,$bc,$00,$00 
+	.byte $00,$00,$00,$00,$00,$7b,$7c,$bb,$be,$bc,$7d,$00,$00,$00,$00,$00,$7d,$bb,$be,$bc
 
 GFX_MOUNTAINS3
 	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
-	.byte $bd,$00,$00,$3c,$7c,$00,$00,$00,$00,$bb,$bc,$7b,$7e,$7c,$3b,$00,$00,$00,$3c,$00
-	.byte $00,$00,$00,$00,$7b,$00,$00,$7c,$00,$7b,$7e,$7c,$00,$00,$00,$7b,$7e,$7c,$00,$bd
+	.byte $3d,$00,$00,$bc,$7c,$00,$00,$00,$00,$3b,$3c,$7b,$7e,$7c,$bb,$00,$00,$00,$bc,$00 
+	.byte $00,$00,$00,$00,$7b,$00,$00,$7c,$00,$7b,$7e,$7c,$00,$00,$00,$7b,$7e,$7c,$00,$3d
 
 GFX_MOUNTAINS4
 	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
-	.byte $bf,$bc,$00,$00,$00,$7c,$00,$00,$bb,$00,$00,$bc,$00,$3b,$00,$00,$00,$00,$00,$3c
-	.byte $00,$00,$00,$7b,$00,$00,$00,$00,$00,$00,$00,$00,$7c,$00,$7b,$00,$00,$00,$bb,$bf
+	.byte $3f,$3c,$00,$00,$00,$7c,$00,$00,$3b,$00,$00,$3c,$00,$bb,$00,$00,$00,$00,$00,$bc 
+	.byte $00,$00,$00,$7b,$00,$00,$00,$00,$00,$00,$00,$00,$7c,$00,$7b,$00,$00,$00,$3b,$3f
+
+
+	.align $0100
+
+TABLE_LAND_COLPF0
+	.byte $0e,$0e,$0e,$0e,$0c,$38,$36,$34
+
+TABLE_LAND_COLPF1
+	.byte $0E,$0e,$0e,$0c,$d8,$d6,$d4,$d2
+
+TABLE_LAND_COLPF2
+	.byte $0E,$0C,$9A,$98,$96,$94,$92,$90
 
 
 ; This is not 40 chars, because it won't "move" by LMS changes.
 GFX_BUMPERLINE
-	.byte $c2,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$3f,$00,$09,$00,$08,$00,$06,$00,$05,$04,$C3
+	.byte $C2,$05,$04,$05,$08,$1d,$1b,$1e,$09,$06,$04,$05,$08,$1d,$1d,$1b,$09,$06,$04,$C3
 	
+
+;TABLE_COLOR_BLINE_BACK
+;	.byte $26,$24,$24,$22,$22,$20,$20,$ff
+
+TABLE_COLOR_BLINE_BUMPER
+	.byte $72,$76,$7A,$7C,$7A,$76,$72,$ff
+
+TABLE_COLOR_BLINE_PF0
+	.byte $3c,$3a,$38,$36,$34,$32,$30,$ff
+
+TABLE_COLOR_BLINE_PM0
+	.byte $54,$56,$58,$5a,$5c,$5a,$58,$ff
+
+TABLE_COLOR_BLINE_PM1
+	.byte $84,$86,$88,$8a,$8c,$8a,$88,$ff
+
 
 ; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left
 
