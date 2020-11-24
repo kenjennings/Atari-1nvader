@@ -632,7 +632,7 @@ TABLE_LAND_COLPF2
 
 ; This is 40 chars, because it won't "move" by LMS changes.
 GFX_BUMPERLINE
-	.byte $C2,$05,$44,$85,$c8,$1d,$1b,$1e,$09,$06,$04,$05,$08,$1d,$1d,$1b,$09,$06,$04,$C3
+	.byte $C2,$04,$05,$06,$08,$09,$04,$0b,$1b,$44,$45,$46,$48,$49,$44,$4b,$5b,$00,$00,$C3
 	
 
 ;TABLE_COLOR_BLINE_BACK
