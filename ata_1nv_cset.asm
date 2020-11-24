@@ -341,11 +341,11 @@ cdat1 ; the first 32 characters
 	; $ff ********
 	; $ff ********
 
-	.byte $00,$00,$04,$15
+	.byte $00,$00,$08,$15
 	.byte $22,$44,$88,$00
 	; $00 ........
 	; $00 ........
-	; $04 ....*...
+	; $08 ....*...
 	; $15 ...*.*.*
 	; $22 ..*...*.
 	; $44 .*...*..
@@ -368,8 +368,8 @@ cdat1 ; the first 32 characters
 	; $ff ********
 
 ; Atari - a piece of rolling hills
-	.byte $e0,$fc,$ff,$ff
-	.byte $ff,$ff,$ff,$ff
+;	.byte $e0,$fc,$ff,$ff
+;	.byte $ff,$ff,$ff,$ff
 	; $e0 ***.....
 	; $fc ******..
 	; $ff ********
@@ -380,7 +380,7 @@ cdat1 ; the first 32 characters
 	; $ff ********
 
 	.byte $00,$40,$a0,$10
-	.byte $08,$04,$10,$00
+	.byte $08,$04,$02,$00
 	; $00 ........
 	; $40 .*......
 	; $a0 *.*.....
@@ -614,8 +614,8 @@ cdat1 ; the first 32 characters
 ;	.byte $04,$05,$06,$07
 
 ; Atari - a piece of rolling hills
-	.byte $07,$3f,$ff,$ff
-	.byte $ff,$ff,$ff,$ff
+;	.byte $07,$3f,$ff,$ff
+;	.byte $ff,$ff,$ff,$ff
 	; $03 .....***
 	; $0f ..******
 	; $ff ********

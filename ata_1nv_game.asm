@@ -437,7 +437,7 @@ b_gt_TitleAnimation
 
 	jsr Pmg_Animate_Title_Logo ; This will also reset the timer for animation.
 
-
+b_gt_ExitTitleAnimation
 
 	inc zPLAYER_ONE_X
 	lda zPLAYER_ONE_X
@@ -456,9 +456,6 @@ b_gt_SkipPlayer1Reset
 
 b_gt_SkipPlayer2Reset
 	jsr Pmg_Draw_Players ;
-
-b_gt_ExitTitleAnimation
-
 
 
 ; =============== Stage * ; Always run the frog and the label flashing. . .
