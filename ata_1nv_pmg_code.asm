@@ -124,19 +124,35 @@ b_pdbm_LoopZero
 ; zPLAYER_ONE_Y and zPLAYER_TWO_Y 
 ;
 ; If the Player is Off, then copy 8 bytes instead.
+; We're cheating a little here.   Usually for a general purpose 
+; routine the player should be erased at the old Y, and redrawn 
+; at the new Y.  However, in this simple game the player's gun image 
+; includes a 0 byte at the start and the end, so when moved one 
+; scan line at a time (the only possible movement it can do) a 
+; redraw will delete any old image.
+;
+; Zero the redraw flags.
+; Copy the Players' NEW_Y to Y.
 ; --------------------------------------------------------------------------
 
 Pmg_Draw_Players
 
+	lda zPLAYER_ONE_REDRAW
+	beq b_pdp_ProcessPlayer2
+	
+	lda #0
+	sta zPLAYER_ONE_REDRAW
+	
 	; Process Player 1
-	ldy zPLAYER_ONE_Y
+	ldy zPLAYER_ONE_NEW_Y
+	sty zPLAYER_ONE_Y
 	ldx #7
 	
 	lda zPLAYER_ONE_ON
 	bne b_pdp_DrawPlayer1
 	
 	; Erase Player 1
-	lda #0
+;	lda #0
 
 b_pdp_LoopErasePlayer1	
 	sta PLAYERADR0,Y
@@ -156,15 +172,22 @@ b_pdp_LoopDrawPlayer1
 	bne b_pdp_LoopDrawPlayer1
 	
 
-
 b_pdp_ProcessPlayer2
-	ldy zPLAYER_TWO_Y
+	lda zPLAYER_TWO_REDRAW
+	beq b_pdp_Exit
+	
+	lda #0
+	sta zPLAYER_TWO_REDRAW
+
+	ldy zPLAYER_TWO_NEW_Y
+	sty zPLAYER_TWO_Y
 	ldx #7
+	
 	lda zPLAYER_TWO_ON
 	bne b_pdp_DrawPlayer2
 	
 	; Erase Player 1
-	lda #0
+;	lda #0
 
 b_pdp_LoopErasePlayer2
 	sta PLAYERADR1,Y
@@ -185,8 +208,6 @@ b_pdp_LoopDrawPlayer2
 
 b_pdp_Exit
 	rts
-	
-	
 	
 
 ; ==========================================================================

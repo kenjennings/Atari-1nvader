@@ -866,9 +866,32 @@ b_mdv_EndLandScrolling
 
 
 
+; ======== MANAGE PLAYER MOVEMENT  ========
+; At this point we're operating a demo for moving the players between Playing and Idle positions.
 
+; The main code provided updates to player state for the New Y position.
+; If the New Y does not match the old Player Y player then update Y.
+; Redraw players.
 
+	lda zPLAYER_ONE_NEW_Y  
+	cmp zPLAYER_ONE_Y
+	beq b_mdv_TryPlayer2_Y
+	inc ZPLAYER_ONE_REDRAW
 
+b_mdv_TryPlayer2_Y
+	lda zPLAYER_TWO_NEW_Y  
+	cmp zPLAYER_TWO_Y
+	beq b_mdv_TryPlayerRedraw
+	inc ZPLAYER_TWO_REDRAW
+
+b_mdv_TryPlayerRedraw
+	lda zPLAYER_ONE_REDRAW
+	ora zPLAYER_TWO_REDRAW
+	beq b_mdv_EndPlayerMovement
+	
+	jsr Pmg_Draw_Players ;  This will zero the Redraw flags and copy Players' NEW_Y to Y
+
+b_mdv_EndPlayerMovement
 
 
 ; ======== Do SOMETHING ELSE MAGICAL ========
