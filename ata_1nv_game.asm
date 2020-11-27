@@ -398,9 +398,9 @@ GameSetupTitle
 	sta zPLAYER_TWO_ON ; (0) not playing. (FF)=Title/Idle  (1) playing.
 	lda #PLAYER_PLAY_Y
 	sta zPLAYER_TWO_Y
-	sta zPLAYER_TWO_NEW_Y	
+	sta zPLAYER_TWO_NEW_Y
 	inc zPLAYER_TWO_REDRAW
-	
+
 
 	; ===== Start the Title running on the next frame =====
 
@@ -461,13 +461,10 @@ b_gt_ExitTitleAnimation
 ; Player management for Title screen.   Button transitions to selecting for game play.
 
 ; For testing purposes do this...
-; If Player is idle, and button pressed, 
+; If Player is not moving, and button pressed, 
 ; then toggle playing to idle, or idle to playing. 
 ; If current position does not equal current state, then move the Y position.
 ; The VBI sill do the actual redraw.
-
-	lda STRIG0 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
-	bne b_gt_TryPlayer2
 
 	; if player is Idle (On=$FF and Y=220), then switch to playing.
 	; if player is Playing (On=$1 and Y=212), then switch to idle.
@@ -484,30 +481,31 @@ b_gt_ExitTitleAnimation
 	bne b_gt_TryPlayer2
 
 b_gt_ToggleOneToIdle
-; Player 1 is playing... and in position.   Switch it to idle.
+; Player 1 is playing... and in position.   Switch it to idle if the button is pressed.
+	lda STRIG0 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
+	bne b_gt_TryPlayer2
+
 	lda #$FF                   ; (FF)=Title/Idle  (1) playing.
 	sta zPLAYER_ONE_ON
-	bmi b_gt_TryPlayer2        ; Done.  Do the same for Player 2
+	bmi b_gt_TryPlayer2        ; Done.  Evaluate Player 2
 
  ; Player 1 is idle.  ($FF  is idle)
 b_gt_TryPlayer1Idle       
 	lda zPLAYER_ONE_Y          ; is it in idle position?
 	cmp #PLAYER_IDLE_Y
-	beq b_gt_ToggleOneToPlay
-	; Nope.  must still be moving.
-	inc zPLAYER_ONE_NEW_Y      ; Tell VBI to move up one scan line.
+	beq b_gt_ToggleOneToPlay   ; Yes.  Check trigger to move player.
+	inc zPLAYER_ONE_NEW_Y      ; Tell VBI to move down scan line.
 	bne b_gt_TryPlayer2
+
 ; Player 1 is idle... and in position.   Switch it to playing.
 b_gt_ToggleOneToPlay
+	lda STRIG0 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
+	bne b_gt_TryPlayer2
 	lda #$1                    ; (FF)=Title/Idle  (1) playing.
 	sta zPLAYER_ONE_ON
 
 
 b_gt_TryPlayer2
-;	lda STRIG1 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
-	lda STRIG0 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
-	bne b_gt_TitlePlayersDone
-
 	; if player is Idle (On=$FF and Y=220), then switch to playing.
 	; if player is Playing (On=$1 and Y=212), then switch to idle.
 	; The VBI will move the player.
@@ -522,28 +520,37 @@ b_gt_TryPlayer2
 	dec zPLAYER_TWO_NEW_Y      ; Tell VBI to move up one scan line.
 	bne b_gt_TitlePlayersDone
 
-b_gt_ToggleTwoToIdle	
+b_gt_ToggleTwoToIdle
+;	lda STRIG1 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
+	lda STRIG0 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
+	bne b_gt_TitlePlayersDone
+
 ; Player 2 is playing... and in position.   Switch it to idle.
 	lda #$FF                   ; (FF)=Title/Idle  (1) playing.
 	sta zPLAYER_TWO_ON
 	bmi b_gt_TitlePlayersDone  ; Done.  Player section is over
 
  ; Player 2 is idle.  ($FF  is idle)
-b_gt_TryPlayer2Idle       
+b_gt_TryPlayer2Idle
 	lda zPLAYER_TWO_Y          ; is it in idle position?
 	cmp #PLAYER_IDLE_Y
 	beq b_gt_ToggleTwoToPlay
 	; Nope.  must still be moving.
-	inc zPLAYER_TWO_NEW_Y      ; Tell VBI to move up one scan line.
+	inc zPLAYER_TWO_NEW_Y      ; Tell VBI to move down one scan line.
 	bne b_gt_TitlePlayersDone
 ; Player 2 is idle... and in position.   Switch it to playing.
 b_gt_ToggleTwoToPlay
+;	lda STRIG1 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
+	lda STRIG0 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
+	bne b_gt_TitlePlayersDone
+
 	lda #$1                    ; (FF)=Title/Idle  (1) playing.
 	sta zPLAYER_TWO_ON
 
 
 
 b_gt_TitlePlayersDone   ; Demo X movement for testing limits.
+
 
 	inc zPLAYER_ONE_X
 	lda zPLAYER_ONE_X
