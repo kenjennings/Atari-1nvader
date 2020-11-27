@@ -113,7 +113,7 @@ The font was reworked to change the shape of the bumpers, and to make the ground
 
 **27 Nov 2020 -- Revised Land And Guns**
 
-[![V07 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/07-NewLandAndGuns.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V07 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/07-WIP-NewLandAndGuns.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 After several experiments with the land row where the guns reside I decided a version of small triangular mountains imitating the larger ones scrolling above looked the best.  The mountains are the same shapes drawn in two different shades of brown to provide variety.
 
