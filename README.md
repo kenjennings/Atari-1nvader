@@ -111,8 +111,18 @@ The font was reworked to change the shape of the bumpers, and to make the ground
 
 ---
 
+**27 Nov 2020 -- Revised Land And Guns**
+
+[![V07 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/07-NewLandAndGuns.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+After several experiments with the land row where the guns reside I decided a version of small triangular mountains imitating the larger ones scrolling above looked the best.  The mountains are the same shapes drawn in two different shades of brown to provide variety.
+
+A little input was added for demonstration purposes.  The players' guns start in alternating positions - on the land line for the active guns, or the statistics line for the idle guns.  When the uses presses joystick 1 button the players move to the opposite position.  I meant for them to move automatically to slide to the alternate active V idle positions, but at the moment a stupid programming trick has them traveling up or down to their final destination only as long as the button remains pressed.
+
+---
+
 **DD MMM 2020 -- TO-DO**
 
-[![V07 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/07-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V08 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/08-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
