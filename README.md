@@ -117,7 +117,7 @@ The font was reworked to change the shape of the bumpers, and to make the ground
 
 After several experiments with the land row where the guns reside I decided a version of small triangular mountains imitating the larger ones scrolling above looked the best.  The mountains are the same shapes drawn in two different shades of brown to provide variety.
 
-A little input was added for demonstration purposes.  The players' guns start in alternating positions - on the land line for the active guns, or the statistics line for the idle guns.  When the user presses joystick 1 button the Players move up or down to the opposite position.  I meant for them to move automatically to slide to the alternate active V idle positions, but at the moment a stupid programming trick has them traveling up or down to their final destination only as long as the button remains pressed.
+A little input was added for demonstration purposes.  The players' guns start in alternating positions - on the land line for the active guns, or the statistics line for the idle guns.  When the user presses joystick 1 button the Players move up or down to the opposite position.
 
 ---
 
