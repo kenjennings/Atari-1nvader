@@ -217,6 +217,40 @@ b_gi_LoopFillZero
 	lda #%01010101 ; PM_SIZE_DOUBLE all missiles ; Title screen uses double Width Missiles.
 	sta SIZEM
 
+; Scrolling Terrain Values ==================================================
+; This is a cconstant component on the Title and Game screens.
+; The motion must be continuous, uninterrupted.  So, this is 
+; iniatialized only once at startup, and there is never a time 
+; where this is considered idle, or must be reset to start 
+; at the beginning.
+
+	lda #<GFX_MOUNTAINS1
+	sta DL_LMS_SCROLL_LAND1
+
+	lda #<GFX_MOUNTAINS2
+	sta DL_LMS_SCROLL_LAND2
+
+	lda #<GFX_MOUNTAINS3
+	sta DL_LMS_SCROLL_LAND3
+
+	lda #<GFX_MOUNTAINS4
+	sta DL_LMS_SCROLL_LAND4
+
+	lda #0
+	sta zLandColor
+	sta zLandHS
+
+	lda #LAND_MAX_PAUSE
+	sta zLandTimer
+
+	lda #LAND_STEP_TIMER
+	sta zLandScrollTimer
+
+	lda #0
+	sta zLandPhase
+	sta zLandMotion
+
+
 	; Changing the Display List is potentially tricky.  If the update is
 	; interrupted by the Vertical blank, then it could mess up the display
 	; list address and crash the Atari.
@@ -261,10 +295,10 @@ GameSetupTitle
 
 	; ===== Basics =====
 
-	lda #$88
-	sta COLPF0
-	lda #$84
-	sta COLPF2
+;	lda #$88
+;	sta COLPF0
+;	lda #$84
+;	sta COLPF2
 
 
 	; ===== The Big Logo =====
@@ -278,7 +312,7 @@ GameSetupTitle
 	lda #TITLE_SPEED_PM
 	sta zAnimateTitlePM
 
-	lda #COLOR_ORANGE1           ; Yes.  Reset to first color.
+	lda #COLOR_ORANGE1           ; Reset to first color.
 	sta ZTitleLogoBaseColor      ; Resave the new update
 	sta ZTitleLogoColor          ; Save it for the DLI use
 	sta COLOR3                   ; Make sure it starts in the OS shadow and 
@@ -357,48 +391,35 @@ GameSetupTitle
 
 
 ; Scrolling Terrain Values ==================================================
-
-	lda #<GFX_MOUNTAINS1
-	sta DL_LMS_SCROLL_LAND1
-
-	lda #<GFX_MOUNTAINS2
-	sta DL_LMS_SCROLL_LAND2
-
-	lda #<GFX_MOUNTAINS3
-	sta DL_LMS_SCROLL_LAND3
-
-	lda #<GFX_MOUNTAINS4
-	sta DL_LMS_SCROLL_LAND4
-
-	lda #0
-	sta zLandColor
-	sta zLandHS
-
-	lda #LAND_MAX_PAUSE
-	sta zLandTimer
-
-	lda #LAND_STEP_TIMER
-	sta zLandScrollTimer
-
-	lda #0
-	sta zLandPhase
-	sta zLandMotion
+; Note the scrolling land is setup once in the Init section and 
+; maintained forever by the VBI.
 
 
-; ===== Setup Player postions. (at the moment, testing configuration) =====
+; ===== Setup Player postions.  Etc. =====
 
 	lda #$FF
 	sta zPLAYER_ONE_ON ; (0) not playing. (FF)=Title/Idle  (1) playing.
 	lda #PLAYER_IDLE_Y
 	sta zPLAYER_ONE_Y
 	sta zPLAYER_ONE_NEW_Y
+	lda #$04
+	sta zPLAYER_ONE_COLOR
+	lda #[PLAYER_MIN_X+40]
+	sta zPLAYER_ONE_X
 	inc zPLAYER_ONE_REDRAW
 
-	lda #$1
+
+;	lda #$1
+	lda #$FF
 	sta zPLAYER_TWO_ON ; (0) not playing. (FF)=Title/Idle  (1) playing.
-	lda #PLAYER_PLAY_Y
+;	lda #PLAYER_PLAY_Y
+	lda #PLAYER_IDLE_Y
 	sta zPLAYER_TWO_Y
 	sta zPLAYER_TWO_NEW_Y
+	lda #$04
+	sta zPLAYER_TWO_COLOR
+	lda #[PLAYER_MAX_X-40]
+	sta zPLAYER_TWO_X
 	inc zPLAYER_TWO_REDRAW
 
 
@@ -436,15 +457,9 @@ GameSetupTitle
 
 GameTitle
 
-; 1) Mothership if moving.
-
-; 2) 3, 2, 1 if in progress.
-
-
-
-; 3) Animate Missiles per current frame stage.   
-;    VBI reset the missile horizontal positions.
-;    The DLI applied them.
+; Animate Missiles per current frame stage.   
+; VBI reset the missile horizontal positions.
+; The DLI applied them.
 
 ; Load animation frames into Player/Missile memory
 
@@ -457,6 +472,141 @@ b_gt_TitleAnimation
 
 b_gt_ExitTitleAnimation
 
+
+; Player management for Title screen.   Button transitions to selecting for game play.
+
+	jsr PlayerTitleInput
+	bne  b_gt_EndTitleScreen  ; 0 = No input started.
+	; 1 = Input started.  Go to countdown
+
+	; ===== Start the Countdown running on the next frame =====
+
+	lda #EVENT_TITLE
+	sta zCurrentEvent
+	lda #0 
+	sta zEventStage
+
+b_gt_EndTitleScreen
+
+	rts
+
+
+; ==========================================================================
+; GAME COUNTDOWN
+; ==========================================================================
+; A player has pressed their button.  Final Commitment to begin playing 
+; the game.
+;
+; 0) Continue Title animations for logo, scrolling text, and scrolling land.
+; 1) A Player (one or two) is moving up.  
+;    The other player is color cycling until button pressed.
+; 2) Run the 3, 2, 1, countdown...
+; 3) AFTER countdown,AND Player selection animation complete then 
+;    move the mothership up the screen. 
+; 4) When the mothership leaves the screen, then 
+; --------------------------------------------------------------------------
+
+GameCountdown 
+; Animate Missiles per current frame stage.   
+; VBI reset the missile horizontal positions.
+; The DLI applied them.
+
+; Load animation frames into Player/Missile memory
+
+b_gc_TitleAnimation
+
+	lda zAnimateTitlePM;
+	bne b_gc_ExitTitleAnimation
+
+	jsr Pmg_Animate_Title_Logo ; This will also reset the timer for animation.
+b_gc_ExitTitleAnimation
+
+
+
+
+
+EndCountdown
+
+	rts
+
+
+
+
+; ==========================================================================
+; GAME SETUP MAIN
+; ==========================================================================
+;
+; --------------------------------------------------------------------------
+
+GameSetupMain
+
+	rts
+
+
+
+; ==========================================================================
+; GAME MAIN
+; ==========================================================================
+;
+; --------------------------------------------------------------------------
+
+GameMain
+
+	rts
+
+
+
+; ==========================================================================
+; GAME LAST ROW
+; ==========================================================================
+;
+; --------------------------------------------------------------------------
+
+GameLastRow
+
+	rts
+
+
+
+; ==========================================================================
+; GAME SETUP OVER
+; ==========================================================================
+;
+; --------------------------------------------------------------------------
+
+GameSetupOver
+
+	rts
+
+
+
+; ==========================================================================
+; GAME OVER
+; ==========================================================================
+;
+; --------------------------------------------------------------------------
+
+GameOver
+
+	rts
+
+
+; ==========================================================================
+; SUPPORT - PLAYERS TITLE INPUT
+; ==========================================================================
+; Runs during Title screen and Countdown
+; 
+; If a Player is intending to play and is not yet in the starting 
+; position, then process movement, and check for input from the 
+; other player.
+;
+; Return Z = 0 if players are not ready to start game.
+; This holds the Countdown and prevents progrsssing to the 
+; Gmme screen and game processing logic until the players are 
+; in positions.
+; --------------------------------------------------------------------------
+
+PlayerTitleInput
 
 ; Player management for Title screen.   Button transitions to selecting for game play.
 
@@ -548,248 +698,6 @@ b_gt_ToggleTwoToPlay
 	sta zPLAYER_TWO_ON
 
 
-
-b_gt_TitlePlayersDone   ; Demo X movement for testing limits.
-
-
-	inc zPLAYER_ONE_X
-	lda zPLAYER_ONE_X
-	cmp #197
-	bne b_gt_SkipPlayer1Reset
-	lda #52
-	sta zPLAYER_ONE_X
-
-b_gt_SkipPlayer1Reset
-	dec zPLAYER_TWO_X
-	lda zPLAYER_TWO_X
-	cmp #51
-	bne b_gt_SkipPlayer2Reset
-	lda #196
-	sta zPLAYER_TWO_X
-
-b_gt_SkipPlayer2Reset
-;	jsr Pmg_Draw_Players ;
-
-
-
-
-; =============== Stage * ; Always run the frog and the label flashing. . .
-
-;	jsr WobbleDeWobble         ; Frog drawing spirograph path on the title.
-;	jsr FlashTitleLabels       ; and cycle the label flashing.
-
-;	lda EventStage
-;	bne bETS_InputStage        ; stage is >0, so title treatment is over.
-
-; =============== Stage 0      ; Animating Title only while sound runs
-
-;	lda TITLE_UNDERLINE_FADE+6
-;	sta COLPF0_TABLE+9
-
-;	lda SOUND_CONTROL3         ; Is channel 3 busy?
-;	beq bETS_EndTitleAnimation ; No. Stop the title animation.
-
-;bETS_RandomizeLogo
-;	lda #$FF                   ; Channel 3 is playing sound, so animate.
-;	jsr TitleRender            ; and -1  means draw the random masked title.
-;	jmp EndTitleScreen         ; Do not process input during the randomize.
-
-bETS_EndTitleAnimation
-;	lda #1                     ; Draw the title as solid and stop animation.
-;	sta EventStage             ; Stage 1 is always skip the title drawing.
-;	sta EnablePressAButton     ; Turn On the prompt to press button (for later below).
-;	jsr TitleRender            ; and 1 also means draw the solid title.
-
-; =============== Stage-ish Not 0-ish, handling button input when Option/Select hacks are not in motion. 
-
-bETS_InputStage 
-
-;CheckTitleInput
-;	lda EnablePressAButton     ; Is button input on?
-;	beq CheckFunctionButton    ; No.  A later stage may still be running.
-
-;	jsr RunPromptForButton     ; Blink Prompt to press Joystick button and check input.
-;	beq CheckFunctionButton    ; No joystick button.  Try a function key.
-
-;ProcessTitleScreenInput        ; Button pressed. Prepare for the screen transition to the game.
-;	jsr SetupTransitionToGame
-
-	; This was part of the Start event, but after the change to keep the 
-	; scores displayed on the title screen it would end up erasing the 
-	; last game score as soon as the title transition animation completed.
-	; Therefore resetting the score is deferred until leaving the Title.
-;	jsr ClearGameScores     ; Zero the score.  And high score if not set.
-;	jsr PrintFrogsAndLives  ; Update the screen memory.
-
-;	jmp EndTitleScreen
-
-
-; For the Option/Select handling it is easy to maintain safe input (no 
-; flaky on/offs) because once a key is read it takes a while to scroll 
-; the text in, giving the user time to release the key.
-; 
-; OPTION = Change number of frogs.
-; SELECT = Change game level/difficulty.
-;
-; If the Current selection for frogs is greater than the last game's (or 
-; the default) OR the current level is less than the last game's starting 
-; difficulty, then the high score is cleared on game start.
-
-CheckFunctionButton
-;	lda EventStage
-;	cmp #1                   ; 1) Just doing input checking per above, and testing Option/Select.
-;	bne bETS_Stage2          ; Not Stage 1.  Go to Stage 2.  Skip checking console keys.
-
-;	jsr CheckForConsoleInput ; If Button pressed, then sets Stage 2, and EventCounter for TitleShiftDown.
-;	jmp EndTitleScreen       ; Regardless of the console input, this is the end of stage 1.
-
-; =============== Stage 2    ; Shifting Left buffer pixels down.
-
-bETS_Stage2
-;	cmp #2                   ; 2) slide left buffer down.
-;	bne bETS_Stage3          ; Not Stage 2.  Try Stage 3.
-
-;CheckTitleSlideDown 
-;	lda AnimateFrames
-;	bne EndTitleScreen       ; Animation frames not 0.  Wait till next time.
-
-;	jsr TitleShiftDown       ; Shift Pixels down
-
-;	ldx EventCounter         ; Get the counter
-;	jsr FadeTitleUnderlines  ; Fade (or not) the green underlines to yellow.
-
-;	dec EventCounter         ; Decrement number of times this is done.
-;	bmi bETS_Stage2_ToStage3 ; When it is done, go to stage 3. 
-
-;	lda #TITLE_DOWN_SPEED    ; The down shift is not done, so 
-;	jsr ResetTimers          ; Reset animation/input frame counter.      
-;	jmp EndTitleScreen
-
-bETS_Stage2_ToStage3         ; Setup for next Stage
-;	lda #3
-;	sta EventStage
-
-;	jsr RandomizeTitleColors ; Random color gradient for the Text pixels.
-
-;	jsr PlayLefts            ;  Play Left movement sound for title graphics on OPTION and SELECT
-;	inc VBIEnableScrollTitle ; Turn on Title fine scrolling.
-;	bne EndTitleScreen
-
-; =============== Stage 3    ; Scrolling in pixels from Right to Left. 
-
-bETS_Stage3
-;	cmp #3
-;	bne bETS_Stage4
-
-;CheckTitleScroll
-;	lda VBIEnableScrollTitle   ; Is VBI busy scrolling option text?
-;	bne EndTitleScreen         ; Yes.  Nothing more to do here.
-
-	; Readjust display to show the left buffer visible 
-;	; and reset scrolling origin.
-;	jsr TitleCopyRightToLeftGraphics ; Copy right buffer to left buffer.
-;	jsr TitleSetOrigin               ; Reset LMS to point to left buffer
-
-;bETS_Stage3_ToStage4         ; Setup for next Stage
-;	lda #4
-;	sta EventStage
-;	bne EndTitleScreen
-
-; =============== Stage 4 ; Waiting on RestoreTitleTimer to return to Stage 0. 
-
-bETS_Stage4                  ; Stage 4, allow console input.
-;	jsr CheckForConsoleInput ; If Button pressed, then sets Stage 2, and EventCounter for TitleShiftDown.
-;	beq bETS_CheckAutoReturn ; No console key pressed.  So, check if return is automatic.
-;	lda #0                   ; Console key input returns us to Stage 2, so zero the auto timer.
-;	sta RestoreTitleTimer
-;	beq EndTitleScreen
-
-bETS_CheckAutoReturn
-;	lda RestoreTitleTimer    ; Wait for Input timeout to expire.
-;	bne EndTitleScreen       ; No timeout yet.
-
-	; Expired auto timer... Return to Stage 0.
-;	jsr ToPlayFXScrollOrNot  ; Start slide sound playing if not playing now.
-;	lda TITLE_UNDERLINE_FADE,x ; Return underlines to green (SELECT/OPTION faded them out.)
-;	sta COLPF0_TABLE+8
-;	lda #0
-;	sta EventStage
-
-;	jsr ResetTitleColors     ; Original title colors.
-
-
-EndTitleScreen
-
-	rts
-
-
-; ==========================================================================
-; GAME COUNTDOWN
-; ==========================================================================
-;
-; --------------------------------------------------------------------------
-
-GameCountdown 
-
-	rts
-
-
-
-; ==========================================================================
-; GAME SETUP MAIN
-; ==========================================================================
-;
-; --------------------------------------------------------------------------
-
-GameSetupMain
-
-	rts
-
-
-
-; ==========================================================================
-; GAME MAIN
-; ==========================================================================
-;
-; --------------------------------------------------------------------------
-
-GameMain
-
-	rts
-
-
-
-; ==========================================================================
-; GAME LAST ROW
-; ==========================================================================
-;
-; --------------------------------------------------------------------------
-
-GameLastRow
-
-	rts
-
-
-
-; ==========================================================================
-; GAME SETUP OVER
-; ==========================================================================
-;
-; --------------------------------------------------------------------------
-
-GameSetupOver
-
-	rts
-
-
-
-; ==========================================================================
-; GAME OVER
-; ==========================================================================
-;
-; --------------------------------------------------------------------------
-
-GameOver
 
 	rts
 

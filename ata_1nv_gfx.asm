@@ -177,12 +177,12 @@ DISPLAY_LIST_TITLE                                          ; System VBI sets co
 	mDL_BLANK DL_BLANK_8
 	mDL_BLANK DL_BLANK_4
 
-	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00 (020 - 027) (2) P1 score, High score, P2 score
-	mDL_BLANK DL_BLANK_8                                    ; 01 (028 - 035) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; 03 (036 - 043) Blank 8   3, 2, 1, GO P/M animation
-	mDL_BLANK DL_BLANK_8                                    ; 04 (044 - 051) Blank 8   3, 2, 1, GO P/M animation
+	mDL_LMS   DL_TEXT_2|DL_DLI,GFX_SCORE_LINE               ; 00 (020 - 027) (DLI 0) Narrow screen DMA (2) P1 score, High score, P2 score
+	mDL_BLANK DL_BLANK_4                                    ; 01 (028 - 031) Blank 4
+	mDL_LMS   DL_TEXT_7,GFX_COUNTDOWN_LINE                  ; 02 (032 - 047) Mode 7 text for 3, 2, 1, GO! Countdown
+	mDL_BLANK DL_BLANK_4                                    ; 04 (048 - 051) Blank 4
 
-	mDL_BLANK DL_BLANK_7|DL_DLI                             ;    (052 - 058) (DLI 1) Blank 7   Narrow screen DMA, start GTIA $4 in PRIOR 
+	mDL_BLANK DL_BLANK_7|DL_DLI                             ;    (052 - 058) (DLI 1) Blank 7   start GTIA $4 in PRIOR 
 	mDL_BLANK DL_BLANK_1                                    ;    (059 - 059) Blank 1 Allow time for prior DLI to act. 
 	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (060 - 062) (DLI 2) Blank 3   (DLI vscroll hack next lines) 
 
@@ -212,6 +212,7 @@ DL_LMS_SCROLL_DOCS = [ * + 1 ]
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (140 - 147) (6) Fine scrolling docs
 	mDL_BLANK DL_BLANK_8                                    ; 16 (148 - 155) Blank 8
 	mDL_BLANK DL_BLANK_8                                    ; 17 (156 - 163) Blank 8
+
 	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 18 (164 - 171) (DLI 5) Blank 8
 
 BOTTOM_OF_DISPLAY 
@@ -401,6 +402,16 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over
 ; ==========================================================================
 ; SCREEN MEMORY
 ; --------------------------------------------------------------------------
+
+; 16 bytes (narrow screen width) for Countdown text
+
+GFX_COUNTDOWN_LINE
+	.sb "      "
+GFX_COUNTDOWN  ; The first 4 chars here are for countdown "3..." , , "!GO!"
+	.sb "          " 
+GFX_COUNTDOWN_TEXT  ; 4, 3, 2, 1, 0 (multiply time 4, copy 4.
+	.sb +$C0 "3...2...1...!GO!    "
+
 
 ; 40 bytes
 

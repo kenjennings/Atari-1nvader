@@ -341,17 +341,21 @@ zJIFFY_COUNTER     .byte $00 ; Jiffy clock for countdown seconds for title trans
 zSCROLL_JIFFY      .byte $00 ; Jiffy clock for scrolling directions.
 zSHIP_HITS         .byte $00 ; 
 
-PLAYER_IDLE_Y=220
-PLAYER_PLAY_Y=212
+zSTATS_TEXT_COLOR  .byte $08 ; color/limunance of text on stats line.
+
+PLAYER_IDLE_Y=220 ; Y position for gun idle on stats line
+PLAYER_PLAY_Y=212 ; Y position for gun in play
+PLAYER_MIN_X =52  ; Farthest Left next to bumper
+PLAYER_MAX_X =196 ; Farthest left next to bumper
 
 zPLAYER_ONE_ON     .byte $FF ; (0) not playing. (FF)=Title/Idle  (1) playing.
-zPLAYER_ONE_X      .byte 52 ; Player 1 gun X coord
+zPLAYER_ONE_X      .byte 0 ; Player 1 gun X coord
 zPLAYER_ONE_Y      .byte 0 
 zPLAYER_ONE_NEW_Y  .byte PLAYER_IDLE_Y ; Player 1 Y position (slight animation, but usually fixed position.) 212=game.  220=idle.
 zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction
 zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
 zPLAYER_ONE_SCORE  .byte $00,$00,$00 ; Player 1 score, 6 digit BCD 
-zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color
+zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color when idle
 zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
 zPLAYER_ONE_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
 
@@ -359,14 +363,14 @@ zLASER_ONE_ON      .byte $01 ; whether or not the laser is shooting
 zLASER_ONE_X       .byte $00 ; Laser 1 X coord
 zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
 
-zPLAYER_TWO_ON     .byte $01 ; (0) not playing. (FF)=Title/Idle  (1) playing.
+zPLAYER_TWO_ON     .byte $ff ; (0) not playing. (FF)=Title/Idle  (1) playing.
 zPLAYER_TWO_X      .byte 128 ; Player 2 gun X coord (196 max)
 zPLAYER_TWO_Y      .byte 0 
-zPLAYER_TWO_NEW_Y  .byte PLAYER_PLAY_Y ; Player 2 Y position (slight animation, but usually fixed.)
+zPLAYER_TWO_NEW_Y  .byte PLAYER_IDLE_Y ; Player 2 Y position (slight animation, but usually fixed.)
 zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction
 zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
 zPLAYER_TWO_SCORE  .byte $00,$00,$00 ; Player 2 score, 6 digit BCD 
-zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color
+zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color when idle
 zPLAYER_TWO_BUMP   .byte $00 ; Player 2 collision
 zPLAYER_TWO_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
 

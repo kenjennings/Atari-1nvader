@@ -1556,17 +1556,19 @@ b_dli6_NextLoop
 	sta COLBK                    ; for one scan line
 	
 	lda #$00
-	ldy #$04       ; Set guns to grey on the stats line.
-	
+	ldy zPLAYER_ONE_COLOR       ; Set guns to grey on the stats line.
+
 	sta WSYNC      ; Next scan line set the colors for the stats line of text. 
 	sta COLBK      ; Background/border to black, too.
 	sta COLPF2     ; Text background
+;	ldy zPLAYER_ONE_COLOR
 	sty COLPM0
+	ldy zPLAYER_TWO_COLOR
 	sty COLPM1
-	lda #$0C
+	lda zSTATS_TEXT_COLOR
 	sta COLPF1     ; Text luminance
 
-	
+
 	pla
 	tay
 
