@@ -136,7 +136,7 @@ zLandColor       .byte 0   ; index for repeat DLIs on the scrolling land
 
 zPMG_IMAGE    .word 0 ; points to image data
 
-zPMG_HARDWARE .word 0 ; points to the Player/Missile memeory map.
+zPMG_HARDWARE .word 0 ; points to the Player/Missile memory map.
 
 SHPOSP0 .byte 0 ; Fake Shadow register for HPOSP0
 SHPOSP1 .byte 0 ; Fake Shadow register for HPOSP1
@@ -336,10 +336,12 @@ zSHOW_SCORE_FLAG   .byte $00 ; Flag to update score on screen.
 zVIC_COLLISION     .byte $00 ; VIC II Sprite Collision Flag. (lda VIC_BASE+30)  (Atari has several registers)
 zCHAR_COLOR        .byte $00 ; Character Color. (probably no use for Atari)
 zSCROLL_COUNTER    .byte $00 ; Documentation scroll counter. (probably no use for Atari)
-zCOUNTDOWN_SECS    .byte $00 ; Countdown seconds for game transition (51 to 48 as the 3, 2, 1)
 zJIFFY_COUNTER     .byte $00 ; Jiffy clock for countdown seconds for title transition.
 zSCROLL_JIFFY      .byte $00 ; Jiffy clock for scrolling directions.
 zSHIP_HITS         .byte $00 ; 
+
+zCOUNTDOWN_FLAG    .byte $00 ; Counts phase, 4, 3, 2, 1, 0.  When it returns to 0, then trigger next phase.
+zCOUNTDOWN_SECS    .byte $00 ; Countdown jiffies per tick tock event. (the 3, 2, 1, GO)
 
 zSTATS_TEXT_COLOR  .byte $08 ; color/limunance of text on stats line.
 

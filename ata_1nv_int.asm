@@ -1240,6 +1240,25 @@ ExitMyDeferredVBI
 TITLE_DLI  ; Placeholder for VBI to restore staring address for DLI chain.
 
 ;==============================================================================
+; TITLE_DLI_0                                             
+;==============================================================================
+; DLI to set Narrow screen DMA.  Needed to move this to an earlier 
+; position on screen to accommodate the Countdown text.
+; -----------------------------------------------------------------------------
+
+TITLE_DLI_1 
+
+	pha
+
+	; Set all the ANTIC screen controls and DMA options.
+	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NARROW]
+	sta WSYNC            ; sync to end of scan line
+	sta DMACTL
+
+	mChainDLI TITLE_DLI_0,TITLE_DLI_1
+
+
+;==============================================================================
 ; TITLE_DLI_1                                             
 ;==============================================================================
 ; DLI to set Narrow screen DMA, and turn on GTIA mode 16 grey scale mode.
