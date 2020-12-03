@@ -409,8 +409,6 @@ GFX_COUNTDOWN_LINE
 	.sb "      "
 GFX_COUNTDOWN  ; The first 4 chars here are for countdown "3..." , , "!GO!"
 	.sb "          " 
-GFX_COUNTDOWN_TEXT  ; 4, 3, 2, 1, 0 (multiply time 4, copy 4.
-	.sb +$C0 "3...2...1...!GO!    "
 
 
 ; 40 bytes

@@ -485,6 +485,11 @@ b_gt_ExitTitleAnimation
 
 	; ===== Start the Countdown running on the next frame =====
 
+	lda #4              ; Starting at 4 insures this is erased.
+	sta zCOUNTDOWN_FLAG 
+	lda #1
+	sta zCOUNTDOWN_SECS ; jiffy ticks, not secs.
+
 	lda #EVENT_TITLE
 	sta zCurrentEvent
 	lda #0 

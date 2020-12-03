@@ -522,4 +522,52 @@ Gfx_Remove_Star
 	inc zTEMP_ADD_STAR             ; Flag that this star is gone.  Add new star at next opportunity.
 
 	rts
-	
+
+
+; ==========================================================================
+; COUNTDOWN
+; ==========================================================================
+; Given the value of the flag, copy the 4 bytes from the 
+; array to the screen.
+; Update the clock ticks for the text.
+; --------------------------------------------------------------------------
+GFX_COUNTDOWN_TEXT  ; 4, 3, 2, 1, 0 (multiply time 4, copy 4.
+	.sb +$C0 "!OG!...1...2...3    "
+
+GFX_COUNTDOWN_TICK ; Jiffy ticks to wait for this text
+	.byte 60,60,60,60,1
+
+
+Gfx_Countdown
+
+	ldy zCOUNTDOWN_FLAG ; Get current index to text for countdown.
+	bmi b_gcd_DoReset   ; Reset if negative.
+	cpy #4              ; Also, if it is already 4, I want to make sure clock is right
+	beq b_gcd_DoReset   ; (this is at the blank text, so only 1 tick for the clock.)
+	bpl b_gcd_SkipReset ; Every other value.
+
+b_gcd_DoReset
+	ldy #4              ; Negative means reset to original
+	sty zCOUNTDOWN_FLAG
+
+b_gcd_SkipReset
+	lda GFX_COUNTDOWN_TICK,y
+	sta zCOUNTDOWN_SECS 
+
+	tya                 ; A = index
+	asl                 ; index * 2
+	asl                 ; index * 4
+	tay	                ; Y = index * 4 for copying.
+	ldx #3              ; index into Gfx memeory.
+
+b_gcd_CopyText
+	lda GFX_COUNTDOWN_TEXT,y
+	sta GFX_COUNTDOWN,x
+	iny
+	dex
+	bne b_gcd_CopyText
+
+	dec zCOUNTDOWN_FLAG ; The value to use for display next time.
+
+	rts
+

@@ -340,7 +340,7 @@ zJIFFY_COUNTER     .byte $00 ; Jiffy clock for countdown seconds for title trans
 zSCROLL_JIFFY      .byte $00 ; Jiffy clock for scrolling directions.
 zSHIP_HITS         .byte $00 ; 
 
-zCOUNTDOWN_FLAG    .byte $00 ; Counts phase, 4, 3, 2, 1, 0.  When it returns to 0, then trigger next phase.
+zCOUNTDOWN_FLAG    .byte $00 ; Counts phase, 4, 3, 2, 1, 0.  When it returns to 0, then trigger next phase (game)
 zCOUNTDOWN_SECS    .byte $00 ; Countdown jiffies per tick tock event. (the 3, 2, 1, GO)
 
 zSTATS_TEXT_COLOR  .byte $08 ; color/limunance of text on stats line.
