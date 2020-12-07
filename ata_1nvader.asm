@@ -483,61 +483,13 @@ gSTAR_CHAR_MEM2 = $0530 ; sf2 ; +8 to fill botrow
 
 
 	icl "ata_1nv_int.asm"       ; Code for I/O, Isplay List Interrupts, and Vertical Blank Interrupt.
-	
+
 	icl "ata_1nv_game.asm"      ; Code for game logic.
 
- 	icl "ata_1nv_audio.asm"     ; The world's lamest sound sequencer.
-	
+	icl "ata_1nv_audio.asm"     ; The world's lamest sound sequencer.
+
 ; --------------------------------------------------------------------------
 
-
-
-
-; ==========================================================================
-;-- setup ------------------------------
-
-;;	lda #147
-;;	jsr $ffd2  ; clear screen
-
-;;	lda #0
-;;	sta $d020  ; border colour
-;;	lda #0
-;;	sta $d021  ; screen colour
-
-;;	lda #1
-;;	sta $0286  ; character colour
-
-;;	lda #1     ; colour the screen
-;;;	ldx #0     ; col mem white
-;;	ldx #199   ; counting reverse 199 to 0
-colscr   
-;;	sta $d800,x
-;;	sta $d8c8,x
-;;	sta $d990,x
-;;	sta $da58,x
-;;	sta $db20,x
-;;;	inx
-;;;	cpx #200
-;;;	bne colscr
-;;	dex
-;;	bpl colscr
-
-;;	jsr charsetup
-;;	jsr sprsetup
-
-;;	sei        ; turn on interupts
-
-;;	lda #200   ; sprite pointers
-;;	sta $07f8  ; ms
-;;	lda #201
-;;	sta $07f9  ; p1
-;;	sta $07fa  ; p2
-;;	lda #202
-;;	sta $07fb  ; l1
-;;	sta $07fc  ; l2
-
-;;	; jsr drawrows
-;;	jsr drawmounts
 
 ; ==========================================================================
 ;-- title ------------------------------

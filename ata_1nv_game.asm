@@ -457,11 +457,11 @@ GameSetupTitle
 
 GameTitle
 
+; ===== Load animation frames into Player/Missile memory
+
 ; Animate Missiles per current frame stage.   
 ; VBI reset the missile horizontal positions.
-; The DLI applied them.
-
-; Load animation frames into Player/Missile memory
+; The DLI applies them.
 
 b_gt_TitleAnimation
 
@@ -472,15 +472,19 @@ b_gt_TitleAnimation
 
 b_gt_ExitTitleAnimation
 
+; Note that the VBI handles everything about the fine scrolling lines for the 
+; author credits, the dcoumentation, and the scroling land.
+
 
 ; ===== Player management for Title screen.   
 
 	jsr PlayerSelectionInput ; Button transitions to selecting for game play.
-	; -- if either player is not yet in playing position.
-	; ++ if both players are ready to play. 
+	; -- if either player is not yet in playing position. (A button was pressed.)
+	; ++ if both players are ready to play.  (Not going to happen yet.)
 	; 0 if both players are idle.
 	beq b_gt_EndTitleScreen  ; 0 = No input.
-	; Non-zero is a player hit their button.  Go start the countdown to play.
+
+	; Non-zero means a player hit their button.  Start the countdown to play.
 
 
 	; ===== Start the Countdown running on the next frame =====
@@ -489,12 +493,12 @@ b_gt_ExitTitleAnimation
 	sta zCOUNTDOWN_FLAG 
 	lda #1
 	sta zCOUNTDOWN_SECS ; jiffy ticks, not secs.
+	jsr Gfx_Countdown   ; Update the countdown text.  (Blank)
 
 	lda #EVENT_TITLE
 	sta zCurrentEvent
 	lda #0 
 	sta zEventStage
-
 
 b_gt_EndTitleScreen
 
@@ -517,11 +521,12 @@ b_gt_EndTitleScreen
 ; --------------------------------------------------------------------------
 
 GameCountdown 
+
+; ===== Load animation frames into Player/Missile memory
+
 ; Animate Missiles per current frame stage.   
 ; VBI reset the missile horizontal positions.
-; The DLI applied them.
-
-; Load animation frames into Player/Missile memory
+; The DLI applies them.
 
 b_gc_TitleAnimation
 
@@ -529,15 +534,94 @@ b_gc_TitleAnimation
 	bne b_gc_ExitTitleAnimation
 
 	jsr Pmg_Animate_Title_Logo ; This will also reset the timer for animation.
+
 b_gc_ExitTitleAnimation
 
 
+; ===== Run the countdown timer =====
+
+b_gc_CountDown
+
+	lda zCOUNTDOWN_FLAG        ; -1 means countdown is done.
+	bpl b_gc_ContinueCountdown ; otherwise run countdown
+
+	; If countdown is negative we're done with "GO!", but must 
+	; wait for players to be in position (-1 while moving).
+	lda zPLAYER_ONE_ON
+	bmi b_gc_EndCountdown      ; Player moving.  Nothing to do.
+	lda zPLAYER_TWO_ON
+	bmi b_gc_EndCountdown      ; Player moving.  Nothing to do.
+
+	; At this point we know the countdown is done (-1) and 
+	; players are NOT moving.
+
+	lda zBigMothershipPhase    ; 1 is mothership in motion.
+	bne b_gc_EndCountdown      ; So, end here.
+
+	inc zBigMothershipPhase    ; Start the mothership moving
+	bne b_gc_EndCountdown      ; And we're done.
+
+b_gc_ContinueCountdown
+	lda zCOUNTDOWN_SECS        ; This should not be -1 already on entry.
+	bmi b_gc_EndCountdown      ; So, exit.
+
+	dec zCOUNTDOWN_SECS        ; Countdown jiffies.
+	bpl b_gc_EndCountdown      ; Still positive, then done for now.
+
+	lda zCOUNTDOWN_FLAG        ; Which phase are we in?  0 == !GO!
+	bmi b_gc_EndCountdown      ; Don't subtract if we're already at end.
+
+	dec zCOUNTDOWN_FLAG
+	bmi b_gc_EndCountdown      ; Don't redraw is this is the end. 
+
+	jsr Gfx_Countdown          ; Update the countdown text.
+
+b_gc_EndCountdown
 
 
+; ===== Pause for Player Placement =====
 
-EndCountdown
+b_gc_PlayerCheck
+
+	lda zBigMothershipPhase    ; 1 is mothership in motion.
+	bne b_gc_EndPlayerCheck    ; So, skip this.
+
+	jsr PlayerSelectionInput
+
+b_gc_EndPlayerCheck
+
+
+; ===== Pause for Player Placement =====
+
+b_gc_MoveMothership
+
+	lda zBigMothershipPhase    ; 1 is mothership not motion.
+	beq b_gc_End               ; So, end here.
+
+	lda zBIG_MOTHERSHIP_Y      ; If this is negative
+	bmi b_gc_EndMothership     ; Coundown is over.  Run game.
+
+	dec zBIG_MOTHERSHIP_Y      ; Subtract from Y
+	bpl b_gc_End               ; Not negative, then End.
+
+b_gc_EndMothership             ; Fall through here to run the game.
+
+
+; ===== Start The Game Play =====
+
+b_gc_StartGame
+
+; Stuff Goes here to start the game. . . .
+
+; init flashing stars.
+; Init player motions.
+; Switch states.
+
+
+b_gc_End
 
 	rts
+
 
 
 

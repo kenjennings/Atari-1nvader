@@ -529,9 +529,12 @@ Gfx_Remove_Star
 ; ==========================================================================
 ; Given the value of the flag, copy the 4 bytes from the 
 ; array to the screen.
-; Update the clock ticks for the text.
+; Update the clock ticks for the text pause.
+; Decrement the Flag for the next Big Countdown.
+; Engage the clock tick sound IF this did not run out of countdown.
 ; --------------------------------------------------------------------------
-GFX_COUNTDOWN_TEXT  ; 4, 3, 2, 1, 0 (multiply time 4, copy 4.
+
+GFX_COUNTDOWN_TEXT  ; 4, 3, 2, 1, 0 (multiply times 4, copy 4.
 	.sb +$C0 "!OG!...1...2...3    "
 
 GFX_COUNTDOWN_TICK ; Jiffy ticks to wait for this text
@@ -540,17 +543,14 @@ GFX_COUNTDOWN_TICK ; Jiffy ticks to wait for this text
 
 Gfx_Countdown
 
-	ldy zCOUNTDOWN_FLAG ; Get current index to text for countdown.
-	bmi b_gcd_DoReset   ; Reset if negative.
-	cpy #4              ; Also, if it is already 4, I want to make sure clock is right
-	beq b_gcd_DoReset   ; (this is at the blank text, so only 1 tick for the clock.)
-	bpl b_gcd_SkipReset ; Every other value.
+	ldy zCOUNTDOWN_FLAG      ; Get current index to text for countdown.
+	bmi b_gcd_ExitCountdown  ; If negative, do nothing.
 
-b_gcd_DoReset
-	ldy #4              ; Negative means reset to original
-	sty zCOUNTDOWN_FLAG
+;	cpy #4                   ; Also, if it is already 4, I want to make sure clock is right
+;	beq b_gcd_DoReset        ; (this is at the blank text, so only 1 tick for the clock.)
+;	bpl b_gcd_SkipReset      ; Every other value.
 
-b_gcd_SkipReset
+;b_gcd_SkipReset
 	lda GFX_COUNTDOWN_TICK,y
 	sta zCOUNTDOWN_SECS 
 
@@ -561,13 +561,19 @@ b_gcd_SkipReset
 	ldx #3              ; index into Gfx memeory.
 
 b_gcd_CopyText
-	lda GFX_COUNTDOWN_TEXT,y
-	sta GFX_COUNTDOWN,x
-	iny
-	dex
-	bne b_gcd_CopyText
+	lda GFX_COUNTDOWN_TEXT,y ; From text array.
+	sta GFX_COUNTDOWN,x      ; To screen memory
+	iny                      ; Copying forwards from array.
+	dex                      ; Copying backwards to screen memory.
+	bpl b_gcd_CopyText       ; 3, 2, 1, 0
 
-	dec zCOUNTDOWN_FLAG ; The value to use for display next time.
+;	dec zCOUNTDOWN_FLAG      ; The value to use for display next time.
+;	bmi b_gcd_ExitCountdown  ; If we reached the end, do not play sound
+	; ldy #COUNTDOWN_TICKTOCK
+	; jsr PlaySound 
+
+b_gcd_ExitCountdown
+	lda zCOUNTDOWN_FLAG
 
 	rts
 
