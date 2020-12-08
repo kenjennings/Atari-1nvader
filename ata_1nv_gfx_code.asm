@@ -554,11 +554,11 @@ Gfx_Countdown
 	lda GFX_COUNTDOWN_TICK,y
 	sta zCOUNTDOWN_SECS 
 
-	tya                 ; A = index
-	asl                 ; index * 2
-	asl                 ; index * 4
-	tay	                ; Y = index * 4 for copying.
-	ldx #3              ; index into Gfx memeory.
+	tya                      ; A = index
+	asl                      ; index * 2
+	asl                      ; index * 4
+	tay	                     ; Y = index * 4 for copying.
+	ldx #3                   ; index into Gfx memeory.
 
 b_gcd_CopyText
 	lda GFX_COUNTDOWN_TEXT,y ; From text array.
@@ -576,4 +576,3 @@ b_gcd_ExitCountdown
 	lda zCOUNTDOWN_FLAG
 
 	rts
-

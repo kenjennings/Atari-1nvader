@@ -365,14 +365,14 @@ GameSetupTitle
 
 	; ===== The giant mothership  =====
 
+	lda #0                    ;  0 = standing still  !0 = Moving up.
+	sta zBigMothershipPhase
+
 	lda #BIG_MOTHERSHIP_START ; Starting position of the big mothership
 	sta zBIG_MOTHERSHIP_Y
 
 	lda #BIG_MOTHERSHIP_SPEED ; How many frames to wait per mothership move.
 	sta zBigMothershipSpeed
-
-	lda #0                    ;  0 = standing still  !0 = Moving up.
-	sta zBigMothershipPhase
 
 	lda #112
 	sta SHPOSP2
@@ -542,67 +542,59 @@ b_gc_ExitTitleAnimation
 
 b_gc_CountDown
 
-	lda zCOUNTDOWN_FLAG        ; -1 means countdown is done.
-	bpl b_gc_ContinueCountdown ; otherwise run countdown
+	lda zCOUNTDOWN_FLAG      ; -1 means countdown is done.
+	bmi b_gc_StartMothership ; So, setup Move Mothership, Erase Player
 
-	; If countdown is negative we're done with "GO!", but must 
-	; wait for players to be in position (-1 while moving).
-	lda zPLAYER_ONE_ON
-	bmi b_gc_EndCountdown      ; Player moving.  Nothing to do.
-	lda zPLAYER_TWO_ON
-	bmi b_gc_EndCountdown      ; Player moving.  Nothing to do.
+	dec zCOUNTDOWN_SECS      ; Countdown jiffies.
+	bne b_gc_EndCountdown    ; Still counting.
 
-	; At this point we know the countdown is done (-1) and 
-	; players are NOT moving.
+	dec zCOUNTDOWN_FLAG      ; jiffy clock 0.  Go to next count. 
+	bmi b_gc_StartMothership ; Went negative, Erase Player, and Move Mothership
 
-	lda zBigMothershipPhase    ; 1 is mothership in motion.
-	bne b_gc_EndCountdown      ; So, end here.
-
-	inc zBigMothershipPhase    ; Start the mothership moving
-	bne b_gc_EndCountdown      ; And we're done.
-
-b_gc_ContinueCountdown
-	lda zCOUNTDOWN_SECS        ; This should not be -1 already on entry.
-	bmi b_gc_EndCountdown      ; So, exit.
-
-	dec zCOUNTDOWN_SECS        ; Countdown jiffies.
-	bpl b_gc_EndCountdown      ; Still positive, then done for now.
-
-	lda zCOUNTDOWN_FLAG        ; Which phase are we in?  0 == !GO!
-	bmi b_gc_EndCountdown      ; Don't subtract if we're already at end.
-
-	dec zCOUNTDOWN_FLAG
-	bmi b_gc_EndCountdown      ; Don't redraw is this is the end. 
-
-	jsr Gfx_Countdown          ; Update the countdown text.
+	jsr Gfx_Countdown        ; Update the countdown text.  (and reset jiffy clock)
 
 b_gc_EndCountdown
 
+	jmp b_gc_PlayerCheck     ; Skip over the mothership setup . 
 
-; ===== Pause for Player Placement =====
+
+b_gc_StartMothership         ; Countdown is done -1.  Signal Mothership flies away, dissolve player.\
+
+	lda zBigMothershipPhase  ; 1 is mothership already in motion.
+	bne b_gc_MoveMothership  ; So, end here.
+	inc zBigMothershipPhase  ; Start the mothership moving
+
+
+; ===== Pause for New Player Placement (if they press the button) =====
 
 b_gc_PlayerCheck
 
-	lda zBigMothershipPhase    ; 1 is mothership in motion.
-	bne b_gc_EndPlayerCheck    ; So, skip this.
+	lda zBigMothershipPhase  ; 1 is mothership in motion.
+	bne b_gc_EndPlayerCheck  ; So, skip this.
 
 	jsr PlayerSelectionInput
+
+	Pmg_CycleOfflinePlayer   ; Strobe the color for whatever player is not playing
 
 b_gc_EndPlayerCheck
 
 
-; ===== Pause for Player Placement =====
+; ===== Run Big Mothership Animation (VBI does redraw.) =====
+; ===== Also, VBI will redraw/remove the unused Player. =====
+; ===== Game starts when the Mothership reaches the Y limit ====
 
 b_gc_MoveMothership
 
-	lda zBigMothershipPhase    ; 1 is mothership not motion.
+	lda zBigMothershipPhase    ; 0 is mothership not in motion.
 	beq b_gc_End               ; So, end here.
 
-	lda zBIG_MOTHERSHIP_Y      ; If this is negative
-	bmi b_gc_EndMothership     ; Coundown is over.  Run game.
+	lda zBIG_MOTHERSHIP_Y      ; Mothership Y position...
+	bpl b_gc_End               ; If Y is not negative, then nothing else going on. End.
 
-	dec zBIG_MOTHERSHIP_Y      ; Subtract from Y
-	bpl b_gc_End               ; Not negative, then End.
+; Here the Mothership has reached the negative  Y position.
+; This means the Mothership has traveled up, off the screen.  
+; Therefore, the Countdown is done. 
+; Run game.
 
 b_gc_EndMothership             ; Fall through here to run the game.
 
@@ -616,13 +608,12 @@ b_gc_StartGame
 ; init flashing stars.
 ; Init player motions.
 ; Switch states.
+; Init mothership, scores, etc.
 
 
 b_gc_End
 
 	rts
-
-
 
 
 

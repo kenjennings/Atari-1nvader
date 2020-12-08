@@ -479,7 +479,24 @@ b_mdv_DoMyDeferredVBI
 
 ; ======== MANAGE TITLE MOTHERSHIP MOVING UP  ========
 
+b_mdv_DoBigMothership
 
+	lda zBigMothershipPhase     ; What's it doing?  0 = steady.  1 = moving.
+	beq b_mdv_EndBigMothership  ; 0, so nothing going on here.
+
+	jsr Pmg_Draw_Big_Mothership ; Redraw.
+
+	lda zBIG_MOTHERSHIP_Y       ; If this is positive, 
+	bpl b_mdv_DecBigMothership  ; subtract 1 for the next frame.
+
+	lda #0                      ; Y reached negative on last frame.
+	sta zBigMothershipPhase     ; The mothership is now off/erased.
+	beq b_mdv_EndBigMothership
+
+b_mdv_DecBigMothership
+	dec zBIG_MOTHERSHIP_Y       ; This section will run once with Y==-1, to erase mothership.
+
+b_mdv_EndBigMothership
 
 
 ; ======== MANAGE COUNTDOWN ANIMATION  ========
