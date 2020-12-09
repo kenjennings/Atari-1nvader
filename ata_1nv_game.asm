@@ -295,10 +295,8 @@ GameSetupTitle
 
 	; ===== Basics =====
 
-;	lda #$88
-;	sta COLPF0
-;	lda #$84
-;	sta COLPF2
+	lda #$00
+	sta zSTATS_TEXT_COLOR
 
 
 	; ===== The Big Logo =====
@@ -489,13 +487,13 @@ b_gt_ExitTitleAnimation
 
 	; ===== Start the Countdown running on the next frame =====
 
-	lda #4              ; Starting at 4 insures this is erased.
+	lda #4                  ; Starting at 4 insures this is erased.
 	sta zCOUNTDOWN_FLAG 
 	lda #1
-	sta zCOUNTDOWN_SECS ; jiffy ticks, not secs.
-	jsr Gfx_Countdown   ; Update the countdown text.  (Blank)
+	sta zCOUNTDOWN_SECS     ; jiffy ticks, not secs.
+	jsr Gfx_DrawCountdown   ; Update the countdown text.  (Blank)
 
-	lda #EVENT_TITLE
+	lda #EVENT_COUNTDOWN
 	sta zCurrentEvent
 	lda #0 
 	sta zEventStage
@@ -551,7 +549,7 @@ b_gc_CountDown
 	dec zCOUNTDOWN_FLAG      ; jiffy clock 0.  Go to next count. 
 	bmi b_gc_StartMothership ; Went negative, Erase Player, and Move Mothership
 
-	jsr Gfx_Countdown        ; Update the countdown text.  (and reset jiffy clock)
+	jsr Gfx_DrawCountdown    ; Update the countdown text.  (and reset jiffy clock)
 
 b_gc_EndCountdown
 
@@ -569,12 +567,12 @@ b_gc_StartMothership         ; Countdown is done -1.  Signal Mothership flies aw
 
 b_gc_PlayerCheck
 
-	lda zBigMothershipPhase  ; 1 is mothership in motion.
-	bne b_gc_EndPlayerCheck  ; So, skip this.
+	lda zBigMothershipPhase    ; 1 is mothership in motion.
+	bne b_gc_EndPlayerCheck    ; So, skip this.
 
 	jsr PlayerSelectionInput
 
-	Pmg_CycleOfflinePlayer   ; Strobe the color for whatever player is not playing
+	jsr Pmg_CycleOfflinePlayer ; Strobe the color for whatever player is not playing
 
 b_gc_EndPlayerCheck
 
@@ -611,7 +609,66 @@ b_gc_StartGame
 ; Init mothership, scores, etc.
 
 
+
 b_gc_End
+
+	lda VCOUNT
+	cmp #23
+	bne b_gc_End
+
+	lda RTCLOK60
+	and #$FE
+;	ora #$02
+	sta WSYNC ; 1
+	sta COLPF3
+	clc
+	adc #$04
+	sta WSYNC; 2
+	sta COLPF3
+	clc
+	adc #$04
+	sta WSYNC ; 3
+	sta COLPF3
+	clc
+	adc #$04
+	sta WSYNC ; 4
+	sta COLPF3
+	clc
+	adc #$04
+	sta WSYNC ; 5
+	sta COLPF3
+	clc
+	adc #$04
+	sta WSYNC ; 6
+	sta COLPF3
+	clc
+	adc #$04
+	sta WSYNC ; 7
+	sta COLPF3
+	clc
+	adc #$04
+	sta WSYNC ; 8
+	sta COLPF3
+	clc
+	adc #$04
+	sta WSYNC ; 9
+	sta COLPF3
+	clc
+	adc #$04
+	sta WSYNC ; 10
+	sta COLPF3
+	clc
+	adc #$04
+	sta WSYNC ; 11
+	sta COLPF3
+	clc
+	adc #$04
+	sta WSYNC ; 12
+	sta COLPF3
+
+	lda #$00
+	sta WSYNC
+	sta COLBK
 
 	rts
 
@@ -712,24 +769,27 @@ PlayerSelectionInput
 	lda zPLAYER_ONE_Y          ; Here we know Player 1 is Playing.  ($1 is playing)
 	cmp #PLAYER_PLAY_Y         ; Is it at the Playing position?
 	bne b_psi_MovePlayer1Up    ; No.  Move it up.
-	inc PSI_Response           ; Yes. Ready to Play.
+	lda #1
+	sta PSI_Response           ; Yes. 1 Ready to Play.
 	bne b_psi_TryPlayer2       ; Done here.
 
-b_pti_MovePlayer1Up
-	dec PSI_Response           ; Signal that this is still in motion.
+b_psi_MovePlayer1Up
+	lda #$FF
+	sta PSI_Response           ; -1 Signal that this is still in motion.
 	dec zPLAYER_ONE_NEW_Y      ; Tell VBI to move up one scan line.
 	bne b_psi_TryPlayer2       ; Done.  Now test Player 2
 
-b_pti_TryPlayer1Idle           ; Player 1 is idle.  ($FF  is idle)
+b_psi_TryPlayer1Idle           ; Player 1 is idle.  ($FF  is idle)
 	lda STRIG0                 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
 	bne b_psi_TryPlayer2       ; Not pressed.  Go to player 2
 	; ldy #PLAYER_ONE_SHOOT
 	; jsr PlaySound 
 	lda #$1                    ; (FF)=Title/Idle  (1) playing.
 	sta zPLAYER_ONE_ON
-	dec PSI_Response           ; Signal that this is in motion.
+	lda #$FF
+	sta PSI_Response           ; -1 Signal that this is in motion.
 
-b_pti_TryPlayer2
+b_psi_TryPlayer2
 	lda zPLAYER_TWO_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
 	beq b_psi_Exit             ; Zero should not really happen, but my OCD says this must be handled.
 	bmi b_psi_TryPlayer2Idle   ; $FF is idle.
@@ -739,7 +799,8 @@ b_pti_TryPlayer2
 	bne b_psi_MovePlayer2Up    ; No.  Move it up.
 	lda PSI_Response           ; Yes. (Ready is lower priority than player 1 not ready).
 	bmi b_psi_Exit             ; Already negative means Player 1 is in motion.
-	inc PSI_Response           ; Yes. Player 2 idle.  So Player 1, Ready to Play.
+	lda #1
+	sta PSI_Response           ; Yes. Player 2 idle.  So Player 1, Ready to Play.
 	bne b_psi_Exit             ; Done here.
 
 b_psi_MovePlayer2Up

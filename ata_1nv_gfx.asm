@@ -179,10 +179,11 @@ DISPLAY_LIST_TITLE                                          ; System VBI sets co
 
 	mDL_LMS   DL_TEXT_2|DL_DLI,GFX_SCORE_LINE               ; 00 (020 - 027) (DLI 0) Narrow screen DMA (2) P1 score, High score, P2 score
 	mDL_BLANK DL_BLANK_4                                    ; 01 (028 - 031) Blank 4
-	mDL_LMS   DL_TEXT_7,GFX_COUNTDOWN_LINE                  ; 02 (032 - 047) Mode 7 text for 3, 2, 1, GO! Countdown
-	mDL_BLANK DL_BLANK_4                                    ; 04 (048 - 051) Blank 4
+	mDL_BLANK DL_BLANK_5                                    ; 01 (032 - 036) Blank 5
+	mDL_LMS   DL_TEXT_7,GFX_COUNTDOWN_LINE                  ; 02 (037 - 052) Mode 7 text for 3, 2, 1, GO! Countdown
+	mDL_BLANK DL_BLANK_3                                    ; 04 (053 - 055) Blank 3
 
-	mDL_BLANK DL_BLANK_7|DL_DLI                             ;    (052 - 058) (DLI 1) Blank 7   start GTIA $4 in PRIOR 
+	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (056 - 058) (DLI 1) Blank 7   start GTIA $4 in PRIOR 
 	mDL_BLANK DL_BLANK_1                                    ;    (059 - 059) Blank 1 Allow time for prior DLI to act. 
 	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (060 - 062) (DLI 2) Blank 3   (DLI vscroll hack next lines) 
 

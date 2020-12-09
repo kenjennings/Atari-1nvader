@@ -699,24 +699,24 @@ b_mdv_EndCreditScrolling
 ; 4)b) 	jsr Pmg_Draw_Big_Mothership
 ; 5) DO NOT RESET
 
-b_mdv_BigMothership
+;b_mdv_BigMothership
 
-	lda zBigMothershipPhase       ; Is it moving (1)  or standing still (0)?
-	beq b_mdv_EndBigMothership    ; Standing still.  So, nothing else to do.
+;	lda zBigMothershipPhase       ; Is it moving (1)  or standing still (0)?
+;	beq b_mdv_EndBigMothership    ; Standing still.  So, nothing else to do.
 
-	lda zBIG_MOTHERSHIP_Y         ; Get Y coord
-	bmi b_mdv_EndBigMothership    ; Negative Y means it is offscreen.
+;	lda zBIG_MOTHERSHIP_Y         ; Get Y coord
+;	bmi b_mdv_EndBigMothership    ; Negative Y means it is offscreen.
 
-	dec zBigMothershipSpeed       ; Wait for motion timer to expire
-	bne b_mdv_EndBigMothership    ; Timer is still running.
+;	dec zBigMothershipSpeed       ; Wait for motion timer to expire
+;	bne b_mdv_EndBigMothership    ; Timer is still running.
 
-	lda #BIG_MOTHERSHIP_SPEED     ; Reset the speed timer
-	sta zBigMothershipSpeed
+;	lda #BIG_MOTHERSHIP_SPEED     ; Reset the speed timer
+;	sta zBigMothershipSpeed
 
-	dec zBIG_MOTHERSHIP_Y         ; Subtract Y, (move up) one scan line.
-	jsr Pmg_Draw_Big_Mothership
+;	dec zBIG_MOTHERSHIP_Y         ; Subtract Y, (move up) one scan line.
+;	jsr Pmg_Draw_Big_Mothership
 
-b_mdv_EndBigMothership
+;b_mdv_EndBigMothership
 
 
 ; ======== MANAGE DOCUMENTATION SCROLLING ========
@@ -1263,7 +1263,7 @@ TITLE_DLI  ; Placeholder for VBI to restore staring address for DLI chain.
 ; position on screen to accommodate the Countdown text.
 ; -----------------------------------------------------------------------------
 
-TITLE_DLI_1 
+TITLE_DLI_0
 
 	pha
 
@@ -1287,9 +1287,9 @@ TITLE_DLI_1
 	pha
 
 	; Set all the ANTIC screen controls and DMA options.
-	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NARROW]
-	sta WSYNC            ; sync to end of scan line
-	sta DMACTL
+;	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NARROW]
+;	sta WSYNC            ; sync to end of scan line
+;	sta DMACTL
 	
 	; Setup PRIOR for 16 grey-scale graphics, and Missile color overlay.
 	; The screen won't show any noticeable change here, because the COLBK 

@@ -525,7 +525,7 @@ Gfx_Remove_Star
 
 
 ; ==========================================================================
-; COUNTDOWN
+; DRAW COUNTDOWN
 ; ==========================================================================
 ; Given the value of the flag, copy the 4 bytes from the 
 ; array to the screen.
@@ -541,7 +541,7 @@ GFX_COUNTDOWN_TICK ; Jiffy ticks to wait for this text
 	.byte 60,60,60,60,1
 
 
-Gfx_Countdown
+Gfx_DrawCountdown
 
 	ldy zCOUNTDOWN_FLAG      ; Get current index to text for countdown.
 	bmi b_gcd_ExitCountdown  ; If negative, do nothing.
