@@ -121,8 +121,22 @@ A little input was added for demonstration purposes.  The players' guns start in
 
 ---
 
+**08 Dec 2020 -- Countdown**
+
+[![V08 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/08-WIP-Countdown.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+Partially working Countdown.   Press the appropriate joystick button and the Player's gun advances from the idle line to the active player line immediately above. The countdown begins, 3..., 2..., 1..., !GO!.
+
+There is a color rainbow gradient running on the countdown text, mostly so I could get the code to line up with the right scan line for the text.  Some Display List tweaking was necessary.  This color gradient will probabbly be changed for the final version. 
+
+The idle player is supposed to strobe colors while the Player remains indecisive up to the time the countdown expires.   There is code for this, but it's not happening for some reason.
+
+The giant Mothership is supposed to fly up the screen after the countdown completes.   There is code for this, but it's not happening for some reason.
+
+---
+
 **DD MMM 2020 -- TO-DO**
 
-[![V08 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/08-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V09 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/09-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
