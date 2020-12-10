@@ -482,7 +482,7 @@ b_gt_ExitTitleAnimation
 	; 0 if both players are idle.
 	beq b_gt_EndTitleScreen  ; 0 = No input.
 
-	; Non-zero means a player hit their button.  Start the countdown to play.
+	; Non-zero result means a player hit their button, so start the countdown to play...
 
 
 	; ===== Start the Countdown running on the next frame =====
@@ -560,7 +560,7 @@ b_gc_StartMothership         ; Countdown is done -1.  Signal Mothership flies aw
 
 	lda zBigMothershipPhase  ; 1 is mothership already in motion.
 	bne b_gc_MoveMothership  ; So, end here.
-	inc zBigMothershipPhase  ; Start the mothership moving
+	inc zBigMothershipPhase  ; Start the mothership moving, VBI does the rest.
 
 
 ; ===== Pause for New Player Placement (if they press the button) =====

@@ -464,7 +464,7 @@ b_mdv_DoMyDeferredVBI
 ; ======== TITLE SCREEN AND COUNTDOWN ACTIVIES  ========
 	lda zCurrentEvent               ; Get current state
 	cmp #[EVENT_COUNTDOWN+1]        ; Is it TITLE or COUNTDOWN
-	bcc b_mdv_DoTitleAnimation      ; Yes. Less Than < is correct
+	bcc b_mdv_DoBigMothership       ; Yes. Less Than < is correct
 	jmp b_mdv_DoGameManagement      ; No. Greater Than > COUNTDOWN is GAME or GAMEOVER
 
 
@@ -884,11 +884,10 @@ b_mdv_EndLandScrolling
 
 
 ; ======== MANAGE PLAYER MOVEMENT  ========
-; At this point we're operating a demo for moving the players between Playing and Idle positions.
 
 ; The main code provided updates to player state for the New Y position.
 ; If the New Y does not match the old Player Y player then update Y.
-; Redraw players.
+; Redraw players only if something changed.
 
 	lda zPLAYER_ONE_NEW_Y  
 	cmp zPLAYER_ONE_Y
@@ -905,7 +904,7 @@ b_mdv_TryPlayerRedraw
 	lda zPLAYER_ONE_REDRAW
 	ora zPLAYER_TWO_REDRAW
 	beq b_mdv_EndPlayerMovement
-	
+
 	jsr Pmg_Draw_Players ;  This will zero the Redraw flags and copy Players' NEW_Y to Y
 
 b_mdv_EndPlayerMovement
@@ -917,69 +916,8 @@ b_mdv_EndPlayerMovement
 
 
 
-
-
 b_mdv_DoGameManagement
 
-
-; ======== Manage Boat fine scrolling ========
-; Atari scrolling is such low overhead. 
-; (Evaluate frog shift if it is on a boat row).
-; On a boat row...
-; Update a fine scroll register.
-; Update a coarse scroll register sometimes.
-; Done.   
-; Scrolling is practically free.  
-; It may be easier only on an Amiga.
-
-ManageBoatScrolling
-;	lda CurrentDL                 ; Get current display list
-;	cmp #DISPLAY_GAME             ; Is this the Game display?
-;	bne EndOfBoatScrolling        ; No.  Skip the scrolling logic.
-
-;	ldy #1                        ; Current Row.  Row 0 is the safe zone, no scrolling happens there.
-
-; Common code to each row. 
-; Loop through rows.
-; If is is a moving row, then check the row's timer/frame counter.
-; If the timer is over, then reset the timer, and then fine scroll 
-; the row (also moving the frog with it as needed.)
-
-LoopBoatScrolling
-	; Need row in X and Y due to different 6502 addressing modes in the timer and scroll functions.
-;	tya                           ; A = Y, Current Row 
-;	tax                           ; X = A, Current Row.  Can't dec zeropage,x, darn you cpu.
-
-;	lda MOVING_ROW_STATES,y       ; Get the current Row State
-;	beq EndOfScrollLoop           ; Not a scrolling row.  Go to next row.
-;	php                           ; Save the + or - status until later.
-	; We know this is either left or right, so this block is common code
-	; to update the row's speed counter based on the row entry.
-;	lda CurrentBoatFrames,x       ; Get the row's frame delay value.
-;	beq ResetBoatFrames           ; If BoatFrames is 0, time to make the donuts.
-;	dec CurrentBoatFrames,x       ; Not zero, so decrement
-;	plp                           ; oops.  got to dispose of that.
-;	jmp EndOfScrollLoop           
-
-ResetBoatFrames
-;	lda (BoatFramesPointer),y     ; Get master value for row's frame delay
-;	sta CurrentBoatFrames,x       ; Restart the row's frame speed delay.
-
-;	plp                           ; Get the current Row State (again.)
-;	bmi LeftBoatScroll            ; 0 already bypassed.  1 = Right, -1 (FF) = Left.
-
-;	jsr RightBoatFineScrolling    ; Do Right Boat Fine Scrolling.  (and frog X update) 
-;	jmp EndOfScrollLoop           ; end of this row.  go to the next one.
-
-LeftBoatScroll
-;	jsr LeftBoatFineScrolling     ; Do Left Boat Fine Scrolling.  (and frog X update) 
-
-EndOfScrollLoop                   ; end of this row.  go to the next one.
-;	iny                           ; Y reliably has Row.  X was changed.
-;	cpy #18                       ; Last entry is beach.  Do not bother to go further.
-;	bne LoopBoatScrolling         ; Not 18.  Process the next row.
-
-EndOfBoatScrolling
 
 
 ; ======== Manage InputScanFrames Delay Counter ========
@@ -1044,155 +982,10 @@ DoAnimateEyeballs
 EndOfClockChecks
 
 
-; ======== Reposition the Frog (or Splat). ========
-; At this point everyone and their cousin have been giving their advice 
-; about the frog position.  The main code changed position based on joystick
-; input.  The VBI change position if the frog was on a scrolling boat row.
-; Here, finally apply the position and move the frog image.
-
-MaintainFrogliness
-;	lda FrogUpdate               ; Nonzero means something important needs to be updated.
-;	bne SimplyUpdatePosition
-
-;	lda FrogNewShape             ; Get the new frog shape.
-;	beq NoFrogUpdate             ; 0 is off, so no movement there at all, so skip all
-
-; ==== Frog and boat position gyrations are done.  ==== Is there actual movement?
-SimplyUpdatePosition
-;	jsr ProcessNewShapePosition  ; limit object to screen.  redraw the object.
-
-NoFrogUpdate
 
 
-; ======== Fade Score Label Text  ========
-; Game will brighten text label when changing a value.
-; Here we detect if a change needs to be made, and then 
-; decrement the color if so.  All colors end at luminance
-; value $04.  Luminance $00 means no further consideration.
-
-ManageScoredFades
-;	ldx CurrentDL
-;	lda MANAGE_SCORE_COLORS_TABLE,x
-;	beq EndManageScoreFades
-
-DoFadeScore
-;	lda COLPM0_TABLE       ; Get Color.
-;	jsr DecThisColorOrNot  ; Can it be decremented?
-;	sta COLPM0_TABLE       ; Re-Save Color
-;	sta COLPM1_TABLE       ; Second half of the same object is same color
-
-DoFadeHiScore
-;	lda COLPM2_TABLE       ; Get Color.
-;	jsr DecThisColorOrNot  ; Can it be decremented?
-;	sta COLPM2_TABLE       ; Re-Save Color 
-
-DoFadeLives
-;	lda MANAGE_LIVES_COLORS_TABLE,x ; Is this a thing to do on this display.
-;	beq EndManageScoreFades
-
-;	lda COLPM0_TABLE+1     ; Get Color.
-;	jsr DecThisColorOrNot  ; Can it be decremented?
-;	sta COLPM0_TABLE+1     ; Re-Save Color
-;	sta COLPM1_TABLE+1     ; Second half of the same object is same color
-
-DoFadeSaved
-;	lda COLPM2_TABLE+1     ; Get Color.
-;	jsr DecThisColorOrNot  ; Can it be decremented?
-;	sta COLPM2_TABLE+1     ; Re-Save Color
-;	sta COLPM3_TABLE+1     ; Second half of the same object is same color
-
-EndManageScoreFades
 
 
-; ======== Manage Title Graphics Fine Scrolling  ========
-; Left Scroll the title graphics.
-; When it reaches target location reset the flag to disable scrolling.
-; Set the timer to tell MAIN to restore the title.
-; If the timer is non-zero, then decrement it.
-;
-; MAIN is expected to setup buffers and reset scroll position to 
-; origin before setting  VBIEnableScrollTitle  to start scrolling.
-
-ManageTitleScrolling
-;	lda VBIEnableScrollTitle     ; Is scrolling turned on?
-;	beq WaitToRestoreTitle       ; No. See if the timer needs something.
-
-;	jsr TitleLeftScroll          ; Scroll it
-;	jsr TitleIsItAtTheEnd        ; Is it done?  Zero return is over.
-;	bne EndManageTitleScrolling  ; Nope.  Do again on the next frame.
-
-;	lda #0                       ; Reached target position.
-;	sta VBIEnableScrollTitle     ; Turn off further left scrolling.
-;	lda #TITLE_RETURN_WAIT       ; Set the timer to wait to restore the title.
-;	sta RestoreTitleTimer        ; Set new timeout value.
-
-WaitToRestoreTitle               ; Tell Main when to restore title.
-;	lda RestoreTitleTimer        ; Get timer value.
-;	beq EndManageTitleScrolling  ; Its 0?  Then skip this.
-;	dec RestoreTitleTimer        ; Decrement timer when non-zero.
-
-EndManageTitleScrolling
-
-
-; ======== Animate Boat Components ========
-; Parts of the boats are animated to look like they're moving 
-; through the water.
-; When BoatyMcBoatCounter is 0, then animate based on BoatyComponent
-; thus only one part of a boat is animated on any given vertical blank.
-; 0 = Right Boat Front
-; 1 = Right Boat Back
-; 2 = Left Boat Front
-; 3 = Left Boat Back
-;BoatyFrame         .byte 0  ; counts 0 to 7.
-;BoatyMcBoatCounter .byte 2  ; decrement.  On 0 animate a component.
-;BoatyComponent     .byte 0  ; 0, 1, 2, 3 one of the four boat parts.
-
-ManageBoatAnimations
-;	dec BoatyMcBoatCounter        ; subtract from scroll delay counter
-;	bne ExitBoatyness             ; Not 0 yet, so no animation.
-
-	; One of the boat components will be animated. 
-;	lda #2                        ; Reset counter to original value.
-;	sta BoatyMcBoatCounter
-
-;	ldx BoatyFrame                ; going to load a frame, which one?
-;	jsr DoBoatCharacterAnimation  ; load the frame for the current component.
-
-; Finish by setting up for next frame/component.
-;	inc BoatyComponent            ; increment to next visual component for next time.
-;	lda BoatyComponent            ; get it to mask it 
-;	and #$03                      ; mask it to value 0 to 3
-;	sta BoatyComponent            ; Save it.
-;	bne ExitBoatyness             ; it is non-zero, so no new frame counter.
-
-; Whenever the boat component returns to 0, then update the frame counter...
-;	inc BoatyFrame                ; next frame.
-;	lda BoatyFrame                ; get it to mask it.
-;	and #$07                      ; mask it to 0 to 7
-;	sta BoatyFrame                ; save it.
-
-ExitBoatyness
-
-
-; ======== Manage the prompt flashing for Press A Button ========
-ManagePressAButtonPrompt
-;	lda EnablePressAButton
-;	bne DoAnimateButtonTimer      ; Not zero means enabled.
-;	; Prompt is off.  Zero everything.
-;	sta PressAButtonColor         ; Set background
-;	sta PressAButtonText          ; Set text.
-;	sta PressAButtonFrames        ; This makes sure it will restart as soon as enabled.
-;	beq DoCheesySoundService  
-
-; Note that the Enable/Disable behavior connected to the timer mechanism 
-; means that the action will occur when this timer executes with value 1 
-; or 0. At 1 it will be decremented to become 0. The value 0 is evaluated 
-; immediately.
-DoAnimateButtonTimer
-;	lda PressAButtonFrames   
-;	beq DoPromptColorchange       ; Timer is Zero.  Go switch colors.
-;	dec PressAButtonFrames        ; Minus 1
-;	bne DoCheesySoundService      ; if it is still non-zero end this section.
 
 DoPromptColorchange
 ;	jsr ToggleButtonPrompt        ; Manipulates colors for prompt.
@@ -1201,16 +994,7 @@ DoCheesySoundService              ; World's most inept sound sequencer.
 	jsr SoundService
 
 
-; ======== Manage scrolling the Credits text ========
-ScrollTheCreditLine               ; Scroll the text identifying the perpetrators
-;	dec ScrollCounter             ; subtract from scroll delay counter
-;	bne EndOfScrollTheCredits     ; Not 0 yet, so no scrolling.
-;	lda #2                        ; Reset counter to original value.
-;	sta ScrollCounter
 
-;	jsr FineScrollTheCreditLine   ; Do the business.
-
-EndOfScrollTheCredits
 
 
 ExitMyDeferredVBI
@@ -1570,15 +1354,12 @@ TITLE_DLI_6
 	sta WSYNC
 	sta COLPF1
 
-b_dli6_NextLoop
+b_dli6_NextLoop                    ; Make colors on the Active Guns and Bumper.
 	lda TABLE_COLOR_BLINE_BUMPER,y ; bumper first
 	sta COLPF3
 
 	lda TABLE_COLOR_BLINE_PM0,y    ; Player 1 gun
 	sta COLPM0
-			
-;	lda TABLE_COLOR_BLINE_PF0,y
-;	sta COLPF0
 
 	lda TABLE_COLOR_BLINE_PM1,y   ; Player 2 gun
 	sta COLPM1
@@ -1587,20 +1368,20 @@ b_dli6_NextLoop
 	sta WSYNC
 	bpl b_dli6_NextLoop          ; Stop looping on the 7th scan line
 
-	lda TABLE_LAND_COLPF0+7      ; make the background match PF0's color 
-;	sta WSYNC                    ; from the scrolling mountains 
+	lda TABLE_LAND_COLPF0+7      ; make the background match PF0's color from the scrolling mountains 
 	sta COLBK                    ; for one scan line
-	
+
 	lda #$00
 	ldy zPLAYER_ONE_COLOR       ; Set guns to grey on the stats line.
 
 	sta WSYNC      ; Next scan line set the colors for the stats line of text. 
 	sta COLBK      ; Background/border to black, too.
 	sta COLPF2     ; Text background
-;	ldy zPLAYER_ONE_COLOR
+
 	sty COLPM0
 	ldy zPLAYER_TWO_COLOR
 	sty COLPM1
+
 	lda zSTATS_TEXT_COLOR
 	sta COLPF1     ; Text luminance
 
