@@ -127,11 +127,13 @@ A little input was added for demonstration purposes.  The players' guns start in
 
 Partially working Countdown.   Press the appropriate joystick button and the Player's gun advances from the idle line to the active player line immediately above. The countdown begins, 3..., 2..., 1..., !GO!.
 
-There is a color rainbow gradient running on the countdown text, mostly so I could get the code to line up with the right scan line for the text.  Some Display List tweaking was necessary.  This color gradient will probabbly be changed for the final version. 
+There is a color rainbow gradient running on the countdown text, mostly so I could get the code to line up with the right scan line for the text.  Some Display List tweaking was necessary.
 
-The idle player is supposed to strobe colors while the Player remains indecisive up to the time the countdown expires.   There is code for this, but it's not happening for some reason.
+The idle player is pulses black to white while the Player remains indecisive up to the time the countdown expires.
 
-The giant Mothership is supposed to fly up the screen after the countdown completes.   There is code for this, but it's not happening for some reason.
+The giant Mothership flies up the screen after the countdown completes.
+
+The only thing left before the game start is the idle player being removed from the screen.
 
 ---
 
