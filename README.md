@@ -127,13 +127,13 @@ A little input was added for demonstration purposes.  The players' guns start in
 
 Partially working Countdown.   Press the appropriate joystick button and the Player's gun advances from the idle line to the active player line immediately above. The countdown begins, 3..., 2..., 1..., !GO!.
 
-There is a color rainbow gradient running on the countdown text, mostly so I could get the code to line up with the right scan line for the text.  Some Display List tweaking was necessary.
+There is a color rainbow gradient running on the countdown text.  Some Display List tweaking was necessary to get this into a position that matched VCOUNT and looked centered between the top of the display and the big logo.
 
-The idle player is pulses black to white while the Player remains indecisive up to the time the countdown expires.
+During the countdown the idle player pulses black to white while the Player remains indecisive up to the time the countdown expires.
 
-The giant Mothership flies up the screen after the countdown completes.
+After the countdown completes the giant Mothership flies up and off the screen. 
 
-The only thing left before the game start is the idle player being removed from the screen.
+The only thing left before the game starts is the animation removing the idle player from the screen.
 
 ---
 
