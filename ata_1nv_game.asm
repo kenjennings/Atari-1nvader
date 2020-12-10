@@ -313,8 +313,8 @@ GameSetupTitle
 	lda #COLOR_ORANGE1           ; Reset to first color.
 	sta ZTitleLogoBaseColor      ; Resave the new update
 	sta ZTitleLogoColor          ; Save it for the DLI use
-	sta COLOR3                   ; Make sure it starts in the OS shadow and 
-	sta COLPF3                   ; the hardware registers.
+;	sta COLOR3                   ; Make sure it starts in the OS shadow and 
+;	sta COLPF3                   ; the hardware registers.
 
 
 	; ===== The scrolling credits =====
@@ -397,25 +397,22 @@ GameSetupTitle
 
 	lda #$FF
 	sta zPLAYER_ONE_ON ; (0) not playing. (FF)=Title/Idle  (1) playing.
+	sta zPLAYER_TWO_ON ; (0) not playing. (FF)=Title/Idle  (1) playing.
+
 	lda #PLAYER_IDLE_Y
 	sta zPLAYER_ONE_Y
 	sta zPLAYER_ONE_NEW_Y
+	sta zPLAYER_TWO_Y
+	sta zPLAYER_TWO_NEW_Y
+
 	lda #$04
 	sta zPLAYER_ONE_COLOR
+	sta zPLAYER_TWO_COLOR
+
 	lda #[PLAYER_MIN_X+40]
 	sta zPLAYER_ONE_X
 	inc zPLAYER_ONE_REDRAW
 
-
-;	lda #$1
-	lda #$FF
-	sta zPLAYER_TWO_ON ; (0) not playing. (FF)=Title/Idle  (1) playing.
-;	lda #PLAYER_PLAY_Y
-	lda #PLAYER_IDLE_Y
-	sta zPLAYER_TWO_Y
-	sta zPLAYER_TWO_NEW_Y
-	lda #$04
-	sta zPLAYER_TWO_COLOR
 	lda #[PLAYER_MAX_X-40]
 	sta zPLAYER_TWO_X
 	inc zPLAYER_TWO_REDRAW
@@ -609,66 +606,37 @@ b_gc_StartGame
 ; Init mothership, scores, etc.
 
 
-
 b_gc_End
 
-	lda VCOUNT
-	cmp #23
-	bne b_gc_End
 
-	lda RTCLOK60
-	and #$FE
-;	ora #$02
+	dec zCountdownTimer
+	bne b_mdv_WaitForCountdownScanline
+
+	lda #$06
+	sta zCountdownTimer 
+
+	lda zCountdownColor
+	clc
+	adc #$04
+	sta zCountdownColor
+
+b_mdv_WaitForCountdownScanline
+	ldy VCOUNT
+	cpy #23
+	bne b_mdv_WaitForCountdownScanline
+
+	ldy #12
+	lda zCountdownColor
+
+b_mdv_LoopSetCountdownColor
 	sta WSYNC ; 1
 	sta COLPF3
 	clc
 	adc #$04
-	sta WSYNC; 2
-	sta COLPF3
-	clc
-	adc #$04
-	sta WSYNC ; 3
-	sta COLPF3
-	clc
-	adc #$04
-	sta WSYNC ; 4
-	sta COLPF3
-	clc
-	adc #$04
-	sta WSYNC ; 5
-	sta COLPF3
-	clc
-	adc #$04
-	sta WSYNC ; 6
-	sta COLPF3
-	clc
-	adc #$04
-	sta WSYNC ; 7
-	sta COLPF3
-	clc
-	adc #$04
-	sta WSYNC ; 8
-	sta COLPF3
-	clc
-	adc #$04
-	sta WSYNC ; 9
-	sta COLPF3
-	clc
-	adc #$04
-	sta WSYNC ; 10
-	sta COLPF3
-	clc
-	adc #$04
-	sta WSYNC ; 11
-	sta COLPF3
-	clc
-	adc #$04
-	sta WSYNC ; 12
-	sta COLPF3
 
-	lda #$00
-	sta WSYNC
-	sta COLBK
+	dey 
+	bne b_mdv_LoopSetCountdownColor
+
 
 	rts
 

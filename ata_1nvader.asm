@@ -48,6 +48,12 @@ zAnimateFrames     .byte $00
 zInputScanFrames   .byte $00
 
 
+; Countdown Color =========================================================
+
+zCountdownTimer       .byte $01
+zCountdownColor       .byte $04
+
+
 ; Title Logo Values =========================================================
 
 TITLE_SPEED_GFX        = 6                        ; jiffies to count for title color animations

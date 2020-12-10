@@ -763,17 +763,17 @@ Pmg_AdustMissileHPOS
 Pmg_CycleOfflinePlayer
 
 	lda zPLAYER_ONE_ON
-	bne b_pcop_CheckPlayer2 ; Player moving. (-1) or on (+1)  Nothing to do.
+	bne b_pcop_CheckPlayer2 ; Player moving (-1) or on (+1)  Nothing to do.
 
 	inc zPLAYER_ONE_COLOR   ; Player Off.  Cycle idle color.
 	lda zPLAYER_ONE_COLOR
 	and #$0F
 	sta zPLAYER_ONE_COLOR
-	jmp b_pcop_End          ; Logically, Two can't be off if One is Off.
+	rts                     ; Stop here. Logically, Two can't be off if One is Off.
 
 b_pcop_CheckPlayer2
-	lda zPLAYER_TWO_ON
-	bne b_pcop_End          ; Player moving. (-1) or on (+1)  Nothing to do.
+;	lda zPLAYER_TWO_ON
+;	bne b_pcop_End          ; Player moving. (-1) or on (+1)  Nothing to do.
 
 	inc zPLAYER_TWO_COLOR   ; Player Off.  Cycle idle color.
 	lda zPLAYER_TWO_COLOR
