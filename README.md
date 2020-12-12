@@ -125,15 +125,17 @@ A little input was added for demonstration purposes.  The players' guns start in
 
 [![V08 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/08-WIP-Countdown.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
-Partially working Countdown.   Press the appropriate joystick button and the Player's gun advances from the idle line to the active player line immediately above. The countdown begins, 3..., 2..., 1..., !GO!.
+Title screen complete.
+
+The Countdown to game entry is working.   Press the appropriate joystick button and the Player's gun advances from the idle line to the active player line immediately above. The countdown begins, 3..., 2..., 1..., !GO!.
 
 There is a color rainbow gradient running on the countdown text.  Some Display List tweaking was necessary to get this into a position that matched VCOUNT and looked centered between the top of the display and the big logo.
 
-During the countdown the idle player pulses black to white while the Player remains indecisive up to the time the countdown expires.
+During the countdown the idle player pulses black to white as long as the Player remains indecisive.
 
-After the countdown completes the giant Mothership flies up and off the screen. 
+After the countdown runs out the giant Mothership flies up and off the screen. 
 
-The only thing left before the game starts is the animation removing the idle player from the screen.
+If the idle player did not press their button during the countdown, then the player is removed  from the screen (slides down) during the big Mothership animation. 
 
 ---
 
