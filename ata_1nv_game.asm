@@ -399,11 +399,11 @@ GameSetupTitle
 	sta zPLAYER_ONE_ON ; (0) not playing. (FF)=Title/Idle  (1) playing.
 	sta zPLAYER_TWO_ON ; (0) not playing. (FF)=Title/Idle  (1) playing.
 
-	lda #PLAYER_IDLE_Y
-	sta zPLAYER_ONE_Y
-	sta zPLAYER_ONE_NEW_Y
-	sta zPLAYER_TWO_Y
-	sta zPLAYER_TWO_NEW_Y
+	ldy #PLAYER_IDLE_Y
+	sty zPLAYER_ONE_NEW_Y
+	sty zPLAYER_TWO_NEW_Y
+	sty zPLAYER_ONE_Y
+	sty zPLAYER_TWO_Y
 
 	lda #$04
 	sta zPLAYER_ONE_COLOR
@@ -411,11 +411,13 @@ GameSetupTitle
 
 	lda #[PLAYER_MIN_X+40]
 	sta zPLAYER_ONE_X
-	inc zPLAYER_ONE_REDRAW
 
 	lda #[PLAYER_MAX_X-40]
 	sta zPLAYER_TWO_X
-	inc zPLAYER_TWO_REDRAW
+
+	lda #1
+	sta zPLAYER_ONE_REDRAW
+	sta zPLAYER_TWO_REDRAW
 
 
 	; ===== Start the Title running on the next frame =====
@@ -433,21 +435,26 @@ GameSetupTitle
 ; GAME TITLE
 ; ==========================================================================
 ; Event Process TITLE SCREEN
-; The activity on the title screen:
-; Always draw the animated frog. The frog animation is called on every 
-; frame since WobbleDeWobble manages timing and movement. 
-; The animated Rezz-in for the title text is also called on all frames.   
-; There is no AnimateFrames control of the speed until the animations
-; and scrolling for stage 2 and 3.
-; Stages: 
-; 0) Random rezz in for Title graphics.
-; Not Stage 0.
-; 1|4) Blink Prompt for joystick button.  Joystick button input is accepted.
-; Joystick button input is not observed during Stages 2, and 3.
-; 1) Just input checking per above, and testing Option/Select.
-; 2) Shifting Left Graphics down.
-; 3) OPTION or SELECT animation  scroll in from Right to Left.
-; 4) Waiting to return to Stage 0 (AnimateFrames2 timer). and Button Input.
+;
+; The VBI handles many "moving" things.  Of course, on the Atari, a
+; "moving" thing may not really be moving at all.  It could be just
+; DMA pointers that are changing the things on screen...
+;
+; The VBI switches between the several grey-scale images used for the big 
+; logo by changing the LMS adddress at one place in the display list.
+; 
+; The VBI sets the horizontal position for the missiles used for the 
+; big logo's color overlay, but the main code updates the actual image.
+; 
+; The VBI handles all the scrolling objects -- the two-line author 
+; credits, the scrolling documentation/long credits, and the scrolling 
+; mountains at the bottom of the screen.
+
+; The main code activity on the title screen:
+; 1) Check the Title Logo animation timer
+; 1)a) When the timer expires animate the Missiles for the color overlay.
+; 2) Test for player pressing a button.
+; 3) IF a button is pressed, then prep to transition to the Countdown.
 ; --------------------------------------------------------------------------
 
 GameTitle
@@ -506,13 +513,17 @@ b_gt_EndTitleScreen
 ; A player has pressed their button.  Final Commitment to begin playing 
 ; the game.
 ;
-; 0) Continue Title animations for logo, scrolling text, and scrolling land.
+; The VBI continues to do the various activities needed for the title 
+; screen.
+;
+; 0) Continue Title animations for logo.
 ; 1) A Player (one or two) is moving up.  
 ;    The other player is color cycling until button pressed.
+;    And continue to test for the idle player's input.
 ; 2) Run the 3, 2, 1, countdown...
-; 3) AFTER countdown,AND Player selection animation complete then 
+; 3) AFTER countdown, AND Player selection animation complete then 
 ;    move the mothership up the screen. 
-; 4) When the mothership leaves the screen, then 
+; 3)a) While the mothership leaves the screen, dissolve the idle player. 
 ; --------------------------------------------------------------------------
 
 GameCountdown 
@@ -550,7 +561,7 @@ b_gc_CountDown
 
 b_gc_EndCountdown
 
-	jmp b_gc_PlayerCheck     ; Skip over the mothership setup . 
+	jmp b_gc_PlayerCheck     ; Skip over the mothership setup
 
 
 b_gc_StartMothership         ; Countdown is done -1.  Signal Mothership flies away, dissolve player.\
@@ -567,14 +578,15 @@ b_gc_PlayerCheck
 	lda zBigMothershipPhase    ; 1 is mothership in motion.
 	bne b_gc_EndPlayerCheck    ; So, skip this.
 
-	jsr PlayerSelectionInput
+	jsr PlayerSelectionInput   ; Only called here during countdown.
 
-	jsr Pmg_CycleOfflinePlayer ; Strobe the color for whatever player is not playing
+	jsr Pmg_CycleIdlePlayer    ; Strobe the color for whatever player is not playing
 
 b_gc_EndPlayerCheck
 
 
 ; ===== Run Big Mothership Animation (VBI does redraw.) =====
+; ===== Run the dissolve animation for the idle player. =====
 ; ===== Also, VBI will redraw/remove the unused Player. =====
 ; ===== Game starts when the Mothership reaches the Y limit ====
 
@@ -582,6 +594,8 @@ b_gc_MoveMothership
 
 	lda zBigMothershipPhase    ; 0 is mothership not in motion.
 	beq b_gc_End               ; So, end here.
+
+	jsr Pmg_SquashIdlePlayer   ; Smush the player not playing
 
 	lda zBIG_MOTHERSHIP_Y      ; Mothership Y position...
 	bpl b_gc_End               ; If Y is not negative, then nothing else going on. End.

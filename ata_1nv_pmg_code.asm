@@ -142,19 +142,13 @@ Pmg_Draw_Players
 	
 	lda #0
 	sta zPLAYER_ONE_REDRAW
-	
-	; Process Player 1
+
+	ldx #7
 	ldy zPLAYER_ONE_NEW_Y
 	sty zPLAYER_ONE_Y
-	ldx #7
-	
-	lda zPLAYER_ONE_ON
 	bne b_pdp_DrawPlayer1
-	
-	; Erase Player 1
-;	lda #0
 
-b_pdp_LoopErasePlayer1	
+b_pdp_LoopErasePlayer1     ; Erase Player 1
 	sta PLAYERADR0,Y
 	iny
 	dex
@@ -179,17 +173,12 @@ b_pdp_ProcessPlayer2
 	lda #0
 	sta zPLAYER_TWO_REDRAW
 
+	ldx #7
 	ldy zPLAYER_TWO_NEW_Y
 	sty zPLAYER_TWO_Y
-	ldx #7
-	
-	lda zPLAYER_TWO_ON
 	bne b_pdp_DrawPlayer2
-	
-	; Erase Player 1
-;	lda #0
 
-b_pdp_LoopErasePlayer2
+b_pdp_LoopErasePlayer2   ; Erase Player 2
 	sta PLAYERADR1,Y
 	iny
 	dex
@@ -198,7 +187,7 @@ b_pdp_LoopErasePlayer2
 
 b_pdp_DrawPlayer2
 	ldx #0
-b_pdp_LoopDrawPlayer2	
+b_pdp_LoopDrawPlayer2
 	lda PMG_IMG_CANNON,x
 	sta PLAYERADR1,y
 	iny
@@ -754,33 +743,107 @@ Pmg_AdustMissileHPOS
 
 
 ; ==========================================================================
-; CycleOfflinePlayer
+; CycleIdlePlayer
 ; ==========================================================================
-; One of the Players is offline during the countdown.
+; One of the Players MAY be offline during the countdown.
 ; Whichever one it is, strobe the brightness.
 ; --------------------------------------------------------------------------
 
-Pmg_CycleOfflinePlayer
+Pmg_CycleIdlePlayer
 
 	lda zPLAYER_ONE_ON
-	bne b_pcop_CheckPlayer2 ; Player moving (-1) or on (+1)  Nothing to do.
+	bpl b_pcip_CheckPlayer2 ; Player  on (+1)  Nothing to do.
 
-	inc zPLAYER_ONE_COLOR   ; Player Off.  Cycle idle color.
+	inc zPLAYER_ONE_COLOR   ; Player Idle.  Cycle idle color.
 	lda zPLAYER_ONE_COLOR
 	and #$0F
 	sta zPLAYER_ONE_COLOR
 	rts                     ; Stop here. Logically, Two can't be off if One is Off.
 
-b_pcop_CheckPlayer2
-;	lda zPLAYER_TWO_ON
-;	bne b_pcop_End          ; Player moving. (-1) or on (+1)  Nothing to do.
+b_pcip_CheckPlayer2
+	lda zPLAYER_TWO_ON
+	bpl b_pcip_End          ; Player  on (+1)  Nothing to do.
 
 	inc zPLAYER_TWO_COLOR   ; Player Off.  Cycle idle color.
 	lda zPLAYER_TWO_COLOR
 	and #$0F
 	sta zPLAYER_TWO_COLOR
 
-b_pcop_End
+b_pcip_End
 	rts
 
 
+; ==========================================================================
+; SquashIdlePlayer
+; ==========================================================================
+; While the mothership is leaving squash the idle player, if there is one.
+; --------------------------------------------------------------------------
+
+Psip_Temp_Byte_Count .byte 0
+
+Pmg_SquashIdlePlayer
+
+	lda zPLAYER_ONE_ON
+	bpl b_psip_CheckPlayer2  ; Player moving (-1) or on (+1)  Nothing to do.
+
+	ldy zPLAYER_ONE_Y        ; Player Off.   
+	cpy #PLAYER_SQUASH_Y     ; Did Y position reach the bottom?
+	bne b_psip_SquashP1      ; No.  Continue squashing.
+	lda #0                   ; Formally turn off Player 1.
+	sta zPLAYER_ONE_ON
+	beq b_psip_End
+
+b_psip_SquashP1
+	inc zPLAYER_ONE_Y        ; Y = Y + 1
+	lda #PLAYER_SQUASH_Y     ; Subtract from 
+	sec                      ; the squash'd Y
+	sbc zPLAYER_ONE_Y        ; giving the number of bytes to write
+	sta Psip_Temp_Byte_Count ; save number of bytes to write
+
+	ldy zPLAYER_ONE_Y        ; Get the adjusted Y
+	sty zPLAYER_ONE_NEW_Y    ; Normalize new == old
+	ldx #0
+
+b_psip_LoopCopy1             ; Yes.  Long, grody, messy loop.
+	lda PMG_IMG_CANNON,x     ; Get player image
+	sta PLAYERADR0,y         ; Save to Player memory.
+	iny
+	cpx Psip_Temp_Byte_Count ; Is X at the limit?
+	beq b_psip_End           ; Yes, then we're done.
+	inx
+	bpl b_psip_LoopCopy1     ; Next byte to copy.
+
+
+b_psip_CheckPlayer2
+	lda zPLAYER_TWO_ON
+	bpl b_psip_End           ; Player moving (-1) or on (+1)  Nothing to do.
+
+	ldy zPLAYER_TWO_Y        ; Player Off.   
+	cpy #PLAYER_SQUASH_Y     ; Did Y position reach the bottom?
+	bne b_psip_SquashP2      ; No.  Continue squashing.
+	lda #0                   ; Formally turn off Player 2.
+	sta zPLAYER_TWO_ON
+	beq b_psip_End
+
+b_psip_SquashP2
+	inc zPLAYER_TWO_Y        ; Y = Y + 1
+	lda #PLAYER_SQUASH_Y     ; Subtract from 
+	sec                      ; the squash'd Y
+	sbc zPLAYER_TWO_Y        ; giving the number of bytes to write
+	sta Psip_Temp_Byte_Count ; save number of bytes to write
+
+	ldy zPLAYER_TWO_Y        ; Get the adjusted Y
+	sty zPLAYER_TWO_NEW_Y    ; Normalize new == old
+	ldx #0
+
+b_psip_LoopCopy2             ; Yes.  Long, grody, messy loop.
+	lda PMG_IMG_CANNON,x     ; Get player image
+	sta PLAYERADR1,y         ; Save to Player memory.
+	iny
+	cpx Psip_Temp_Byte_Count ; Is X at the limit?
+	beq b_psip_End           ; Yes, then we're done.
+	inx
+	bpl b_psip_LoopCopy2     ; Next byte to copy.
+
+b_psip_End
+	rts

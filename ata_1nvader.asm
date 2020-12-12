@@ -351,8 +351,10 @@ zCOUNTDOWN_SECS    .byte $00 ; Countdown jiffies per tick tock event. (the 3, 2,
 
 zSTATS_TEXT_COLOR  .byte $08 ; color/limunance of text on stats line.
 
-PLAYER_IDLE_Y=220 ; Y position for gun idle on stats line
-PLAYER_PLAY_Y=212 ; Y position for gun in play
+PLAYER_PLAY_Y=212   ; Y position for gun in play
+PLAYER_IDLE_Y=220   ; Y position for gun idle on stats line
+PLAYER_SQUASH_Y=228 ; Y Position when player not playing.
+
 PLAYER_MIN_X =52  ; Farthest Left next to bumper
 PLAYER_MAX_X =196 ; Farthest left next to bumper
 

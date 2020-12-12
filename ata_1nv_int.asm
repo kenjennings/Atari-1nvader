@@ -888,13 +888,24 @@ b_mdv_EndLandScrolling
 ; The main code provided updates to player state for the New Y position.
 ; If the New Y does not match the old Player Y player then update Y.
 ; Redraw players only if something changed.
+; Also, main code can flip on Redraw to force a redraw.
 
-	lda zPLAYER_ONE_NEW_Y  
+	lda zPLAYER_ONE_REDRAW     ; Did Main set these to 
+	ora zPLAYER_TWO_REDRAW     ; redraw now?
+	bne b_mdv_RedrawPlayers    ; Yes.  Skip all other checks, and redraw.
+
+	lda zPLAYER_ONE_ON         ; Is player On?
+	beq b_mdv_TryPlayer2_Y     ; No.  Do not draw.
+
+	lda zPLAYER_ONE_NEW_Y      
 	cmp zPLAYER_ONE_Y
 	beq b_mdv_TryPlayer2_Y
 	inc ZPLAYER_ONE_REDRAW
 
 b_mdv_TryPlayer2_Y
+	lda zPLAYER_TWO_ON
+	beq b_mdv_EndPlayerMovement
+	
 	lda zPLAYER_TWO_NEW_Y  
 	cmp zPLAYER_TWO_Y
 	beq b_mdv_TryPlayerRedraw
@@ -905,6 +916,7 @@ b_mdv_TryPlayerRedraw
 	ora zPLAYER_TWO_REDRAW
 	beq b_mdv_EndPlayerMovement
 
+b_mdv_RedrawPlayers
 	jsr Pmg_Draw_Players ;  This will zero the Redraw flags and copy Players' NEW_Y to Y
 
 b_mdv_EndPlayerMovement
