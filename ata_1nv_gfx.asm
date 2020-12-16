@@ -324,14 +324,46 @@ DISPLAY_LIST_GAMEOVER                                       ; Main Game and Game
 	mDL_BLANK DL_BLANK_8
 	mDL_BLANK DL_BLANK_4   
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
-DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first star's LMS address
+DL_LMS_FIRST_STAR = [ * + 2 ]                               ; Remember the first star's LMS address
 	.rept 6
-		mDL_LMS   [DL_TEXT_6|DL_DLI],GFX_STARS_LINE           ; 01 - 18 (028 - 171) (6) Stars
+		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 01 (028 - 028) 
+		mDL_LMS   DL_TEXT_6,GFX_STARS_LINE                  ; 01 (029 - 036) (171) (6) Stars
 	.endr
-DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over Text
-	.rept 12
-		mDL_LMS   [DL_TEXT_6|DL_DLI],GFX_STARS_LINE           ; 01 - 18 (028 - 171) (6) Stars
+															; 02 (037 - 037) 
+															; 02 (038 - 045) (171) (6) Stars
+															; 03 (046 - 046) 
+															; 03 (047 - 054) (171) (6) Stars
+															; 04 (055 - 055) 
+															; 04 (056 - 063) (171) (6) Stars
+															; 05 (064 - 064) 
+															; 05 (065 - 072) (171) (6) Stars
+															; 06 (073 - 073) 
+															; 06 (074 - 081) (171) (6) Stars
+
+DL_LMS_GAME_OVER = [ * + 2 ]                                ; Stars or Game Over Text
+	.rept 10
+		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 07 (082 - 082) 
+		mDL_LMS   [DL_TEXT_6],GFX_STARS_LINE                ; 07 (083 - 090) (171) (6) Stars
 	.endr
+															; 01 - 18 (091 - 091) 
+															; 01 - 18 (092 - 099) (171) (6) Stars
+															; 01 - 18 (100 - 100) 
+															; 01 - 18 (101 - 108) (171) (6) Stars
+															; 01 - 18 (109 - 109) 
+															; 01 - 18 (110 - 117) (171) (6) Stars
+															; 01 - 18 (118 - 118) 
+															; 01 - 18 (119 - 126) (171) (6) Stars
+															; 01 - 18 (127 - 127) 
+															; 01 - 18 (128 - 135) (171) (6) Stars
+															; 01 - 18 (136 - 136) 
+															; 01 - 18 (137 - 144) (171) (6) Stars
+															; 01 - 18 (145 - 145) 
+															; 01 - 18 (146 - 153) (171) (6) Stars
+															; 01 - 18 (154 - 154) 
+															; 01 - 18 (155 - 162) (171) (6) Stars
+															; 01 - 18 (163 - 163) 
+															; 01 - 18 (164 - 171) (171) (6) Stars
+
 
 ; Note that as long as the system VBI is functioning the address 
 ; provided for JVB does not matter at all.  The system VBI will update

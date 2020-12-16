@@ -82,7 +82,7 @@ b_gatl_SkipReset
 ; --------------------------------------------------------------------------
 
 GFX_GAME_OVER_TEXT0
-	.sb "     GAME  OVER     "   ; Do this about 96% of the time.
+	.sb "  G A M E  O V E R  "   ; Do this about 96% of the time.
 GFX_GAME_OVER_TEXT1
 	.sb "     LOOOOOSER!     "
 GFX_GAME_OVER_TEXT2
@@ -92,9 +92,9 @@ GFX_GAME_OVER_TEXT3
 GFX_GAME_OVER_TEXT4
 	.sb "  IT'S A COOKBOOK!  "
 GFX_GAME_OVER_TEXT5
-	.sb "RESISTANCE IS FUTILE"	
+	.sb "RESISTANCE IS FUTILE"
 GFX_GAME_OVER_TEXT6
-	.sb "U BASE R BELONG 2 US"	
+	.sb "U BASE R BELONG 2 US"
 GFX_GAME_OVER_TEXT7
 	.sb "  PWNED EARTHLING!  "
 GFX_GAME_OVER_TEXT8
@@ -191,9 +191,8 @@ b_gcgot_Continue
 ; When the  transition reaches frame 11, the star is removed from 
 ; the screen (fade color table lookups = 0, LMS offset = +0 and HSCROL=15).
 ;
-; A new random line is chosen for the star.  Pick a random number from 
-; 0 to 31 (mask random value with binary AND $1F).  
-; If greater than 17, then subtract 16. (31 - 16 == 15.   18 - 16 = 2).
+; A new random line is chosen for the star.  
+; Pick a random number from 0 to 15.
 ; If this row is in use then use the next row and continue incrementing
 ; until an unused row is found.
 ; --------------------------------------------------------------------------
@@ -219,34 +218,34 @@ TABLE_GFX_STARS_COUNT .byte 0,0,0,0
 
 ; A list of the outer color value for each star line (only matters on the lines with stars)
 TABLE_GFX_STAR_OUT_COLOR
-	.rept 18 
+	.rept 16 
 		.byte 0
 	.endr
 
 ; A list of the inner color value for each star line (only matters on the lines with stars)
 TABLE_GFX_STAR_IN_COLOR
-	.rept 18 
+	.rept 16 
 		.byte 0
 	.endr
 
 ; A list of the fine scroll values for each start line used for pixel positioning.
 TABLE_GFX_STAR_HSCROL
-	.rept 18 
+	.rept 16
 		.byte 0
 	.endr	
 
 TABLE_LO_GFX_LMS_STARS
 ?TEMP_DL_ADDRESS=DL_LMS_FIRST_STAR
-	.rept 18
+	.rept 16
 		.byte <[?TEMP_DL_ADDRESS]
-?TEMP_DL_ADDRESS += 3
+?TEMP_DL_ADDRESS += 4
 	.endr
 
 TABLE_HI_GFX_LMS_STARS
 ?TEMP_DL_ADDRESS=DL_LMS_FIRST_STAR+1
-	.rept 18
+	.rept 16
 		.byte >[?TEMP_DL_ADDRESS]
-?TEMP_DL_ADDRESS += 3
+?TEMP_DL_ADDRESS += 4
 	.endr
 
 TABLE_GFX_STARS_DIVIDE_THREE
@@ -283,8 +282,7 @@ TABLE_GFX_STARS_DIVIDE_THREE
 ; Choose a row for stars.
 ;  
 ; A new random line is chosen for the star.  Pick a random number from 
-; 0 to 31 (mask random value with binary AND $1F).  
-; If greater than 17, then subtract 16. (31 - 16 == 15.   18 - 16 = 2).
+; 0 to 15 (mask random value with binary AND $0F).  
 ; If this row is in use then use the next row and continue incrementing
 ; until an unused row is found.
 ;
@@ -294,12 +292,7 @@ TABLE_GFX_STARS_DIVIDE_THREE
 Gfx_Choose_Star_Row
 
 	lda RANDOM
-	and #$1F                     ; Reduce to 0 to 31
-
-	cmp #18                      ; Is it greater then 17?
-	bcc b_gcsr_StartCheckLoop    ; No. Skip the subtract.  
-	clc
-	sbc #16                      ; Minus 16
+	and #$0f                     ; Reduce to 0 to 15
 
 b_gcsr_StartCheckLoop
 	ldy #3                       ; Index 3, 2, 1, 0 for star list
@@ -311,7 +304,7 @@ b_gcsr_CompareEntry
 	clc                          ; Oops.  Found a matching value. 
 	adc #1                       ; Increment the value and then redo the checking.
 	
-	cmp #18                      ; Did we reach row 18? 
+	cmp #16                      ; Did we reach row 16? 
 	bne b_gcsr_StartCheckLoop    ; No.  So, restart the loop to check values.
 	
 	lda #0                       ; Yes.  Reset to 0.  
