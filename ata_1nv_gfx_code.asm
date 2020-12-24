@@ -569,3 +569,223 @@ b_gcd_ExitCountdown
 	lda zCOUNTDOWN_FLAG
 
 	rts
+
+
+
+
+
+
+
+
+
+
+; ==========================================================================
+; SHOW SCREEN
+; ==========================================================================
+; If the Score Redraw flag is set, update Given the value of the flag, copy the 4 bytes from the 
+; array to the screen.
+; Update the clock ticks for the text pause.
+; Decrement the Flag for the next Big Countdown.
+; Engage the clock tick sound IF this did not run out of countdown.
+; --------------------------------------------------------------------------
+
+Gfx_ShowScreen
+
+	lda zSHOW_SCORE_FLAG
+	bne b_gss_ShowChars ; shsca
+
+	rts ;     jmp shscz
+
+ 
+shsca    
+b_gss_ShowChars 
+	lda #0      ; turn flag off
+	sta zSHOW_SCORE_FLAG
+
+	; lda zMOTHERSHIP_MOVE_SPEED  ; show msmovs
+	; adc #48
+	; sta gCHAR_MEM+13
+
+;	lda #32     ; clear hiscore
+	lda #0             ; clear hiscore
+;	sta gCHAR_MEM+15   ; indicators
+;	sta gCHAR_MEM+24
+
+	lda zPLAYER_ONE_SCORE ; show p1score
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+6
+	lda zPLAYER_ONE_SCORE
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	clc
+	adc #48
+	sta gCHAR_MEM+5
+
+	lda zPLAYER_ONE_SCORE+1
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+4
+	lda zPLAYER_ONE_SCORE+1
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	clc
+	adc #48
+	sta gCHAR_MEM+3
+
+	lda zPLAYER_ONE_SCORE+2
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+2
+	lda zPLAYER_ONE_SCORE+2
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	clc
+	adc #48
+	sta gCHAR_MEM+1    ; end p1score
+
+	lda zPLAYER_TWO_SCORE ; show p2score
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+38
+	lda zPLAYER_TWO_SCORE
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	clc
+	adc #48
+	sta gCHAR_MEM+37
+
+	lda zPLAYER_TWO_SCORE+1
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+36
+	lda zPLAYER_TWO_SCORE+1
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	clc
+	adc #48
+	sta gCHAR_MEM+35
+
+	lda zPLAYER_TWO_SCORE+2
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+34
+	lda zPLAYER_TWO_SCORE+2
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	clc
+	adc #48
+	sta gCHAR_MEM+33   ; end p2score
+
+ ; check p1score for hiscore
+	lda zPLAYER_ONE_SCORE+2
+	cmp zHIGH_SCORE+2
+	bcc chkhip2 ; end
+	bne uphi1
+
+	lda zPLAYER_ONE_SCORE+1
+	cmp zHIGH_SCORE+1
+	bcc chkhip2
+	bne uphi1
+
+	lda zPLAYER_ONE_SCORE
+	cmp zHIGH_SCORE
+	bcc chkhip2
+
+uphi1    ; update hs with p1score
+	lda zPLAYER_ONE_SCORE
+	sta zHIGH_SCORE
+	lda zPLAYER_ONE_SCORE+1
+	sta zHIGH_SCORE+1
+	lda zPLAYER_ONE_SCORE+2
+	sta zHIGH_SCORE+2
+
+chkhip2  ; check p2s for hiscore
+	lda zPLAYER_TWO_SCORE+2
+	cmp zHIGH_SCORE+2
+	bcc chkhiz  ; end
+	bne uphi2
+
+	lda zPLAYER_TWO_SCORE+1
+	cmp zHIGH_SCORE+1
+	bcc chkhiz
+	bne uphi2
+
+	lda zPLAYER_TWO_SCORE
+	cmp zHIGH_SCORE
+	bcc chkhiz
+
+uphi2    ; update hs with p2score
+	lda zPLAYER_TWO_SCORE
+	sta zHIGH_SCORE
+	lda zPLAYER_TWO_SCORE+1
+	sta zHIGH_SCORE+1
+	lda zPLAYER_TWO_SCORE+2
+	sta zHIGH_SCORE+2
+	
+chkhiz   ; done hiscore check
+
+shscc    
+	lda zHIGH_SCORE ; show hiscore
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+22
+	lda zHIGH_SCORE
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	clc
+	adc #48
+	sta gCHAR_MEM+21
+
+	lda zHIGH_SCORE+1
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+20
+	lda zHIGH_SCORE+1
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	clc
+	adc #48
+	sta gCHAR_MEM+19
+
+	lda zHIGH_SCORE+2
+	and #%00001111
+	clc
+	adc #48
+	sta gCHAR_MEM+18
+	lda zHIGH_SCORE+2
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	lsr ;a
+	clc
+	adc #48
+	sta gCHAR_MEM+17   ; end zHIGH_SCORE
+
+shscz    
+	rts
+
