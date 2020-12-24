@@ -874,36 +874,36 @@ titlinit
 ; ==========================================================================
 
 ;gameinit 
-	sed ; Why?   Decimal 0 is the same as binary 0.
-	lda #0
-	sta zPLAYER_ONE_SCORE
-	sta zPLAYER_ONE_SCORE+1
-	sta zPLAYER_ONE_SCORE+2
-	sta zPLAYER_TWO_SCORE
-	sta zPLAYER_TWO_SCORE+1
-	sta zPLAYER_TWO_SCORE+2
-	cld
+;	sed ; Why?   Decimal 0 is the same as binary 0.
+;	lda #0
+;	sta zPLAYER_ONE_SCORE
+;	sta zPLAYER_ONE_SCORE+1
+;	sta zPLAYER_ONE_SCORE+2
+;	sta zPLAYER_TWO_SCORE
+;	sta zPLAYER_TWO_SCORE+1
+;	sta zPLAYER_TWO_SCORE+2
+;	cld
 
-	sed                           ; ummm?   We just turned it off one line above.
-	lda #$80                      ;  128 = 80 (BCD values)
-	sta zSHIP_HITS
-	lda #0
-	sta zSHIP_HITS+1
-	cld
+;	sed                           ; ummm?   We just turned it off one line above.
+;	lda #$80                      ;  128 = 80 (BCD values)
+;	sta zSHIP_HITS
+;	lda #0
+;	sta zSHIP_HITS+1
+;	cld
 
-	lda #0
-	sta zPLAYER_ONE_BUMP
-	sta zPLAYER_TWO_BUMP
+;	lda #0
+;	sta zPLAYER_ONE_BUMP
+;	sta zPLAYER_TWO_BUMP
 
-	lda #1
-	sta zSHOW_SCORE_FLAG
-	jsr showscr
+;	lda #1
+;	sta zSHOW_SCORE_FLAG
+;	jsr showscr
                                    ; should be 2
-	lda #2                         ; initial ms speed
-	sta zMOTHERSHIP_MOVE_SPEED
-	lda #10                        ; should be 10
-	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
-	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
+;	lda #2                         ; initial ms speed
+;	sta zMOTHERSHIP_MOVE_SPEED
+;	lda #10                        ; should be 10
+;	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
+;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
 		 
 gameintz 
 	rts
@@ -3370,6 +3370,6 @@ GameStart
 ; --------------------------------------------------------------------------
 
 	mDiskDPoke DOS_RUN_ADDR,GameStart
-
+ 
 	END
 

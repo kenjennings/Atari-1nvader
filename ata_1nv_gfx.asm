@@ -455,7 +455,7 @@ GFX_SCORE_HI
 	.sb $06,$07,$08,$09,$00,$00
 	.sb "          "
 GFX_SCORE_P2
-	.sb $00,$00,$00,$00,$00,$00
+	.sb $09,$09,$09,$09,$09,$09
 	.sb " "
 
 
@@ -698,13 +698,13 @@ TABLE_COLOR_BLINE_PM1
 GFX_STATSLINE  ; "          L:00   PT:0000   H:00         "  ; "L:", "PT:", "H:" Use P/M graphics
 	.sb "          "
 GFX_STAT_LINE
-	.sb $00,$00
+	.sb $9,$9
 	.sb "      "
 GFX_STAT_POINTS
-	.sb $00,$00,$00,$00
+	.sb $9,$9,$9,$9
 	.sb "      "
 GFX_STAT_HITS
-	.sb $00,$00
+	.sb $9,$9
 	.sb "          " 
 
 ; The first 21 bytes of data are blank which is used to show no star. 

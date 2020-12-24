@@ -622,9 +622,12 @@ b_gc_StartGame
 ; Switch states.
 ; Init mothership, scores, etc.
 
+	lda #EVENT_GAME   ; actually should be setup game.  just as experiment.
+	sta zCurrentEvent
 
 b_gc_End
 
+; Flashy color scroll on the Countdown text.
 
 	dec zCountdownTimer
 	bne b_mdv_WaitForCountdownScanline
@@ -662,10 +665,43 @@ b_mdv_LoopSetCountdownColor
 ; ==========================================================================
 ; GAME SETUP MAIN
 ; ==========================================================================
+; The visual bling should always be in a state to resume immediately 
+; on the next frame.   The end of the countdown code reset any display 
+; oriented values as needed.   
 ;
+; Here, zero all the starting values for supporting GAME LOGIC.
+; The only visual aspect is copying the score and statistics to 
+; the screen.  
 ; --------------------------------------------------------------------------
 
 GameSetupMain
+
+	lda #0
+	sta zPLAYER_ONE_SCORE
+	sta zPLAYER_ONE_SCORE+1
+	sta zPLAYER_ONE_SCORE+2
+	sta zPLAYER_TWO_SCORE
+	sta zPLAYER_TWO_SCORE+1
+	sta zPLAYER_TWO_SCORE+2
+
+	lda #$80                      ;  128 = 80 (BCD values)
+	sta zSHIP_HITS
+	lda #0
+	sta zSHIP_HITS+1
+
+	lda #0
+	sta zPLAYER_ONE_BUMP
+	sta zPLAYER_TWO_BUMP
+
+	lda #1
+	sta zSHOW_SCORE_FLAG
+;;	jsr showscr
+                                   ; should be 2
+	lda #2                         ; initial ms speed
+	sta zMOTHERSHIP_MOVE_SPEED
+	lda #10                        ; should be 10
+	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
+	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
 
 	rts
 
