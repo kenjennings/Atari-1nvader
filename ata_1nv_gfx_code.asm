@@ -463,7 +463,7 @@ Gfx_Setup_New_Star
 	ldy #0
 	sta (zDL_LMS_STARS_ADDR),Y         ; Change the LMS to point at the line
 	
-b_gsns_Exit	
+b_gsns_Exit
 	rts
 	
 	
@@ -513,6 +513,28 @@ Gfx_Remove_Star
 	sta (zDL_LMS_STARS_ADDR),Y     ; Change the LMS to the start of line
 
 	inc zTEMP_ADD_STAR             ; Flag that this star is gone.  Add new star at next opportunity.
+
+	rts
+
+
+; ==========================================================================
+; RUN GAME SCREEN STARS
+; ==========================================================================
+; Cycle through stars 0 to 3.
+; Run the service routine.
+; --------------------------------------------------------------------------
+
+Gfx_RunGameStars
+
+	ldx #0
+
+b_grgs_LoopEachStar
+	jsr Gfx_Service_Star
+	
+	inx
+	cpx #4
+	
+	bne b_grgs_LoopEachStar
 
 	rts
 
@@ -572,21 +594,131 @@ b_gcd_ExitCountdown
 
 
 
+; ==========================================================================
+; RUN SCROLLING LAND
+; ==========================================================================
+; Used by VBI on all screens. 
+;
+; Scroll all four lines of terrain back and forth.
+; All four move in the same direction/same speed.
+; Pause for a few seconds at the end of a move.
+; Then reverse directions.
+; Rinse.  Repeat.
+;
+; 1) If waiting, continue to wait.
+; 2) if not waiting, then do motion.  
+; 3) Wait for motion timer.
+; 4) Execute motion. Either
+; 4)a) Move Left, OR
+; 4)b) Move Right. 
+; 5) At end, then reset
+; 5)a) toggle motion direction.
+; 5)b) restart the waiting phase.
+; --------------------------------------------------------------------------
 
+Gfx_RunScrollingLand
 
+	lda #0
+	sta zLandColor
 
+	lda zLandPhase            ; 0 == waiting    1  == scrolling
+	bne b_grsl_RunLandScrolling
 
+	; Waiting....
+	dec zLandTimer
+	bne b_grsl_EndLandScrolling  ; Timer still >0
+
+	; Reset timer.  And start scrolling.
+	inc zLandPhase             ; To get here we know this was 0.
+	lda #LAND_MAX_PAUSE
+	sta zLandTimer
+	
+	; We are moving the credits...
+
+b_grsl_RunLandScrolling
+
+	dec zLandScrollTimer      ; Delay to not scroll to quickly.
+	bne b_grsl_EndLandScrolling
+
+	lda #LAND_STEP_TIMER      ; Reset the scroll timer
+	sta zLandScrollTimer
+
+	lda zLandMotion           ; What direction are we moving in?
+	beq b_grsl_LandLeft        ; 0 is moving Left
+
+	; Otherwise, we're going in the opposite direction here.  (Right)
+
+	inc zLandHS                ; Land Right
+	lda zLandHS
+	cmp #16                    ; Reach the end of fine scrolling 16 color clocks?
+	bne b_grsl_EndLandScrolling ; No, Nothing else to do here.
+	lda #0                     ; Yes. 
+	sta zLandHS                ; Reset the fine scroll, and...
+	dec DL_LMS_SCROLL_LAND1    ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND1    ; and another 8 color clocks.
+	dec DL_LMS_SCROLL_LAND2    ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND2    ; and another 8 color clocks.
+	dec DL_LMS_SCROLL_LAND3    ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND3    ; and another 8 color clocks.
+	dec DL_LMS_SCROLL_LAND4    ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_LAND4    ; and another 8 color clocks.
+
+b_grsl_TestEndRight              ; Check the Land's end position.
+	lda zLandHS                 ; Get fine scroll position.  0 is the end
+	bne b_grsl_EndLandScrolling  ; Not 0..  We're done with checking.
+	lda DL_LMS_SCROLL_LAND1     ; Get the coarse scroll position
+	cmp #<[GFX_MOUNTAINS1]      ; at the ending coarse scroll position?
+	bne b_grsl_EndLandScrolling  ; nope.  We're done with checking.
+
+	; reset to do left, then re-enable the pause
+	dec zLandMotion           ; It was 1 to do right scrolling. Make it 0 for left.
+	dec zLandPhase            ; It was 1 to do scrolling.  switch to waiting.
+	bne b_grsl_EndLandScrolling ; Finally done with this scroll direction. 
+
+;  we're going in the Left direction. 
+
+b_grsl_LandLeft
+	dec zLandHS                    ; Land 1 Left
+	bmi b_grsl_HSReset              ; At -1 means time to reset HSCROLL
+	beq b_grsl_TestEndLeft          ; if 0, then possibly at an end boundary.  Go test for end.
+	bne b_grsl_EndLandScrolling     ; Not 0, then not at a boundary test, so nothing more to do.
+
+b_grsl_HSReset	                   ; Reached -1 for fines croll.  Coarse Scroll and reset.
+	inc DL_LMS_SCROLL_LAND1        ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND1        ; and another 8 color clocks.
+	inc DL_LMS_SCROLL_LAND2        ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND2        ; and another 8 color clocks.
+	inc DL_LMS_SCROLL_LAND3        ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND3        ; and another 8 color clocks.
+	inc DL_LMS_SCROLL_LAND4        ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_LAND4        ; and another 8 color clocks.
+	lda #15                        ; Reset to start HSCROLL
+	sta zLandHS                    ; Reset the fine scroll, and...
+	bne b_grsl_EndLandScrolling     ; Nothing more to do.
+
+b_grsl_TestEndLeft                  ; At HSCROL 0.  This may be a boundary.
+	lda DL_LMS_SCROLL_LAND1        ; Get the coarse scroll position
+	cmp #<[GFX_MOUNTAINS1+20]      ; at the ending coarse scroll position?
+	bne b_grsl_EndLandScrolling     ; Nothing more to do.
+
+	; reset to do right, then re-enable the pause.
+	inc zLandMotion           ; It was 0 to do left.  Make it non-zero for right scrolling.
+	dec zLandPhase            ; It was 1 to do scrolling.  switch to waiting.
+	bne b_grsl_EndLandScrolling ; Finally done with this scroll direction. 
+
+b_grsl_EndLandScrolling
+
+rts
 
 
 
 ; ==========================================================================
 ; SHOW SCREEN
 ; ==========================================================================
-; If the Score Redraw flag is set, update Given the value of the flag, copy the 4 bytes from the 
-; array to the screen.
-; Update the clock ticks for the text pause.
-; Decrement the Flag for the next Big Countdown.
-; Engage the clock tick sound IF this did not run out of countdown.
+; If the Score Redraw flag is set, update the Players and High scores 
+; on screen.  Forgoing the BCD packed bytes in the original.  This 
+; simplifies the copy to the screen.  The scores use 6 individual 
+; bytes, one for each decimal position, not three bytes of packed BCD.
 ; --------------------------------------------------------------------------
 
 Gfx_ShowScreen
@@ -596,196 +728,97 @@ Gfx_ShowScreen
 
 	rts ;     jmp shscz
 
- 
-shsca    
+
+; shsca    
 b_gss_ShowChars 
 	lda #0      ; turn flag off
 	sta zSHOW_SCORE_FLAG
 
-	; lda zMOTHERSHIP_MOVE_SPEED  ; show msmovs
-	; adc #48
-	; sta gCHAR_MEM+13
 
-;	lda #32     ; clear hiscore
-	lda #0             ; clear hiscore
-;	sta gCHAR_MEM+15   ; indicators
-;	sta gCHAR_MEM+24
+ ; check p1 score for hi score
+ 
+ 	ldy #0
 
-	lda zPLAYER_ONE_SCORE ; show p1score
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+6
-	lda zPLAYER_ONE_SCORE
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+5
+b_gss_LoopCompareP1
+	lda zHIGH_SCORE,y
+	cmp zPLAYER_ONE_SCORE,y
+	beq b_gss_ContinueCheckingP1Score ; They are the same.  Try more.
+	bcc b_gss_CopyP1ToHiScore ; HiScore Less Than P1 Score.
+	bcs b_gss_CheckP2Score; chkhip2 ; Not greater than
 
-	lda zPLAYER_ONE_SCORE+1
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+4
-	lda zPLAYER_ONE_SCORE+1
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+3
+b_gss_ContinueCheckingP1Score
+	iny
+	cpy #6
+	bne b_gss_LoopCompareP1
+	beq b_gss_CheckP2Score
 
-	lda zPLAYER_ONE_SCORE+2
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+2
-	lda zPLAYER_ONE_SCORE+2
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+1    ; end p1score
 
-	lda zPLAYER_TWO_SCORE ; show p2score
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+38
-	lda zPLAYER_TWO_SCORE
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+37
+b_gss_CopyP1ToHiScore
+	ldy #5
 
-	lda zPLAYER_TWO_SCORE+1
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+36
-	lda zPLAYER_TWO_SCORE+1
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+35
+b_gss_LoopCopyP1ToHiScore
+	lda zPLAYER_ONE_SCORE,y
+	sta zHIGH_SCORE,y
 
-	lda zPLAYER_TWO_SCORE+2
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+34
-	lda zPLAYER_TWO_SCORE+2
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+33   ; end p2score
+	dey
+	bpl b_gss_LoopCopyP1ToHiScore
 
- ; check p1score for hiscore
-	lda zPLAYER_ONE_SCORE+2
-	cmp zHIGH_SCORE+2
-	bcc chkhip2 ; end
-	bne uphi1
 
-	lda zPLAYER_ONE_SCORE+1
-	cmp zHIGH_SCORE+1
-	bcc chkhip2
-	bne uphi1
+b_gss_CheckP2Score
+; chkhip2  ; check p2 score for hiscore
 
-	lda zPLAYER_ONE_SCORE
-	cmp zHIGH_SCORE
-	bcc chkhip2
+ 	ldy #0
 
-uphi1    ; update hs with p1score
-	lda zPLAYER_ONE_SCORE
-	sta zHIGH_SCORE
-	lda zPLAYER_ONE_SCORE+1
-	sta zHIGH_SCORE+1
-	lda zPLAYER_ONE_SCORE+2
-	sta zHIGH_SCORE+2
+b_gss_LoopCompareP2
+	lda zHIGH_SCORE,y
+	cmp zPLAYER_TWO_SCORE,y
+	beq b_gss_ContinueCheckingP2Score ; They are the same.  Try more.
+	bcc b_gss_CopyP2ToHiScore ; HiScore Less Than P2 Score.
+	bcs b_gss_ShowScoresOnScreen; chkhip2 ; Not greater than
 
-chkhip2  ; check p2s for hiscore
-	lda zPLAYER_TWO_SCORE+2
-	cmp zHIGH_SCORE+2
-	bcc chkhiz  ; end
-	bne uphi2
+b_gss_ContinueCheckingP2Score
+	iny
+	cpy #6
+	bne b_gss_LoopCompareP2
+	beq b_gss_ShowScoresOnScreen
 
-	lda zPLAYER_TWO_SCORE+1
-	cmp zHIGH_SCORE+1
-	bcc chkhiz
-	bne uphi2
 
-	lda zPLAYER_TWO_SCORE
-	cmp zHIGH_SCORE
-	bcc chkhiz
+b_gss_CopyP2ToHiScore
+	ldy #5
 
-uphi2    ; update hs with p2score
-	lda zPLAYER_TWO_SCORE
-	sta zHIGH_SCORE
-	lda zPLAYER_TWO_SCORE+1
-	sta zHIGH_SCORE+1
-	lda zPLAYER_TWO_SCORE+2
-	sta zHIGH_SCORE+2
-	
-chkhiz   ; done hiscore check
+b_gss_LoopCopyP2ToHiScore
+	lda zPLAYER_TWO_SCORE,y
+	sta zHIGH_SCORE,y
 
-shscc    
-	lda zHIGH_SCORE ; show hiscore
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+22
-	lda zHIGH_SCORE
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+21
+	dey
+	bpl b_gss_LoopCopyP2ToHiScore
 
-	lda zHIGH_SCORE+1
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+20
-	lda zHIGH_SCORE+1
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+19
 
-	lda zHIGH_SCORE+2
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+18
-	lda zHIGH_SCORE+2
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+17   ; end zHIGH_SCORE
+; chkhiz   ; done hiscore check
 
-shscz    
+; Copy all the scores to the graphics memory.
+
+b_gss_ShowScoresOnScreen
+; shscc    ; show high score.
+
+	ldy #5
+
+b_gss_LoopCopyScores
+	lda zPLAYER_ONE_SCORE,y
+	ora #$40                ; Turn $0 to $9 into $40 to $49
+	sta GFX_SCORE_P1,y
+
+	lda zPLAYER_TWO_SCORE,y
+	ora #$40                ; Turn $0 to $9 into $40 to $49
+	sta GFX_SCORE_P2,y
+
+	lda zHIGH_SCORE,y
+	ora #$40                ; Turn $0 to $9 into $40 to $49
+	sta GFX_SCORE_HI,y
+
+	dey
+	bpl b_gss_LoopCopyScores
+
+; shscz    
 	rts
 

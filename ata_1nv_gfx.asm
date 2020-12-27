@@ -449,10 +449,10 @@ GFX_COUNTDOWN  ; The first 4 chars here are for countdown "3..." , , "!GO!"
 GFX_SCORE_LINE ; | 000000 P1      HI 000000     P2 000000 | 
 	.sb " "
 GFX_SCORE_P1 
-	.sb $00,$01,$02,$03,$04,$05
+	.sb $9,$9,$9,$9,$9,$9
 	.sb "          "
 GFX_SCORE_HI 
-	.sb $06,$07,$08,$09,$00,$00
+	.sb $9,$9,$9,$9,$9,$9
 	.sb "          "
 GFX_SCORE_P2
 	.sb $09,$09,$09,$09,$09,$09

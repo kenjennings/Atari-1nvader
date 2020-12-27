@@ -847,3 +847,48 @@ b_psip_LoopCopy2             ; Yes.  Long, grody, messy loop.
 
 b_psip_End
 	rts
+
+
+
+; ==========================================================================
+; MANAGE PLAYER MOVEMENT
+; ==========================================================================
+; The main code provided updates to player state for the New Y position.
+; If the New Y does not match the old Player Y player then update Y.
+; Redraw players only if something changed.
+; Also, main code can flip on Redraw to force a redraw.
+; --------------------------------------------------------------------------
+
+Pmg_ManagePlayerMovement
+
+	lda zPLAYER_ONE_REDRAW     ; Did Main set these to 
+	ora zPLAYER_TWO_REDRAW     ; redraw now?
+	bne b_pmpm_RedrawPlayers    ; Yes.  Skip all other checks, and redraw.
+
+	lda zPLAYER_ONE_ON         ; Is player On?
+	beq b_pmpm_TryPlayer2_Y     ; No.  Do not draw.
+
+	lda zPLAYER_ONE_NEW_Y      
+	cmp zPLAYER_ONE_Y
+	beq b_pmpm_TryPlayer2_Y
+	inc ZPLAYER_ONE_REDRAW
+
+b_pmpm_TryPlayer2_Y
+	lda zPLAYER_TWO_ON
+	beq b_pmpm_EndPlayerMovement
+	
+	lda zPLAYER_TWO_NEW_Y  
+	cmp zPLAYER_TWO_Y
+	beq b_pmpm_TryPlayerRedraw
+	inc ZPLAYER_TWO_REDRAW
+
+b_pmpm_TryPlayerRedraw
+	lda zPLAYER_ONE_REDRAW
+	ora zPLAYER_TWO_REDRAW
+	beq b_pmpm_EndPlayerMovement
+
+b_pmpm_RedrawPlayers
+	jsr Pmg_Draw_Players ;  This will zero the Redraw flags and copy Players' NEW_Y to Y
+
+b_pmpm_EndPlayerMovement
+

@@ -563,7 +563,7 @@ b_gc_EndCountdown
 	jmp b_gc_PlayerCheck     ; Skip over the mothership setup
 
 
-b_gc_StartMothership         ; Countdown is done -1.  Signal Mothership flies away, dissolve player.\
+b_gc_StartMothership         ; Countdown is done -1.  Signal Mothership flies away, dissolve player.
 
 	lda zBigMothershipPhase  ; 1 is mothership already in motion.
 	bne b_gc_MoveMothership  ; So, end here.
@@ -615,10 +615,6 @@ b_gc_EndMothership             ; Fall through here to run the game.
 
 b_gc_StartGame
 
-; Visual Bling should always be in a state to display immediately 
-; on the next frame.   Therefore, the stars, perhaps having been in
-; motion before are ready to resume.  The scores will be zero'd 
-; by the Setup routine
 ; Stuff Goes here to start the game. . . .
 
 ; init flashing stars.
@@ -626,48 +622,40 @@ b_gc_StartGame
 ; Switch states.
 ; Init mothership, scores, etc.
 
-	lda #EVENT_GAME   ; actually should be setup game.  just as experiment.
+	lda #EVENT_SETUP_GAME   
 	sta zCurrentEvent
-
 
 b_gc_End
 
-; The End of the Countdown.
-; Flashy color scroll on the Countdown text, then this frame is over.
+; Flashy color scroll on the Countdown text.
 
-	dec zCountdownTimer                  ; Count another frame for the timer...
-	bne b_mdv_WaitForCountdownScanline   ; If NOT 0, then just display from the current color.
+	dec zCountdownTimer
+	bne b_mdv_WaitForCountdownScanline
 
-	lda #$06                             ; Reset the Timer for the color scroll
-	sta zCountdownTimer
+	lda #$06
+	sta zCountdownTimer 
 
-	lda zCountdownColor                  ; Get the current color scroll value
+	lda zCountdownColor
 	clc
-	adc #$04                             ; Add 4
-	sta zCountdownColor                  ; Save New base color.
-
-; The number of things that have occurred during the Countdown are actually very
-; low and insignificant.  Even for worst case activity the code is now running 
-; at a very high position on screen.  Here we have to wait for the scan line counter
-; to reach the position of the Big Countdown Text.
+	adc #$04
+	sta zCountdownColor
 
 b_mdv_WaitForCountdownScanline
-	ldy VCOUNT                           ; Get the current scan line counter.
-	cpy #23                              ; Is is at 23? (really, this is 46)
-	bne b_mdv_WaitForCountdownScanline   ; No.   Keep testing.
+	ldy VCOUNT
+	cpy #23
+	bne b_mdv_WaitForCountdownScanline
 
-	ldy #12                              ; The text is 12 scan lines tall.
-	lda zCountdownColor                  ; Get the base color for the scroll.
+	ldy #12
+	lda zCountdownColor
 
 b_mdv_LoopSetCountdownColor
-	sta WSYNC                            ; Wait for end of scan line
-	sta COLPF3                           ; Update color for text
+	sta WSYNC ; 1
+	sta COLPF3
 	clc
-	adc #$04                             ; Add 4 to the current color.
+	adc #$04
 
-	dey                                  ; deduct the scan line counter
-	bne b_mdv_LoopSetCountdownColor      ; if not 0, then loop again for next scn line.
-
+	dey 
+	bne b_mdv_LoopSetCountdownColor
 
 
 	rts
@@ -688,29 +676,38 @@ b_mdv_LoopSetCountdownColor
 
 GameSetupMain
 
-	lda #$80                      ;  128 = 80 (BCD values)
-	sta zSHIP_HITS
+	ldy #5
 	lda #0
-	sta zSHIP_HITS+1
+
+b_gsm_Loop_ZeroPlayerScores
+	sta zPLAYER_ONE_SCORE,y
+	sta zPLAYER_TWO_SCORE,y
+
+	dey
+	bpl b_gsm_Loop_ZeroPlayerScores
 
 	sta zPLAYER_ONE_BUMP
 	sta zPLAYER_TWO_BUMP
 
-	sta zPLAYER_ONE_SCORE
-	sta zPLAYER_ONE_SCORE+1
-	sta zPLAYER_ONE_SCORE+2
-	sta zPLAYER_TWO_SCORE
-	sta zPLAYER_TWO_SCORE+1
-	sta zPLAYER_TWO_SCORE+2
 
-	inc zSHOW_SCORE_FLAG            ; Tell the library I really do waht scores updated.
+	lda #$80                        ;  128 = 80 (BCD values)
+	sta zSHIP_HITS
+;	lda #0
+;	sta zSHIP_HITS+1
+
+	lda #1
+	sta zSHOW_SCORE_FLAG
+;;	jsr showscr
 	jsr Gfx_ShowScreen
-
-	lda #2                          ; should be 2
-	sta zMOTHERSHIP_MOVE_SPEED      ; initial ms speed
+                                    ; should be 2
+	lda #2                          ; initial ms speed
+	sta zMOTHERSHIP_MOVE_SPEED
 	lda #10                         ; should be 10
 	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
 	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
+
+	lda #EVENT_GAME   
+	sta zCurrentEvent
 
 	rts
 

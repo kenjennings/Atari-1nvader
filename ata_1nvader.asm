@@ -331,7 +331,7 @@ SAVEY = $FF
 
 
 
-; TEMPORARILY RELOACATE TO HIGHER MEMORY AS PAGE ZERO BECME FILLED WITH CRUFTY TEMPORARY VARIABLES
+; TEMPORARILY RELOACATE TO HIGHER MEMORY AS PAGE ZERO BECAME FILLED WITH CRUFTY TEMPORARY VARIABLES
 
 
 ; Game Control Values =======================================================
@@ -344,7 +344,9 @@ zCHAR_COLOR        .byte $00 ; Character Color. (probably no use for Atari)
 zSCROLL_COUNTER    .byte $00 ; Documentation scroll counter. (probably no use for Atari)
 zJIFFY_COUNTER     .byte $00 ; Jiffy clock for countdown seconds for title transition.
 zSCROLL_JIFFY      .byte $00 ; Jiffy clock for scrolling directions.
-zSHIP_HITS         .byte $00 ; 
+
+zSHIP_HITS           .byte $00  ; integer
+zSHIP_HITS_AS_DIGITS .byte $0,$0 ; 
 
 zCOUNTDOWN_FLAG    .byte $00 ; Counts phase, 4, 3, 2, 1, 0.  When it returns to 0, then trigger next phase (game)
 zCOUNTDOWN_SECS    .byte $00 ; Countdown jiffies per tick tock event. (the 3, 2, 1, GO)
@@ -364,7 +366,7 @@ zPLAYER_ONE_Y      .byte 0
 zPLAYER_ONE_NEW_Y  .byte PLAYER_IDLE_Y ; Player 1 Y position (slight animation, but usually fixed position.) 212=game.  220=idle.
 zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction
 zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
-zPLAYER_ONE_SCORE  .byte $00,$00,$00 ; Player 1 score, 6 digit BCD 
+zPLAYER_ONE_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 digit BCD 
 zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color when idle
 zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
 zPLAYER_ONE_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
@@ -379,7 +381,7 @@ zPLAYER_TWO_Y      .byte 0
 zPLAYER_TWO_NEW_Y  .byte PLAYER_IDLE_Y ; Player 2 Y position (slight animation, but usually fixed.)
 zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction
 zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
-zPLAYER_TWO_SCORE  .byte $00,$00,$00 ; Player 2 score, 6 digit BCD 
+zPLAYER_TWO_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
 zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color when idle
 zPLAYER_TWO_BUMP   .byte $00 ; Player 2 collision
 zPLAYER_TWO_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
@@ -387,16 +389,6 @@ zPLAYER_TWO_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
 zLASER_TWO_ON      .byte $00 ; whether or not the laser is shooting
 zLASER_TWO_X       .byte $00 ; Laser 1 X coord
 zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
- 
-zMOTHERSHIP_X               .byte $00 ; Game mothership X coord 
-zMOTHERSHIP_Y               .byte $00 ; Game mothership Y coord 
-zMOTHERSHIP_DIR             .byte $00 ; Mothership direction 
-zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed  
-zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter 
-zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threahold 
-zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
-zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
-zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
 
 ; Note that the original game dealt with some things in BCD values, 
 ; such as the Mothership row here making it a little more convenient to 
@@ -406,16 +398,25 @@ zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
 ; the special handling for the screen display part.
 ; This is why the original code has weird gaps in some lookup tables.
 
+zMOTHERSHIP_X               .byte $00 ; Game mothership X coord 
+zMOTHERSHIP_Y               .byte $00 ; Game mothership Y coord 
+zMOTHERSHIP_DIR             .byte $00 ; Mothership direction 
+zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed  
+zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter 
+zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threahold 
+zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
+zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
+zMOTHERSHIP_ROW_AS_DIGITS   .byte $0,$0 ; Mothership text line row number as 2 digits for display
+
+zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
+
 zMOTHERSHIP_POINTS          .word $0000 ; Current Points for hitting mothership
+zMOTHERSHIP_POINTS_AS_DIGITS .byte $0,$0,$0,$0,$0,$0 ; Points to add to score.
 
 zJOY_ONE_LAST_STATE         .byte $00 ; Joystick Button One last state.
 zJOY_TWO_LAST_STATE         .byte $00 ; Joystick Button Two last state
 
-zHIGH_SCORE                 .byte $00,$00,$00 ; 6 digit BCD 
-
-
-
-
+zHIGH_SCORE                 .byte $00,$00,$00,$00,$00,$00 ; 6 digits
 
 
 ;*******************************************************************************
@@ -2047,199 +2048,199 @@ outputz
 ; ==========================================================================
 
 showscr  
-	lda zSHOW_SCORE_FLAG
-	bne shsca
-	jmp shscz
+;	lda zSHOW_SCORE_FLAG
+;	bne shsca
+;	jmp shscz
 		 
 shsca    
-	lda #0      ; turn flag off
-	sta zSHOW_SCORE_FLAG
+;	lda #0      ; turn flag off
+;	sta zSHOW_SCORE_FLAG
 
-	; lda zMOTHERSHIP_MOVE_SPEED  ; show msmovs
-	; adc #48
-	; sta gCHAR_MEM+13
+;	; lda zMOTHERSHIP_MOVE_SPEED  ; show msmovs
+;	; adc #48
+;	; sta gCHAR_MEM+13
 
-	lda #32     ; clear hiscore
-	sta gCHAR_MEM+15   ; indicators
-	sta gCHAR_MEM+24
+;	lda #32     ; clear hiscore
+;	sta gCHAR_MEM+15   ; indicators
+;	sta gCHAR_MEM+24
 
-	lda zPLAYER_ONE_SCORE ; show p1score
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+6
-	lda zPLAYER_ONE_SCORE
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+5
+;	lda zPLAYER_ONE_SCORE ; show p1score
+;	and #%00001111
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+6
+;	lda zPLAYER_ONE_SCORE
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+5
 
-	lda zPLAYER_ONE_SCORE+1
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+4
-	lda zPLAYER_ONE_SCORE+1
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+3
+;	lda zPLAYER_ONE_SCORE+1
+;	and #%00001111
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+4
+;	lda zPLAYER_ONE_SCORE+1
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+3
 
-	lda zPLAYER_ONE_SCORE+2
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+2
-	lda zPLAYER_ONE_SCORE+2
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+1    ; end p1score
+;	lda zPLAYER_ONE_SCORE+2
+;	and #%00001111
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+2
+;	lda zPLAYER_ONE_SCORE+2
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+1    ; end p1score
 
-	lda zPLAYER_TWO_SCORE ; show p2score
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+38
-	lda zPLAYER_TWO_SCORE
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+37
+;	lda zPLAYER_TWO_SCORE ; show p2score
+;	and #%00001111
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+38
+;	lda zPLAYER_TWO_SCORE
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+37
 
-	lda zPLAYER_TWO_SCORE+1
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+36
-	lda zPLAYER_TWO_SCORE+1
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+35
+;	lda zPLAYER_TWO_SCORE+1
+;	and #%00001111
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+36
+;	lda zPLAYER_TWO_SCORE+1
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+35
 
-	lda zPLAYER_TWO_SCORE+2
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+34
-	lda zPLAYER_TWO_SCORE+2
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+33   ; end p2score
+;	lda zPLAYER_TWO_SCORE+2
+;	and #%00001111
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+34
+;	lda zPLAYER_TWO_SCORE+2
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+33   ; end p2score
 
- ; check p1score for hiscore
-	lda zPLAYER_ONE_SCORE+2
-	cmp zHIGH_SCORE+2
-	bcc chkhip2 ; end
-	bne uphi1
+; check p1score for hiscore
+;	lda zPLAYER_ONE_SCORE+2
+;	cmp zHIGH_SCORE+2
+;	bcc chkhip2 ; end
+;	bne uphi1
 
-	lda zPLAYER_ONE_SCORE+1
-	cmp zHIGH_SCORE+1
-	bcc chkhip2
-	bne uphi1
+;	lda zPLAYER_ONE_SCORE+1
+;	cmp zHIGH_SCORE+1
+;	bcc chkhip2
+;	bne uphi1
 
-	lda zPLAYER_ONE_SCORE
-	cmp zHIGH_SCORE
-	bcc chkhip2
+;	lda zPLAYER_ONE_SCORE
+;	cmp zHIGH_SCORE
+;	bcc chkhip2
 
-uphi1    ; update hs with p1score
-	lda zPLAYER_ONE_SCORE
-	sta zHIGH_SCORE
-	lda zPLAYER_ONE_SCORE+1
-	sta zHIGH_SCORE+1
-	lda zPLAYER_ONE_SCORE+2
-	sta zHIGH_SCORE+2
+;uphi1    ; update hs with p1score
+;	lda zPLAYER_ONE_SCORE
+;	sta zHIGH_SCORE
+;	lda zPLAYER_ONE_SCORE+1
+;	sta zHIGH_SCORE+1
+;	lda zPLAYER_ONE_SCORE+2
+;	sta zHIGH_SCORE+2
 
-chkhip2  ; check p2s for hiscore
-	lda zPLAYER_TWO_SCORE+2
-	cmp zHIGH_SCORE+2
-	bcc chkhiz  ; end
-	bne uphi2
+;chkhip2  ; check p2s for hiscore
+;	lda zPLAYER_TWO_SCORE+2
+;	cmp zHIGH_SCORE+2
+;	bcc chkhiz  ; end
+;	bne uphi2
 
-	lda zPLAYER_TWO_SCORE+1
-	cmp zHIGH_SCORE+1
-	bcc chkhiz
-	bne uphi2
+;	lda zPLAYER_TWO_SCORE+1
+;	cmp zHIGH_SCORE+1
+;	bcc chkhiz
+;	bne uphi2
 
-	lda zPLAYER_TWO_SCORE
-	cmp zHIGH_SCORE
-	bcc chkhiz
+;	lda zPLAYER_TWO_SCORE
+;	cmp zHIGH_SCORE
+;	bcc chkhiz
 
-uphi2    ; update hs with p2score
-	lda zPLAYER_TWO_SCORE
-	sta zHIGH_SCORE
-	lda zPLAYER_TWO_SCORE+1
-	sta zHIGH_SCORE+1
-	lda zPLAYER_TWO_SCORE+2
-	sta zHIGH_SCORE+2
+;uphi2    ; update hs with p2score
+;	lda zPLAYER_TWO_SCORE
+;	sta zHIGH_SCORE
+;	lda zPLAYER_TWO_SCORE+1
+;	sta zHIGH_SCORE+1
+;	lda zPLAYER_TWO_SCORE+2
+;	sta zHIGH_SCORE+2
 	
-chkhiz   ; done hiscore check
+;chkhiz   ; done hiscore check
 
-shscc    
-	lda zHIGH_SCORE ; show hiscore
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+22
-	lda zHIGH_SCORE
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+21
+;shscc    
+;	lda zHIGH_SCORE ; show hiscore
+;	and #%00001111
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+22
+;	lda zHIGH_SCORE
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+21
 
-	lda zHIGH_SCORE+1
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+20
-	lda zHIGH_SCORE+1
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+19
+;	lda zHIGH_SCORE+1
+;	and #%00001111
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+20
+;	lda zHIGH_SCORE+1
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+19
 
-	lda zHIGH_SCORE+2
-	and #%00001111
-	clc
-	adc #48
-	sta gCHAR_MEM+18
-	lda zHIGH_SCORE+2
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	lsr ;a
-	clc
-	adc #48
-	sta gCHAR_MEM+17   ; end zHIGH_SCORE
+;	lda zHIGH_SCORE+2
+;	and #%00001111
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+18
+;	lda zHIGH_SCORE+2
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	lsr ;a
+;	clc
+;	adc #48
+;	sta gCHAR_MEM+17   ; end zHIGH_SCORE
 
-shscz    
-	rts
+;shscz    
+;	rts
 
 ; ==========================================================================
 

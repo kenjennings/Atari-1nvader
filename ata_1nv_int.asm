@@ -431,37 +431,15 @@ MyDeferredVBI
 
 b_mdv_DoMyDeferredVBI
 
-; ======== Manage Frog Death  ========
-; Here we are at the end of the frame.  Collision is checked first.  
-; The actual movement processing happens last.
-; If the CURRENT row of the frog is on a moving boat row, then go collect 
-; the collision information with the "safe" area of the boat 
-; (the horizontal lines, COLPF2 are the safety color).
-; "Current" from the VBI point of view means the last place the frog was 
-; displayed on the previous frame.  ("New" is where the frog will be 
-; displayed on the next frame.)
-; The collision check code will flag the death accordingly.
-; The Flag-Of-Death (FrogSafety) tells the Main code to splatter the frog 
-; shape, and start the other activities to announce death.
+; ======== Beginning  ========
+; Kill Attract mode, and clear Player/Missile collisions.
 
-;	lda CurrentDL                ; Get current display list
-;	cmp #DISPLAY_GAME            ; Is this the Game display?
-;	bne EndOfDeathOfASalesfrog   ; No. So no collision processing. 
-
-;	ldx FrogRow                  ; What screen row is the frog currently on?
-;	lda MOVING_ROW_STATES,x      ; Is the current Row a boat row?
-;	beq EndOfDeathOfASalesfrog   ; No. So skip collision processing. 
-
-;	jsr CheckRideTheBoat         ; Make sure the frog is riding the boat. Otherwise it dies.
-
-;	jsr Something that evaluates collisions goes here.
-
-;EndOfDeathOfASalesfrog
 	lda #0
 	sta ATRACT
 	sta HITCLR                   ; Always reset the P/M collision bits for next frame.
 
 ; ======== TITLE SCREEN AND COUNTDOWN ACTIVIES  ========
+; ======================================================
 	lda zCurrentEvent               ; Get current state
 	cmp #[EVENT_COUNTDOWN+1]        ; Is it TITLE or COUNTDOWN
 	bcc b_mdv_DoBigMothership       ; Yes. Less Than < is correct
@@ -477,7 +455,7 @@ b_mdv_DoMyDeferredVBI
 ; 6) Mountain Background Scrolling.
 
 
-; ======== MANAGE TITLE MOTHERSHIP MOVING UP  ========
+; ======== 1) MANAGE TITLE MOTHERSHIP MOVING UP  ========
 
 b_mdv_DoBigMothership
 
@@ -499,12 +477,12 @@ b_mdv_DecBigMothership
 b_mdv_EndBigMothership
 
 
-; ======== MANAGE COUNTDOWN ANIMATION  ========
+; ======== 2) MANAGE COUNTDOWN ANIMATION  ========
+
+; Mostly run during the main line code.
 
 
-
-
-; ======== MANAGE TITLE COLOR ANIMATION ========
+; ======== 3) MANAGE TITLE COLOR ANIMATION ========
 
 ; Swap the graphics image to make it appear the text is animated.
 ; Manage the Missile positions and base color used for the color overlay.
@@ -574,7 +552,7 @@ b_mdv_SkipResetPMImage
 b_mdv_SkipTitleMissileUpdate
 
 
-; ======== MANAGE CREDITS SCROLLING ========
+; ======== 4) MANAGE CREDITS SCROLLING ========
 
 ; Two lines of author credits.   
 ; When the first line scrolls left the second line scrolls right.   
@@ -690,36 +668,7 @@ b_mdv_TestEndLeftRight            ; They both scroll the same distance.  Check L
 b_mdv_EndCreditScrolling
 
 
-; ======== MANAGE BIG MOTHERSHIP  ========
-
-; 1) Wait for Motion Phase
-; 2) Execute motion if positive Y position.
-; 3) Wait for motion timer.
-; 4)a) dec Y
-; 4)b) 	jsr Pmg_Draw_Big_Mothership
-; 5) DO NOT RESET
-
-;b_mdv_BigMothership
-
-;	lda zBigMothershipPhase       ; Is it moving (1)  or standing still (0)?
-;	beq b_mdv_EndBigMothership    ; Standing still.  So, nothing else to do.
-
-;	lda zBIG_MOTHERSHIP_Y         ; Get Y coord
-;	bmi b_mdv_EndBigMothership    ; Negative Y means it is offscreen.
-
-;	dec zBigMothershipSpeed       ; Wait for motion timer to expire
-;	bne b_mdv_EndBigMothership    ; Timer is still running.
-
-;	lda #BIG_MOTHERSHIP_SPEED     ; Reset the speed timer
-;	sta zBigMothershipSpeed
-
-;	dec zBIG_MOTHERSHIP_Y         ; Subtract Y, (move up) one scan line.
-;	jsr Pmg_Draw_Big_Mothership
-
-;b_mdv_EndBigMothership
-
-
-; ======== MANAGE DOCUMENTATION SCROLLING ========
+; ======== 5) MANAGE DOCUMENTATION SCROLLING ========
 
 ; 1) Wait for motion timer.
 ; 2) Execute motion.
@@ -770,7 +719,7 @@ b_mdv_AddDocsLMS ; Coarse scroll the text... 8 color clocks.
 b_mdv_EndDocsScrolling
 
 
-; ======== MANAGE TERRAIN SCROLLING ========
+; ======== 6) MANAGE TERRAIN SCROLLING ========
 
 ; Scroll all four lines of terrain back and forth.
 ; All four move in the same direction/same speed.
@@ -778,109 +727,11 @@ b_mdv_EndDocsScrolling
 ; Then reverse directions.
 ; Rinse.  Repeat.
 
-; 1) If waiting, continue to wait.
-; 2) if not waiting, then do motion.  
-; 3) Wait for motion timer.
-; 4) Execute motion. Either
-; 4)a) Move Left, OR
-; 4)b) Move Right. 
-; 5) At end, then reset
-; 5)a) toggle motion direction.
-; 5)b) restart the waiting phase.
-
 b_mdv_DoLandScrolling
 
-	lda #0
-	sta zLandColor
-
-	lda zLandPhase            ; 0 == waiting    1  == scrolling
-	bne b_mdv_RunLandScrolling
-
-	; Waiting....
-	dec zLandTimer
-	bne b_mdv_EndLandScrolling  ; Timer still >0
-
-	; Reset timer.  And start scrolling.
-	inc zLandPhase             ; To get here we know this was 0.
-	lda #LAND_MAX_PAUSE
-	sta zLandTimer
-	
-	; We are moving the credits...
-
-b_mdv_RunLandScrolling
-
-	dec zLandScrollTimer      ; Delay to not scroll to quickly.
-	bne b_mdv_EndLandScrolling
-
-	lda #LAND_STEP_TIMER      ; Reset the scroll timer
-	sta zLandScrollTimer
-
-	lda zLandMotion           ; What direction are we moving in?
-	beq b_mdv_LandLeft        ; 0 is moving Left
-
-	; Otherwise, we're going in the opposite direction here.  (Right)
-
-	inc zLandHS                ; Land Right
-	lda zLandHS
-	cmp #16                    ; Reach the end of fine scrolling 16 color clocks?
-	bne b_mdv_EndLandScrolling ; No, Nothing else to do here.
-	lda #0                     ; Yes. 
-	sta zLandHS                ; Reset the fine scroll, and...
-	dec DL_LMS_SCROLL_LAND1    ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_LAND1    ; and another 8 color clocks.
-	dec DL_LMS_SCROLL_LAND2    ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_LAND2    ; and another 8 color clocks.
-	dec DL_LMS_SCROLL_LAND3    ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_LAND3    ; and another 8 color clocks.
-	dec DL_LMS_SCROLL_LAND4    ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_LAND4    ; and another 8 color clocks.
-
-b_mdv_TestEndRight              ; Check the Land's end position.
-	lda zLandHS                 ; Get fine scroll position.  0 is the end
-	bne b_mdv_EndLandScrolling  ; Not 0..  We're done with checking.
-	lda DL_LMS_SCROLL_LAND1     ; Get the coarse scroll position
-	cmp #<[GFX_MOUNTAINS1]      ; at the ending coarse scroll position?
-	bne b_mdv_EndLandScrolling  ; nope.  We're done with checking.
-
-	; reset to do left, then re-enable the pause
-	dec zLandMotion           ; It was 1 to do right scrolling. Make it 0 for left.
-	dec zLandPhase            ; It was 1 to do scrolling.  switch to waiting.
-	bne b_mdv_EndLandScrolling ; Finally done with this scroll direction. 
-
-;  we're going in the Left direction. 
-
-b_mdv_LandLeft
-	dec zLandHS                    ; Land 1 Left
-	bmi b_mdv_HSReset              ; At -1 means time to reset HSCROLL
-	beq b_mdv_TestEndLeft          ; if 0, then possibly at an end boundary.  Go test for end.
-	bne b_mdv_EndLandScrolling     ; Not 0, then not at a boundary test, so nothing more to do.
-
-b_mdv_HSReset	                   ; Reached -1 for fines croll.  Coarse Scroll and reset.
-	inc DL_LMS_SCROLL_LAND1        ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_LAND1        ; and another 8 color clocks.
-	inc DL_LMS_SCROLL_LAND2        ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_LAND2        ; and another 8 color clocks.
-	inc DL_LMS_SCROLL_LAND3        ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_LAND3        ; and another 8 color clocks.
-	inc DL_LMS_SCROLL_LAND4        ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_LAND4        ; and another 8 color clocks.
-	lda #15                        ; Reset to start HSCROLL
-	sta zLandHS                    ; Reset the fine scroll, and...
-	bne b_mdv_EndLandScrolling     ; Nothing more to do.
-
-b_mdv_TestEndLeft                  ; At HSCROL 0.  This may be a boundary.
-	lda DL_LMS_SCROLL_LAND1        ; Get the coarse scroll position
-	cmp #<[GFX_MOUNTAINS1+20]      ; at the ending coarse scroll position?
-	bne b_mdv_EndLandScrolling     ; Nothing more to do.
-
-	; reset to do right, then re-enable the pause.
-	inc zLandMotion           ; It was 0 to do left.  Make it non-zero for right scrolling.
-	dec zLandPhase            ; It was 1 to do scrolling.  switch to waiting.
-	bne b_mdv_EndLandScrolling ; Finally done with this scroll direction. 
+	jsr Gfx_RunScrollingLand
 
 b_mdv_EndLandScrolling
-
-
 
 
 ; ======== MANAGE PLAYER MOVEMENT  ========
@@ -890,34 +741,9 @@ b_mdv_EndLandScrolling
 ; Redraw players only if something changed.
 ; Also, main code can flip on Redraw to force a redraw.
 
-	lda zPLAYER_ONE_REDRAW     ; Did Main set these to 
-	ora zPLAYER_TWO_REDRAW     ; redraw now?
-	bne b_mdv_RedrawPlayers    ; Yes.  Skip all other checks, and redraw.
+b_mdv_DoPlayerMovement
 
-	lda zPLAYER_ONE_ON         ; Is player On?
-	beq b_mdv_TryPlayer2_Y     ; No.  Do not draw.
-
-	lda zPLAYER_ONE_NEW_Y      
-	cmp zPLAYER_ONE_Y
-	beq b_mdv_TryPlayer2_Y
-	inc ZPLAYER_ONE_REDRAW
-
-b_mdv_TryPlayer2_Y
-	lda zPLAYER_TWO_ON
-	beq b_mdv_EndPlayerMovement
-	
-	lda zPLAYER_TWO_NEW_Y  
-	cmp zPLAYER_TWO_Y
-	beq b_mdv_TryPlayerRedraw
-	inc ZPLAYER_TWO_REDRAW
-
-b_mdv_TryPlayerRedraw
-	lda zPLAYER_ONE_REDRAW
-	ora zPLAYER_TWO_REDRAW
-	beq b_mdv_EndPlayerMovement
-
-b_mdv_RedrawPlayers
-	jsr Pmg_Draw_Players ;  This will zero the Redraw flags and copy Players' NEW_Y to Y
+	jsr Pmg_ManagePlayerMovement
 
 b_mdv_EndPlayerMovement
 
@@ -928,7 +754,18 @@ b_mdv_EndPlayerMovement
 
 
 
+; ====================  GAME SCREEN  ===================
+; ======================================================
+
 b_mdv_DoGameManagement
+
+	jsr Gfx_ShowScreen   ; Forcing redraw of score now for test evidence
+
+	jsr Gfx_RunGameStars
+
+	jsr Gfx_RunScrollingLand
+
+	jsr Pmg_ManagePlayerMovement
 
 
 
