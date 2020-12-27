@@ -709,6 +709,16 @@ b_gsm_Loop_ZeroPlayerScores
 	lda #EVENT_GAME   
 	sta zCurrentEvent
 
+	; Temporarily setting colors to make things visible without DLI running.
+	lda #$16
+	sta COLOR0 ; COLPF0
+	lda #$4A
+	sta COLOR1 ; COLPF1
+	lda #$02
+	sta COLOR2 ; COLPF2
+	lda #$7B
+	sta COLOR3 ; COLPF3
+
 	rts
 
 
