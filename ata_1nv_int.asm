@@ -1361,31 +1361,46 @@ GAME_DLI_0
 	mStart_DLI ; Saves A and Y
 
 	ldy zDLIStarLinecounter
-	
+
 	lda TABLE_GFX_STAR_HSCROL,y
 	sta HSCROL
 	sta WSYNC
 
-	lda TABLE_GFX_STAR_OUT_COLOR,y
+; The things above are time critical, because they may start on 
+; a mode 2 line with high DMA, so the working star rows evaluation 
+; need to be evaluated later.   This shortcut evaluation below 
+; saves a solid four scan lines of waiting per each star row 
+; that is idle.
+
+	lda TABLE_GFX_STAR_WORKING,y
+	bne b_GDLI0_ActiveStar
+	sta COLPF0                      ; Black out the star if not in use.
+	beq b_GDLI0_ShortcutToExit
+
+	; This Star is Active.   Apply a gradient, like, fading behavior.
+b_GDLI0_ActiveStar
+	lda TABLE_GFX_STAR_OUT_COLOR,y  ; Get the outer color.
 	sta COLPF0
-	
+
 	pha
-	lda TABLE_GFX_STAR_IN_COLOR,y
+	lda TABLE_GFX_STAR_IN_COLOR,y   ; Get the inner, brighter color.
 	
-;	sta WSYNC
+
+; FYI, the rest of this is wait wait wait.
 	sta WSYNC
 	sta WSYNC
 	sta WSYNC
 
-	sta COLPF0
+	sta COLPF0                     ; Use the inner, brighter color.
 	pla
-	sta WSYNC
-	sta COLPF0
-	
-	inc zDLIStarLinecounter
+	sta WSYNC 
+	sta COLPF0                     ; Use the outer color
 
-	cpy #15
-	bne b_GDLI_NormalExit
+b_GDLI0_ShortcutToExit             ; If star was Inactive this is the easy exit to save time.
+	inc zDLIStarLinecounter        ; (Note, VBI will zero this). 
+
+	cpy #15                        ; Has this DLI run 16 times?
+	bne b_GDLI0_NormalExit
 
 	pla
 	tay
@@ -1393,7 +1408,7 @@ GAME_DLI_0
 	mChainDLI GAME_DLI_0,TITLE_DLI_5 ; Do the land colors next.
 
 
-b_GDLI_NormalExit
+b_GDLI0_NormalExit                ; Exit without changing the DLI vector.
 	pla
 	tay
 	pla

@@ -197,13 +197,15 @@ b_gcgot_Continue
 ; until an unused row is found.
 ; --------------------------------------------------------------------------
 
-; 
+
+; VBI USAGE . . . .
+
 TABLE_GFX_STAR_COLOR_MASK1 
 	.byte $00,$02,$F2,$F4,$F6,$F8,$FA,$FC,$0E
 
 TABLE_GFX_STAR_COLOR_MASK2
 	.byte $00,$F4,$F6,$F8,$FA,$FC,$0E,$0E,$0E
-	
+
 
 ; Flag if the star is in use.  
 ; $FF is no star in use. 
@@ -215,6 +217,15 @@ TABLE_GFX_STAR_BASE .byte 0,0,0,0
 
 ; Clock counter for each star. 8, 7, 6, 5, 4, 3, 2, 1, 0.  At 0, star goes off.
 TABLE_GFX_STARS_COUNT .byte 0,0,0,0
+
+
+; DLI Usage . . . .
+
+; Is this start running on this row?   If not, then a lot of DLI can be shortcut.
+TABLE_GFX_STAR_WORKING
+;	.byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+; For testing purposes, they're all on now.
+	.byte 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 
 ; A list of the outer color value for each star line (only matters on the lines with stars)
 TABLE_GFX_STAR_OUT_COLOR
