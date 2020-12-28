@@ -141,7 +141,7 @@ If the idle player did not press their button during the countdown, then the pla
 
 **27 Dec 2020 -- Game Screen Startup**
 
-[![V09 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/09-GameScreen.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V09 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/09-WIP-GameScreen.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 The Game Screen fires up after the tranisition from the countdown.   The transition is instant and seamless -- no redraw or obvious flicker.  (Because nothing is being redrawn.  Just a few pointers to screen memory.)    
 
