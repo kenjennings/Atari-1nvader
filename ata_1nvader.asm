@@ -138,6 +138,11 @@ zLandHS          .byte 0   ; fine horizontal scroll value start.
 zLandColor       .byte 0   ; index for repeat DLIs on the scrolling land 
 
 
+; Flickering Stars values ==================================================
+
+zDLIStarLinecounter .byte 0 
+
+
 ; Generic Player/Missile Data Copying =======================================
 
 zPMG_IMAGE    .word 0 ; points to image data

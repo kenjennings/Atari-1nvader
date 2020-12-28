@@ -329,8 +329,8 @@ TABLE_GAME_DISPLAY_LIST_INTERRUPT
 	.word DoNothing_DLI ; 1  = EVENT_SETUP_TITLE
 	.word TITLE_DLI     ; 2  = EVENT_TITLE           run title and get player start button
 	.word TITLE_DLI     ; 3  = EVENT_COUNTDOWN       then move mothership
-	.word DoNothing_DLI ; 4  = EVENT_SETUP_GAME
-	.word DoNothing_DLI ; 5  = EVENT_GAME            regular game play.  boom boom boom
+	.word TITLE_DLI     ; 4  = EVENT_SETUP_GAME
+	.word GAME_DLI      ; 5  = EVENT_GAME            regular game play.  boom boom boom
 	.word DoNothing_DLI ; 6  = EVENT_LAST_ROW        forced player shove off screen
 	.word DoNothing_DLI ; 7  = EVENT_SETUP_GAMEOVER
 	.word DoNothing_DLI ; 8  = EVENT_GAMEOVER        display text, then go to title
@@ -748,6 +748,12 @@ b_mdv_DoPlayerMovement
 b_mdv_EndPlayerMovement
 
 
+	jmp ExitMyDeferredVBI
+	
+	
+	
+	
+
 ; ======== Do SOMETHING ELSE MAGICAL ========
 
 
@@ -758,6 +764,14 @@ b_mdv_EndPlayerMovement
 ; ======================================================
 
 b_mdv_DoGameManagement
+
+	lda #0
+	sta zDLIStarLinecounter   ; reset DLI counter.
+
+	lda zLASER_ONE_X
+	sta HPOSP0
+	lda zLASER_TWO_X
+	sta HPOSP1
 
 	jsr Gfx_ShowScreen   ; Forcing redraw of score now for test evidence
 
@@ -1158,7 +1172,7 @@ TITLE_DLI_5
 	iny                      ; Next index.
 
 	cpy #8                   ; Have we done this 4 times?   (4 * 2 iny == 8)
-	beq b_dli5_FinalExit     ; Yup.   can chani to the next DLI now.
+	beq b_dli5_FinalExit     ; Yup.   can chain to the next DLI now.
 
 	sty zLandColor           ; FYI: VBI will reset index to 0.
 
@@ -1169,7 +1183,15 @@ TITLE_DLI_5
 	rti
 
 
+
 b_dli5_FinalExit            ; Chain to next DLI
+
+	lda zPLAYER_ONE_X
+	sta WSYNC
+	sta WSYNC
+	sta HPOSP0
+	lda zPLAYER_TWO_X
+	sta HPOSP1
 
 	pla
 	tay
@@ -1323,6 +1345,60 @@ DLI_PF0_DEC
 
 	rts
 
+
+
+;==============================================================================
+;                                              DLI_SYNC_PF0_DEC
+;==============================================================================
+; Set HSCROL for stars.  Sync down and deal out the  colors.
+; -----------------------------------------------------------------------------
+
+GAME_DLI  ; Placeholder for VBI to restore staring address for DLI chain.
+
+
+GAME_DLI_0
+
+	mStart_DLI ; Saves A and Y
+
+	ldy zDLIStarLinecounter
+	
+	lda TABLE_GFX_STAR_HSCROL,y
+	sta HSCROL
+	sta WSYNC
+
+	lda TABLE_GFX_STAR_OUT_COLOR,y
+	sta COLPF0
+	
+	pha
+	lda TABLE_GFX_STAR_IN_COLOR,y
+	
+;	sta WSYNC
+	sta WSYNC
+	sta WSYNC
+	sta WSYNC
+
+	sta COLPF0
+	pla
+	sta WSYNC
+	sta COLPF0
+	
+	inc zDLIStarLinecounter
+
+	cpy #15
+	bne b_GDLI_NormalExit
+
+	pla
+	tay
+
+	mChainDLI GAME_DLI_0,TITLE_DLI_5 ; Do the land colors next.
+
+
+b_GDLI_NormalExit
+	pla
+	tay
+	pla
+
+	rti
 
 
 

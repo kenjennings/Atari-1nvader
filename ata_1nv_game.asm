@@ -278,6 +278,9 @@ b_gi_LoopFillZero
 ;	sta FlaggedHiScore
 ;	sta InputStick             ; no input from joystick
 
+	jsr Pmg_IndexMarks ;diagnostics for screen problems
+
+
 	rts                         ; And now ready to go back to main game loop . . . .
 
 
@@ -427,6 +430,11 @@ GameSetupTitle
 	lda #0 
 	sta zEventStage
 
+
+;	jsr Pmg_IndexMarks ;diagnostics for screen problems
+
+
+
 	rts
 
 
@@ -502,6 +510,10 @@ b_gt_ExitTitleAnimation
 	sta zEventStage
 
 b_gt_EndTitleScreen
+
+	jsr Pmg_IndexMarks ;diagnostics for screen problems
+
+
 
 	rts
 
@@ -658,6 +670,10 @@ b_mdv_LoopSetCountdownColor
 	bne b_mdv_LoopSetCountdownColor
 
 
+	jsr Pmg_IndexMarks ;diagnostics for screen problems
+
+
+
 	rts
 
 
@@ -689,6 +705,11 @@ b_gsm_Loop_ZeroPlayerScores
 	sta zPLAYER_ONE_BUMP
 	sta zPLAYER_TWO_BUMP
 
+	sta SHPOSM3 ; Remove the animated colors from the title.
+	sta SHPOSM2
+	sta SHPOSM1
+	sta SHPOSM0
+
 
 	lda #$80                        ;  128 = 80 (BCD values)
 	sta zSHIP_HITS
@@ -710,14 +731,16 @@ b_gsm_Loop_ZeroPlayerScores
 	sta zCurrentEvent
 
 	; Temporarily setting colors to make things visible without DLI running.
-	lda #$16
-	sta COLOR0 ; COLPF0
-	lda #$4A
+;	lda #$16
+;	sta COLOR0 ; COLPF0
+	lda #$0E
 	sta COLOR1 ; COLPF1
-	lda #$02
+	lda #$00
 	sta COLOR2 ; COLPF2
-	lda #$7B
-	sta COLOR3 ; COLPF3
+;	lda #$7B
+;	sta COLOR3 ; COLPF3
+
+;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
 	rts
 
@@ -730,6 +753,9 @@ b_gsm_Loop_ZeroPlayerScores
 ; --------------------------------------------------------------------------
 
 GameMain
+
+	jsr Pmg_IndexMarks ;diagnostics for screen problems
+
 
 	rts
 

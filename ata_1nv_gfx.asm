@@ -323,11 +323,11 @@ DISPLAY_LIST_GAMEOVER                                       ; Main Game and Game
 	mDL_BLANK DL_BLANK_8                                    ;         (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
 	mDL_BLANK DL_BLANK_4   
-	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
-DL_LMS_FIRST_STAR = [ * + 2 ]                               ; Remember the first star's LMS address
+	mDL_LMS   DL_TEXT_2|DL_DLI,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
+DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first star's LMS address
 	.rept 6
-		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 01 (028 - 028) 
-		mDL_LMS   DL_TEXT_6,GFX_STARS_LINE+8                ; 01 (029 - 036) (171) (6) Stars
+		mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_STARS_LINE+3                ; 01 (028 - 035) (171) (6) Stars
+		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 01 (036 - 036) 
 	.endr
 															; 02 (037 - 037) 
 															; 02 (038 - 045) (171) (6) Stars
@@ -340,10 +340,11 @@ DL_LMS_FIRST_STAR = [ * + 2 ]                               ; Remember the first
 															; 06 (073 - 073) 
 															; 06 (074 - 081) (171) (6) Stars
 
-DL_LMS_GAME_OVER = [ * + 2 ]                                ; Stars or Game Over Text
-	.rept 10
+DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over Text
+	.rept 9
+		mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+4              ; 07 (083 - 090) (171) (6) Stars
 		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 07 (082 - 082) 
-		mDL_LMS   [DL_TEXT_6],GFX_STARS_LINE+9              ; 07 (083 - 090) (171) (6) Stars
+
 	.endr
 															; 08 (091 - 091) 
 															; 08 (092 - 099) (171) (6) Stars
@@ -361,9 +362,7 @@ DL_LMS_GAME_OVER = [ * + 2 ]                                ; Stars or Game Over
 															; 14 (146 - 153) (171) (6) Stars
 															; 15 (154 - 154) 
 															; 15 (155 - 162) (171) (6) Stars
-															; 16 (163 - 163) 
-															; 16 (164 - 171) (171) (6) Stars
-
+	mDL_LMS   [DL_TEXT_6|DL_HSCROLL|DL_DLI],GFX_STARS_LINE+5           ; 16 (164 - 171) (171) (6) Stars
 
 ; Note that as long as the system VBI is functioning the address 
 ; provided for JVB does not matter at all.  The system VBI will update

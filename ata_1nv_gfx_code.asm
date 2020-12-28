@@ -207,7 +207,7 @@ TABLE_GFX_STAR_COLOR_MASK2
 
 ; Flag if the star is in use.  
 ; $FF is no star in use. 
-; Otherwise contains Index to the 18 line tables.  (0 to 17)
+; Otherwise contains Index to the 18 line tables.  (0 to 15)
 TABLE_GFX_ACTIVE_STARS .byte $FF,$FF,$FF,$FF
 
 ; Base color for the star.
@@ -218,21 +218,15 @@ TABLE_GFX_STARS_COUNT .byte 0,0,0,0
 
 ; A list of the outer color value for each star line (only matters on the lines with stars)
 TABLE_GFX_STAR_OUT_COLOR
-	.rept 16 
-		.byte 0
-	.endr
+	.byte $14,$24,$34,$44,$54,$64,$74,$84,$94,$a4,$b4,$c4,$d4,$e4,$f4,$04
 
 ; A list of the inner color value for each star line (only matters on the lines with stars)
 TABLE_GFX_STAR_IN_COLOR
-	.rept 16 
-		.byte 0
-	.endr
+	.byte $1e,$2e,$3e,$4e,$5e,$6e,$7e,$8e,$9e,$ae,$be,$ce,$de,$ee,$fe,$0e
 
 ; A list of the fine scroll values for each start line used for pixel positioning.
 TABLE_GFX_STAR_HSCROL
-	.rept 16
-		.byte 0
-	.endr	
+		.byte 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 
 TABLE_LO_GFX_LMS_STARS
 ?TEMP_DL_ADDRESS=DL_LMS_FIRST_STAR

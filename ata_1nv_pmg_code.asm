@@ -892,3 +892,45 @@ b_pmpm_RedrawPlayers
 
 b_pmpm_EndPlayerMovement
 
+	rts
+
+
+; ==========================================================================
+; INDEX MARKS
+; ==========================================================================
+; Diagnostic help.
+; Abuse the Player Missile graphics to put up registration marks every 4th
+; scan line to verify positioning of screen graphics.  (Was having a 
+; little problem with the Game screen having an extra scan line in the 
+; display which dropped the mountains and tha stats line down. 
+; --------------------------------------------------------------------------
+
+;gPMG_SaveIndexMark .byte $0
+
+Pmg_IndexMarks
+
+;	lda #$AA
+;	sta gPMG_SaveIndexMark
+	
+;	ldy #12
+
+;b_pim_LoopSetIndexMarks
+;	lda gPMG_SaveIndexMark
+;	sta PLAYERADR0,y
+;	sta PLAYERADR1,y
+;	sta PLAYERADR2,y
+;	sta PLAYERADR3,y
+
+;	EOR #$FF
+;	sta gPMG_SaveIndexMark
+	
+;	tya
+;	clc
+;	adc #4
+;	tay
+	
+;	cmp #228
+;	bne b_pim_LoopSetIndexMarks
+	
+	rts
+	
