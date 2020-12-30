@@ -199,11 +199,23 @@ b_gcgot_Continue
 
 
 ; VBI USAGE . . . .
+TABLE_GFX_STAR_COLOR_AND_OUT
+	.byte $00,$00,$F0,$F0,$F0,$F0,$F0,$F0,$00
 
-TABLE_GFX_STAR_COLOR_MASK1 ; outer colors.
+TABLE_GFX_STAR_LUMA_OR_OUT
+	.byte $00,$02,$02,$04,$06,$08,$0A,$0C,$0E
+
+TABLE_GFX_STAR_COLOR_AND_IN
+	.byte $00,$F0,$F0,$F0,$F0,$F0,$00,$00,$00
+	
+TABLE_GFX_STAR_LUMA_OR_IN
+	.byte $00,$06,$08,$0a,$0C,$0e,$0e,$0e,$0e
+
+
+;TABLE_GFX_STAR_COLOR_MASK1 ; outer colors.
 	.byte $00,$02,$F2,$F4,$F6,$F8,$FA,$FC,$0E
 
-TABLE_GFX_STAR_COLOR_MASK2 ; inner, brighter colors.
+;TABLE_GFX_STAR_COLOR_MASK2 ; inner, brighter colors.
 	.byte $00,$F4,$F6,$F8,$FA,$FC,$0E,$0E,$0E
 
 
@@ -272,7 +284,7 @@ TABLE_GFX_STARS_DIVIDE_THREE
 	.by <[GFX_STARS_LINE+18],<[GFX_STARS_LINE+18],<[GFX_STARS_LINE+18] ; (17) (51 52 53)
 	.by <[GFX_STARS_LINE+19],<[GFX_STARS_LINE+19],<[GFX_STARS_LINE+19] ; (18) (54 55 56)
 	.by <[GFX_STARS_LINE+20],<[GFX_STARS_LINE+20],<[GFX_STARS_LINE+20] ; (19) (57 58 59)
-	.by <[GFX_STARS_LINE+21],<[GFX_STARS_LINE+21],<[GFX_STARS_LINE+21] ; (20) (60 61 62)
+	.by <[GFX_STARS_LINE+0],<[GFX_STARS_LINE+0],<[GFX_STARS_LINE+0]   ; (20) (60 61 62)
 	.by <[GFX_STARS_LINE+11]                                           ; (21) (63)
 
 
@@ -381,36 +393,36 @@ b_gss_CheckClock6
 	lda #$FF
 	sta zTEMP_ADD_STAR               ; If this is on frame 6, then it is time for a new star.
 
+; The idea here is that inner color and outer color are managed differently.
+; The Base color is not always the color displayed.   At the start of the 
+; flash the color is white and max brightness. It tranistions to the 
+; base color and the brighness fades.   When it gets to the lowest luminance
+; it becomes white again (actually grey.) 
+; This transition happens at different rates for the inner color and the 
+; outer color.  So, the sequence for color modification is simply played 
+; by the frame counter. Given the base color, AND with the color mask, then 
+; OR with the luma mask, and that's the current color to display.
+
 b_gss_ProcessColor
-	ldy TABLE_GFX_STARS_COUNT,X      ; Index to color masks.
-	lda TABLE_GFX_STAR_BASE,X        ; Base color for star.
-	sta zTEMP_BASE_COLOR             ; Save it for re-use for outer color.
-	sta zTEMP_BASE_COLOR2            ; Save it for re-use for inner color.
-	
-	lda TABLE_GFX_STAR_COLOR_MASK1,Y ; Mask to hold or drop the base color
-	and #$F0                         ; Either keeps the color or removes it
-	and zTEMP_BASE_COLOR             ; Combine with saved color.
-	sta zTEMP_BASE_COLOR             ; Save updated color.
-	lda TABLE_GFX_STAR_COLOR_MASK1,Y ; Mask to hold or drop the base color
-	and #$0F                         ; Keep the luminance
-	ora zTEMP_BASE_COLOR             ; Merge with base color.
-	ldy zTEMP_NEW_STAR_ROW           ; Get the row.
-	sta TABLE_GFX_STAR_OUT_COLOR,Y   ; Save the new outer color.
-	
-	lda zTEMP_BASE_COLOR2            ; Save it for re-use.
-	lda TABLE_GFX_STAR_COLOR_MASK2,Y ; Mask to hold or drop the base color
-	and #$F0                         ; Either keeps the color or removes it
-	and zTEMP_BASE_COLOR2            ; Combine with saved color.
-	sta zTEMP_BASE_COLOR2            ; Save updated color.
-	lda TABLE_GFX_STAR_COLOR_MASK2,Y ; Mask to hold or drop the base color
-	and #$0F                         ; Keep the luminance
-	ora zTEMP_BASE_COLOR2            ; Merge with base color.
-	ldy zTEMP_NEW_STAR_ROW           ; Get the row.
-	sta TABLE_GFX_STAR_IN_COLOR,Y    ; Save the new inner color.
+	ldy TABLE_GFX_STARS_COUNT,X        ; Y = Frame counter == Index to color masks.
+	lda TABLE_GFX_STAR_BASE,X          ; Base color for star.
+
+	and TABLE_GFX_STAR_COLOR_AND_OUT,y ; Mask to hold or drop the base color
+	ora TABLE_GFX_STAR_LUMA_OR_OUT,y   ; Mask to merge the luminance
+	ldy zTEMP_NEW_STAR_ROW             ; Get the row.
+	sta TABLE_GFX_STAR_OUT_COLOR,Y     ; Save the new outer color.
+
+	ldy TABLE_GFX_STARS_COUNT,X        ; Y = Frame counter == Index to color masks.
+	lda TABLE_GFX_STAR_BASE,X          ; Base color for star.
+
+	and TABLE_GFX_STAR_COLOR_AND_IN,y ; Mask to hold or drop the base color
+	ora TABLE_GFX_STAR_LUMA_OR_IN,y   ; Mask to merge the luminance
+	ldy zTEMP_NEW_STAR_ROW            ; Get the row.
+	sta TABLE_GFX_STAR_IN_COLOR,Y     ; Save the new inner color.
 
 b_gss_Exit
 	rts
-	
+
 
 ; ==========================================================================
 ; SETUP NEW STAR
