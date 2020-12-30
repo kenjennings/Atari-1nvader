@@ -153,7 +153,7 @@ b_gcgot_Continue
 ; When the star fades out a new star is added.
 ; On the Atari this fade out will be a little more animated.
 ; The star has a little gradient applied where the top and bottom
-; sparkle pixels fade out faster than the center line pixels.
+; sparkly pixels fade out faster than the center line pixels.
 ; 
 ; Frame:  Top/Bot:   Middle:  (colors for fading)
 ;    8      $0E        $0E     1
@@ -182,7 +182,7 @@ b_gcgot_Continue
 ; random from 2 to 22 (Or LMS+1 to LMS+21).   Do this by choosing a
 ; random number, then mask it (bitwise AND) with %3F.  The resulting 
 ; value, 0 to 63, is used as the index to a lookup table to convert it 
-; to the value divided by 3.  The zero equivalants (0, 1, 2) will map
+; to the value divided by 3.  The zero equivalents (0, 1, 2) will map
 ; to 4, 11, 1.
 ; Horizontal fine scrolling will be a random number from 0 to 15. 
 ;
@@ -200,44 +200,42 @@ b_gcgot_Continue
 
 ; VBI USAGE . . . .
 
-TABLE_GFX_STAR_COLOR_MASK1 
+TABLE_GFX_STAR_COLOR_MASK1 ; outer colors.
 	.byte $00,$02,$F2,$F4,$F6,$F8,$FA,$FC,$0E
 
-TABLE_GFX_STAR_COLOR_MASK2
+TABLE_GFX_STAR_COLOR_MASK2 ; inner, brighter colors.
 	.byte $00,$F4,$F6,$F8,$FA,$FC,$0E,$0E,$0E
 
 
 ; Flag if the star is in use.  
 ; $FF is no star in use. 
 ; Otherwise contains Index to the 18 line tables.  (0 to 15)
-TABLE_GFX_ACTIVE_STARS .byte $FF,$FF,$FF,$FF
+TABLE_GFX_ACTIVE_STARS .byte $00,$FF,$FF,$FF
 
 ; Base color for the star.
 TABLE_GFX_STAR_BASE .byte 0,0,0,0
 
 ; Clock counter for each star. 8, 7, 6, 5, 4, 3, 2, 1, 0.  At 0, star goes off.
-TABLE_GFX_STARS_COUNT .byte 0,0,0,0
+TABLE_GFX_STARS_COUNT .byte 8,0,0,0
 
 
 ; DLI Usage . . . .
 
 ; Is this start running on this row?   If not, then a lot of DLI can be shortcut.
 TABLE_GFX_STAR_WORKING
-;	.byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-; For testing purposes, they're all on now.
-	.byte 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	.byte 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 ; A list of the outer color value for each star line (only matters on the lines with stars)
 TABLE_GFX_STAR_OUT_COLOR
-	.byte $14,$24,$34,$44,$54,$64,$74,$84,$94,$a4,$b4,$c4,$d4,$e4,$f4,$04
+	.byte $0e,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0
 
 ; A list of the inner color value for each star line (only matters on the lines with stars)
 TABLE_GFX_STAR_IN_COLOR
-	.byte $1e,$2e,$3e,$4e,$5e,$6e,$7e,$8e,$9e,$ae,$be,$ce,$de,$ee,$fe,$0e
+	.byte $0e,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0,$0
 
 ; A list of the fine scroll values for each start line used for pixel positioning.
 TABLE_GFX_STAR_HSCROL
-		.byte 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
+		.byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 TABLE_LO_GFX_LMS_STARS
 ?TEMP_DL_ADDRESS=DL_LMS_FIRST_STAR
@@ -379,9 +377,10 @@ b_gss_CheckClock6
 	ldy TABLE_GFX_STARS_COUNT,X      ; Get the clock for this star
 	cpy #6                           ; is it 6?
 	bne b_gss_ProcessColor           ; No.  So, continue with color processing.
-	
-	inc zTEMP_ADD_STAR               ; If this is on frame 6, then it is time for a new star.
-	
+
+	lda #$FF
+	sta zTEMP_ADD_STAR               ; If this is on frame 6, then it is time for a new star.
+
 b_gss_ProcessColor
 	ldy TABLE_GFX_STARS_COUNT,X      ; Index to color masks.
 	lda TABLE_GFX_STAR_BASE,X        ; Base color for star.
@@ -395,7 +394,7 @@ b_gss_ProcessColor
 	lda TABLE_GFX_STAR_COLOR_MASK1,Y ; Mask to hold or drop the base color
 	and #$0F                         ; Keep the luminance
 	ora zTEMP_BASE_COLOR             ; Merge with base color.
-	ldy TABLE_GFX_STARS_COUNT,X      ; Get the row.
+	ldy zTEMP_NEW_STAR_ROW           ; Get the row.
 	sta TABLE_GFX_STAR_OUT_COLOR,Y   ; Save the new outer color.
 	
 	lda zTEMP_BASE_COLOR2            ; Save it for re-use.
@@ -406,9 +405,9 @@ b_gss_ProcessColor
 	lda TABLE_GFX_STAR_COLOR_MASK2,Y ; Mask to hold or drop the base color
 	and #$0F                         ; Keep the luminance
 	ora zTEMP_BASE_COLOR2            ; Merge with base color.
-	ldy TABLE_GFX_STARS_COUNT,X      ; Get the row.
+	ldy zTEMP_NEW_STAR_ROW           ; Get the row.
 	sta TABLE_GFX_STAR_IN_COLOR,Y    ; Save the new inner color.
-		
+
 b_gss_Exit
 	rts
 	
@@ -448,9 +447,12 @@ Gfx_Setup_New_Star
 	and #$F0                           ; Interested in only the color component.
 	sta TABLE_GFX_STAR_BASE,X          ; Save Base color.
 
-	lda #$FF                           ; Still Starting out with white.
+	lda #$0E                           ; Still Starting out with white.
 	sta TABLE_GFX_STAR_OUT_COLOR,Y     ; Set top/bottom sparkle color
 	sta TABLE_GFX_STAR_IN_COLOR,Y      ; Set center star color
+
+	lda #$FF
+	sta TABLE_GFX_STAR_WORKING,Y       ; Turn ON this star (DLI observes this.)
 
 	lda RANDOM                         ; Random value for star HSCROL 
 	and #$0F                           ; Reduce to 0 to 15
@@ -467,6 +469,8 @@ Gfx_Setup_New_Star
 	lda TABLE_GFX_STARS_DIVIDE_THREE,Y ; Convert to screen LMS low byte value
 	ldy #0
 	sta (zDL_LMS_STARS_ADDR),Y         ; Change the LMS to point at the line
+	
+	lda #$FF                           ; Set the negative flag telling the caller a star was added.
 	
 b_gsns_Exit
 	rts
@@ -504,6 +508,7 @@ Gfx_Remove_Star
 	sta TABLE_GFX_STAR_BASE,X      ; Base color for star
 	sta TABLE_GFX_STAR_OUT_COLOR,Y ; Star's center color
 	sta TABLE_GFX_STAR_IN_COLOR,Y  ; Star's edge pixels color
+	sta TABLE_GFX_STAR_WORKING,Y   ; Turn off this star (DLI observes this.)
 
 	lda #15
 	sta TABLE_GFX_STAR_HSCROL,Y    ; Output all color clocks in the buffer
@@ -517,7 +522,8 @@ Gfx_Remove_Star
 	ldy #0
 	sta (zDL_LMS_STARS_ADDR),Y     ; Change the LMS to the start of line
 
-	inc zTEMP_ADD_STAR             ; Flag that this star is gone.  Add new star at next opportunity.
+	lda #$FF
+	sta zTEMP_ADD_STAR             ; Flag that this star is gone.  Add new star at next opportunity.
 
 	rts
 
@@ -527,20 +533,36 @@ Gfx_Remove_Star
 ; ==========================================================================
 ; Cycle through stars 0 to 3.
 ; Run the service routine.
+; If the routines flagged to start a new star, then look for 
+; an unused star and restart it.
 ; --------------------------------------------------------------------------
 
 Gfx_RunGameStars
 
-	ldx #0
+	ldx #0                   ; Start at star 0
 
 b_grgs_LoopEachStar
-	jsr Gfx_Service_Star
-	
-	inx
-	cpx #4
-	
-	bne b_grgs_LoopEachStar
+	jsr Gfx_Service_Star     ; Service the start timer and color flash
 
+	inx                      ; next Star.
+	cpx #4                   ; Loop 0 to 3, then 4 is the end.
+	bne b_grgs_LoopEachStar  ; Looping for next star.
+
+	lda zTEMP_ADD_STAR       ; At the end was a star removed (or timer signaled new star?)
+	beq b_grgs_Exit          ; No.   Done here.
+
+	ldx #0                   ; Clear the add New Star Flag.
+	stx zTEMP_ADD_STAR
+
+b_grgs_LookForUnusedStar
+	jsr Gfx_Setup_New_Star   ; Try to setup a new star.
+	bmi b_grgs_Exit          ; if it exited <0 then a new star was added.
+
+	inx                      ; next Star.
+	cpx #4                   ; Loop 0 to 3, then 4 is the end.
+	bne b_grgs_LookForUnusedStar
+
+b_grgs_Exit
 	rts
 
 
@@ -642,13 +664,13 @@ Gfx_RunScrollingLand
 
 b_grsl_RunLandScrolling
 
-	dec zLandScrollTimer      ; Delay to not scroll to quickly.
+	dec zLandScrollTimer       ; Delay to not scroll to quickly.
 	bne b_grsl_EndLandScrolling
 
-	lda #LAND_STEP_TIMER      ; Reset the scroll timer
+	lda #LAND_STEP_TIMER       ; Reset the scroll timer
 	sta zLandScrollTimer
 
-	lda zLandMotion           ; What direction are we moving in?
+	lda zLandMotion            ; What direction are we moving in?
 	beq b_grsl_LandLeft        ; 0 is moving Left
 
 	; Otherwise, we're going in the opposite direction here.  (Right)
