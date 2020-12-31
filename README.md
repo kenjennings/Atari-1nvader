@@ -161,11 +161,11 @@ The random flashing stars are functioning on the game screen.   Note that the pi
 
 There is only one line of star data. The 16 lines of stars all refer to the same screen data, so this section of the screen showing the stars takes roughly 100 bytes including all the display list instructions.   
 
-Positioning the star is done by horizontally scrolling the line to a random position.  Fine scrolling is also used, so the stars can be positioned per pixel/color clock as if the stars are drawn in a pixel-graphics mode.  
+Positioning the star is done by horizontally scrolling the line to a random position.  Fine scrolling is also used, so the stars can be horizontally positioned per pixel/color clock as if the stars are drawn in a pixel-graphics mode.  
 
-Each star is assigned a random base color.   The Vertical blank interrupt manages positioning stars, and running the color fading transitions for each star.
+The Vertical blank interrupt manages choosing random star locations and setting the stars positions, and running the color fading transitions for each star.  Each star is assigned a random base color.
 
-Each line of stars is serviced by a Display List Interrupt to that provides the horizontal fine scrolling control per line and colors the top/bottom of the star separately from the middle of the star.
+Each line of stars is serviced by a Display List Interrupt to that provides the horizontal fine scrolling control per line and applies the colors to the top/bottom of the star separately from the middle of the star.
 
 ---
 
