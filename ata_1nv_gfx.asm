@@ -1,6 +1,6 @@
 ;*******************************************************************************
 ;*
-;* 1NVADER - Atari parody of C64 1NVADER game - 2020 Ken Jennings
+;* 1NVADER - Atari parody of C64 1NVADER game - 2021 Ken Jennings
 ;*
 ;*******************************************************************************
 
@@ -535,7 +535,7 @@ GFX_SCROLL_CREDIT1
 	.sb "   ken jennings     "  ; +30, HSCROL 12
 
 GFX_SCROLL_CREDIT2
-	.by $00,$52,$50,$52,$50,$00,$4D ; "2020 -"
+	.by $00,$52,$50,$52,$51,$00,$4D ; "2021 -"
 	.sb " atari "
 	.by $58,$4d                     ; "8-"
 	.sb "bits"                      ; +0, HSCROL 12
@@ -561,7 +561,7 @@ scrtxt
 	.sb "     1NVADER SLOWS DOWN AFTER EIGHTY HITS "
 	.sb "     C64 VERSION 2019 - DARREN FOULDS  @DARRENTHEFOULDS "
 	.sb "     THX @BEDFORDLVLEXP     HI NATE AND TBONE!"
-	.sb "     ATARI VERSION 2020 - KEN JENNINGS HTTPS://GITHUB.COM/KENJENNINGS/ATARI-1NVADER "
+	.sb "     ATARI VERSION 2021 - KEN JENNINGS HTTPS://GITHUB.COM/KENJENNINGS/ATARI-1NVADER "
 GFX_END_DOCS
 	.sb "                      "
 

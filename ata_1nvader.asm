@@ -4,7 +4,7 @@
 ;*
 ;*******************************************************************************
 ;*
-;* 1NVADER - Atari parody of C64 1NVADER game - 2020 Ken Jennings                        
+;* 1NVADER - Atari parody of C64 1NVADER game - 2021 Ken Jennings                        
 ;*                                                                             
 ;*******************************************************************************
 
@@ -332,7 +332,7 @@ SAVEY = $FF
 	.by "fun possible. "
 	.by "** ATARI 1NVADER "
 	.by "** Atari 8-bit computer systems. "
-	.by "** Ken Jennings  2020 **"
+	.by "** Ken Jennings  2021 **"
 
 
 
