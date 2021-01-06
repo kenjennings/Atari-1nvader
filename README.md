@@ -165,7 +165,7 @@ Positioning the star is done by horizontally scrolling the line to a random posi
 
 The Vertical blank interrupt manages choosing random star locations and setting the stars positions, and running the color fading transitions for each star.  Each star is assigned a random base color.
 
-Each line of stars is serviced by a Display List Interrupt to that provides the horizontal fine scrolling control per line and applies the colors to the top/bottom of the star separately from the middle of the star.
+Each line of stars is serviced by a Display List Interrupt that provides the horizontal fine scrolling control per line and applies the colors to the top/bottom of the star separately from the middle of the star.
 
 ---
 
