@@ -143,11 +143,11 @@ If the idle player did not press their button during the countdown, then the pla
 
 [![V09 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/09-WIP-GameScreen.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
-The Game Screen fires up after the tranisition from the countdown.   The transition is instant and seamless -- no redraw or obvious flicker.  (Because nothing is being redrawn.  Just a few pointers to screen memory.)    
+The Game Screen fires up after the countdown.   The transition from Title screen to Game screen is instant and seamless -- no redraw or obvious flicker.  (Because nothing is being redrawn.  Just a few pointers to screen memory.)    
 
 The Player does not move yet.
 
-The panorama of distant mountains continues its motion as it is serviced by the exact same Display List segment, Display List Interrupts, and VBI service code.
+The panorama of distant mountains continues its motion since it is serviced by the exact same Display List segment, Display List Interrupts, and VBI service code.
 
 The random flashing stars are not yet being serviced for the animation, but the Display List Interrupt to apply color is running to help work out the alignment.
 
