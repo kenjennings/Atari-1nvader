@@ -2,6 +2,14 @@
 WORK IN PROGRESS - Atari port (parody) of C64 1nvader
 
 ---
+**Development**
+
+| **Title** | **Game** | 
+| ------- | ------- |
+| **Progress** |
+| [![TITLE WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/07-WIP-NewLandAndGuns.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | [![GAME_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/10-WIP-GameScreenPlusStars.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Game.md "Game") |
+
+---
 
 Prior to November there have been several months of occasional hacking around.  A lot of it is figuring out the data used for graphics in the original C64 program and figuring out how to deal with it on the Atari.  For a long while the code was in an unassemble-able state as I worked out how the Atari graphics would function and typing in all those sorts of details.   Also, a lot of why it had been un-assemble-able is that big parts are borrowed structure from the previous project (Pet-Frogger).  If you look at the source you'll see miles of code that is just in comments, and about as much code that has no purpose for the program. Eventually, this will all be cleaned up.
 
