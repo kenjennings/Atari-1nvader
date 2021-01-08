@@ -37,7 +37,7 @@ Each line of stars is serviced by a Display List Interrupt that provides the hor
 
 ---
 
-**DD MMM 2020 -- TO-DO**
+**DD MMM 2021 -- TO-DO**
 
 [![V11_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/11-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
