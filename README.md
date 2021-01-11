@@ -1,5 +1,9 @@
 # Atari-1nvader
-WORK IN PROGRESS - Atari port (parody) of C64 1nvader
+WORK IN PROGRESS - Atari 8-bit computer port (parody) of Darren Foulds' C64 1nvader game
+
+Darren Foulds: https://github.com/darrenfoulds
+
+1nvader For C64: https://github.com/darrenfoulds/1nvader-c64
 
 ---
 
