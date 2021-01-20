@@ -687,7 +687,11 @@ b_mdv_LoopSetCountdownColor
 ;
 ; Here, zero all the starting values for supporting GAME LOGIC.
 ; The only visual aspect is copying the score and statistics to 
-; the screen.  
+; the screen.
+; 
+; The gun(s) are already in correct X and Y position due to title screen
+; and countdown selection.   If the gun is in operation, then randomize 
+; the direction.
 ; --------------------------------------------------------------------------
 
 GameSetupMain
@@ -727,7 +731,35 @@ b_gsm_Loop_ZeroPlayerScores
 	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
 	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
 
-	lda #EVENT_GAME   
+	lda RANDOM                      ; Random starting direction for Mothership
+	and #$01
+	sta zMOTHERSHIP_DIR             ; 0 == left to right. 1 == right to left.
+
+	bne b_gsm_SetMothershipMax_X    ; 0 == left to right. 1 == right to left.
+	lda #MOTHERSHIP_MIN_X           ; Left == Minimum
+	bne b_gsm_SetMothership_X       ; Save X
+	
+b_gsm_SetMothershipMax_X
+	lda #MOTHERSHIP_MAX_X           ; Right == Maximum
+
+b_gsm_SetMothership_X               ; Start X coord.
+	sta zMOTHERSHIP_NEW_X
+	sta zMOTHERSHIP_X
+
+
+	; Setting random direction for both players.
+	; Not doing any comparison for the player on or off,
+	; because whatever is set here doesn't cause anything 
+	; to happen during the game . . .
+
+	lda RANDOM                      ; Set random direction.
+	and #$01
+	sta zPLAYER_ONE_DIR
+	lda RANDOM                      ; Set random direction.
+	and #$01
+	sta zPLAYER_TWO_DIR
+
+	lda #EVENT_GAME                 ; Fire up the game screen.
 	sta zCurrentEvent
 
 	; Temporarily setting colors to make things visible without DLI running.
@@ -749,12 +781,29 @@ b_gsm_Loop_ZeroPlayerScores
 ; ==========================================================================
 ; GAME MAIN
 ; ==========================================================================
-;
+; The VBI takes care of drawing everything at its NEW positions.
+; The VBI captured the collision information between the shots 
+; and the mothership. 
+; The OS VBI extracted controller info (the buttons).
+; 
+; The Main code here does the following....
+; If collision occurred switch the set the states of the mothership and 
+; the explosion players, and flag for scoring.
+; If the button is pressed and the shot start is possible then start 
+; the shot state and toggle the gun direction. 
+; Given player state, move the gun in its direction, rebound from 
+; the bumpers or the other player. 
+; If the mothership is on last row, continue mothership motion and drag 
+; along the guns when they are in contact.
+; At completion of last row, erase all players, trigger end game.
 ; --------------------------------------------------------------------------
 
 GameMain
 
-	jsr Pmg_IndexMarks ;diagnostics for screen problems
+;	jsr Pmg_IndexMarks ;diagnostics for screen problems
+
+
+	; Quick and dirty demo.
 
 
 	rts
