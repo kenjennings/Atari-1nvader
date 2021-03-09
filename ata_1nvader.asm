@@ -3302,8 +3302,7 @@ TABLE_STAR_LOCATION ; star
 
 ; Table to convert row to Y coordinate.
 ; This is also do-able with a LSR to multiply times 8 then add offset.
-; The original code relied on BCD value of MOTHERSHIP ROW to do 
-; the lookup from the tables.
+
 TABLE_ROW_TO_Y ; r2ytab
 	.byte 58,66,74,82,90,98,106,114,122,130       ; Rows 0 to 9
 ;	.byte 0,0,0,0,0,0                             ; Ummm?

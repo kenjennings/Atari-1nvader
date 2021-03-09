@@ -746,6 +746,10 @@ b_gsm_SetMothership_X               ; Start X coord.
 	sta zMOTHERSHIP_NEW_X
 	sta zMOTHERSHIP_X
 
+	ldx #0
+	stx zMOTHERSHIP_ROW
+	lda TABLE_ROW_TO_Y,x            ; row 2 y table
+	sta zMOTHERSHIP_Y
 
 	; Setting random direction for both players.
 	; Not doing any comparison for the player on or off,
@@ -782,15 +786,30 @@ b_gsm_SetMothership_X               ; Start X coord.
 ; GAME MAIN
 ; ==========================================================================
 ; The VBI takes care of drawing everything at its NEW positions.
-; The VBI captured the collision information between the shots 
+; The VBI captured the collision information between the lasers 
 ; and the mothership. 
 ; The OS VBI extracted controller info (the buttons).
 ; 
 ; The Main code here does the following....
-; If collision occurred switch the set the states of the mothership and 
-; the explosion players, and flag for scoring.
-; If the button is pressed and the shot start is possible then start 
-; the shot state and toggle the gun direction. 
+; 1) If collision occurred between P0 (P1 laser) and P3 (mothership):
+;    a) switch the set the states of the mothership and 
+;       the explosion (p3) players, remove laser 1 (p0), and flag 
+;       Player 1 for scoring.
+; 2) If collision occurred between P1 (P2 laser) and P3 (mothership):
+;    a) switch the set the states of the mothership and 
+;       the explosion (p3) players, remove laser 2 (p1), and flag 
+;       Player 2 for scoring.
+; 3) If explosion (p3) on, test timer.  flag to remove if timer runs out
+; 4) If the J1 button is pressed and the 
+;    P0 laser start is possible (laser is off, or laser Y is less 
+;    than screen center) 
+;    then start the P0 laser state and toggle the Player 1 gun direction. 
+; 4) B) if laser (p0) is on, then move Y-4
+; 5) If the J2 button is pressed and the 
+;    P1 laser start is possible (laser is off, or laser Y is less 
+;    than screen center) 
+;    then start the P1 laser state and toggle the Player 2 gun direction. 
+; 4) B) if laser (p1) is on, then move Y-4
 ; Given player state, move the gun in its direction, rebound from 
 ; the bumpers or the other player. 
 ; If the mothership is on last row, continue mothership motion and drag 

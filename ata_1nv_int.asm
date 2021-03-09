@@ -355,34 +355,6 @@ MyImmediateVBI
 	lda TABLE_GAME_DISPLAY_LIST_INTERRUPT,x
 	sta VDSLST+1
 
-
-; ======== NEW SHADOW REGISTERS  ========
-; The main line code will do the extra work of updating the P/M graphics
-; to starting Horizontal position (these fake Shadow regs).
-; The game relies on the DLIs to cut up Players/Missiles to their proper 
-; horizontal positions.
-; We could loop to copy these, but I don't want to burn through eight 
-; more inc or dec, and branches.  So, do this as fast as possible.
-
-b_mdv_ReloadFromShadow
-
-	lda SHPOSP0
-	sta HPOSP0
-	lda SHPOSP1
-	sta HPOSP1
-	lda SHPOSP2
-	sta HPOSP2
-	lda SHPOSP3
-	sta HPOSP3
-	lda SHPOSM0
-	sta HPOSM0
-	lda SHPOSM1
-	sta HPOSM1
-	lda SHPOSM2
-	sta HPOSM2
-	lda SHPOSM3
-	sta HPOSM3
-
 ExitMyImmediateVBI
 
 	jmp SYSVBV ; Return to OS.  XITVBV for Deferred interrupt.
@@ -749,15 +721,10 @@ b_mdv_EndPlayerMovement
 
 
 	jmp ExitMyDeferredVBI
-	
-	
-	
-	
+
+
 
 ; ======== Do SOMETHING ELSE MAGICAL ========
-
-
-
 
 
 ; ====================  GAME SCREEN  ===================
@@ -845,22 +812,41 @@ DoAnimateEyeballs
 EndOfClockChecks
 
 
-
-
-
-
-
 DoPromptColorchange
 ;	jsr ToggleButtonPrompt        ; Manipulates colors for prompt.
+
 
 DoCheesySoundService              ; World's most inept sound sequencer.
 	jsr SoundService
 
-
-
-
-
 ExitMyDeferredVBI
+
+; ======== NEW SHADOW REGISTERS  ========
+; The main line code will do the extra work of updating the P/M graphics
+; to starting Horizontal position (these fake Shadow regs).
+; The game relies on the DLIs to cut up Players/Missiles to their proper 
+; horizontal positions.
+; We could loop to copy these, but I don't want to burn through eight 
+; more inc or dec, and branches.  So, do this as fast as possible.
+
+;b_mdv_ReloadFromShadow
+
+	lda SHPOSP0
+	sta HPOSP0
+	lda SHPOSP1
+	sta HPOSP1
+	lda SHPOSP2
+	sta HPOSP2
+	lda SHPOSP3
+	sta HPOSP3
+	lda SHPOSM0
+	sta HPOSM0
+	lda SHPOSM1
+	sta HPOSM1
+	lda SHPOSM2
+	sta HPOSM2
+	lda SHPOSM3
+	sta HPOSM3
 
 	jmp XITVBV                    ; Return to OS.  SYSVBV for Immediate interrupt.
 

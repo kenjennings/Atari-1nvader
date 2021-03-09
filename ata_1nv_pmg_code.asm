@@ -742,6 +742,43 @@ Pmg_AdustMissileHPOS
 
 
 
+                                   ; should be 2
+;	lda #2                         ; initial ms speed
+;	sta zMOTHERSHIP_MOVE_SPEED     ; Loop this many times.
+;	lda #10                        ; should be 10
+;	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
+;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
+		 
+
+
+;==============================================================================
+;												SetMotherShip  X
+;==============================================================================
+; Given Mothership row (X), update the mother ship specifications.
+; Save the row.
+;
+; Really, this is more like mainline support code, but since the 
+; mother ship is a player, we're putting the routine here.
+; -----------------------------------------------------------------------------
+
+Pmg_SetMotherShip
+
+	stx zMOTHERSHIP_ROW   ; Set msy from
+	lda TABLE_ROW_TO_Y,x ; row 2 y table
+	sta zMOTHERSHIP_Y
+
+;	lda #2
+;	sta zMOTHERSHIP_COLOR   ; ms is red
+	jsr GetMothershipPoints ; X will contain Mothership Row
+;	lda #1
+;	sta zSHOW_SCORE_FLAG
+	inc zSHOW_SCORE_FLAG
+
+;	jsr showscr
+
+rts
+
+
 ; ==========================================================================
 ; CycleIdlePlayer
 ; ==========================================================================
@@ -890,8 +927,26 @@ b_pmpm_TryPlayerRedraw
 b_pmpm_RedrawPlayers
 	jsr Pmg_Draw_Players ;  This will zero the Redraw flags and copy Players' NEW_Y to Y
 
-b_pmpm_EndPlayerMovement
+b_pmpm_EndPlayerMovement ; Decide if Lazer or Player sets the HPOS at the start of the frame.
 
+	lda zCurrentEvent    ; Is this is 0? 
+	beq b_pmpm_Exit      ; No.  End the Deferred VBI
+	cmp EVENT_GAME       ; Is it game?
+	bcc b_pmpm_SetPlayer ; No. So, no lasers.
+
+	lda zLASER_ONE_X
+	sta SHPOSP0
+	lda zLASER_TWO_X
+	sta SHPOSP1
+	jmp b_pmpm_Exit
+
+b_pmpm_SetPlayer
+	lda zPLAYER_ONE_X
+	sta SHPOSP0
+	lda zLASER_TWO_X
+	sta SHPOSP1
+
+b_pmpm_Exit
 	rts
 
 
