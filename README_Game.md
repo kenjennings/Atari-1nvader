@@ -37,9 +37,25 @@ Each line of stars is serviced by a Display List Interrupt that provides the hor
 
 ---
 
+**21 April 2021 -- Alien Antagonist Animation Added**
+
+[![V11_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/11-WIP-GameWithMothership.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+Demo code is added to do simple imitation of the mothership movement for the game.
+
+The demo code starts the mothership from the top of the screen and animates the movement row by row until it gets to the bottom row.
+
+When the mothership reaches the bottom row the limiting code prevents further movement down, but the bounce logic keeps it moving back and forth.... forever.
+
+A difference from the original game is that there is a transition animation that slides the mothership down to the next row when it reaches the horizontal limit.
+ 
+Mothership speed and score display are not yet functioning.  (Neither are the gun movements.)
+
+---
+
 **DD MMM 2021 -- TO-DO**
 
-[![V11_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/11-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V12_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/12-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
 
