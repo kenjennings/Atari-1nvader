@@ -745,16 +745,22 @@ b_gsm_SetMothershipMax_X
 b_gsm_SetMothership_X               ; Start X coord.
 	sta zMOTHERSHIP_NEW_X
 	sta zMOTHERSHIP_X
+	sta SHPOSP2
 
 	ldx #0
-	stx zMOTHERSHIP_ROW
-	lda TABLE_ROW_TO_Y,x            ; row 2 y table
-	sta zMOTHERSHIP_Y
+;	stx zMOTHERSHIP_ROW
+	stx zMOTHERSHIP_Y               ; Zero old P/M Y position
+	jsr Pmg_SetMotherShip
+;	lda TABLE_ROW_TO_Y,x            ; row 2 y table
+;	sta zMOTHERSHIP_NEW_Y           ; New Y position.
 
 	; Setting random direction for both players.
 	; Not doing any comparison for the player on or off,
 	; because whatever is set here doesn't cause anything 
 	; to happen during the game . . .
+	lda #PM_SIZE_NORMAL
+	sta SIZEP2
+	sta SIZEP3
 
 	lda RANDOM                      ; Set random direction.
 	and #$01

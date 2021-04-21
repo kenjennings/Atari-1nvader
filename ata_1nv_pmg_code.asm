@@ -197,7 +197,98 @@ b_pdp_LoopDrawPlayer2
 
 b_pdp_Exit
 	rts
-	
+
+
+; ==========================================================================
+; DRAW MOTHERSHIP
+; ==========================================================================
+; Draw the small mothership.   This should only be called when the Y
+; value changes.
+;
+; If the Old position is not the same as the New position then increment 
+; the old position and redraw.
+;
+; Assume this may be due to vertical movement down, so start by zeroing 
+; the Y-1 position.
+;
+; Copy the image bitmap into Player 2 memory map.  
+;
+; The current Y position is zMOTHERSHIP_NEW_Y
+; 
+; This object has its own dedicated code, because I'm too lazy to fix 
+; the generic library for this.  By the time this is in its final form 
+; most of that generic library stuff still hanging about will get
+; deleted.
+;
+; If the Y value is negative, then the image is overwritten with 0 bytes.
+; --------------------------------------------------------------------------
+
+Pmg_Draw_Mothership
+
+	lda zMOTHERSHIP_Y
+	cmp zMOTHERSHIP_NEW_Y
+	beq b_pdms_Exit
+
+	inc zMOTHERSHIP_Y
+	ldy zMOTHERSHIP_Y      ; Get msy 
+	lda #0
+	tax
+
+	dey                    ; Y - 1
+	sta PLAYERADR2,Y       ; Write 0 to P/M memory
+	iny                    ; Y + 1
+
+b_pdms_LoopDraw
+	lda PMG_IMG_MOTHERSHIP,X ; Get byte from saved image
+	sta PLAYERADR2,Y       ; Write to P/M memory
+
+	iny                    ; One position lower.
+	inx                    ; next byte
+
+	cpx #8                 
+	bne b_pdms_LoopDraw    ; End after copying 8.
+
+b_pdms_Exit
+	lda zMOTHERSHIP_NEW_X  ; And set new X position
+	sta zMOTHERSHIP_X
+	sta SHPOSP2
+
+	rts
+
+
+                                   ; should be 2
+;	lda #2                         ; initial ms speed
+;	sta zMOTHERSHIP_MOVE_SPEED     ; Loop this many times.
+;	lda #10                        ; should be 10
+;	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
+;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count 
+
+
+;==============================================================================
+;												SetMotherShip  X
+;==============================================================================
+; Given Mothership row (X), update the mother ship specifications.
+; Save the row.
+;
+; Really, this is more like mainline support code, but since the 
+; mother ship is a player, we're putting the routine here.
+; -----------------------------------------------------------------------------
+
+Pmg_SetMotherShip
+
+	stx zMOTHERSHIP_ROW   ; Set msy from
+	lda TABLE_ROW_TO_Y,X  ; row 2 y table
+;	sta zMOTHERSHIP_Y
+	sta zMOTHERSHIP_NEW_Y
+
+	jsr GetMothershipPoints ; X will contain Mothership Row
+
+	inc zSHOW_SCORE_FLAG
+
+	jsr showscr
+
+	rts
+
 
 ; ==========================================================================
 ; COPY OBJECT
@@ -742,42 +833,6 @@ Pmg_AdustMissileHPOS
 
 
 
-                                   ; should be 2
-;	lda #2                         ; initial ms speed
-;	sta zMOTHERSHIP_MOVE_SPEED     ; Loop this many times.
-;	lda #10                        ; should be 10
-;	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
-;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
-		 
-
-
-;==============================================================================
-;												SetMotherShip  X
-;==============================================================================
-; Given Mothership row (X), update the mother ship specifications.
-; Save the row.
-;
-; Really, this is more like mainline support code, but since the 
-; mother ship is a player, we're putting the routine here.
-; -----------------------------------------------------------------------------
-
-Pmg_SetMotherShip
-
-	stx zMOTHERSHIP_ROW   ; Set msy from
-	lda TABLE_ROW_TO_Y,x ; row 2 y table
-	sta zMOTHERSHIP_Y
-
-;	lda #2
-;	sta zMOTHERSHIP_COLOR   ; ms is red
-	jsr GetMothershipPoints ; X will contain Mothership Row
-;	lda #1
-;	sta zSHOW_SCORE_FLAG
-	inc zSHOW_SCORE_FLAG
-
-;	jsr showscr
-
-rts
-
 
 ; ==========================================================================
 ; CycleIdlePlayer
@@ -930,7 +985,7 @@ b_pmpm_RedrawPlayers
 b_pmpm_EndPlayerMovement ; Decide if Lazer or Player sets the HPOS at the start of the frame.
 
 	lda zCurrentEvent    ; Is this is 0? 
-	beq b_pmpm_Exit      ; No.  End the Deferred VBI
+	beq b_pmpm_Exit      ; No.  Next section
 	cmp EVENT_GAME       ; Is it game?
 	bcc b_pmpm_SetPlayer ; No. So, no lasers.
 
@@ -957,7 +1012,7 @@ b_pmpm_Exit
 ; Abuse the Player Missile graphics to put up registration marks every 4th
 ; scan line to verify positioning of screen graphics.  (Was having a 
 ; little problem with the Game screen having an extra scan line in the 
-; display which dropped the mountains and tha stats line down. 
+; display which dropped the mountains and the stats line down. 
 ; --------------------------------------------------------------------------
 
 ;gPMG_SaveIndexMark .byte $0

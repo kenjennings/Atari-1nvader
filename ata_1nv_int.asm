@@ -396,9 +396,9 @@ ExitMyImmediateVBI
 
 MyDeferredVBI
 
-	lda zCurrentEvent           ; Is this is stil 0 (INIT)? 
+	lda zCurrentEvent           ; Is this is still 0 (INIT)? 
 	bne b_mdv_DoMyDeferredVBI   ; No.   Continue the Deferred VBI
-	jmp ExitMyDeferredVBI       ; Yes.  We should not be here.  End now.
+	jmp XITVBV                  ; Yes.  We should not be here.  End now.  Return to OS.
 
 
 b_mdv_DoMyDeferredVBI
@@ -415,6 +415,7 @@ b_mdv_DoMyDeferredVBI
 	lda zCurrentEvent               ; Get current state
 	cmp #[EVENT_COUNTDOWN+1]        ; Is it TITLE or COUNTDOWN
 	bcc b_mdv_DoBigMothership       ; Yes. Less Than < is correct
+	
 	jmp b_mdv_DoGameManagement      ; No. Greater Than > COUNTDOWN is GAME or GAMEOVER
 
 
@@ -699,11 +700,11 @@ b_mdv_EndDocsScrolling
 ; Then reverse directions.
 ; Rinse.  Repeat.
 
-b_mdv_DoLandScrolling
+; b_mdv_DoLandScrolling
 
-	jsr Gfx_RunScrollingLand
+;	jsr Gfx_RunScrollingLand
 
-b_mdv_EndLandScrolling
+; b_mdv_EndLandScrolling
 
 
 ; ======== MANAGE PLAYER MOVEMENT  ========
@@ -720,11 +721,11 @@ b_mdv_DoPlayerMovement
 b_mdv_EndPlayerMovement
 
 
+; ========  END OF TITLE SCREEN  ========
+
 	jmp ExitMyDeferredVBI
 
 
-
-; ======== Do SOMETHING ELSE MAGICAL ========
 
 
 ; ====================  GAME SCREEN  ===================
@@ -732,21 +733,72 @@ b_mdv_EndPlayerMovement
 
 b_mdv_DoGameManagement
 
+	lda zCurrentEvent         ; Get current state
+	cmp #EVENT_GAME           ; Is it The Game?
+	beq b_mdv_DoTheGame       ; Yes. Do the Game
+	jmp b_mdv_DoGameOver      ; No. Check if doing  Game Over routine Greater Than > COUNTDOWN is GAME or GAMEOVER
+	
+
+b_mdv_DoTheGame
 	lda #0
 	sta zDLIStarLinecounter   ; reset DLI counter.
 
-	lda zLASER_ONE_X
+	lda zLASER_ONE_X          ; Set laser positions
 	sta HPOSP0
 	lda zLASER_TWO_X
 	sta HPOSP1
 
 	jsr Gfx_ShowScreen   ; Forcing redraw of score now for test evidence
 
-	jsr Gfx_RunGameStars
-
-	jsr Gfx_RunScrollingLand
+	jsr Gfx_RunGameStars ; Animate the flashing stars
 
 	jsr Pmg_ManagePlayerMovement
+
+;	jsr Pmg_ManageMothershipMovement
+
+	lda zMOTHERSHIP_Y
+	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
+	bne b_mdv_skip_MS_Move ; No.  Skip horizontal movement.
+
+	ldy zMOTHERSHIP_X        ; Get current X
+
+	lda zMOTHERSHIP_DIR      ; Test direction.
+	bne b_mdv_Mothership_R2L ; 1 = Right to Left
+
+	iny                      ; Do left to right.
+	sty zMOTHERSHIP_NEW_X
+	cpy #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
+	beq b_mdv_MS_ReverseDirection
+	bne b_mdv_skip_MS_Move
+
+b_mdv_Mothership_R2L
+	dey                      ; Do right to left.
+	sty zMOTHERSHIP_NEW_X
+	cpy #MOTHERSHIP_MIN_X    ; Reached max means time to inc Y and reverse direction.
+	beq b_mdv_MS_ReverseDirection
+	bne b_mdv_skip_MS_Move
+
+b_mdv_MS_ReverseDirection
+	lda zMOTHERSHIP_DIR      ; Toggle X direction.
+	eor #$1
+	sta zMOTHERSHIP_DIR
+
+	ldx zMOTHERSHIP_ROW      ; Get current row.
+	cpx #22                  ; If on last row, then it has
+	beq b_mdv_skip_MS_Move   ; reached the end of incrementing rows.
+
+	inx                      ; Next row.
+	jsr Pmg_SetMotherShip    ; Set new Y target.
+
+b_mdv_skip_MS_Move
+
+	jsr Pmg_Draw_Mothership ; automatically increments Y until it is NEW_Y
+
+
+; ========  END OF GAME SCREEN  ========
+
+	jmp ExitMyDeferredVBI
+
 
 
 
@@ -816,8 +868,39 @@ DoPromptColorchange
 ;	jsr ToggleButtonPrompt        ; Manipulates colors for prompt.
 
 
-DoCheesySoundService              ; World's most inept sound sequencer.
-	jsr SoundService
+
+
+
+
+; =====================  GAME OVER  ====================
+; ======================================================
+
+
+b_mdv_DoGameOver
+
+; animate text being dsiplayed.
+
+; check for input to go to title.
+
+	jsr Gfx_RunGameStars ; Animate the flashing stars
+
+
+
+; ======================================================
+; Something else, etc.  maybe.
+
+
+; ========  END OF GAME OVER SCREEN  ========
+
+	jmp ExitMyDeferredVBI                    ; Return to OS.
+
+
+
+
+
+; ====================  END OF VBI  ====================
+; ======================================================
+; All the following run all the time on all displays.
 
 ExitMyDeferredVBI
 
@@ -848,11 +931,25 @@ ExitMyDeferredVBI
 	lda SHPOSM3
 	sta HPOSM3
 
+
+	jsr Gfx_RunScrollingLand
+
+
+DoCheesySoundService              ; World's most inept sound sequencer.
+	jsr SoundService
+
+
 	jmp XITVBV                    ; Return to OS.  SYSVBV for Immediate interrupt.
 
 
-;==============================================================================
 
+
+
+
+
+;==============================================================================
+;=========================== DISPLAY LIST INTERRUPTS ==========================
+;==============================================================================
 
 	.align $0100 ; Make the DLIs start in the same page to simplify chaining. I hope.
 

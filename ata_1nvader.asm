@@ -403,8 +403,8 @@ zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
 ; the special handling for the screen display part.
 ; This is why the original code has weird gaps in some lookup tables.
 
-MOTHERSHIP_MIN_X =40  ; Farthest Left off the normal width screen.
-MOTHERSHIP_MAX_X =208 ; Farthest right off the normal width screen.
+MOTHERSHIP_MIN_X = 40  ; Farthest Left off the normal width screen.
+MOTHERSHIP_MAX_X = 208 ; Farthest right off the normal width screen.
 
 zMOTHERSHIP_X               .byte $00 ; Game mothership X coord 
 zMOTHERSHIP_NEW_X           .byte $00 ; Game mothership X coord 
@@ -3300,18 +3300,22 @@ TABLE_STAR_LOCATION ; star
 		 
 ; starcnt  .byte 0 ; zSTAR_COUNT
 
-; Table to convert row to Y coordinate.
+; Table to convert row to Y coordinate for mothership.
 ; This is also do-able with a LSR to multiply times 8 then add offset.
 
-TABLE_ROW_TO_Y ; r2ytab
-	.byte 58,66,74,82,90,98,106,114,122,130       ; Rows 0 to 9
+TABLE_ROW_TO_Y ; r2ytab 
+;	.byte 58,66,74,82,90,98,106,114,122,130       ; Rows 0 to 9
 ;	.byte 0,0,0,0,0,0                             ; Ummm?
-	.byte 138,146,154,162,170,178,186,194,202,210 ; Rows 10 to 19
+;	.byte 138,146,154,162,170,178,186,194,202,210 ; Rows 10 to 19
 ;	.byte 0,0,0,0,0,0                             ; Again?
-	.byte 218,226,234                             ; Rows 20 to 22
+;	.byte 218,226,234                             ; Rows 20 to 22
 
-
-
+.byte 36,44,52,60     ; 0  - 3
+.byte 68,76,84,92     ; 4  - 7
+.byte 100,108,116,124 ; 8  - 11
+.byte 132,140,148,156 ; 12 - 15
+.byte 164,172,180,188 ; 16 - 19
+.byte 196,204,212     ; 20 - 22
 
 
 ; ==========================================================================
