@@ -827,8 +827,9 @@ GameMain
 
 ;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
-
 	; Quick and dirty demo.
+	
+	jsr GameMothershipMovement
 
 
 	rts
@@ -1001,4 +1002,56 @@ b_mpu_MovePlayer2Up
 b_mpu_Exit
 	lda PSI_Response           ; So that the caller gets the appropriate CPU flags -, 0, +
 	rts
+
+
+
+; ==========================================================================
+; SUPPORT - MOVE GAME MOTHERSHIP
+; ==========================================================================
+; Runs during main Game
+; 
+; Moves the mothership.   
+; The actual redraw takes place in the VBI.
+; --------------------------------------------------------------------------
+
+GameMothershipMovement
+
+	lda zMOTHERSHIP_Y
+	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
+	bne b_gmm_skip_MS_Move ; No.  Skip horizontal movement.
+
+	ldy zMOTHERSHIP_X        ; Get current X
+
+	lda zMOTHERSHIP_DIR      ; Test direction.
+	bne b_gmm_Mothership_R2L ; 1 = Right to Left
+
+	iny                      ; Do left to right.
+	sty zMOTHERSHIP_NEW_X
+	cpy #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
+	beq b_gmm_MS_ReverseDirection
+	bne b_gmm_skip_MS_Move
+
+b_gmm_Mothership_R2L
+	dey                      ; Do right to left.
+	sty zMOTHERSHIP_NEW_X
+	cpy #MOTHERSHIP_MIN_X    ; Reached max means time to inc Y and reverse direction.
+	beq b_gmm_MS_ReverseDirection
+	bne b_gmm_skip_MS_Move
+
+b_gmm_MS_ReverseDirection
+	lda zMOTHERSHIP_DIR      ; Toggle X direction.
+	eor #$1
+	sta zMOTHERSHIP_DIR
+
+	ldx zMOTHERSHIP_ROW      ; Get current row.
+	cpx #22                  ; If on last row, then it has
+	beq b_gmm_skip_MS_Move   ; reached the end of incrementing rows.
+
+	inx                      ; Next row.
+	jsr Pmg_SetMotherShip    ; Given Mothership row (X), update the mother ship specs and save the row.
+
+b_gmm_skip_MS_Move
+
+	rts
+
 
