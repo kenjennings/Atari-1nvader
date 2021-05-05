@@ -369,7 +369,7 @@ zPLAYER_ONE_ON     .byte $FF ; (0) not playing. (FF)=Title/Idle  (1) playing.
 zPLAYER_ONE_X      .byte 0 ; Player 1 gun X coord
 zPLAYER_ONE_Y      .byte 0 
 zPLAYER_ONE_NEW_Y  .byte PLAYER_IDLE_Y ; Player 1 Y position (slight animation, but usually fixed position.) 212=game.  220=idle.
-zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction
+zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction ; 0 == left to right. 1 == right to left.
 zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
 zPLAYER_ONE_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 digit BCD 
 zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color when idle
@@ -384,7 +384,7 @@ zPLAYER_TWO_ON     .byte $ff ; (0) not playing. (FF)=Title/Idle  (1) playing.
 zPLAYER_TWO_X      .byte 128 ; Player 2 gun X coord (196 max)
 zPLAYER_TWO_Y      .byte 0 
 zPLAYER_TWO_NEW_Y  .byte PLAYER_IDLE_Y ; Player 2 Y position (slight animation, but usually fixed.)
-zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction
+zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction ; 0 == left to right. 1 == right to left.
 zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
 zPLAYER_TWO_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
 zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color when idle

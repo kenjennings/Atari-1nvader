@@ -208,8 +208,11 @@ b_pdp_Exit
 ; If the Old position is not the same as the New position then increment 
 ; the old position and redraw.
 ;
-; Assume this may be due to vertical movement down, so start by zeroing 
-; the Y-1 position.
+; Y position difference means this is vertical movement down to the next 
+; row, so start by zeroing the first two scan lines at the current Y 
+; position.  Then increment Y + 2.  This is safe as the end goal will 
+; be Y + 8, so the increment will not cause Y to miss the check for 
+; equality to the target position. 
 ;
 ; Copy the image bitmap into Player 2 memory map.  
 ;
@@ -226,17 +229,18 @@ b_pdp_Exit
 Pmg_Draw_Mothership
 
 	lda zMOTHERSHIP_Y
-	cmp zMOTHERSHIP_NEW_Y
+	cmp zMOTHERSHIP_NEW_Y  ; Target position, but can't move there in one step....
 	beq b_pdms_Exit
 
-	inc zMOTHERSHIP_Y
-	ldy zMOTHERSHIP_Y      ; Get msy 
+	ldy zMOTHERSHIP_Y      ; Get current mothership Y (msy) 
 	lda #0
 	tax
 
-	dey                    ; Y - 1
-	sta PLAYERADR2,Y       ; Write 0 to P/M memory
+	sta PLAYERADR2,Y       ; Write 0 to Y + 0 P/M memory
 	iny                    ; Y + 1
+	sta PLAYERADR2,Y       ; Write 0 to Y + 1 P/M memory
+	iny                    ; Y + 1  (Or Y + 2 total)
+	sty zMOTHERSHIP_Y      ; Save as the new "current" position.
 
 b_pdms_LoopDraw
 	lda PMG_IMG_MOTHERSHIP,X ; Get byte from saved image
@@ -256,6 +260,8 @@ b_pdms_Exit
 	rts
 
 
+; Speed control for horizontal movement should be in the main code that 
+; updates the position.
                                    ; should be 2
 ;	lda #2                         ; initial ms speed
 ;	sta zMOTHERSHIP_MOVE_SPEED     ; Loop this many times.
@@ -1002,6 +1008,10 @@ b_pmpm_SetPlayer
 	sta SHPOSP1
 
 b_pmpm_Exit
+	lda #0
+	sta zPLAYER_ONE_REDRAW
+	sta zPLAYER_TWO_REDRAW
+
 	rts
 
 

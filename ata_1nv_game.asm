@@ -764,10 +764,10 @@ b_gsm_SetMothership_X               ; Start X coord.
 
 	lda RANDOM                      ; Set random direction.
 	and #$01
-	sta zPLAYER_ONE_DIR
+	sta zPLAYER_ONE_DIR              ; 0 == left to right. 1 == right to left.
 	lda RANDOM                      ; Set random direction.
 	and #$01
-	sta zPLAYER_TWO_DIR
+	sta zPLAYER_TWO_DIR             ; 0 == left to right. 1 == right to left.
 
 	lda #EVENT_GAME                 ; Fire up the game screen.
 	sta zCurrentEvent
@@ -831,6 +831,7 @@ GameMain
 	
 	jsr GameMothershipMovement
 
+	jsr GamePlayerMovement
 
 	rts
 
@@ -1053,5 +1054,132 @@ b_gmm_MS_ReverseDirection
 b_gmm_skip_MS_Move
 
 	rts
+
+
+; ==========================================================================
+; SUPPORT - MOVE GAME PLAYERS GUNS
+; ==========================================================================
+; Runs during main Game
+; 
+; Moves the players guns.   
+; The actual redraw takes place in the VBI.
+;
+; Talking (or random babbling) out loud to myself....  Pay no attention
+; to the mubling man walking randomly on the sidewalk.  Do not give 
+; him matches or money.
+;
+; This is the gruesome logic part.  The main routine is evaluating where
+; the guns are at now, having been drawn by the VBI, and deciding where
+; the guns should be on the next frame.  This is all done on the basis of
+; horizontal position, not hardware collision detection.  Guns in play may 
+; never overlap each other or the bumpers.
+;
+; (Collision detection is used for missles impacting the mothership, but
+; this is a different discussion.)
+;
+; The hard part here is to maintain fairness in the border conditions 
+; between gun 1 and gun 2.  At some edge conditions where the guns are 
+; right next to each other the directional values create exceptions.
+; In the end perfect fairness is impossible.   Two guns cannot cross into
+; the same pixel space.   Therefore, the exception here is that Gun 1
+; owns the free pixel, and can move there to trigger direction change, and 
+; and Gun 2 only triggers direction change in the same position.
+;
+; In the other case, when both guns meet perfectly with no overlap, then
+; both get a direction change at the same time.
+;
+; However, in other rare situations 
+;
+; In other words, if gun 1 and gun 2 are exactly next to each other 
+; AND they are traveling in the same direction, then there is not 
+; an exception to bounce either gun.  UNLESS, the guns have reached the
+; bumper at the edge of the screen, then a bounce occurs.  In this case,
+; Both guns must bounce to the opposite direction.  (Logically, it must
+; be impossible for both guns to reach the maximum position adjacent
+; to a bumper while having opposite flags set for direction of travel.)
+;
+; Also, the similar situation occurs when the guns are traveling in 
+; opposite directions, and will meet each other with only one blank 
+; pixel between them.  They cannot both occupy
+; 
+; A bounce at the bumper would look like this: (B)umper (<)Gun (<)Gun
+; B <<   <- Next frame will move to the bumper
+; B>>    <- When new position is exactly next to bumper, then bounce both.
+; 
+; More complicated: One space/pixel between Guns:
+; B < <   <- Next frame Gun 1 will move next to bumper.
+; B> <    <- Gun 1 flagged to bounce in opposite direction
+; B X     <- Here it is impossible for both guns to move to the same space
+; B <>    <- Thus, Gun 1 moves, Gun 2 does not, both register the bounce.
+; B>  >   <- Note that this creates an extra pixel gap between them
+;
+; What happens at the right bumper, because Gun 1 owns space....
+; > > B   <- Next frame Gun 2 will move next to the bumper.
+;  > <B   <- Gun 2 flagged to bounce in opposite direction
+;   X B   <- Here it is impossible for both guns to move to the same space
+;  <> B   <- Thus, Gun 2 moves, Gun 1 does not, both register bounce.
+; <  <B   <- Note this creates an extra pixel gap between them.
+;
+; --------------------------------------------------------------------------
+
+GamePlayersMovement
+
+	lda zPLAYER_ONE_ON
+	beq b_gpm_TryPlayerTwo
+
+	lda zPLAYER_ONE_DIR ; 0 == left to right. 1 == right to left.
+	beq b_gpm_TryOneRight
+
+	; Try moving Player One left
+	lda zPLAYER_ONE_X
+	cmp #PLAYER_MIN_X
+	bne b_Decrement_One ; Not at minimum yet.
+	
+
+
+
+
+
+
+
+lda zMOTHERSHIP_Y
+	
+	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
+	bne b_gmm_skip_MS_Move ; No.  Skip horizontal movement.
+
+	ldy zMOTHERSHIP_X        ; Get current X
+
+	lda zMOTHERSHIP_DIR      ; Test direction.
+	bne b_gmm_Mothership_R2L ; 1 = Right to Left
+
+	iny                      ; Do left to right.
+	sty zMOTHERSHIP_NEW_X
+	cpy #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
+	beq b_gmm_MS_ReverseDirection
+	bne b_gmm_skip_MS_Move
+
+b_gmm_Mothership_R2L
+	dey                      ; Do right to left.
+	sty zMOTHERSHIP_NEW_X
+	cpy #MOTHERSHIP_MIN_X    ; Reached max means time to inc Y and reverse direction.
+	beq b_gmm_MS_ReverseDirection
+	bne b_gmm_skip_MS_Move
+
+b_gmm_MS_ReverseDirection
+	lda zMOTHERSHIP_DIR      ; Toggle X direction.
+	eor #$1
+	sta zMOTHERSHIP_DIR
+
+	ldx zMOTHERSHIP_ROW      ; Get current row.
+	cpx #22                  ; If on last row, then it has
+	beq b_gmm_skip_MS_Move   ; reached the end of incrementing rows.
+
+	inx                      ; Next row.
+	jsr Pmg_SetMotherShip    ; Given Mothership row (X), update the mother ship specs and save the row.
+
+b_gmm_skip_MS_Move
+
+	rts
+
 
 
