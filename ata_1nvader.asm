@@ -365,35 +365,68 @@ PLAYER_SQUASH_Y=228 ; Y Position when player not playing.
 PLAYER_MIN_X =52  ; Farthest left next to bumper  ( Min screeen X + bumper width)
 PLAYER_MAX_X =196 ; Farthest right next to bumper ( Max screen X - bumper width )
 
+; Player 1 and player 2 values are interleaved.
+; I have a stupid idea of using an index for 
+; the players, and where applicable calling the 
+; same function for both players using only a 
+; different index for the players, and so only
+; one version of code.... in theory.
+
+zPLAYER_ON
 zPLAYER_ONE_ON     .byte $FF ; (0) not playing. (FF)=Title/Idle  (1) playing.
-zPLAYER_ONE_X      .byte 0 ; Player 1 gun X coord
-zPLAYER_ONE_Y      .byte 0 
-zPLAYER_ONE_NEW_Y  .byte PLAYER_IDLE_Y ; Player 1 Y position (slight animation, but usually fixed position.) 212=game.  220=idle.
-zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction ; 0 == left to right. 1 == right to left.
-zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
-zPLAYER_ONE_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 digit BCD 
-zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color when idle
-zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
-zPLAYER_ONE_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
-
-zLASER_ONE_ON      .byte $01 ; whether or not the laser is shooting
-zLASER_ONE_X       .byte $00 ; Laser 1 X coord
-zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
-
 zPLAYER_TWO_ON     .byte $ff ; (0) not playing. (FF)=Title/Idle  (1) playing.
+
+zPLAYER_X
+zPLAYER_ONE_X      .byte 0 ; Player 1 gun X coord
 zPLAYER_TWO_X      .byte 128 ; Player 2 gun X coord (196 max)
+
+zPLAYER_Y
+zPLAYER_ONE_Y      .byte 0 
 zPLAYER_TWO_Y      .byte 0 
+
+zPLAYER_NEW_Y
+zPLAYER_ONE_NEW_Y  .byte PLAYER_IDLE_Y ; Player 1 Y position (slight animation, but usually fixed position.) 212=game.  220=idle.
 zPLAYER_TWO_NEW_Y  .byte PLAYER_IDLE_Y ; Player 2 Y position (slight animation, but usually fixed.)
+
+zPLAYER_DIR
+zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction ; 0 == left to right. 1 == right to left.
 zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction ; 0 == left to right. 1 == right to left.
+
+zPLAYER_FIRE
+zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
 zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
-zPLAYER_TWO_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
+
+zPLAYER_COLOR
+zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color when idle
 zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color when idle
+
+zPLAYER_BUMP
+zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
 zPLAYER_TWO_BUMP   .byte $00 ; Player 2 collision
+
+zPLAYER_REDRAW
+zPLAYER_ONE_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
 zPLAYER_TWO_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
 
+zLASER_ON
+zLASER_ONE_ON      .byte $01 ; whether or not the laser is shooting
 zLASER_TWO_ON      .byte $00 ; whether or not the laser is shooting
+
+zLASER_X
+zLASER_ONE_X       .byte $00 ; Laser 1 X coord
 zLASER_TWO_X       .byte $00 ; Laser 1 X coord
+
+zLASER_Y
+zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
 zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
+
+zPLAYER_SCORE       ; This may not be indexable like the rest of it.
+zPLAYER_ONE_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 digit BCD 
+zPLAYER_TWO_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
+
+
+
+
 
 ; Note that the original game dealt with some things in BCD values, 
 ; such as the Mothership row here making it a little more convenient to 

@@ -1061,54 +1061,72 @@ b_gmm_skip_MS_Move
 ; ==========================================================================
 ; Runs during main Game
 ; 
-; Moves the players guns.   
-; The actual redraw takes place in the VBI.
+; Move the players' guns during the game.
+; This is all about the calculations to change position.
+; The actual redraw takes place during the VBI.
 ;
 ; Talking (or random babbling) out loud to myself....  Pay no attention
 ; to the mubling man walking randomly on the sidewalk.  Do not give 
-; him matches or money.
+; him matches.  Do not give him money.
 ;
 ; This is the gruesome logic part.  The main routine is evaluating where
-; the guns are at now, having been drawn by the VBI, and deciding where
-; the guns should be on the next frame.  This is all done on the basis of
-; horizontal position, not hardware collision detection.  Guns in play may 
-; never overlap each other or the bumpers.
+; the guns are now to decide where they should be on the next frame. 
+; The current location is where the VBI drew everything and is where it 
+; will appear on the current frame being drawn for the human player.
 ;
-; (Collision detection is used for missles impacting the mothership, but
-; this is a different discussion.)
+; Collision comparison is all done on the basis of horizontal position, 
+; not hardware collision detection.  Guns in play may never overlap each 
+; other or the bumpers, therefore no opportiunity for hardware collision.
+;
+; (Hardware collision detection is used for missles impacting the 
+; mothership, but this is a different discussion.  Go away and look for 
+; that routine and leave me alone now.)
+;
+; When both guns are traveling in opposite directions and meet perfectly 
+; with no overlap, then both get a direction change at the same time.  
+; (One of the simplest situations).
+;
+; When approaching the bumpers the player on that side of the screen 
+; closest to the bumper is the one that owns pixel space concerning 
+; gun to bumper and gun to gun collision at the bumber.  The general rule
+; is that when two players are active, Gun 1 owns free pixel space when 
+; moving left toward the left bumper, and Gun 2 owns free pixel space when 
+; moving right toward the right bumper.
+;
+; Extending this, if gun 1 and gun 2 are exactly next to each other AND they 
+; are traveling in the same direction, then there is not an exception to 
+; bounce either gun.  UNLESS, the guns have reached the bumper at the edge 
+; of the screen, then a bounce occurs.  In this case, both guns must 
+; bounce to the opposite direction.  (Logically, it must be impossible for 
+; both guns to reach the maximum position adjacent to a bumper while 
+; having opposite flags set for direction of travel.)
 ;
 ; The hard part here is to maintain fairness in the border conditions 
 ; between gun 1 and gun 2.  At some edge conditions where the guns are 
 ; right next to each other the directional values create exceptions.
 ; In the end perfect fairness is impossible.   Two guns cannot cross into
-; the same pixel space.   Therefore, the exception here is that Gun 1
-; owns the free pixel, and can move there to trigger direction change, and 
-; and Gun 2 only triggers direction change in the same position.
+; the same pixel space.   Therefore, the exception here is that when Gun 1
+; owns the free pixel and can move there to trigger direction change, 
+; then Gun 2 can only triggers direction change from its current 
+; position without moving into the empty pixel space.
 ;
-; In the other case, when both guns meet perfectly with no overlap, then
-; both get a direction change at the same time.
+; Reminder: Gun 1 owns pixel space on the left side of the screen, Gun 2 
+; owns pixel space on the right side of the screen.   (Easy to tell...
+; ldx X_POSITION ; bmi right side of screen. coordinate 128 is the middle 
+; of the screen -- almost -- but, this is good enough for military work.)
 ;
-; However, in other rare situations 
-;
-; In other words, if gun 1 and gun 2 are exactly next to each other 
-; AND they are traveling in the same direction, then there is not 
-; an exception to bounce either gun.  UNLESS, the guns have reached the
-; bumper at the edge of the screen, then a bounce occurs.  In this case,
-; Both guns must bounce to the opposite direction.  (Logically, it must
-; be impossible for both guns to reach the maximum position adjacent
-; to a bumper while having opposite flags set for direction of travel.)
-;
-; Also, the similar situation occurs when the guns are traveling in 
-; opposite directions, and will meet each other with only one blank 
-; pixel between them.  They cannot both occupy
+; The situation occurs when the guns are traveling in opposite directions, 
+; and will meet each other with only one blank pixel between them.  
+; They cannot both occupy that blank space.
 ; 
 ; A bounce at the bumper would look like this: (B)umper (<)Gun (<)Gun
 ; B <<   <- Next frame will move to the bumper
 ; B>>    <- When new position is exactly next to bumper, then bounce both.
+; B >>   <- Both traveling with no gap.
 ; 
-; More complicated: One space/pixel between Guns:
+; More complicated: One space/pixel between Guns on the left of the screen:
 ; B < <   <- Next frame Gun 1 will move next to bumper.
-; B> <    <- Gun 1 flagged to bounce in opposite direction
+; B> <    <- Gun 1 on bumper is flagged to bounce in opposite direction
 ; B X     <- Here it is impossible for both guns to move to the same space
 ; B <>    <- Thus, Gun 1 moves, Gun 2 does not, both register the bounce.
 ; B>  >   <- Note that this creates an extra pixel gap between them
