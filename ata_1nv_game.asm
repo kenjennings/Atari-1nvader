@@ -831,7 +831,7 @@ GameMain
 	
 	jsr GameMothershipMovement
 
-	jsr GamePlayerMovement
+	jsr GamePlayersMovement
 
 	rts
 
@@ -1142,17 +1142,45 @@ b_gmm_skip_MS_Move
 
 GamePlayersMovement
 
-	lda zPLAYER_ONE_ON
-	beq b_gpm_TryPlayerTwo
+	; First, run through the easy choices first that don't involve 
+	; interaction between the two players.
+	
+	ldx #0
+	jsr GameMovePlayerLeft
+	jsr GameMovePlayerRight
+	
+	ldx #1
+	jsr GameMovePlayerRight
+	jsr GameMovePlayerLeft
 
-	lda zPLAYER_ONE_DIR ; 0 == left to right. 1 == right to left.
-	beq b_gpm_TryOneRight
+	; If there is only one player playing, whether player 1 or 2, 
+	; then the player's gun movement has been solved.
+
+	lda zPLAYER_ONE_ON ; Check if both players are playing.
+	and zPLAYER_TWO_ON
+	beq b_gpm_Exit     ; Nope.   Only one player.  (0&1 = 0, 1&0 = 0)
+
+	; Work on both players moving.  
+	; Player 1 moving right.
+	; Player 2 moving left.
+	; possible collision if moving in opposite directions.
+
+b_gpm_Exit
+	rts
+	
+	
+	
+;	lda zPLAYER_ONE_ON
+;	beq b_gpm_TryPlayerTwo
+
+;	lda zPLAYER_ONE_DIR ; 0 == left to right. 1 == right to left.
+;	beq b_gpm_TryOneRight
 
 	; Try moving Player One left
-	lda zPLAYER_ONE_X
-	cmp #PLAYER_MIN_X
-	bne b_Decrement_One ; Not at minimum yet.
-	
+;	lda zPLAYER_ONE_X
+;	cmp #PLAYER_MIN_X
+;	bne b_Decrement_One ; Not at minimum yet.
+;	
 
 
 
@@ -1160,44 +1188,204 @@ GamePlayersMovement
 
 
 
-lda zMOTHERSHIP_Y
-	
-	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
-	bne b_gmm_skip_MS_Move ; No.  Skip horizontal movement.
+;	lda zMOTHERSHIP_Y
+;	
+;	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
+;	bne b_gmm_skip_MS_Move ; No.  Skip horizontal movement.
 
-	ldy zMOTHERSHIP_X        ; Get current X
+;	ldy zMOTHERSHIP_X        ; Get current X
 
-	lda zMOTHERSHIP_DIR      ; Test direction.
-	bne b_gmm_Mothership_R2L ; 1 = Right to Left
+;	lda zMOTHERSHIP_DIR      ; Test direction.
+;	bne b_gmm_Mothership_R2L ; 1 = Right to Left
 
-	iny                      ; Do left to right.
-	sty zMOTHERSHIP_NEW_X
-	cpy #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
-	beq b_gmm_MS_ReverseDirection
-	bne b_gmm_skip_MS_Move
+;	iny                      ; Do left to right.
+;	sty zMOTHERSHIP_NEW_X
+;	cpy #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
+;	beq b_gmm_MS_ReverseDirection
+;	bne b_gmm_skip_MS_Move
 
-b_gmm_Mothership_R2L
-	dey                      ; Do right to left.
-	sty zMOTHERSHIP_NEW_X
-	cpy #MOTHERSHIP_MIN_X    ; Reached max means time to inc Y and reverse direction.
-	beq b_gmm_MS_ReverseDirection
-	bne b_gmm_skip_MS_Move
+;b_gmm_Mothership_R2L
+;	dey                      ; Do right to left.
+;	sty zMOTHERSHIP_NEW_X
+;	cpy #MOTHERSHIP_MIN_X    ; Reached max means time to inc Y and reverse direction.
+;	beq b_gmm_MS_ReverseDirection
+;	bne b_gmm_skip_MS_Move
 
-b_gmm_MS_ReverseDirection
-	lda zMOTHERSHIP_DIR      ; Toggle X direction.
-	eor #$1
-	sta zMOTHERSHIP_DIR
+;b_gmm_MS_ReverseDirection
+;	lda zMOTHERSHIP_DIR      ; Toggle X direction.
+;	eor #$1
+;	sta zMOTHERSHIP_DIR
 
-	ldx zMOTHERSHIP_ROW      ; Get current row.
-	cpx #22                  ; If on last row, then it has
-	beq b_gmm_skip_MS_Move   ; reached the end of incrementing rows.
+;	ldx zMOTHERSHIP_ROW      ; Get current row.
+;	cpx #22                  ; If on last row, then it has
+;	beq b_gmm_skip_MS_Move   ; reached the end of incrementing rows.
 
-	inx                      ; Next row.
-	jsr Pmg_SetMotherShip    ; Given Mothership row (X), update the mother ship specs and save the row.
+;	inx                      ; Next row.
+;	jsr Pmg_SetMotherShip    ; Given Mothership row (X), update the mother ship specs and save the row.
 
-b_gmm_skip_MS_Move
+;b_gmm_skip_MS_Move
 
 	rts
+
+
+; ==========================================================================
+; SUPPORT - MOVE PLAYER LEFT                                      X
+; ==========================================================================
+; Runs during main Game
+; 
+; Decide to move the players' guns left.
+; If Player 1 is on, always move.
+; If player 1 is off, then move Player 2. (Logical deducation -- the code
+; could not have arrive here if there is no active player).
+; 
+; The player manipulated is based on value of X register.
+;
+; X = 0 = Player 1 gun
+; X = 1 - Player 2 gun
+; --------------------------------------------------------------------------
+
+GameMovePlayerLeft
+
+	lda zPLAYER_ON,X        ; Is this player even playing?
+	beq b_gmpl_Exit         ; Nope.  Done here.
+
+	lda zPLAYER_DIR,X       ; Is this player going left?
+	beq b_gmpl_Exit         ; 0 == Nope.  Done here.
+
+	cpx #0                  ; Is this player 1?
+	beq b_gmpl_CallMoveLeft ; Yes, do movement  
+
+	; process of elimination...  this must be player 2.
+	lda zPLAYER_ONE_ON      ; Is player 1 playing?
+	bne b_gmpl_Exit         ; Yes.  This function can't be used for player 2.
+
+	; The Simple move left toward bumper....
+b_gmpl_CallMoveLeft
+	jsr GameMovePlayerLeftToBumper
+
+b_gmpl_Exit
+	rts
+
+
+
+
+
+; ==========================================================================
+; SUPPORT - MOVE PLAYER LEFT TO BUMPER                             X
+; ==========================================================================
+; Runs during main Game
+; 
+; Move the players' guns left toward the bumper.
+; If the gun reaches the minimum position, toggle direction.
+; 
+; The player manipulated is based on value of X register.
+; This is always used for Gun 1.   
+; This is used for Gun 2 when Gun 1 is not present.
+; It is up to the caller to set X accordingly and know if it is appropriate
+; to call this routine for the player.
+; 
+; X = 0 = Player 1 gun
+; X = 1 - Player 2 gun
+; --------------------------------------------------------------------------
+
+GameMovePlayerLeftToBumper
+
+	ldy zPLAYER_X,X     ; Subtract one from player position.
+	dey
+
+	sty zPLAYER_NEW_X,X ; Save new position.
+	cpy #PLAYER_MIN_X   ; Has it reached the mininum?
+	bne b_gmpltb_Exit   ; No.  Exit now.
+
+	lda #0              ; Yes.  Set direction left to right.
+	sta zPLAYER_DIR,X   ; Bounce.
+
+	inc zPLAYER_BUMP,X ; Remember there was a direction change.  Maybe not needed.
+
+b_gmpltb_Exit
+
+	rts
+
+
+
+
+; ==========================================================================
+; SUPPORT - MOVE PLAYER RIGHT                                      X
+; ==========================================================================
+; Runs during main Game
+; 
+; Decide to move the players' guns right.
+; If Player 2 is on, always move.
+; If player 2 is off, then move Player 1. (Logical deducation -- the code
+; could not have arrive here if there is no active player).
+; 
+; The player manipulated is based on value of X register.
+;
+; X = 0 = Player 1 gun
+; X = 1 - Player 2 gun
+; --------------------------------------------------------------------------
+
+GameMovePlayerRight
+
+	lda zPLAYER_ON,X         ; Is this player even playing?
+	beq b_gmpr_Exit          ; Nope.  Done here.
+
+	lda zPLAYER_DIR,X       ; Is this player going right?
+	bne b_gmpr_Exit         ; 1 == Nope.  Done here.
+
+	cpx #1                   ; Is this player 2?
+	beq b_gmpr_CallMoveRight ; Yes, do movement  
+
+	; process of elimination...  this must be player 1.
+	lda zPLAYER_TWO_ON      ; Is player 2 playing?
+	bne b_gmpr_Exit         ; Yes.  This function can't be used for player 1.
+
+	; The Simple move left toward bumper....
+b_gmpr_CallMoveRight
+	jsr GameMovePlayerRightToBumper
+
+b_gmpr_Exit
+	rts
+
+
+
+
+
+; ==========================================================================
+; SUPPORT - MOVE PLAYER RIGHT TO BUMPER                             X
+; ==========================================================================
+; Runs during main Game
+; 
+; Move the players' guns right toward the bumper.
+; If the gun reaches the maximum position, toggle direction.
+; 
+; The player manipulated is based on value of X register.
+; This is always used for Gun 2.   
+; This is used for Gun 1 when Gun 2 is not present.
+; It is up to the caller to set X accordingly and know if it is appropriate
+; to call this routine for the player.
+; 
+; X = 0 = Player 1 gun
+; X = 1 - Player 2 gun
+; --------------------------------------------------------------------------
+
+GameMovePlayerRightToBumper
+
+	ldy zPLAYER_X,X    ; Add one to player position.
+	iny
+	
+	sty zPLAYER_NEW_X,X ; Save new position.
+	cpy #PLAYER_MAX_X  ; Has it reached the maximum?
+	bne b_gmprtb_Exit  ; No.  Exit now.
+	
+	lda #1             ; Yes.  Set direction right to left.
+	sta zPLAYER_DIR,X  ; Bounce.
+
+	inc zPLAYER_BUMP,X ; Remember there was a direction change.  Maybe not needed.
+
+b_gmprtb_Exit
+	rts
+
 
 
 

@@ -159,74 +159,6 @@ SHPOSM2 .byte 0 ; Fake Shadow register for HPOSM2
 SHPOSM3 .byte 0 ; Fake Shadow register for HPOSM3
 
 
-; Player/Missile object states.  X, Y, counts, etc where needed =============
-
-; Note that each table is in the same order listing each visible 
-; screen object for the Game.
-; (Note the title screen components as the mother ship and the animated 
-; logo are handled by special cases.)
-; Lots of Page 0 still available, so let's just be lazy and clog this up.
-; Note LDA zp,X  (two bytes) if we were thinking about code size.
-
-
-PMG_MOTHERSHIP_ID = 0 ; Screen object ID values index each table below.
-PMG_EXPLOSION_ID  = 1
-PMG_CANNON_1_ID   = 2
-PMG_CANNON_2_ID   = 3
-PMG_LASER_1_ID    = 4
-PMG_LASER_2_ID    = 5
-
-zPMG_SAVE_CURRENT_ID .byte 0 ; Save ID to get around having to txa/pha/pla/tax
-
-zTABLE_PMG_OLD_X
-zPMG_OLD_MOTHERSHIP_X .byte 0 
-zPMG_OLD_EXPLOSION_X  .byte 0 
-zPMG_OLD_CANNON_1_X   .byte 0
-zPMG_OLD_CANNON_2_X   .byte 0
-zPMG_OLD_LASER_1_X    .byte 0
-zPMG_OLD_LASER_2_X    .byte 0
-
-zTABLE_PMG_NEW_X
-zPMG_NEW_MOTHERSHIP_X .byte 0 
-zPMG_NEW_EXPLOSION_X  .byte 0 
-zPMG_NEW_CANNON_1_X   .byte 0
-zPMG_NEW_CANNON_2_X   .byte 0
-zPMG_NEW_LASER_1_X    .byte 0
-zPMG_NEW_LASER_2_X    .byte 0
-
-zTABLE_PMG_OLD_Y
-zPMG_OLD_MOTHERSHIP_Y .byte 0 
-zPMG_OLD_EXPLOSION_Y  .byte 0 
-zPMG_OLD_CANNON_1_Y   .byte 0
-zPMG_OLD_CANNON_2_Y   .byte 0
-zPMG_OLD_LASER_1_Y    .byte 0
-zPMG_OLD_LASER_2_Y    .byte 0
-
-zTABLE_PMG_NEW_Y
-zPMG_NEW_MOTHERSHIP_Y .byte 0 
-zPMG_NEW_EXPLOSION_Y  .byte 0 
-zPMG_NEW_CANNON_1_Y   .byte 0
-zPMG_NEW_CANNON_2_Y   .byte 0
-zPMG_NEW_LASER_1_Y    .byte 0
-zPMG_NEW_LASER_2_Y    .byte 0
-
-zTABLE_PMG_IMG_ID ; this does not change.
-	.byte PMG_IMG_MOTHERSHIP_ID
-	.byte PMG_IMG_EXPLOSION_ID
-	.byte PMG_IMG_CANNON_ID
-	.byte PMG_IMG_CANNON_ID
-	.byte PMG_IMG_LASER_ID
-	.byte PMG_IMG_LASER_ID
-
-zTABLE_PMG_HARDWARE ; Page, high byte, for each displayed item.
-	.byte >PLAYERADR2 ; Mothership
-	.byte >PLAYERADR3 ; Explosion
-	.byte >PLAYERADR0 ; Player 1 Cannon
-	.byte >PLAYERADR1 ; Player 2 Cannon
-	.byte >PLAYERADR0 ; Player 1 Laser
-	.byte >PLAYERADR1 ; Player 2 Laser
-
-
 ; Game Screen Stars Control values ==========================================
 
 zDL_LMS_STARS_ADDR .word 0 ; points to the LMS to change
@@ -251,6 +183,100 @@ zGAME_OVER_TEXT .word 0
 ; Misc Control Values  =====================================================
 
 zThisDLI .byte 0
+
+
+
+
+; Game Control Values =======================================================
+
+zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player. 
+zGAME_OVER_FLAG    .byte $00 ; Set 0/1 for game over 
+zSHOW_SCORE_FLAG   .byte $00 ; Flag to update score on screen.
+zVIC_COLLISION     .byte $00 ; VIC II Sprite Collision Flag. (lda VIC_BASE+30)  (Atari has several registers)
+zCHAR_COLOR        .byte $00 ; Character Color. (probably no use for Atari)
+zSCROLL_COUNTER    .byte $00 ; Documentation scroll counter. (probably no use for Atari)
+zJIFFY_COUNTER     .byte $00 ; Jiffy clock for countdown seconds for title transition.
+zSCROLL_JIFFY      .byte $00 ; Jiffy clock for scrolling directions.
+
+zSHIP_HITS           .byte $00  ; integer
+zSHIP_HITS_AS_DIGITS .byte $0,$0 ; 
+
+zCOUNTDOWN_FLAG    .byte $00 ; Counts phase, 4, 3, 2, 1, 0.  When it returns to 0, then trigger next phase (game)
+zCOUNTDOWN_SECS    .byte $00 ; Countdown jiffies per tick tock event. (the 3, 2, 1, GO)
+
+zSTATS_TEXT_COLOR  .byte $08 ; color/limunance of text on stats line.
+
+PLAYER_PLAY_Y=212   ; Y position for gun in play
+PLAYER_IDLE_Y=220   ; Y position for gun idle on stats line
+PLAYER_SQUASH_Y=228 ; Y Position when player not playing.
+
+PLAYER_MIN_X =52  ; Farthest left next to bumper  ( Min screeen X + bumper width)
+PLAYER_MAX_X =196 ; Farthest right next to bumper ( Max screen X - bumper width )
+
+; Player 1 and player 2 values are interleaved.
+; I have a stupid idea of using an index for 
+; the players, and where applicable calling the 
+; same function for both players using only a 
+; different index for the players, and so only
+; one version of code.... in theory.
+
+zPLAYER_ON
+zPLAYER_ONE_ON     .byte $FF ; (0) not playing. (FF)=Title/Idle  (1) playing.
+zPLAYER_TWO_ON     .byte $ff ; (0) not playing. (FF)=Title/Idle  (1) playing.
+
+zPLAYER_X
+zPLAYER_ONE_X      .byte 0 ; Player 1 gun X coord
+zPLAYER_TWO_X      .byte 128 ; Player 2 gun X coord (196 max)
+
+zPLAYER_NEW_X
+zPLAYER_ONE_NEW_X  .byte 0 ; Player 1 gun X coord
+zPLAYER_TWO_NEW_X  .byte 128 ; Player 2 gun X coord (196 max)
+
+zPLAYER_Y
+zPLAYER_ONE_Y      .byte 0 
+zPLAYER_TWO_Y      .byte 0 
+
+zPLAYER_NEW_Y
+zPLAYER_ONE_NEW_Y  .byte PLAYER_IDLE_Y ; Player 1 Y position (slight animation, but usually fixed position.) 212=game.  220=idle.
+zPLAYER_TWO_NEW_Y  .byte PLAYER_IDLE_Y ; Player 2 Y position (slight animation, but usually fixed.)
+
+zPLAYER_DIR
+zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction ; 0 == left to right. 1 == right to left.
+zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction ; 0 == left to right. 1 == right to left.
+
+zPLAYER_FIRE
+zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
+zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
+
+zPLAYER_COLOR
+zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color 
+zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color 
+
+zPLAYER_BUMP
+zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
+zPLAYER_TWO_BUMP   .byte $00 ; Player 2 collision
+
+zPLAYER_REDRAW
+zPLAYER_ONE_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
+zPLAYER_TWO_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
+
+zLASER_ON
+zLASER_ONE_ON      .byte $01 ; whether or not the laser is shooting
+zLASER_TWO_ON      .byte $00 ; whether or not the laser is shooting
+
+zLASER_X
+zLASER_ONE_X       .byte $00 ; Laser 1 X coord
+zLASER_TWO_X       .byte $00 ; Laser 1 X coord
+
+zLASER_Y
+zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
+zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
+
+zPLAYER_SCORE       ; This may not be indexable like the rest of it.
+zPLAYER_ONE_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 digit BCD 
+zPLAYER_TWO_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
+
+
 
 
 ; ======== V B I ======== The world's most inept sound system.
@@ -339,93 +365,6 @@ SAVEY = $FF
 ; TEMPORARILY RELOACATE TO HIGHER MEMORY AS PAGE ZERO BECAME FILLED WITH CRUFTY TEMPORARY VARIABLES
 
 
-; Game Control Values =======================================================
-
-zNUMBER_OF_PLAYERS .byte $FF ; (0) 1 player. (1) 2 player. 
-zGAME_OVER_FLAG    .byte $00 ; Set 0/1 for game over 
-zSHOW_SCORE_FLAG   .byte $00 ; Flag to update score on screen.
-zVIC_COLLISION     .byte $00 ; VIC II Sprite Collision Flag. (lda VIC_BASE+30)  (Atari has several registers)
-zCHAR_COLOR        .byte $00 ; Character Color. (probably no use for Atari)
-zSCROLL_COUNTER    .byte $00 ; Documentation scroll counter. (probably no use for Atari)
-zJIFFY_COUNTER     .byte $00 ; Jiffy clock for countdown seconds for title transition.
-zSCROLL_JIFFY      .byte $00 ; Jiffy clock for scrolling directions.
-
-zSHIP_HITS           .byte $00  ; integer
-zSHIP_HITS_AS_DIGITS .byte $0,$0 ; 
-
-zCOUNTDOWN_FLAG    .byte $00 ; Counts phase, 4, 3, 2, 1, 0.  When it returns to 0, then trigger next phase (game)
-zCOUNTDOWN_SECS    .byte $00 ; Countdown jiffies per tick tock event. (the 3, 2, 1, GO)
-
-zSTATS_TEXT_COLOR  .byte $08 ; color/limunance of text on stats line.
-
-PLAYER_PLAY_Y=212   ; Y position for gun in play
-PLAYER_IDLE_Y=220   ; Y position for gun idle on stats line
-PLAYER_SQUASH_Y=228 ; Y Position when player not playing.
-
-PLAYER_MIN_X =52  ; Farthest left next to bumper  ( Min screeen X + bumper width)
-PLAYER_MAX_X =196 ; Farthest right next to bumper ( Max screen X - bumper width )
-
-; Player 1 and player 2 values are interleaved.
-; I have a stupid idea of using an index for 
-; the players, and where applicable calling the 
-; same function for both players using only a 
-; different index for the players, and so only
-; one version of code.... in theory.
-
-zPLAYER_ON
-zPLAYER_ONE_ON     .byte $FF ; (0) not playing. (FF)=Title/Idle  (1) playing.
-zPLAYER_TWO_ON     .byte $ff ; (0) not playing. (FF)=Title/Idle  (1) playing.
-
-zPLAYER_X
-zPLAYER_ONE_X      .byte 0 ; Player 1 gun X coord
-zPLAYER_TWO_X      .byte 128 ; Player 2 gun X coord (196 max)
-
-zPLAYER_Y
-zPLAYER_ONE_Y      .byte 0 
-zPLAYER_TWO_Y      .byte 0 
-
-zPLAYER_NEW_Y
-zPLAYER_ONE_NEW_Y  .byte PLAYER_IDLE_Y ; Player 1 Y position (slight animation, but usually fixed position.) 212=game.  220=idle.
-zPLAYER_TWO_NEW_Y  .byte PLAYER_IDLE_Y ; Player 2 Y position (slight animation, but usually fixed.)
-
-zPLAYER_DIR
-zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction ; 0 == left to right. 1 == right to left.
-zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction ; 0 == left to right. 1 == right to left.
-
-zPLAYER_FIRE
-zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
-zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
-
-zPLAYER_COLOR
-zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color when idle
-zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color when idle
-
-zPLAYER_BUMP
-zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
-zPLAYER_TWO_BUMP   .byte $00 ; Player 2 collision
-
-zPLAYER_REDRAW
-zPLAYER_ONE_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
-zPLAYER_TWO_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
-
-zLASER_ON
-zLASER_ONE_ON      .byte $01 ; whether or not the laser is shooting
-zLASER_TWO_ON      .byte $00 ; whether or not the laser is shooting
-
-zLASER_X
-zLASER_ONE_X       .byte $00 ; Laser 1 X coord
-zLASER_TWO_X       .byte $00 ; Laser 1 X coord
-
-zLASER_Y
-zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
-zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
-
-zPLAYER_SCORE       ; This may not be indexable like the rest of it.
-zPLAYER_ONE_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 digit BCD 
-zPLAYER_TWO_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
-
-
-
 
 
 ; Note that the original game dealt with some things in BCD values, 
@@ -464,6 +403,79 @@ zJOY_ONE_LAST_STATE         .byte $00 ; Joystick Button One last state.
 zJOY_TWO_LAST_STATE         .byte $00 ; Joystick Button Two last state
 
 zHIGH_SCORE                 .byte $00,$00,$00,$00,$00,$00 ; 6 digits
+
+
+
+
+
+
+; Player/Missile object states.  X, Y, counts, etc where needed =============
+
+; Note that each table is in the same order listing each visible 
+; screen object for the Game.
+; (Note the title screen components as the mother ship and the animated 
+; logo are handled by special cases.)
+; Lots of Page 0 still available, so let's just be lazy and clog this up.
+; Note LDA zp,X  (two bytes) if we were thinking about code size.
+
+
+PMG_MOTHERSHIP_ID = 0 ; Screen object ID values index each table below.
+PMG_EXPLOSION_ID  = 1
+PMG_CANNON_1_ID   = 2
+PMG_CANNON_2_ID   = 3
+PMG_LASER_1_ID    = 4
+PMG_LASER_2_ID    = 5
+
+zPMG_SAVE_CURRENT_ID .byte 0 ; Save ID to get around having to txa/pha/pla/tax
+
+zTABLE_PMG_OLD_X
+zPMG_OLD_MOTHERSHIP_X .byte 0 
+zPMG_OLD_EXPLOSION_X  .byte 0 
+zPMG_OLD_CANNON_1_X   .byte 0
+zPMG_OLD_CANNON_2_X   .byte 0
+zPMG_OLD_LASER_1_X    .byte 0
+zPMG_OLD_LASER_2_X    .byte 0
+
+zTABLE_PMG_NEW_X
+zPMG_NEW_MOTHERSHIP_X .byte 0 
+zPMG_NEW_EXPLOSION_X  .byte 0 
+zPMG_NEW_CANNON_1_X   .byte 0
+zPMG_NEW_CANNON_2_X   .byte 0
+zPMG_NEW_LASER_1_X    .byte 0
+zPMG_NEW_LASER_2_X    .byte 0
+
+zTABLE_PMG_OLD_Y
+zPMG_OLD_MOTHERSHIP_Y .byte 0 
+zPMG_OLD_EXPLOSION_Y  .byte 0 
+zPMG_OLD_CANNON_1_Y   .byte 0
+zPMG_OLD_CANNON_2_Y   .byte 0
+zPMG_OLD_LASER_1_Y    .byte 0
+zPMG_OLD_LASER_2_Y    .byte 0
+
+zTABLE_PMG_NEW_Y
+zPMG_NEW_MOTHERSHIP_Y .byte 0 
+zPMG_NEW_EXPLOSION_Y  .byte 0 
+zPMG_NEW_CANNON_1_Y   .byte 0
+zPMG_NEW_CANNON_2_Y   .byte 0
+zPMG_NEW_LASER_1_Y    .byte 0
+zPMG_NEW_LASER_2_Y    .byte 0
+
+zTABLE_PMG_IMG_ID ; this does not change.
+	.byte PMG_IMG_MOTHERSHIP_ID
+	.byte PMG_IMG_EXPLOSION_ID
+	.byte PMG_IMG_CANNON_ID
+	.byte PMG_IMG_CANNON_ID
+	.byte PMG_IMG_LASER_ID
+	.byte PMG_IMG_LASER_ID
+
+zTABLE_PMG_HARDWARE ; Page, high byte, for each displayed item.
+	.byte >PLAYERADR2 ; Mothership
+	.byte >PLAYERADR3 ; Explosion
+	.byte >PLAYERADR0 ; Player 1 Cannon
+	.byte >PLAYERADR1 ; Player 2 Cannon
+	.byte >PLAYERADR0 ; Player 1 Laser
+	.byte >PLAYERADR1 ; Player 2 Laser
+
 
 
 ;*******************************************************************************
