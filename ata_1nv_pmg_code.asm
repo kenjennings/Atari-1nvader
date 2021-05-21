@@ -1012,10 +1012,9 @@ b_pmpm_RedrawPlayers
 	jsr Pmg_Draw_Players ;  This will copy Players' NEW_Y to Y, NEW_X to X
 
 b_pmpm_EndPlayerMovement ; Decide if Lazer or Player sets the HPOS at the start of the frame.
-
 	lda zCurrentEvent    ; Is this is 0? 
 	beq b_pmpm_Exit      ; No.  Next section
-	cmp EVENT_GAME       ; Is it game?
+	cmp #EVENT_GAME       ; Is it game?
 	bcc b_pmpm_SetPlayer ; No. So, no lasers.
 
 	lda zLASER_ONE_X     ; Copy laser X to shadow registers.
@@ -1027,7 +1026,7 @@ b_pmpm_EndPlayerMovement ; Decide if Lazer or Player sets the HPOS at the start 
 b_pmpm_SetPlayer         ; In any other case, Guns X position goes to shadow register.
 	lda zPLAYER_ONE_X
 	sta SHPOSP0
-	lda zLASER_TWO_X
+	lda zPLAYER_TWO_X
 	sta SHPOSP1
 
 b_pmpm_Exit

@@ -225,12 +225,12 @@ zPLAYER_ONE_ON     .byte $FF ; (0) not playing. (FF)=Title/Idle  (1) playing.
 zPLAYER_TWO_ON     .byte $ff ; (0) not playing. (FF)=Title/Idle  (1) playing.
 
 zPLAYER_X
-zPLAYER_ONE_X      .byte 0 ; Player 1 gun X coord
-zPLAYER_TWO_X      .byte 128 ; Player 2 gun X coord (196 max)
+zPLAYER_ONE_X      .byte [PLAYER_MIN_X+40] ; Player 1 gun X coord
+zPLAYER_TWO_X      .byte [PLAYER_MAX_X-40] ; Player 2 gun X coord (196 max)
 
 zPLAYER_NEW_X
-zPLAYER_ONE_NEW_X  .byte 0 ; Player 1 gun X coord
-zPLAYER_TWO_NEW_X  .byte 128 ; Player 2 gun X coord (196 max)
+zPLAYER_ONE_NEW_X  .byte [PLAYER_MIN_X+40] ; Player 1 gun X coord
+zPLAYER_TWO_NEW_X  .byte [PLAYER_MAX_X-40] ; Player 2 gun X coord (196 max)
 
 zPLAYER_Y
 zPLAYER_ONE_Y      .byte 0 

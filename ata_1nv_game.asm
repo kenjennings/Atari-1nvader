@@ -762,11 +762,13 @@ b_gsm_SetMothership_X               ; Start X coord.
 	sta SIZEP2
 	sta SIZEP3
 
-	lda RANDOM                      ; Set random direction.
-	and #$01
+;	lda RANDOM                      ; Set random direction.
+;	and #$01
+	lda #1
 	sta zPLAYER_ONE_DIR              ; 0 == left to right. 1 == right to left.
-	lda RANDOM                      ; Set random direction.
-	and #$01
+;	lda RANDOM                      ; Set random direction.
+;	and #$01
+	lda #0
 	sta zPLAYER_TWO_DIR             ; 0 == left to right. 1 == right to left.
 
 	lda #EVENT_GAME                 ; Fire up the game screen.
@@ -1249,7 +1251,7 @@ GameMovePlayerLeft
 	lda zPLAYER_ON,X        ; Is this player even playing?
 	beq b_gmpl_Exit         ; Nope.  Done here.
 
-	lda zPLAYER_DIR,X       ; Is this player going left?
+	lda zPLAYER_DIR,X       ; Is this player going left?  0 == left to right. 1 == right to left.
 	beq b_gmpl_Exit         ; 0 == Nope.  Done here.
 
 	cpx #0                  ; Is this player 1?
@@ -1303,7 +1305,6 @@ GameMovePlayerLeftToBumper
 	inc zPLAYER_BUMP,X ; Remember there was a direction change.  Maybe not needed.
 
 b_gmpltb_Exit
-
 	rts
 
 
@@ -1340,7 +1341,7 @@ GameMovePlayerRight
 	lda zPLAYER_TWO_ON      ; Is player 2 playing?
 	bne b_gmpr_Exit         ; Yes.  This function can't be used for player 1.
 
-	; The Simple move left toward bumper....
+	; The Simple move right toward bumper....
 b_gmpr_CallMoveRight
 	jsr GameMovePlayerRightToBumper
 
