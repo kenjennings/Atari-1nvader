@@ -311,6 +311,16 @@ bLoopWaitFrame
 ;
 ; Input: zCurrentEvent  
 ; Current Event specified which Display List and which DLI chain to follow.
+;
+; EVENT_INIT             = 0  ; One Time initialization.
+; EVENT_SETUP_TITLE      = 1  ; Entry Point to setup title screen.
+; EVENT_TITLE            = 2  ; Credits and Instructions.
+; EVENT_COUNTDOWN        = 3  ; Transition animation from Title to Game.
+; EVENT_SETUP_GAME       = 4  ; Entry Point for New Game setup.
+; EVENT_GAME             = 5  ; GamePlay
+; EVENT_LAST_ROW         = 6  ; Ship/guns animation from Game to GameOver.
+; EVENT_SETUP_GAMEOVER   = 7  ; Setup screen for Game over text.
+; EVENT_GAMEOVER         = 8  ; Game Over. Animated words, go to title.
 ;==============================================================================
 
 TABLE_GAME_DISPLAY_LIST
@@ -1060,7 +1070,7 @@ TITLE_DLI_2
 	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
 	sty DMACTL                     ; Set all the ANTIC screen controls and DMA options.
 
-	lda #[GTIA_MODE_DEFAULT|1]       ; Return to normal color interpretation.
+	lda #[GTIA_MODE_DEFAULT|$01]       ; Return to normal color interpretation, Players on top.
 	sta PRIOR
 
 	pla
@@ -1394,6 +1404,7 @@ DLI_PF0_DEC
 	rts
 
 
+	.align $0100
 
 ;==============================================================================
 ;                                              DLI_SYNC_PF0_DEC
@@ -1401,7 +1412,7 @@ DLI_PF0_DEC
 ; Set HSCROL for stars.  Sync down and deal out the  colors.
 ; -----------------------------------------------------------------------------
 
-GAME_DLI  ; Placeholder for VBI to restore staring address for DLI chain.
+GAME_DLI  ; Placeholder for VBI to restore starting address for DLI chain.
 
 
 GAME_DLI_0
@@ -1440,7 +1451,7 @@ b_GDLI0_ActiveStar
 	sta WSYNC
 
 	sta COLPF0                     ; Use the inner, brighter color.
-	pla
+	pla                            ; Get the outer color again.
 	sta WSYNC 
 	sta COLPF0                     ; Use the outer color
 
@@ -1448,9 +1459,9 @@ b_GDLI0_ShortcutToExit             ; If star was Inactive this is the easy exit 
 	inc zDLIStarLinecounter        ; (Note, VBI will zero this). 
 
 	cpy #15                        ; Has this DLI run 16 times?
-	bne b_GDLI0_NormalExit
+	bne b_GDLI0_NormalExit         ; No.   normal exist to repeat this DLI.
 
-	pla
+	pla                            ; Done executing this series of DLIs.   
 	tay
 
 	mChainDLI GAME_DLI_0,TITLE_DLI_5 ; Do the land colors next.
@@ -1462,8 +1473,6 @@ b_GDLI0_NormalExit                ; Exit without changing the DLI vector.
 	pla
 
 	rti
-
-
 
 
 

@@ -140,8 +140,11 @@ Pmg_Draw_Players
 	lda zPLAYER_ONE_REDRAW
 	beq b_pdp_ProcessPlayer2
 	
-	lda #0
-	sta zPLAYER_ONE_REDRAW
+;	lda #0
+;	sta zPLAYER_ONE_REDRAW
+
+	lda zPLAYER_ONE_NEW_X
+	sta zPLAYER_ONE_X
 
 	ldx #7
 	ldy zPLAYER_ONE_NEW_Y
@@ -164,14 +167,16 @@ b_pdp_LoopDrawPlayer1
 	inx
 	cpx #8
 	bne b_pdp_LoopDrawPlayer1
-	
 
 b_pdp_ProcessPlayer2
 	lda zPLAYER_TWO_REDRAW
 	beq b_pdp_Exit
 	
-	lda #0
-	sta zPLAYER_TWO_REDRAW
+;	lda #0
+;	sta zPLAYER_TWO_REDRAW
+
+	lda zPLAYER_TWO_NEW_X
+	sta zPLAYER_TWO_X
 
 	ldx #7
 	ldy zPLAYER_TWO_NEW_Y
@@ -959,34 +964,52 @@ b_psip_End
 
 Pmg_ManagePlayerMovement
 
-	lda zPLAYER_ONE_REDRAW     ; Did Main set these to 
-	ora zPLAYER_TWO_REDRAW     ; redraw now?
-	bne b_pmpm_RedrawPlayers    ; Yes.  Skip all other checks, and redraw.
+	lda zPLAYER_ONE_REDRAW     ; Did Main set this?  
+	bne b_pmpm_TryPlayer2      ; Yup.   Don't need to check..  Just assume, go on to next player.
 
 	lda zPLAYER_ONE_ON         ; Is player On?
-	beq b_pmpm_TryPlayer2_Y     ; No.  Do not draw.
+	beq b_pmpm_TryPlayer2      ; No.  Skip all these considerations. 
 
-	lda zPLAYER_ONE_NEW_Y      
-	cmp zPLAYER_ONE_Y
-	beq b_pmpm_TryPlayer2_Y
-	inc ZPLAYER_ONE_REDRAW
+	lda zPLAYER_ONE_NEW_Y      ; Is New Y == Y?
+	cmp zPLAYER_ONE_Y          
+	bne b_pmpm_Flag_P1_Redraw  ; No. End the checks and set Flag to redraw.
 
-b_pmpm_TryPlayer2_Y
-	lda zPLAYER_TWO_ON
-	beq b_pmpm_EndPlayerMovement
-	
-	lda zPLAYER_TWO_NEW_Y  
-	cmp zPLAYER_TWO_Y
-	beq b_pmpm_TryPlayerRedraw
-	inc ZPLAYER_TWO_REDRAW
+	lda zPLAYER_ONE_NEW_X      ; Is New X == X?
+	cmp zPLAYER_ONE_X  
+	beq b_pmpm_TryPlayer2      ; Yes, Do not flag redraw.
+
+b_pmpm_Flag_P1_Redraw
+	inc zPLAYER_ONE_REDRAW     ; Force redraw.
+
+; ------------------------------
+
+b_pmpm_TryPlayer2              ; Repeat all the same test for Player 2
+	lda zPLAYER_TWO_REDRAW     ; Did Main flag to redraw now?
+	bne b_pmpm_TryPlayerRedraw ; Yes.  Skip all other checks, and redraw. 
+
+	lda zPLAYER_TWO_ON         ; Is Player 2 even running?
+	beq b_pmpm_TryPlayerRedraw ; Nope. See if redraw is still needed for other player.
+
+	lda zPLAYER_TWO_NEW_Y      ; Is New Y == Y?
+	cmp zPLAYER_TWO_Y      
+	bne b_pmpm_Flag_P2_Redraw  ; No.  End checks and set Flag to redraw.
+
+	lda zPLAYER_TWO_NEW_X      ; Is New X == X?
+	cmp zPLAYER_TWO_X  
+	beq b_pmpm_TryPlayerRedraw ; Yes, See if redraw is still needed for other player.
+
+b_pmpm_Flag_P2_Redraw
+	inc zPLAYER_TWO_REDRAW     ;  Force redraw.
+
+; ------------------------------
 
 b_pmpm_TryPlayerRedraw
 	lda zPLAYER_ONE_REDRAW
 	ora zPLAYER_TWO_REDRAW
-	beq b_pmpm_EndPlayerMovement
+	beq b_pmpm_EndPlayerMovement ; Neither one is on by main or flagged by tests.
 
 b_pmpm_RedrawPlayers
-	jsr Pmg_Draw_Players ;  This will zero the Redraw flags and copy Players' NEW_Y to Y
+	jsr Pmg_Draw_Players ;  This will copy Players' NEW_Y to Y, NEW_X to X
 
 b_pmpm_EndPlayerMovement ; Decide if Lazer or Player sets the HPOS at the start of the frame.
 
@@ -995,13 +1018,13 @@ b_pmpm_EndPlayerMovement ; Decide if Lazer or Player sets the HPOS at the start 
 	cmp EVENT_GAME       ; Is it game?
 	bcc b_pmpm_SetPlayer ; No. So, no lasers.
 
-	lda zLASER_ONE_X
+	lda zLASER_ONE_X     ; Copy laser X to shadow registers.
 	sta SHPOSP0
 	lda zLASER_TWO_X
 	sta SHPOSP1
 	jmp b_pmpm_Exit
 
-b_pmpm_SetPlayer
+b_pmpm_SetPlayer         ; In any other case, Guns X position goes to shadow register.
 	lda zPLAYER_ONE_X
 	sta SHPOSP0
 	lda zLASER_TWO_X

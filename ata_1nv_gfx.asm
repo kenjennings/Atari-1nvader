@@ -341,8 +341,9 @@ DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first
 															; 06 (074 - 081) (171) (6) Stars
 
 DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over Text
+
 	.rept 9
-		mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+4              ; 07 (083 - 090) (171) (6) Stars
+		mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+4   ; 07 (083 - 090) (171) (6) Stars
 		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 07 (082 - 082) 
 
 	.endr
@@ -362,12 +363,13 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over
 															; 14 (146 - 153) (171) (6) Stars
 															; 15 (154 - 154) 
 															; 15 (155 - 162) (171) (6) Stars
-	mDL_LMS   [DL_TEXT_6|DL_HSCROLL|DL_DLI],GFX_STARS_LINE+5           ; 16 (164 - 171) (171) (6) Stars
+	mDL_LMS   [DL_TEXT_6|DL_HSCROLL|DL_DLI],GFX_STARS_LINE+5 ; 16 (164 - 171) (171) (6) Stars
+
+	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
 
 ; Note that as long as the system VBI is functioning the address 
 ; provided for JVB does not matter at all.  The system VBI will update
 ; ANTIC after this using the address in the shadow registers (SDLST)
-	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
 
 
 ; ==========================================================================
