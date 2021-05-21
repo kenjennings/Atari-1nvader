@@ -771,6 +771,9 @@ b_gsm_SetMothership_X               ; Start X coord.
 	lda #0
 	sta zPLAYER_TWO_DIR             ; 0 == left to right. 1 == right to left.
 
+	lda #2                          ; Reset the animation timer for players/left/right movement.
+	sta zAnimatePlayers
+
 	lda #EVENT_GAME                 ; Fire up the game screen.
 	sta zCurrentEvent
 
@@ -1144,6 +1147,12 @@ b_gmm_skip_MS_Move
 
 GamePlayersMovement
 
+	lda zAnimatePlayers
+	bne b_gpm_Exit
+
+	lda #2
+	sta zAnimatePlayers
+	
 	; First, run through the easy choices first that don't involve 
 	; interaction between the two players.
 	
@@ -1168,6 +1177,7 @@ GamePlayersMovement
 	; possible collision if moving in opposite directions.
 
 b_gpm_Exit
+
 	rts
 	
 	

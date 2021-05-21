@@ -220,6 +220,8 @@ PLAYER_MAX_X =196 ; Farthest right next to bumper ( Max screen X - bumper width 
 ; different index for the players, and so only
 ; one version of code.... in theory.
 
+zAnimatePlayers    .byte 2   ; animation counter.   Players can move every other frame.
+
 zPLAYER_ON
 zPLAYER_ONE_ON     .byte $FF ; (0) not playing. (FF)=Title/Idle  (1) playing.
 zPLAYER_TWO_ON     .byte $ff ; (0) not playing. (FF)=Title/Idle  (1) playing.

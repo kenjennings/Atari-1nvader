@@ -964,6 +964,8 @@ b_psip_End
 
 Pmg_ManagePlayerMovement
 
+	dec zAnimatePlayers        ; Decrement.   Let Main reset when it reaches 0.
+
 	lda zPLAYER_ONE_REDRAW     ; Did Main set this?  
 	bne b_pmpm_TryPlayer2      ; Yup.   Don't need to check..  Just assume, go on to next player.
 
