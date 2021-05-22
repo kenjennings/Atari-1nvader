@@ -777,15 +777,18 @@ b_gsm_SetMothership_X               ; Start X coord.
 	lda #EVENT_GAME                 ; Fire up the game screen.
 	sta zCurrentEvent
 
+	lda #$0C
+	sta zSTATS_TEXT_COLOR
+
 	; Temporarily setting colors to make things visible without DLI running.
-;	lda #$16
-;	sta COLOR0 ; COLPF0
-	lda #$0E
-	sta COLOR1 ; COLPF1
-	lda #$00
-	sta COLOR2 ; COLPF2
-;	lda #$7B
-;	sta COLOR3 ; COLPF3
+;;	lda #$16
+;;	sta COLOR0 ; COLPF0
+;	lda #$0E
+;	sta COLOR1 ; COLPF1
+;	lda #$00
+;	sta COLOR2 ; COLPF2
+;;	lda #$7B
+;;	sta COLOR3 ; COLPF3
 
 ;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 

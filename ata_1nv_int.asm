@@ -991,15 +991,10 @@ TITLE_DLI_1
 
 	pha
 
-	; Set all the ANTIC screen controls and DMA options.
-;	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NARROW]
-;	sta WSYNC            ; sync to end of scan line
-;	sta DMACTL
-	
 	; Setup PRIOR for 16 grey-scale graphics, and Missile color overlay.
 	; The screen won't show any noticeable change here, because the COLBK 
 	; value is black, and this won't change for the 16-shade mode.
-	lda #[FIFTH_PLAYER|GTIA_MODE_16_SHADE|1] 
+	lda #[FIFTH_PLAYER|GTIA_MODE_16_SHADE|$01] 
 	sta PRIOR
 
 	mChainDLI TITLE_DLI_1,TITLE_DLI_2
@@ -1300,7 +1295,7 @@ b_dli6_NextLoop                    ; Make colors on the Active Guns and Bumper.
 	lda TABLE_LAND_COLPF0+7      ; make the background match PF0's color from the scrolling mountains 
 	sta COLBK                    ; for one scan line
 
-	lda #$00
+	lda #0
 	ldy zPLAYER_ONE_COLOR       ; Set guns to grey on the stats line.
 
 	sta WSYNC      ; Next scan line set the colors for the stats line of text. 
