@@ -320,13 +320,22 @@ DL_LMS_SCROLL_LAND4 = [ * + 1 ]
 DISPLAY_LIST_GAME                                           ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 DISPLAY_LIST_GAMEOVER                                       ; Main Game and Game over are 95% the same.
 
-	mDL_BLANK DL_BLANK_8                                    ;         (000 - 019) Blank scan lines. 8 + 8 + 4 
+	mDL_BLANK DL_BLANK_8                                    ;    (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
 	mDL_BLANK DL_BLANK_4   
-	mDL_LMS   DL_TEXT_2|DL_DLI,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
+	mDL_LMS   DL_TEXT_2|DL_DLI,GFX_SCORE_LINE               ; 00 (020 - 027) (2) P1 score, High score, P2 score
+; Having problems with DLI running too long... Altirra says that 
+; recursive DLI are being triggered.  Not sure why.  There should be 
+; at least three full scan lines in the text line after color changes
+; complete, are completed.  Adding extra blank lines before stars 
+; and after start to make sure the DLI to START the stars does not begin 
+; on text mode line 2, and the DLI to begin the scrolling mountains 
+; does not begin on the moded 6 line for stars.
+;	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE               ; 00 (020 - 027) (2) P1 score, High score, P2 score
+;	mDL_BLANK [DL_BLANK_1|DL_DLI] 
 DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first star's LMS address
 	.rept 6
-		mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_STARS_LINE+3                ; 01 (028 - 035) (171) (6) Stars
+		mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_STARS_LINE+3     ; 01 (028 - 035) (171) (6) Stars
 		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 01 (036 - 036) 
 	.endr
 															; 02 (037 - 037) 
@@ -340,9 +349,14 @@ DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first
 															; 06 (073 - 073) 
 															; 06 (074 - 081) (171) (6) Stars
 
+; This break is introduced to declare a label for the 
+; game over text line.  Otherwise it could have 
+; simply looped once for all the lines with stars.
+
 DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over Text
 
 	.rept 9
+;	.rept 6
 		mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+4   ; 07 (083 - 090) (171) (6) Stars
 		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 07 (082 - 082) 
 
@@ -363,7 +377,13 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over
 															; 14 (146 - 153) (171) (6) Stars
 															; 15 (154 - 154) 
 															; 15 (155 - 162) (171) (6) Stars
-	mDL_LMS   [DL_TEXT_6|DL_HSCROLL|DL_DLI],GFX_STARS_LINE+5 ; 16 (164 - 171) (171) (6) Stars
+	mDL_LMS   [DL_TEXT_6|DL_HSCROLL|DL_DLI],GFX_STARS_LINE+5     
+;	mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5     
+
+	
+;		mDL_BLANK DL_BLANK_5
+;		mDL_BLANK [DL_BLANK_1|DL_DLI] 
+	; 16 (164 - 171) (171) (6) Stars
 
 	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
 

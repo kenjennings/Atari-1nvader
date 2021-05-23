@@ -1321,7 +1321,7 @@ b_dli6_NextLoop                    ; Make colors on the Active Guns and Bumper.
 ;==============================================================================
 ;                                              DLI_(SYNC)_PF3_SYNC_INC_SYNC
 ;==============================================================================
-; Supporting routine used by DLI_2 to manage COLPF3 and consume a 
+; Title supporting routine used by DLI_2 to manage COLPF3 and consume a 
 ; couple scan lines of the display.
 ; This is moved into a function, because the same pattern is repeated 
 ; for each of the rows of pixels.
@@ -1359,7 +1359,7 @@ b_td2_UpdateColor
 ;==============================================================================
 ;                                              DLI_SYNC_PF_DEC
 ;==============================================================================
-; Supporting routine used by DLI_3 to manage COLPF0 and COLPF1 
+; Title dupporting routine used by DLI_3 to manage COLPF0 and COLPF1 
 ; colors on the two scrolling author credits lines.
 ; -----------------------------------------------------------------------------
 
@@ -1382,7 +1382,7 @@ DLI_PF_DEC
 ;==============================================================================
 ;                                              DLI_SYNC_PF0_DEC
 ;==============================================================================
-; Supporting routine used by DLI_4 to manage COLPF0 on the 
+; Title supporting routine used by DLI_4 to manage COLPF0 on the 
 ; scrolling documentation line.
 ; -----------------------------------------------------------------------------
 
@@ -1405,6 +1405,36 @@ DLI_PF0_DEC
 ;                                              DLI_SYNC_PF0_DEC
 ;==============================================================================
 ; Set HSCROL for stars.  Sync down and deal out the  colors.
+;
+;  There is an extra blank line now to deal with something weird in 
+; the DLI timing.   According to Altirra recursive DLI are happening.
+; This is likely due to certain HSCROL positions changing DMA time.
+; (Though I'm having problems determing how.)
+; This will subtract a couple stars lines from the display to make up 
+; for the extra blank lines.
+;
+; 1 Blank scan line + DLI == set hscrol
+; 1 Blankscan line        == and setup colors.
+; Mode6, 1                == Star COLPF1 dark
+; Mode6, 2                == 
+; Mode6, 3                == Star COLPF1 dark
+; Mode6, 4                == Star COLPF1 light
+; Mode6, 5                == Star COLPF1 dark - Last STA COLPF0.  Setup for next DLI.
+; Mode6, 6                == 
+; Mode6, 7                == Star COLPF1 dark
+; Mode6, 8                == 
+;
+;  Star for Atari for Mode 6 color
+;	.by $08,$00,$08,$2a
+;	.by $08,$00,$08,$00
+; $08 ....*... 1 dark
+; $00 ........ 2
+; $08 ....*... 3 dark
+; $2A ..*.*.*. 4 light
+; $08 ....*... 5 dark
+; $00 ........ 6
+; $08 ....*... 7 dark
+; $00 ........ 8
 ; -----------------------------------------------------------------------------
 
 GAME_DLI  ; Placeholder for VBI to restore starting address for DLI chain.
@@ -1454,7 +1484,9 @@ b_GDLI0_ShortcutToExit             ; If star was Inactive this is the easy exit 
 	inc zDLIStarLinecounter        ; (Note, VBI will zero this). 
 
 	cpy #15                        ; Has this DLI run 16 times?
-	bne b_GDLI0_NormalExit         ; No.   normal exist to repeat this DLI.
+;	cpy #13                        ; Has this DLI run 16 times?
+	
+	bne b_GDLI0_NormalExit         ; No.   normal exit to repeat this DLI.
 
 	pla                            ; Done executing this series of DLIs.   
 	tay

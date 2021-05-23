@@ -280,6 +280,11 @@ b_gi_LoopFillZero
 
 	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
+	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
+	sta SDMCTL
+
+	lda #[FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01] 
+	sta GPRIOR
 
 	rts                         ; And now ready to go back to main game loop . . . .
 
@@ -429,7 +434,6 @@ GameSetupTitle
 	sta zCurrentEvent
 	lda #0 
 	sta zEventStage
-
 
 ;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
