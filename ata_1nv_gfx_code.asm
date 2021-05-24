@@ -300,14 +300,20 @@ TABLE_GFX_STARS_DIVIDE_THREE
 ; 0 to 15 (mask random value with binary AND $0F).  
 ; If this row is in use then use the next row and continue incrementing
 ; until an unused row is found.
+; 
+; Due to DLI timing one row of stars has to be removed.   So, if the 
+; row picked is 15, then try again.
 ;
 ; On exit, A is the new row.
 ; --------------------------------------------------------------------------
 
 Gfx_Choose_Star_Row
 
+b_gcsr_ButNotRow15
 	lda RANDOM
-	and #$0f                     ; Reduce to 0 to 15
+	and #$0f                     ; Reduce to 0 to 15 (um, really 14).
+	cmp #$0f
+	beq b_gcsr_ButNotRow15
 
 b_gcsr_StartCheckLoop
 	ldy #3                       ; Index 3, 2, 1, 0 for star list
@@ -319,7 +325,7 @@ b_gcsr_CompareEntry
 	clc                          ; Oops.  Found a matching value. 
 	adc #1                       ; Increment the value and then redo the checking.
 	
-	cmp #16                      ; Did we reach row 16? 
+	cmp #15                      ; Did we reach row 16? umm, 15.
 	bne b_gcsr_StartCheckLoop    ; No.  So, restart the loop to check values.
 	
 	lda #0                       ; Yes.  Reset to 0.  

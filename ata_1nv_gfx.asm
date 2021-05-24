@@ -214,9 +214,11 @@ DL_LMS_SCROLL_DOCS = [ * + 1 ]
 	mDL_BLANK DL_BLANK_8                                    ; 16 (148 - 155) Blank 8
 	mDL_BLANK DL_BLANK_8                                    ; 17 (156 - 163) Blank 8
 
-	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 18 (164 - 171) (DLI 5) Blank 8
 
 BOTTOM_OF_DISPLAY 
+
+	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 18 (164 - 171) (DLI 5) Blank 8
+
 DL_LMS_SCROLL_LAND1 = [ * + 1 ]                                  
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; 19 (172 - 179) (6) (DLI 5) Fine scrolling mountains to random position.
 DL_LMS_SCROLL_LAND2 = [ * + 1 ]   
@@ -323,7 +325,8 @@ DISPLAY_LIST_GAMEOVER                                       ; Main Game and Game
 	mDL_BLANK DL_BLANK_8                                    ;    (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
 	mDL_BLANK DL_BLANK_4   
-	mDL_LMS   DL_TEXT_2|DL_DLI,GFX_SCORE_LINE               ; 00 (020 - 027) (2) P1 score, High score, P2 score
+;	mDL_LMS   DL_TEXT_2|DL_DLI,GFX_SCORE_LINE               ; 00 (020 - 027) (2) P1 score, High score, P2 score
+
 ; Having problems with DLI running too long... Altirra says that 
 ; recursive DLI are being triggered.  Not sure why.  There should be 
 ; at least three full scan lines in the text line after color changes
@@ -331,8 +334,8 @@ DISPLAY_LIST_GAMEOVER                                       ; Main Game and Game
 ; and after start to make sure the DLI to START the stars does not begin 
 ; on text mode line 2, and the DLI to begin the scrolling mountains 
 ; does not begin on the moded 6 line for stars.
-;	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE               ; 00 (020 - 027) (2) P1 score, High score, P2 score
-;	mDL_BLANK [DL_BLANK_1|DL_DLI] 
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE               ; 00 (020 - 027) (2) P1 score, High score, P2 score
+	mDL_BLANK [DL_BLANK_1|DL_DLI] 
 DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first star's LMS address
 	.rept 6
 		mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_STARS_LINE+3     ; 01 (028 - 035) (171) (6) Stars
@@ -355,8 +358,8 @@ DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first
 
 DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over Text
 
-	.rept 9
-;	.rept 6
+;	.rept 9
+	.rept 8
 		mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+4   ; 07 (083 - 090) (171) (6) Stars
 		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 07 (082 - 082) 
 
@@ -377,12 +380,11 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over
 															; 14 (146 - 153) (171) (6) Stars
 															; 15 (154 - 154) 
 															; 15 (155 - 162) (171) (6) Stars
-	mDL_LMS   [DL_TEXT_6|DL_HSCROLL|DL_DLI],GFX_STARS_LINE+5     
-;	mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5     
-
+;	mDL_LMS   [DL_TEXT_6|DL_HSCROLL|DL_DLI],GFX_STARS_LINE+5     
+	mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5     
 	
 ;		mDL_BLANK DL_BLANK_5
-;		mDL_BLANK [DL_BLANK_1|DL_DLI] 
+;		mDL_BLANK [DL_BLANK_8|DL_DLI] 
 	; 16 (164 - 171) (171) (6) Stars
 
 	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 

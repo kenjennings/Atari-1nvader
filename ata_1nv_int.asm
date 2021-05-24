@@ -349,6 +349,10 @@ TABLE_GAME_DISPLAY_LIST_INTERRUPT
 MyImmediateVBI
 
 ; ======== MANAGE CHANGING DISPLAY LIST ========
+;	lda #$c2
+;	sta COLBK
+
+
 	lda zCurrentEvent                       ; Is the game at 0 (INIT)?
 	beq ExitMyImmediateVBI                  ; Yes.  Then we should not be here.
 
@@ -408,6 +412,8 @@ MyDeferredVBI
 
 	lda zCurrentEvent           ; Is this is still 0 (INIT)? 
 	bne b_mdv_DoMyDeferredVBI   ; No.   Continue the Deferred VBI
+;	lda #$00
+;	sta COLBK
 	jmp XITVBV                  ; Yes.  We should not be here.  End now.  Return to OS.
 
 
@@ -913,7 +919,9 @@ ExitMyDeferredVBI
 DoCheesySoundService              ; World's most inept sound sequencer.
 	jsr SoundService
 
-
+;	lda #$00
+;	sta COLBK
+	
 	jmp XITVBV                    ; Return to OS.  SYSVBV for Immediate interrupt.
 
 
@@ -1200,6 +1208,9 @@ TITLE_DLI_5
 	sta WSYNC   ; (1.0)
 	sta COLPF0
 
+;	lda #$c2
+;	sta COLBK
+	
 	lda TABLE_LAND_COLPF1,y
 	sta COLPF1
 
@@ -1236,19 +1247,21 @@ TITLE_DLI_5
 	rti
 
 
-
 b_dli5_FinalExit            ; Chain to next DLI
 
-	lda zPLAYER_ONE_X
-	sta WSYNC
-	sta WSYNC
-	sta HPOSP0
-	lda zPLAYER_TWO_X
-	sta HPOSP1
+;	lda zPLAYER_ONE_X
+;	sta WSYNC
+;	sta WSYNC
+;	sta wsync
+;	sta HPOSP0
+;	lda zPLAYER_TWO_X
+;	sta HPOSP1
 
 	pla
 	tay
 
+
+	
 	mChainDLI TITLE_DLI_5,TITLE_DLI_6 ; Done here.  Finally go to next DLI.
 
 
@@ -1267,18 +1280,41 @@ TITLE_DLI_6
 
 	mStart_DLI ; Saves A and Y
 
-	ldy #6 ; Yup, 6 counting down to 0 is 7 scan lines, not 8.
 	
-	lda zPLAYER_ONE_X        ; Cut Player/Missile object to use player's HPOS 
-	sta HPOSP0               ; to separate the guns from the missiles.
-	lda zPLAYER_TWO_X
-	sta HPOSP1
+;	lda zPLAYER_ONE_X        ; Cut Player/Missile object to use player's HPOS 
+;	sta HPOSP0               ; to separate the guns from the missiles.
+;	lda zPLAYER_TWO_X
+;	sta HPOSP1
 	
-	lda #$24    ; Change COLPF1 to use as alternate ground color.
+	lda #[COLOR_ORANGE2|$4] ; ($24) Change COLPF1 to use as alternate ground color.
 	sta WSYNC
 	sta COLPF1
 
-b_dli6_NextLoop                    ; Make colors on the Active Guns and Bumper.
+; In order to work in the update for the guns horizontal position to
+; separate them from their lasers, we need to hardcode the first 
+; scan line of work.
+;b_dli6_NextLoop                    ; Make colors on the Active Guns and Bumper.
+	lda TABLE_COLOR_BLINE_BUMPER+6 ; bumper first
+	sta COLPF3
+
+;	lda TABLE_COLOR_BLINE_PM0+6,y    ; Player 1 gun
+;	sta COLPM0
+
+;	lda TABLE_COLOR_BLINE_PM1+6,y   ; Player 2 gun
+;	sta COLPM1
+
+	lda zPLAYER_ONE_X              ; Have to cut here for player positions v laser positions above
+	sta HPOSP0
+	lda zPLAYER_TWO_X
+	sta HPOSP1
+
+;	lda #$0A
+;	sta colbk
+
+	ldy #5 ; Yup, 6 counting down to 0 is 7 scan lines, not 8. (Aaaand, counting oly 5.  sixth is above.)
+	sta WSYNC
+
+b_dli6_NextLoop  
 	lda TABLE_COLOR_BLINE_BUMPER,y ; bumper first
 	sta COLPF3
 
@@ -1290,7 +1326,9 @@ b_dli6_NextLoop                    ; Make colors on the Active Guns and Bumper.
 
 	dey
 	sta WSYNC
+
 	bpl b_dli6_NextLoop          ; Stop looping on the 7th scan line
+
 
 	lda TABLE_LAND_COLPF0+7      ; make the background match PF0's color from the scrolling mountains 
 	sta COLBK                    ; for one scan line
@@ -1298,6 +1336,12 @@ b_dli6_NextLoop                    ; Make colors on the Active Guns and Bumper.
 	lda #0
 	ldy zPLAYER_ONE_COLOR       ; Set guns to grey on the stats line.
 
+	; NOTE.  This is only halvsies work.  ANTIC Mode 2 Text does not render invisible 
+	; UNDER the Players objects.  It always renders on top.   So, where the idle guns 
+	; overlap the stats line the text will show on top of the Players.   The Code 
+	; MUST ALSO remove the stats text when it is not needed -- when the guns are in 
+	; the idle positions.
+	
 	sta WSYNC      ; Next scan line set the colors for the stats line of text. 
 	sta COLBK      ; Background/border to black, too.
 	sta COLPF2     ; Text background
@@ -1309,9 +1353,17 @@ b_dli6_NextLoop                    ; Make colors on the Active Guns and Bumper.
 	lda zSTATS_TEXT_COLOR
 	sta COLPF1     ; Text luminance
 
+;	lda #[GTIA_MODE_DEFAULT|$01] 
+;	sta PRIOR
 
 	pla
 	tay
+
+	
+;	lda #$82
+;	sta COLBK
+
+
 
 	mChainDLI TITLE_DLI_6,DoNothing_DLI ; Done here.  Park it until VBI restarts it.
 
@@ -1448,13 +1500,16 @@ GAME_DLI_0
 
 	lda TABLE_GFX_STAR_HSCROL,y
 	sta HSCROL
-	sta WSYNC
 
-; The things above are time critical, because they may start on 
-; a mode 2 line with high DMA, so the working star rows evaluation 
-; need to be evaluated later.   This shortcut evaluation below 
-; saves a solid four scan lines of waiting per each star row 
-; that is idle.
+	inc zDLIStarLinecounter        ; (Note, VBI will zero this). 
+
+;	sta WSYNC
+
+;; The things above are time critical, because they may start on 
+;; a mode 2 line with high DMA, so the working star rows evaluation 
+;; need to be evaluated later.   This shortcut evaluation below 
+;; saves a solid four scan lines of waiting per each star row 
+;; that is idle.
 
 	lda TABLE_GFX_STAR_WORKING,y
 	bne b_GDLI0_ActiveStar
@@ -1474,6 +1529,7 @@ b_GDLI0_ActiveStar
 	sta WSYNC
 	sta WSYNC
 	sta WSYNC
+	sta WSYNC
 
 	sta COLPF0                     ; Use the inner, brighter color.
 	pla                            ; Get the outer color again.
@@ -1481,20 +1537,23 @@ b_GDLI0_ActiveStar
 	sta COLPF0                     ; Use the outer color
 
 b_GDLI0_ShortcutToExit             ; If star was Inactive this is the easy exit to save time.
-	inc zDLIStarLinecounter        ; (Note, VBI will zero this). 
+;	inc zDLIStarLinecounter        ; (Note, VBI will zero this). 
 
-	cpy #15                        ; Has this DLI run 16 times?
-;	cpy #13                        ; Has this DLI run 16 times?
-	
+	cpy #14                        ; Has this DLI run 15 times?  (originally 16)
+
 	bne b_GDLI0_NormalExit         ; No.   normal exit to repeat this DLI.
 
 	pla                            ; Done executing this series of DLIs.   
 	tay
-
+;	lda #$52
+;	sta COLBK
 	mChainDLI GAME_DLI_0,TITLE_DLI_5 ; Do the land colors next.
 
 
 b_GDLI0_NormalExit                ; Exit without changing the DLI vector.
+;	lda #$02
+;	sta COLBK
+
 	pla
 	tay
 	pla
