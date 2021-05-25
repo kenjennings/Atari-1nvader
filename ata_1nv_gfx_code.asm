@@ -145,6 +145,33 @@ b_gcgot_Continue
 	rts	
 
 
+
+; ==========================================================================
+; CLEAR STATS
+; ==========================================================================
+; Fill the stats line values with 0 byte/empty space.
+;
+; Needed for the Title Screen.  Making the stats black is not good
+; enough, because the characters are Mode 2 text and will show 
+; through the Players used as the idle guns.
+; --------------------------------------------------------------------------
+
+
+Gfx_Clear_Stats
+
+	lda #0
+	ldy #25
+
+b_gcs_LoopClearLine
+
+	sta GFX_STATSLINE+8,y
+	dey
+	bpl b_gcs_LoopClearLine
+
+	rts
+
+
+
 ; ==========================================================================
 ; GAME SCREEN FLICKERING STARS
 ; ==========================================================================

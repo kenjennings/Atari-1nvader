@@ -306,6 +306,8 @@ GameSetupTitle
 	lda #$00
 	sta zSTATS_TEXT_COLOR
 
+	jsr Gfx_Clear_Stats
+
 
 	; ===== The Big Logo =====
 
