@@ -768,13 +768,13 @@ b_gsm_SetMothership_X               ; Start X coord.
 	sta SIZEP2
 	sta SIZEP3
 
-;	lda RANDOM                      ; Set random direction.
-;	and #$01
-	lda #1
+	lda RANDOM                      ; Set random direction.
+	and #$01
+;	lda #1
 	sta zPLAYER_ONE_DIR              ; 0 == left to right. 1 == right to left.
-;	lda RANDOM                      ; Set random direction.
-;	and #$01
-	lda #0
+	lda RANDOM                      ; Set random direction.
+	and #$01
+;	lda #0
 	sta zPLAYER_TWO_DIR             ; 0 == left to right. 1 == right to left.
 
 	lda #2                          ; Reset the animation timer for players/left/right movement.
@@ -1166,85 +1166,80 @@ GamePlayersMovement
 	; interaction between the two players.
 	
 	ldx #0
+	stx zPLAYER_ONE_BUMP ; Clear the bump flag
+	stx zPLAYER_TWO_BUMP ; Clear the bump flag
+
 	jsr GameMovePlayerLeft
 	jsr GameMovePlayerRight
-	
+
 	ldx #1
 	jsr GameMovePlayerRight
 	jsr GameMovePlayerLeft
 
+	; At this point the players have moved left or right, and 
+	; rebounded from the bumpers if applicable.   No 
+	; consideration of player collisions has occurred yet.
+
 	; If there is only one player playing, whether player 1 or 2, 
-	; then the player's gun movement has been solved.
+	; then the player's gun movement has been solved, and no more
+	; logic is needed.
 
 	lda zPLAYER_ONE_ON ; Check if both players are playing.
 	and zPLAYER_TWO_ON
-	beq b_gpm_Exit     ; Nope.   Only one player.  (0&1 = 0, 1&0 = 0)
+	beq b_gpm_Exit     ; Only one player.  (0&1 = 0, 1&0 = 0)  Finito.
 
-	; Work on both players moving.  
-	; Player 1 moving right.
-	; Player 2 moving left.
-	; possible collision if moving in opposite directions.
+	; Further Work on both players moving...  possible collision.  
+
+	lda zPLAYER_ONE_DIR ; Are both moving in the same direction?
+	cmp zPLAYER_TWO_DIR
+	beq b_gpm_Exit      ; Yes, so, no collision.
+	
+	; If gun 1 is moving left and/or gun 2 is moving right, 
+	; then no possible collision. 
+	
+	lda zPLAYER_ONE_DIR ; 1 == right to left.
+	bne b_gpm_Exit  ; Yes, so, no collision.
+
+	lda zPLAYER_TWO_DIR ; 0 == left to right.
+	beq b_gpm_Exit  ; Yes, so, no collision.
+
+	; Here we know two players are running, and
+	; they are traveling toward each other.
+	; Inevitably the two must meet.
+	
+	sec                   ; Doing some subtraction. Set carry.
+	lda zPLAYER_TWO_NEW_X ; subtract one 
+	sbc zPLAYER_ONE_NEW_X ; from two...
+	cmp #8
+	bcs b_gpm_Exit        ; greater than or equal 8. No collision.
+
+	; If on the left side of screen adjust gun 2 to 1.
+	
+	lda zPLAYER_ONE_NEW_X
+	bmi b_gpm_AdjustOnRightSide ; right side...
+
+	clc
+	adc #8
+	sta zPLAYER_TWO_NEW_X
+	bpl b_gpm_BumpTheGuns
+
+; On the right side of screen adjust gun 1 to 2.
+
+b_gpm_AdjustOnRightSide
+
+	lda zPLAYER_TWO_NEW_X
+	sec
+	sbc #8
+	sta zPLAYER_ONE_NEW_X
+
+b_gpm_BumpTheGuns
+
+	lda #1
+	sta zPLAYER_ONE_DIR ; 1 == right to left.
+	lda #0
+	sta zPLAYER_TWO_DIR ; 0 == left to right.
 
 b_gpm_Exit
-
-	rts
-	
-	
-	
-;	lda zPLAYER_ONE_ON
-;	beq b_gpm_TryPlayerTwo
-
-;	lda zPLAYER_ONE_DIR ; 0 == left to right. 1 == right to left.
-;	beq b_gpm_TryOneRight
-
-	; Try moving Player One left
-;	lda zPLAYER_ONE_X
-;	cmp #PLAYER_MIN_X
-;	bne b_Decrement_One ; Not at minimum yet.
-;	
-
-
-
-
-
-
-
-;	lda zMOTHERSHIP_Y
-;	
-;	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
-;	bne b_gmm_skip_MS_Move ; No.  Skip horizontal movement.
-
-;	ldy zMOTHERSHIP_X        ; Get current X
-
-;	lda zMOTHERSHIP_DIR      ; Test direction.
-;	bne b_gmm_Mothership_R2L ; 1 = Right to Left
-
-;	iny                      ; Do left to right.
-;	sty zMOTHERSHIP_NEW_X
-;	cpy #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
-;	beq b_gmm_MS_ReverseDirection
-;	bne b_gmm_skip_MS_Move
-
-;b_gmm_Mothership_R2L
-;	dey                      ; Do right to left.
-;	sty zMOTHERSHIP_NEW_X
-;	cpy #MOTHERSHIP_MIN_X    ; Reached max means time to inc Y and reverse direction.
-;	beq b_gmm_MS_ReverseDirection
-;	bne b_gmm_skip_MS_Move
-
-;b_gmm_MS_ReverseDirection
-;	lda zMOTHERSHIP_DIR      ; Toggle X direction.
-;	eor #$1
-;	sta zMOTHERSHIP_DIR
-
-;	ldx zMOTHERSHIP_ROW      ; Get current row.
-;	cpx #22                  ; If on last row, then it has
-;	beq b_gmm_skip_MS_Move   ; reached the end of incrementing rows.
-
-;	inx                      ; Next row.
-;	jsr Pmg_SetMotherShip    ; Given Mothership row (X), update the mother ship specs and save the row.
-
-;b_gmm_skip_MS_Move
 
 	rts
 
@@ -1273,12 +1268,12 @@ GameMovePlayerLeft
 	lda zPLAYER_DIR,X       ; Is this player going left?  0 == left to right. 1 == right to left.
 	beq b_gmpl_Exit         ; 0 == Nope.  Done here.
 
-	cpx #0                  ; Is this player 1?
-	beq b_gmpl_CallMoveLeft ; Yes, do movement  
+;	cpx #0                  ; Is this player 1?
+;	beq b_gmpl_CallMoveLeft ; Yes, do movement  
 
 	; process of elimination...  this must be player 2.
-	lda zPLAYER_ONE_ON      ; Is player 1 playing?
-	bne b_gmpl_Exit         ; Yes.  This function can't be used for player 2.
+;	lda zPLAYER_ONE_ON      ; Is player 1 playing?
+;	bne b_gmpl_Exit         ; Yes.  This function can't be used for player 2.
 
 	; The Simple move left toward bumper....
 b_gmpl_CallMoveLeft
@@ -1310,6 +1305,9 @@ b_gmpl_Exit
 ; --------------------------------------------------------------------------
 
 GameMovePlayerLeftToBumper
+
+	lda zPLAYER_BUMP,X ; Has there already been a  direction change.
+	bne b_gmpltb_Exit  ; Yes, do not test this bounce.
 
 	ldy zPLAYER_X,X     ; Subtract one from player position.
 	dey
@@ -1353,12 +1351,12 @@ GameMovePlayerRight
 	lda zPLAYER_DIR,X       ; Is this player going right?
 	bne b_gmpr_Exit         ; 1 == Nope.  Done here.
 
-	cpx #1                   ; Is this player 2?
-	beq b_gmpr_CallMoveRight ; Yes, do movement  
+;	cpx #1                   ; Is this player 2?
+;	beq b_gmpr_CallMoveRight ; Yes, do movement  
 
 	; process of elimination...  this must be player 1.
-	lda zPLAYER_TWO_ON      ; Is player 2 playing?
-	bne b_gmpr_Exit         ; Yes.  This function can't be used for player 1.
+;	lda zPLAYER_TWO_ON      ; Is player 2 playing?
+;	bne b_gmpr_Exit         ; Yes.  This function can't be used for player 1.
 
 	; The Simple move right toward bumper....
 b_gmpr_CallMoveRight
@@ -1391,6 +1389,9 @@ b_gmpr_Exit
 
 GameMovePlayerRightToBumper
 
+	lda zPLAYER_BUMP,X ; Has there already been a  direction change.
+	bne b_gmprtb_Exit  ; Yes, do not test this bounce.
+
 	ldy zPLAYER_X,X    ; Add one to player position.
 	iny
 	
@@ -1401,7 +1402,7 @@ GameMovePlayerRightToBumper
 	lda #1             ; Yes.  Set direction right to left.
 	sta zPLAYER_DIR,X  ; Bounce.
 
-	inc zPLAYER_BUMP,X ; Remember there was a direction change.  Maybe not needed.
+	inc zPLAYER_BUMP,X ; Remember there was a direction change.
 
 b_gmprtb_Exit
 	rts
