@@ -53,7 +53,7 @@ Mothership speed and score display are not yet functioning.  (Neither are the gu
 
 ---
 
-**DD MMM 2021 -- TO-DO**
+**25 May 2021 -- We Need More Guns (again)**
 
 [![V12_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/12-WIP-GameWithMovingGuns.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
