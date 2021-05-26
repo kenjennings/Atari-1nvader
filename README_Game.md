@@ -55,7 +55,19 @@ Mothership speed and score display are not yet functioning.  (Neither are the gu
 
 **DD MMM 2021 -- TO-DO**
 
-[![V12_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/12-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V12_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/12-WIP-GameWithMovingGuns.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+The guns are now moving and bounce against each other and the bumpers.  At the start of the game the guns assume a random direction.
+
+Other tweaks have occurred.   Altirra indicated a timing/opverlap conflict between the DLI for the stars v the DLI for the scrolling mountains.  This resulted in intermittent crashing on Altirra.  (Though, the atari800 emulator is tolerant of this bad behavior.)  To fix this I subtracted one line of stars and replaced with the equivalent in blank lines, and the Game screen is now stable on Altirra.
+
+Altirra also showed that setting the status text to black to make it invisible doesn't work as intended.   Black text on a black background for ANTIC Mode 2 is still visible over the Player graphics.  This is how the real hardware works, so the fault was my own Stupid Programmers' Trick.  To really make the status text invisible it has to actually be removed/cleared out on the Title screen and this change was added. 
+
+---
+
+**DD MMM 2021 -- TO-DO**
+
+[![V13_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/13-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
 
