@@ -204,14 +204,14 @@ zSHIP_HITS_AS_DIGITS .byte $0,$0 ;
 zCOUNTDOWN_FLAG    .byte $00 ; Counts phase, 4, 3, 2, 1, 0.  When it returns to 0, then trigger next phase (game)
 zCOUNTDOWN_SECS    .byte $00 ; Countdown jiffies per tick tock event. (the 3, 2, 1, GO)
 
-zSTATS_TEXT_COLOR  .byte $08 ; color/limunance of text on stats line.
+zSTATS_TEXT_COLOR  .byte $08 ; color/luminance of text on stats line.
 
 PLAYER_PLAY_Y=212   ; Y position for gun in play
 PLAYER_IDLE_Y=220   ; Y position for gun idle on stats line
 PLAYER_SQUASH_Y=228 ; Y Position when player not playing.
 
 PLAYER_MIN_X =52  ; Farthest left next to bumper  ( Min screeen X + bumper width)
-PLAYER_MAX_X =196 ; Farthest right next to bumper ( Max screen X - bumper width )
+PLAYER_MAX_X =196 ; Farthest right next to bumper ( Max screen X - bumper width - gun width)
 
 ; Player 1 and player 2 values are interleaved.
 ; I have a stupid idea of using an index for 
@@ -258,6 +258,10 @@ zPLAYER_BUMP
 zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
 zPLAYER_TWO_BUMP   .byte $00 ; Player 2 collision
 
+zPLAYER_CRASH
+zPLAYER_ONE_CRASH  .byte $00 ; Player 1 being pushed by mothership
+zPLAYER_TWO_CRASH  .byte $00 ; Player 2 being pushed by mothership
+
 zPLAYER_REDRAW
 zPLAYER_ONE_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
 zPLAYER_TWO_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
@@ -268,11 +272,14 @@ zLASER_TWO_ON      .byte $00 ; whether or not the laser is shooting
 
 zLASER_X
 zLASER_ONE_X       .byte $00 ; Laser 1 X coord
-zLASER_TWO_X       .byte $00 ; Laser 1 X coord
+zLASER_TWO_X       .byte $00 ; Laser 2 X coord
 
 zLASER_Y
 zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
-zLASER_TWO_Y       .byte $00 ; Laser 1 Y coord
+zLASER_TWO_Y       .byte $00 ; Laser 2 Y coord
+
+zLASER_ONE_BANG    .byte $00 ; Laser 1 collision with mothership (P0 to P2)
+zLASER_TWO_BANG    .byte $00 ; Laser 2 collision with mothership (P1 to P2) 
 
 zPLAYER_SCORE       ; This may not be indexable like the rest of it.
 zPLAYER_ONE_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 digit BCD 

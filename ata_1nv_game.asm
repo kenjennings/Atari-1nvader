@@ -708,13 +708,17 @@ GameSetupMain
 b_gsm_Loop_ZeroPlayerScores
 	sta zPLAYER_ONE_SCORE,y
 	sta zPLAYER_TWO_SCORE,y
-
 	dey
 	bpl b_gsm_Loop_ZeroPlayerScores
 
+	; Zero all of this stuff...
 	sta zPLAYER_ONE_BUMP
 	sta zPLAYER_TWO_BUMP
-
+	sta zPLAYER_ONE_CRASH
+	sta zPLAYER_TWO_CRASH
+	sta zLASER_ONE_ON
+	sta zLASER_TWO_ON
+	
 	sta SHPOSM3 ; Remove the animated colors from the title.
 	sta SHPOSM2
 	sta SHPOSM1
@@ -770,11 +774,9 @@ b_gsm_SetMothership_X               ; Start X coord.
 
 	lda RANDOM                      ; Set random direction.
 	and #$01
-;	lda #1
 	sta zPLAYER_ONE_DIR              ; 0 == left to right. 1 == right to left.
 	lda RANDOM                      ; Set random direction.
 	and #$01
-;	lda #0
 	sta zPLAYER_TWO_DIR             ; 0 == left to right. 1 == right to left.
 
 	lda #2                          ; Reset the animation timer for players/left/right movement.
@@ -811,6 +813,22 @@ b_gsm_SetMothership_X               ; Start X coord.
 ; The OS VBI extracted controller info (the buttons).
 ; 
 ; The Main code here does the following....
+; 0) If explosion is running...  nothing to do.  All logic for this
+;    is running in the VBI.
+; 
+; 1) Run Player movement.
+;    a) bounce if gun collides with bumper.
+;    b) bounce if guns collide with each other.
+;
+; 2) Trigger pressed?
+;    a) if gun is Off, skip shooting
+;    b) if gun is crashed [alien is pushing], skip shooting
+;    c) If lazer Y, in bottom half of screen, skip shooting
+;       i) set lazer on, 
+;       ii) Y = gun Y - 4, X = gun X + 4
+;       
+; 3) Is Bang set (Player to Mothership collision)?
+
 ; 1) If collision occurred between P0 (P1 laser) and P3 (mothership):
 ;    a) switch the set the states of the mothership and 
 ;       the explosion (p3) players, remove laser 1 (p0), and flag 
@@ -819,7 +837,6 @@ b_gsm_SetMothership_X               ; Start X coord.
 ;    a) switch the set the states of the mothership and 
 ;       the explosion (p3) players, remove laser 2 (p1), and flag 
 ;       Player 2 for scoring.
-; 3) If explosion (p3) on, test timer.  flag to remove if timer runs out
 ; 4) If the J1 button is pressed and the 
 ;    P0 laser start is possible (laser is off, or laser Y is less 
 ;    than screen center) 
@@ -829,11 +846,14 @@ b_gsm_SetMothership_X               ; Start X coord.
 ;    P1 laser start is possible (laser is off, or laser Y is less 
 ;    than screen center) 
 ;    then start the P1 laser state and toggle the Player 2 gun direction. 
-; 4) B) if laser (p1) is on, then move Y-4
+; 5) B) if laser (p1) is on, then move Y-4
+
 ; Given player state, move the gun in its direction, rebound from 
 ; the bumpers or the other player. 
+;
 ; If the mothership is on last row, continue mothership motion and drag 
 ; along the guns when they are in contact.
+;
 ; At completion of last row, erase all players, trigger end game.
 ; --------------------------------------------------------------------------
 
@@ -843,9 +863,10 @@ GameMain
 
 	; Quick and dirty demo.
 	
-	jsr GameMothershipMovement
 
 	jsr GamePlayersMovement
+
+	jsr GameMothershipMovement
 
 	rts
 
