@@ -820,41 +820,35 @@ b_gsm_SetMothership_X               ; Start X coord.
 ;    a) bounce if gun collides with bumper.
 ;    b) bounce if guns collide with each other.
 ;
-; 2) Trigger pressed?
+; 2) Is Bang set (Player to Mothership collision)? (both players)
+;    a) Set laser to remove it from screen
+;    b) Add points to player
+;    c) Explosion on, X, y == Current Mothership X, Y
+;    d) Hit counter-- (or ++); update mothership speed.
+;       i) If Any one Bang has occurred, subtract Mothership rows,  Move to position, set points. 
+;
+; 3) If laser is running, update Y =  Y - 4.
+;    a) if Y reaches min Y, set laser to remove it from screen
+;
+; 4) Trigger pressed?
 ;    a) if gun is Off, skip shooting
 ;    b) if gun is crashed [alien is pushing], skip shooting
 ;    c) If lazer Y, in bottom half of screen, skip shooting
 ;       i) set lazer on, 
-;       ii) Y = gun Y - 4, X = gun X + 4
-;       
-; 3) Is Bang set (Player to Mothership collision)?
-
-; 1) If collision occurred between P0 (P1 laser) and P3 (mothership):
-;    a) switch the set the states of the mothership and 
-;       the explosion (p3) players, remove laser 1 (p0), and flag 
-;       Player 1 for scoring.
-; 2) If collision occurred between P1 (P2 laser) and P3 (mothership):
-;    a) switch the set the states of the mothership and 
-;       the explosion (p3) players, remove laser 2 (p1), and flag 
-;       Player 2 for scoring.
-; 4) If the J1 button is pressed and the 
-;    P0 laser start is possible (laser is off, or laser Y is less 
-;    than screen center) 
-;    then start the P0 laser state and toggle the Player 1 gun direction. 
-; 4) B) if laser (p0) is on, then move Y-4
-; 5) If the J2 button is pressed and the 
-;    P1 laser start is possible (laser is off, or laser Y is less 
-;    than screen center) 
-;    then start the P1 laser state and toggle the Player 2 gun direction. 
-; 5) B) if laser (p1) is on, then move Y-4
-
-; Given player state, move the gun in its direction, rebound from 
-; the bumpers or the other player. 
+;       ii) Laser Y = gun new Y - 4, Laser X = gun new X + 4
+;       iii) If no bounce this turn, then negate direction/set bounce.
 ;
-; If the mothership is on last row, continue mothership motion and drag 
-; along the guns when they are in contact.
+; 5) If the mothership is on last row, 
+;    a) continue mothership motion
+;    b) if current contact with player, then adjust player X
+;    c) if new contact with player, 
+;       i) force crash, force position. 
+;       ii) set update image of player
+;       iii) update other player if needed.
 ;
-; At completion of last row, erase all players, trigger end game.
+; 6) If mothership reaches limit MIN, or MAX on last row.
+;    a) remove all guns and mothership,. (lasers/explosions not possible to be visible). 
+;    b) Set flag to go to End Game.
 ; --------------------------------------------------------------------------
 
 GameMain
@@ -866,7 +860,15 @@ GameMain
 
 	jsr GamePlayersMovement
 
+;	jsr Check mothership Explosion.
+
 	jsr GameMothershipMovement
+
+;	jsr Check Laser In Progress
+
+;	jsr Check Player Trigger
+
+;	jsr Supervise Last Row motion.
 
 	rts
 

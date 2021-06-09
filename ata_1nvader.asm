@@ -226,6 +226,10 @@ zPLAYER_ON
 zPLAYER_ONE_ON     .byte $FF ; (0) not playing. (FF)=Title/Idle  (1) playing.
 zPLAYER_TWO_ON     .byte $ff ; (0) not playing. (FF)=Title/Idle  (1) playing.
 
+zPLAYER_PMG
+zPLAYER_ONE_PMG    .byte >PLAYERADR0 ; Player 1 Cannon and Laser (high byte)
+zPLAYER_TWO_PMG    .byte >PLAYERADR1 ; Player 2 Cannon and Laser (high byte)
+
 zPLAYER_X
 zPLAYER_ONE_X      .byte [PLAYER_MIN_X+40] ; Player 1 gun X coord
 zPLAYER_TWO_X      .byte [PLAYER_MAX_X-40] ; Player 2 gun X coord (196 max)
@@ -247,16 +251,16 @@ zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction ; 0 == left to right. 1 == rig
 zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction ; 0 == left to right. 1 == right to left.
 
 zPLAYER_FIRE
-zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag
-zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag
+zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag (laser 1 color)
+zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag (laser 2 color)
 
 zPLAYER_COLOR
 zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color 
 zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color 
 
 zPLAYER_BUMP
-zPLAYER_ONE_BUMP   .byte $00 ; Player 1 collision
-zPLAYER_TWO_BUMP   .byte $00 ; Player 2 collision
+zPLAYER_ONE_BUMP   .byte $00 ; Player 1 direction change is flagged
+zPLAYER_TWO_BUMP   .byte $00 ; Player 2 direction change is flagged
 
 zPLAYER_CRASH
 zPLAYER_ONE_CRASH  .byte $00 ; Player 1 being pushed by mothership

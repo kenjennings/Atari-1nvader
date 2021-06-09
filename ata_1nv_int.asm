@@ -424,7 +424,16 @@ b_mdv_DoMyDeferredVBI
 
 	lda #0
 	sta ATRACT
-	sta HITCLR                   ; Always reset the P/M collision bits for next frame.
+
+	; Collect collisions.
+	lda P0PL            ; GTIA collision register Player 0 (laser 1)...
+	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
+	sta zLASER_ONE_BANG ; Laser 1 collision with mothership (P0 to P2)
+	lda P1PL            ; GTIA collision register Player 1 (laser 2)...
+	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
+	sta zLASER_TWO_BANG ; Laser 1 collision with mothership (P1 to P2)
+
+	sta HITCLR          ; Always reset the P/M collision bits for next frame.
 
 ; ======== TITLE SCREEN AND COUNTDOWN ACTIVIES  ========
 ; ======================================================
