@@ -211,7 +211,9 @@ PLAYER_IDLE_Y=220   ; Y position for gun idle on stats line
 PLAYER_SQUASH_Y=228 ; Y Position when player not playing.
 
 PLAYER_MIN_X =52  ; Farthest left next to bumper  ( Min screeen X + bumper width)
-PLAYER_MAX_X =196 ; Farthest right next to bumper ( Max screen X - bumper width - gun width)
+PLAYER_MAX_X =197 ; Farthest right next to bumper ( Max screen X - bumper width - gun width)
+
+PLAYER_X_SIZE=7   ; Width of guns in color clocks.  Needed for collision evaluation.
 
 ; Player 1 and player 2 values are interleaved.
 ; I have a stupid idea of using an index for 

@@ -118,6 +118,94 @@ b_pdbm_LoopZero
 
 
 ; ==========================================================================
+; DRAW LASER
+; ==========================================================================
+; Copy the image bitmaps for the Laser to the New Y positions.
+; Main code manages Y position.   
+; If New Y position is 0, then clear out the old position, and turn off 
+; laser.
+; 
+; X register is Laser to update.   Same code is used for both lasers.
+;
+; If the laser is off, then exit.
+; The laser starts partly "obscured" by the gun.   Also, Vertical movement
+; requires erasing some scan lines.   The copying is done in segments. 
+; Copy the first 4 bytes, then check if the Y position is the gun.
+; If not, copy the next 4 bytes.  Check position again.
+; If not at the gun, copy 4 0 bytes.
+;
+; Zero the redraw flags.
+; Copy the Laser's NEW_Y to Y.
+; --------------------------------------------------------------------------
+
+Pdl_Temp_Laser_Num .byte 0
+
+Pmg_Draw_Laser
+
+	lda zLASER_ON,X      ; Is laser on?
+	beq b_pdl_Exit       ; Nope.  We're done.
+
+	stx Pdl_Temp_Laser_Num ; Save X identifying player for later
+
+	lda #0               ; Setup zero page pointer to Player memory
+	sta zPMG_HARDWARE
+	lda zPLAYER_PMG,X
+	sta zPMG_HARDWARE+1
+
+	ldy zLASER_Y,X
+	beq b_pdl_DoRemoval  ; If 0, then do laser removal.
+
+	ldx #0
+
+b_pdl_CopyLaserFirst4
+	lda PMG_IMG_LASER,X
+	sta (zPMG_HARDWARE),Y
+	iny
+	inx
+	cpx #4
+	bne b_pdl_CopyLaserFirst4
+
+	cpy #PLAYER_PLAY_Y
+	beq b_pdl_Exit
+
+b_pdl_CopyLaserNext4
+	lda PMG_IMG_LASER,X
+	sta (zPMG_HARDWARE),Y
+	iny
+	inx
+	cpx #8
+	bne b_pdl_CopyLaserNext4
+
+	cpy #PLAYER_PLAY_Y
+	beq b_pdl_Exit
+
+	lda #0
+b_pdl_CopyLaserZero
+	sta (zPMG_HARDWARE),Y
+	iny
+	inx
+	cpx #12
+	bne b_pdl_CopyLaserZero
+	beq b_pdl_Exit ; End, copy Y == New Y
+
+
+; Zero the entire laser here and turn off laser.
+
+	ldx Pdl_Temp_Laser_Num
+
+	lda #0
+	sta zLASER_ON,X
+
+	; etc
+
+
+b_pdl_Exit
+
+	rts
+
+
+
+; ==========================================================================
 ; DRAW PLAYERS
 ; ==========================================================================
 ; Copy the image bitmaps for the guns to the player Y positions.
@@ -1038,6 +1126,16 @@ b_pmpm_Exit
 
 	rts
 
+
+; ==========================================================================
+; INDEX MARKS
+; ==========================================================================
+; Diagnostic help.
+; Abuse the Player Missile graphics to put up registration marks every 4th
+; scan line to verify positioning of screen graphics.  (Was having a 
+; little problem with the Game screen having an extra scan line in the 
+; display which dropped the mountains and the stats line down. 
+; --------------------------------------------------------------------------
 
 ; ==========================================================================
 ; INDEX MARKS

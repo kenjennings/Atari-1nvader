@@ -1189,8 +1189,8 @@ GamePlayersMovement
 	; interaction between the two players.
 	
 	ldx #0
-	stx zPLAYER_ONE_BUMP ; Clear the bump flag
-	stx zPLAYER_TWO_BUMP ; Clear the bump flag
+	stx zPLAYER_ONE_BUMP ; Clear the bump direction flag
+	stx zPLAYER_TWO_BUMP ; Clear the bump direction flag
 
 	jsr GameMovePlayerLeft
 	jsr GameMovePlayerRight
@@ -1233,8 +1233,8 @@ GamePlayersMovement
 	sec                   ; Doing some subtraction. Set carry.
 	lda zPLAYER_TWO_NEW_X ; subtract one 
 	sbc zPLAYER_ONE_NEW_X ; from two...
-	cmp #8
-	bcs b_gpm_Exit        ; greater than or equal 8. No collision.
+	cmp #PLAYER_X_SIZE
+	bcs b_gpm_Exit        ; greater than or equal SIZE? No collision.
 
 	; If on the left side of screen adjust gun 2 to 1.
 	
@@ -1242,7 +1242,7 @@ GamePlayersMovement
 	bmi b_gpm_AdjustOnRightSide ; right side...
 
 	clc
-	adc #8
+	adc #PLAYER_X_SIZE
 	sta zPLAYER_TWO_NEW_X
 	bpl b_gpm_BumpTheGuns
 
@@ -1252,7 +1252,7 @@ b_gpm_AdjustOnRightSide
 
 	lda zPLAYER_TWO_NEW_X
 	sec
-	sbc #8
+	sbc #PLAYER_X_SIZE
 	sta zPLAYER_ONE_NEW_X
 
 b_gpm_BumpTheGuns
