@@ -494,7 +494,7 @@ b_gt_ExitTitleAnimation
 
 ; ===== Player management for Title screen.   
 
-	jsr PlayerSelectionInput ; Button transitions to selecting for game play.
+	jsr PlayersSelectionInput ; Button transitions to selecting for game play.
 	; ++ if either player pressed the button to play.  
 	; 0 if both players are idle.
 	beq b_gt_EndTitleScreen  ; 0 = No input.
