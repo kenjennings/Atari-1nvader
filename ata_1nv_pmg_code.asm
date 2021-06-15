@@ -155,8 +155,8 @@ Pmg_Draw_Laser
 	ldy zLASER_Y,X
 	beq b_pdl_DoRemoval  ; If 0, then do laser removal.
 
-	ldx #0
 
+	ldx #0
 b_pdl_CopyLaserFirst4
 	lda PMG_IMG_LASER,X
 	sta (zPMG_HARDWARE),Y
@@ -167,6 +167,7 @@ b_pdl_CopyLaserFirst4
 
 	cpy #PLAYER_PLAY_Y
 	beq b_pdl_Exit
+
 
 b_pdl_CopyLaserNext4
 	lda PMG_IMG_LASER,X
@@ -179,7 +180,8 @@ b_pdl_CopyLaserNext4
 	cpy #PLAYER_PLAY_Y
 	beq b_pdl_Exit
 
-	lda #0
+
+	lda #0                   ; Erase the following 4 bytes
 b_pdl_CopyLaserZero
 	sta (zPMG_HARDWARE),Y
 	iny
@@ -189,18 +191,22 @@ b_pdl_CopyLaserZero
 	beq b_pdl_Exit ; End, copy Y == New Y
 
 
-; Zero the entire laser here and turn off laser.
-
-	ldx Pdl_Temp_Laser_Num
+b_pdl_DoRemoval ; Zero the entire laser in the end position  and turn off laser.
+	ldy #LASER_END_Y
 
 	lda #0
 	sta zLASER_ON,X
 
-	; etc
+	ldx #7
+
+b_pdl_LoopDoErase
+	sta (zPMG_HARDWARE),Y
+	iny
+	dex
+	bpl b_pdl_LoopDoErase
 
 
 b_pdl_Exit
-
 	rts
 
 

@@ -595,7 +595,7 @@ b_gc_PlayerCheck
 	lda zBigMothershipPhase    ; 1 is mothership in motion.
 	bne b_gc_EndPlayerCheck    ; So, skip this.
 
-	jsr PlayerSelectionInput   ; Only called here during countdown.
+	jsr PlayersSelectionInput  ; Only called here during countdown.
 
 	jsr MovePlayersUp          ; Move players (idle to in-play)  if necessary.
 
@@ -914,59 +914,112 @@ GameOver
 ; ==========================================================================
 ; Runs during Title screen and Countdown
 ; 
-; Button transitions to selecting player for game play.
+; Buttons transition to selecting players for game play.
 ;
 ; Check for input from idle players to begin the countdown before playing.
 ;
-; If a Player is already intending to play skip the player input.
+; If a Player(s) are already intending to play skip the player input.
 ;
 ; Returns:
-; ++ if both a player is ready to play. 
+; ++ if one or both players are ready to play. 
 ; 0 if both players are idle.
 ; --------------------------------------------------------------------------
 
-PSI_Response .byte $00
+PSI_Response .byte $00        ; Flag if Player Input requires later work
 
-PlayerSelectionInput
+PlayersSelectionInput
 
 	lda #0
 	sta PSI_Response
 
-	lda zPLAYER_ONE_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
-	bmi b_psi_TryPlayer1Idle   ; Not playing yet, so test it.
-	beq b_psi_TryPlayer2       ; 0 isn't supposed to be possible.
-	inc PSI_Response           ; PLAYER_ON_ON == 1, so playing.
-	bne b_psi_TryPlayer2
+	ldx #0
+	jsr PlayerSelectionInput
 
-b_psi_TryPlayer1Idle           ; Player 1 is idle.  ($FF  is idle)
-	lda STRIG0                 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
-	bne b_psi_TryPlayer2       ; Not pressed.  Go to player 2
-	; ldy #PLAYER_ONE_SHOOT
-	; jsr PlaySound 
-	lda #$1                    ; (1) playing.
-	sta zPLAYER_ONE_ON
-	sta PSI_Response           ; +1 Signal that this is in motion.
-
-b_psi_TryPlayer2
-	lda zPLAYER_TWO_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
-	bmi b_psi_TryPlayer2Idle   ; $FF is idle.
-	beq b_psi_Exit             ; 1 means already playing. 0 isn't supposed to be possible.
-	inc PSI_Response           ; PLAYER_ON_ON == 1, so playing.
-	bne b_psi_Exit
-
-b_psi_TryPlayer2Idle           ; Player 2 is idle.  ($FF  is idle)
-	lda STRIG1                 ; (Read) TRIG1 - Joystick 1 trigger (0 is pressed. 1 is not pressed)
-	bne b_psi_Exit             ; Not pressed.  Done.
-	; ldy #PLAYER_TWO_SHOOT
-	; jsr PlaySound 
-	lda #$1                    ; (1) playing.
-	sta zPLAYER_TWO_ON
-	sta PSI_Response
+	ldx #1
+	jsr PlayerSelectionInput
 
 b_psi_Exit
 	lda PSI_Response           ; Player 1 and 2 are both Off/idle or one is playing. 
 
 	rts
+
+
+; ==========================================================================
+; SUPPORT - PLAYER SELECTION INPUT
+; ==========================================================================
+; Check for input from idle players to begin the countdown before playing.
+;
+; If a Player is already intending to play skip the player input.
+;
+; X = The player to check/process...  0 or 1
+;
+; Returns:
+; ++ PSI_RESPONSE if player is ready to play. 
+; --------------------------------------------------------------------------
+
+PlayerSelectionInput
+
+	lda zPLAYER_ON,X           ; (0) not playing. (FF)=Title/Idle  (1) playing.
+	bmi b_ppsi_TryPlayerIdle   ; Not playing yet, so test it.
+	beq b_ppsi_Exit            ; 0 isn't supposed to be possible.
+	inc PSI_Response           ; PLAYER_ON == 1, so playing.
+	bne b_ppsi_Exit
+
+b_ppsi_TryPlayerIdle           ; Player is idle.  ($FF  is idle)
+	lda STRIG0,X               ; (Read) TRIG0 - Joystick trigger (0 is pressed. 1 is not pressed)
+	bne b_ppsi_Exit            ; Not pressed.  Go to player 2
+	; ldy #PLAYER_ONE_SHOOT
+	; jsr PlaySound 
+	lda #$1                    ; (1) playing.
+	sta zPLAYER_ON,X           ; Signal to all that this player is playing.
+	sta PSI_Response           ; +1 Signal that a player is in motion.
+
+b_ppsi_Exit
+	rts
+
+
+;	lda #0
+;	sta PSI_Response
+
+;	lda zPLAYER_ONE_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
+;	bmi b_psi_TryPlayer1Idle   ; Not playing yet, so test it.
+;	beq b_psi_TryPlayer2       ; 0 isn't supposed to be possible.
+;	inc PSI_Response           ; PLAYER_ON_ON == 1, so playing.
+;	bne b_psi_TryPlayer2
+
+;b_psi_TryPlayer1Idle           ; Player 1 is idle.  ($FF  is idle)
+;	lda STRIG0                 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
+;	bne b_psi_TryPlayer2       ; Not pressed.  Go to player 2
+;	; ldy #PLAYER_ONE_SHOOT
+;	; jsr PlaySound 
+;	lda #$1                    ; (1) playing.
+;	sta zPLAYER_ONE_ON
+;	sta PSI_Response           ; +1 Signal that this is in motion.
+
+;b_psi_TryPlayer2
+;	lda zPLAYER_TWO_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
+;	bmi b_psi_TryPlayer2Idle   ; $FF is idle.
+;	beq b_psi_Exit             ; 1 means already playing. 0 isn't supposed to be possible.
+;	inc PSI_Response           ; PLAYER_ON_ON == 1, so playing.
+;	bne b_psi_Exit
+
+;b_psi_TryPlayer2Idle           ; Player 2 is idle.  ($FF  is idle)
+;	lda STRIG1                 ; (Read) TRIG1 - Joystick 1 trigger (0 is pressed. 1 is not pressed)
+;	bne b_psi_Exit             ; Not pressed.  Done.
+;	; ldy #PLAYER_TWO_SHOOT
+;	; jsr PlaySound 
+;	lda #$1                    ; (1) playing.
+;	sta zPLAYER_TWO_ON
+;	sta PSI_Response
+
+;b_psi_Exit
+;	lda PSI_Response           ; Player 1 and 2 are both Off/idle or one is playing. 
+
+;	rts
+
+
+
+
 
 
 
@@ -1001,45 +1054,142 @@ MovePlayersUp
 	lda #0
 	sta PSI_Response           ; Flag no changes occurred
 
-	lda zPLAYER_ONE_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing (moving)
-	beq b_mpu_TryPlayer2       ; Zero is not playing
-	bmi b_mpu_TryPlayer2       ; Negative is not really playing (yet)
+	ldx #0
+	jsr MovePlayerUp
 
-	lda zPLAYER_ONE_Y          ; Here we know Player 1 is Playing.  ($1 is playing)
-	cmp #PLAYER_PLAY_Y         ; Is it at the Playing position?
-	bne b_mpu_MovePlayer1Up    ; No.  Move it up.
-	lda #1
-	sta PSI_Response           ; Yes. Ready to Play.
-	bne b_mpu_TryPlayer2       ; Done here.
-
-b_mpu_MovePlayer1Up
-	lda #$FF
-	sta PSI_Response           ; -1 Signal that this is still in motion.
-	dec zPLAYER_ONE_NEW_Y      ; Tell VBI to move up one scan line.
-
-b_mpu_TryPlayer2
-	lda zPLAYER_TWO_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
-	beq b_mpu_Exit             ; Zero should not really happen, but my OCD says this must be handled.
-	bmi b_mpu_Exit             ; $FF is idle.
-
-	lda zPLAYER_TWO_Y          ; Here we know Player 1 is Playing.  ($1 is playing)
-	cmp #PLAYER_PLAY_Y         ; Is it at the Playing position?
-	bne b_mpu_MovePlayer2Up    ; No.  Move it up.
-
-	lda PSI_Response           ; Yes. (Ready is lower priority than player 1 not ready).
-	bmi b_mpu_Exit             ; Already negative means Player 1 is in motion.
-	lda #1
-	sta PSI_Response           ; Yes. Player 2 idle.  So Player 1, Ready to Play.
-	bne b_mpu_Exit             ; Done here.
-
-b_mpu_MovePlayer2Up
-	dec zPLAYER_TWO_NEW_Y      ; Tell VBI to move up one scan line.
-	lda #$FF                   ; Signal this is in motion.
-	sta PSI_Response
+	ldx #1
+	jsr MovePlayerUp
 
 b_mpu_Exit
-	lda PSI_Response           ; So that the caller gets the appropriate CPU flags -, 0, +
+	lda PSI_Response           ; Player 1 and 2 are both Off/idle or one is playing. 
+
 	rts
+
+
+; ==========================================================================
+; SUPPORT - MOVE PLAYER UP
+; ==========================================================================
+; Runs during Title screen and Countdown
+; 
+; If the Player selects to begin game, then move the gun up.
+; Given that this is an animation that takes several frames
+; this needs to be able to run during the final moments of the 
+; big Mothership flying up in case the player presses the button 
+; very late during the countdown.
+;
+; This routine separates the movement from the input activity, so the 
+; movement can continue when the polling for input has ceased.
+;
+; Process movement means:
+; If current position does not equal current state, then move the Y position.
+; The VBI will do the actual redraw.
+;
+; X is the Player to check.  0 to 1
+;
+; Returns:
+; -- if either player is not yet in playing position. (continue animation)
+; ++ if both players are ready to play. 
+; 0 if both players are idle.
+; --------------------------------------------------------------------------
+
+MovePlayerUp
+
+	lda zPLAYER_ON,X           ; (0) not playing. (FF)=Title/Idle  (1) playing (moving)
+	beq b_mmpu_Exit            ; Zero is not playing
+	bmi b_mmpu_Exit            ; Negative is not really playing (yet)
+
+	lda zPLAYER_Y,X            ; Here we know Player is Playing.  ($1 is playing)
+	cmp #PLAYER_PLAY_Y         ; Is it at the Playing position?
+	bne b_mmpu_MovePlayerUp    ; Not yet.  Move it up.
+
+	lda PSI_Response           ; Is other player not ready? (Ready is lower priority than not ready).
+	bmi b_mpu_Exit             ; Already negative means a player is in motion.  Skip the rest.
+
+	lda #1
+	sta PSI_Response           ; Yes. Ready to Play.
+	bne b_mmpu_Exit            ; Done here.
+
+b_mmpu_MovePlayerUp
+	lda #$FF
+	sta PSI_Response           ; -1 Signal that this is still in motion.
+	dec zPLAYER_NEW_Y,X        ; Tell VBI to move up one scan line.
+
+b_mmpu_Exit
+	rts
+
+
+
+;b_mpu_TryPlayer2
+;	lda zPLAYER_TWO_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
+;	beq b_mpu_Exit             ; Zero should not really happen, but my OCD says this must be handled.
+;	bmi b_mpu_Exit             ; $FF is idle.
+
+;	lda zPLAYER_TWO_Y          ; Here we know Player 1 is Playing.  ($1 is playing)
+;	cmp #PLAYER_PLAY_Y         ; Is it at the Playing position?
+;	bne b_mpu_MovePlayer2Up    ; No.  Move it up.
+
+;	lda PSI_Response           ; Yes. (Ready is lower priority than Player not ready).
+;	bmi b_mpu_Exit             ; Already negative means a player is in motion. Skip rest.
+;	lda #1
+;	sta PSI_Response           ; Yes. Player idle.  So Player 1, Ready to Play.
+;	bne b_mpu_Exit             ; Done here.
+
+;b_mpu_MovePlayer2Up
+;	dec zPLAYER_TWO_NEW_Y      ; Tell VBI to move up one scan line.
+;	lda #$FF                   ; Signal this is in motion.
+;	sta PSI_Response
+
+;b_mpu_Exit
+;	lda PSI_Response           ; So that the caller gets the appropriate CPU flags -, 0, +
+;	rts
+
+
+
+
+
+;	lda #0
+;	sta PSI_Response           ; Flag no changes occurred
+
+;	lda zPLAYER_ONE_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing (moving)
+;	beq b_mpu_TryPlayer2       ; Zero is not playing
+;	bmi b_mpu_TryPlayer2       ; Negative is not really playing (yet)
+
+;	lda zPLAYER_ONE_Y          ; Here we know Player 1 is Playing.  ($1 is playing)
+;	cmp #PLAYER_PLAY_Y         ; Is it at the Playing position?
+;	bne b_mpu_MovePlayer1Up    ; No.  Move it up.
+;	lda #1
+;	sta PSI_Response           ; Yes. Ready to Play.
+;	bne b_mpu_TryPlayer2       ; Done here.
+
+;b_mpu_MovePlayer1Up
+;	lda #$FF
+;	sta PSI_Response           ; -1 Signal that this is still in motion.
+;	dec zPLAYER_ONE_NEW_Y      ; Tell VBI to move up one scan line.
+
+;b_mpu_TryPlayer2
+;	lda zPLAYER_TWO_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
+;	beq b_mpu_Exit             ; Zero should not really happen, but my OCD says this must be handled.
+;	bmi b_mpu_Exit             ; $FF is idle.
+
+;	lda zPLAYER_TWO_Y          ; Here we know Player 1 is Playing.  ($1 is playing)
+;	cmp #PLAYER_PLAY_Y         ; Is it at the Playing position?
+;	bne b_mpu_MovePlayer2Up    ; No.  Move it up.
+
+;	lda PSI_Response           ; Yes. (Ready is lower priority than player 1 not ready).
+;	bmi b_mpu_Exit             ; Already negative means Player 1 is in motion.
+;	lda #1
+;	sta PSI_Response           ; Yes. Player 2 idle.  So Player 1, Ready to Play.
+;	bne b_mpu_Exit             ; Done here.
+
+;b_mpu_MovePlayer2Up
+;	dec zPLAYER_TWO_NEW_Y      ; Tell VBI to move up one scan line.
+;	lda #$FF                   ; Signal this is in motion.
+;	sta PSI_Response
+
+;b_mpu_Exit
+;	lda PSI_Response           ; So that the caller gets the appropriate CPU flags -, 0, +
+;	rts
+
 
 
 

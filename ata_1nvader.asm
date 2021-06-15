@@ -215,6 +215,8 @@ PLAYER_MAX_X =197 ; Farthest right next to bumper ( Max screen X - bumper width 
 
 PLAYER_X_SIZE=7   ; Width of guns in color clocks.  Needed for collision evaluation.
 
+LASER_END_Y=36    ; also MOTHERSHIP_MIN_Y
+
 ; Player 1 and player 2 values are interleaved.
 ; I have a stupid idea of using an index for 
 ; the players, and where applicable calling the 
@@ -271,6 +273,7 @@ zPLAYER_TWO_CRASH  .byte $00 ; Player 2 being pushed by mothership
 zPLAYER_REDRAW
 zPLAYER_ONE_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
 zPLAYER_TWO_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
+
 
 zLASER_ON
 zLASER_ONE_ON      .byte $01 ; whether or not the laser is shooting
@@ -392,6 +395,7 @@ SAVEY = $FF
 
 MOTHERSHIP_MIN_X = 40  ; Farthest Left off the normal width screen.
 MOTHERSHIP_MAX_X = 208 ; Farthest right off the normal width screen.
+MOTHERSHIP_MIN_Y = 36  ; starting position of mothership, last position for laser.
 
 zMOTHERSHIP_X               .byte $00 ; Game mothership X coord 
 zMOTHERSHIP_NEW_X           .byte $00 ; Game mothership X coord 
