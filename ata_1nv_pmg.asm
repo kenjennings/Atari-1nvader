@@ -120,7 +120,7 @@ PMG_IMG_CANNON
 
 ; 15 C-64 high res pixels works out to less than 7 color clocks 
 ; wide on real video hardware.   So, instead of 8 pixels, let's  
-; do 7 pixels for the Atai gun.   The odd number provides a  
+; do 7 pixels for the Atari gun.   The odd number provides a  
 ; center line for the gun turret and lazer shots.
 
 	.BYTE $00  ; ........

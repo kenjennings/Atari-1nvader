@@ -855,12 +855,9 @@ GameMain
 
 ;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
-	; Quick and dirty demo.
-	
+	jsr GamePlayersMovement 
 
-	jsr GamePlayersMovement
-
-;	jsr Check mothership Explosion.
+	jsr CheckNewExplosions
 
 	jsr GameMothershipMovement
 
@@ -1192,6 +1189,77 @@ b_mmpu_Exit
 
 
 
+; ==========================================================================
+; SUPPORT - CHECK NEW EXPLOSIONS
+; ==========================================================================
+; Runs during main Game
+; 
+; For Each player check if the Laser hit the mothership, and then set 
+; flags to trigger actions:
+; - remove laser from screen, 
+; - start explosion at mothership position,
+; - add points to player.
+;
+; If any bang occurred, then 
+; - adjust new mothership position 
+; - update hit counter/mothership speed
+;
+; --------------------------------------------------------------------------
+
+CheckNewExplosions
+
+	ldx #0
+	jsr CheckNewExplosion
+
+	ldx #1
+	jsr CheckNewExplosion
+
+	rts
+
+
+; ==========================================================================
+; SUPPORT - CHECK NEW EXPLOSION
+; ==========================================================================
+; Runs during main Game
+; 
+; 2) Is Bang set (Player to Mothership collision)? (both players)
+;    a) Set laser to remove it from screen
+;    b) Add points to player
+;    c) Explosion on, X, y == Current Mothership X, Y
+;
+; X == The Player's laser to work on.
+;
+; --------------------------------------------------------------------------
+
+CheckNewExplosion
+
+	lda zLASER_ON,X   ; Is laser on?
+	beq b_cne_Exit    ; No. Nothing to do.
+
+	lda zLASER_BANG,X ; Did Laser hit Mothership?
+	beq b_cne_Exit    ; No. Nothing to do.
+
+	lda #0
+	sta zLASER_NEW_Y  ; Flag this laser to get erased.
+
+	lda #1            ; Flag that this player shot the mothership.
+	sta zPLAYER_SHOT_THE_SHERIFF,X
+
+	lda zMOTHERSHIP_X
+	sta zEXPLOSION_NEW_X
+	lda zMOTHERSHIP_Y
+	sta zEXPLOSION_NEW_Y
+
+	lda #15 
+	sta zEXPLOSION_COUNT
+
+b_cne_Exit
+	rts
+
+
+
+
+
 
 ; ==========================================================================
 ; SUPPORT - MOVE GAME MOTHERSHIP
@@ -1248,6 +1316,10 @@ b_gmm_skip_MS_Move
 ; ==========================================================================
 ; Runs during main Game
 ; 
+; 1) Run Player movement.
+;    a) bounce if gun collides with bumper.
+;    b) bounce if guns collide with each other.
+;
 ; Move the players' guns during the game.
 ; This is all about the calculations to change position.
 ; The actual redraw takes place during the VBI.
@@ -1353,6 +1425,7 @@ GamePlayersMovement
 	; rebounded from the bumpers if applicable.   No 
 	; consideration of player collisions has occurred yet.
 
+
 	; If there is only one player playing, whether player 1 or 2, 
 	; then the player's gun movement has been solved, and no more
 	; logic is needed.
@@ -1373,8 +1446,8 @@ GamePlayersMovement
 	lda zPLAYER_ONE_DIR ; 1 == right to left.
 	bne b_gpm_Exit  ; Yes, so, no collision.
 
-	lda zPLAYER_TWO_DIR ; 0 == left to right.
-	beq b_gpm_Exit  ; Yes, so, no collision.
+;	lda zPLAYER_TWO_DIR ; 0 == left to right.
+;	beq b_gpm_Exit  ; Yes, so, no collision.
 
 	; Here we know two players are running, and
 	; they are traveling toward each other.

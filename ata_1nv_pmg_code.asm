@@ -142,18 +142,18 @@ Pdl_Temp_Laser_Num .byte 0
 
 Pmg_Draw_Laser
 
-	lda zLASER_ON,X      ; Is laser on?
-	beq b_pdl_Exit       ; Nope.  We're done.
+	lda zLASER_ON,X        ; Is laser on?
+	beq b_pdl_Exit         ; Nope.  We're done.
 
 	stx Pdl_Temp_Laser_Num ; Save X identifying player for later
 
-	lda #0               ; Setup zero page pointer to Player memory
+	lda #0                 ; Setup zero page pointer to Player memory
 	sta zPMG_HARDWARE
 	lda zPLAYER_PMG,X
 	sta zPMG_HARDWARE+1
 
-	ldy zLASER_Y,X
-	beq b_pdl_DoRemoval  ; If 0, then do laser removal.
+	ldy zLASER_NEW_Y,X
+	beq b_pdl_DoRemoval    ; If 0, then do laser removal at old position
 
 
 	ldx #0
@@ -192,10 +192,11 @@ b_pdl_CopyLaserZero
 
 
 b_pdl_DoRemoval ; Zero the entire laser in the end position  and turn off laser.
-	ldy #LASER_END_Y
+	ldy zLASER_Y,X
 
 	lda #0
-	sta zLASER_ON,X
+	sta zLASER_ON,X   ; Turn off laser
+	sta zLASER_Y,X    ; Zero currnet Y position.
 
 	ldx #7
 
@@ -233,7 +234,7 @@ Pmg_Draw_Players
 
 	lda zPLAYER_ONE_REDRAW
 	beq b_pdp_ProcessPlayer2
-	
+
 ;	lda #0
 ;	sta zPLAYER_ONE_REDRAW
 

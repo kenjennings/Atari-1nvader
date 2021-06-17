@@ -425,22 +425,12 @@ b_mdv_DoMyDeferredVBI
 	lda #0
 	sta ATRACT
 
-	; Collect collisions.
-	lda P0PL            ; GTIA collision register Player 0 (laser 1)...
-	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
-	sta zLASER_ONE_BANG ; Laser 1 collision with mothership (P0 to P2)
-	lda P1PL            ; GTIA collision register Player 1 (laser 2)...
-	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
-	sta zLASER_TWO_BANG ; Laser 1 collision with mothership (P1 to P2)
-
-	sta HITCLR          ; Always reset the P/M collision bits for next frame.
-
 ; ======== TITLE SCREEN AND COUNTDOWN ACTIVIES  ========
 ; ======================================================
 	lda zCurrentEvent               ; Get current state
 	cmp #[EVENT_COUNTDOWN+1]        ; Is it TITLE or COUNTDOWN
 	bcc b_mdv_DoBigMothership       ; Yes. Less Than < is correct
-	
+
 	jmp b_mdv_DoGameManagement      ; No. Greater Than > COUNTDOWN is GAME or GAMEOVER
 
 
@@ -762,16 +752,30 @@ b_mdv_DoGameManagement
 	cmp #EVENT_GAME           ; Is it The Game?
 	beq b_mdv_DoTheGame       ; Yes. Do the Game
 	jmp b_mdv_DoGameOver      ; No. Check if doing  Game Over routine Greater Than > COUNTDOWN is GAME or GAMEOVER
-	
+
 
 b_mdv_DoTheGame
 	lda #0
 	sta zDLIStarLinecounter   ; reset DLI counter.
 
+	sta zPLAYER_ONE_SHOT_THE_SHERIFF  ; Flag that this player did not shoot the mothership.
+	sta zPLAYER_TWO_SHOT_THE_SHERIFF
+
 	lda zLASER_ONE_X          ; Set laser positions
 	sta HPOSP0
 	lda zLASER_TWO_X
 	sta HPOSP1
+
+	; Collect collisions.
+	lda P0PL            ; GTIA collision register Player 0 (laser 1)...
+	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
+	sta zLASER_ONE_BANG ; Laser 1 collision with mothership (P0 to P2)
+	lda P1PL            ; GTIA collision register Player 1 (laser 2)...
+	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
+	sta zLASER_TWO_BANG ; Laser 1 collision with mothership (P1 to P2)
+
+	sta HITCLR          ; Always reset the P/M collision bits for next frame.
+
 
 	jsr Gfx_ShowScreen   ; Forcing redraw of score now for test evidence
 

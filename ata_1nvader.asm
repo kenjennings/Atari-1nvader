@@ -274,6 +274,9 @@ zPLAYER_REDRAW
 zPLAYER_ONE_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
 zPLAYER_TWO_REDRAW .byte $00 ; 0 = skip image update.  1 = redraw.
 
+zPLAYER_SHOT_THE_SHERIFF
+zPLAYER_ONE_SHOT_THE_SHERIFF .byte $00 ; Flag that Player 1 shot the mothership
+zPLAYER_TWO_SHOT_THE_SHERIFF .byte $00 ; Flag that Player 2 shot the mothership
 
 zLASER_ON
 zLASER_ONE_ON      .byte $01 ; whether or not the laser is shooting
@@ -287,6 +290,11 @@ zLASER_Y
 zLASER_ONE_Y       .byte $00 ; Laser 1 Y coord
 zLASER_TWO_Y       .byte $00 ; Laser 2 Y coord
 
+zLASER_NEW_Y
+zLASER_ONE_NEW_Y   .byte $00 ; Laser 1 Y coord
+zLASER_TWO_NEW_Y   .byte $00 ; Laser 2 Y coord
+
+zLASER_BANG
 zLASER_ONE_BANG    .byte $00 ; Laser 1 collision with mothership (P0 to P2)
 zLASER_TWO_BANG    .byte $00 ; Laser 2 collision with mothership (P1 to P2) 
 
@@ -410,8 +418,15 @@ zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter
 zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
 zMOTHERSHIP_ROW_AS_DIGITS   .byte $0,$0 ; Mothership text line row number as 2 digits for display
 
+
 zMOTHERSHIP_SHOT_BY_ONE     .byte $0  ; Collision between PM0 (shot) and PM2
 zMOTHERSHIP_SHOT_BY_TWO     .byte $0  ; Collision between PM1 (shot) and PM2
+
+zEXPLOSION_COUNT            .byte $00
+zEXPLOSION_X                .byte $00 
+zEXPLOSION_NEW_X            .byte $00 
+zEXPLOSION_Y                .byte $00
+zEXPLOSION_NEW_Y            .byte $00
 
 zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
 
