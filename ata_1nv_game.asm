@@ -1695,7 +1695,7 @@ CheckLaserInProgress
 	beq b_clip_Exit     ; No. Nothing to do.
 
 	lda zLASER_Y,X  
-	cmp LASER_END_Y     ; Is Laser at Y Limit?
+	cmp #LASER_END_Y    ; Is Laser at Y Limit?
 	bne b_clip_DoMove   ; No.  
 
 	lda #0              ; Zero New_Y is signal to remove from screen.
