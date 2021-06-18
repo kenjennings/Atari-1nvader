@@ -855,15 +855,15 @@ GameMain
 
 ;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
-	jsr GamePlayersMovement 
+	jsr GamePlayersMovement     ; 1
 
-	jsr CheckNewExplosions
+;	jsr CheckNewExplosions      ; 2
 
-	jsr GameMothershipMovement
+	jsr CheckLasersInProgress   ; 3
 
-;	jsr Check Laser In Progress
+;	jsr Check Player Trigger    ; 4
 
-;	jsr Check Player Trigger
+	jsr GameMothershipMovement  
 
 ;	jsr Supervise Last Row motion.
 
@@ -1654,5 +1654,62 @@ b_gmprtb_Exit
 	rts
 
 
+
+
+; ==========================================================================
+; SUPPORT - CHECK LASERS IN PROGRESS
+; ==========================================================================
+; Runs during main Game
+; 
+; 3) If laser is running, update Y =  Y - 4.
+;    a) if Y reaches min Y, set laser to remove it from screen
+;
+; --------------------------------------------------------------------------
+
+CheckLasersInProgress
+
+	ldx #0
+	jsr CheckLaserInProgress
+
+	ldx #1
+	jsr CheckLaserInProgress
+
+	rts
+
+
+; ==========================================================================
+; SUPPORT - CHECK NEW EXPLOSION
+; ==========================================================================
+; Runs during main Game
+; 
+; 3) If laser is running, update Y =  Y - 4.
+;    a) if Y reaches min Y, set laser to remove it from screen
+;
+; X == The Player's laser to work on.
+;
+; --------------------------------------------------------------------------
+
+CheckLaserInProgress
+
+	lda zLASER_ON,X     ; Is laser on?
+	beq b_clip_Exit     ; No. Nothing to do.
+
+	lda zLASER_Y,X  
+	cmp LASER_END_Y     ; Is Laser at Y Limit?
+	bne b_clip_DoMove   ; No.  
+
+	lda #0              ; Zero New_Y is signal to remove from screen.
+	; Stop Laser Sound here.   If the other laser is not running
+	beq b_clip_UpdateY
+
+b_clip_DoMove
+	sec                 ; Subtract 4 from laser Y
+	sbc #4
+	
+b_clip_UpdateY
+	sta zLASER_NEW_Y,X  ; New Y is set.
+
+b_clip_Exit
+	rts
 
 
