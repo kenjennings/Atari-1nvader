@@ -236,11 +236,11 @@ zPLAYER_TWO_PMG    .byte >PLAYERADR1 ; Player 2 Cannon and Laser (high byte)
 
 zPLAYER_X
 zPLAYER_ONE_X      .byte [PLAYER_MIN_X+40] ; Player 1 gun X coord
-zPLAYER_TWO_X      .byte [PLAYER_MAX_X-40] ; Player 2 gun X coord (196 max)
+zPLAYER_TWO_X      .byte [PLAYER_MAX_X-40] ; Player 2 gun X coord 
 
 zPLAYER_NEW_X
 zPLAYER_ONE_NEW_X  .byte [PLAYER_MIN_X+40] ; Player 1 gun X coord
-zPLAYER_TWO_NEW_X  .byte [PLAYER_MAX_X-40] ; Player 2 gun X coord (196 max)
+zPLAYER_TWO_NEW_X  .byte [PLAYER_MAX_X-40] ; Player 2 gun X coord 
 
 zPLAYER_Y
 zPLAYER_ONE_Y      .byte 0 

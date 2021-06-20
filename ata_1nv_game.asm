@@ -1189,126 +1189,6 @@ b_mmpu_Exit
 
 
 
-; ==========================================================================
-; SUPPORT - CHECK NEW EXPLOSIONS
-; ==========================================================================
-; Runs during main Game
-; 
-; For Each player check if the Laser hit the mothership, and then set 
-; flags to trigger actions:
-; - remove laser from screen, 
-; - start explosion at mothership position,
-; - add points to player.
-;
-; If any bang occurred, then 
-; - adjust new mothership position 
-; - update hit counter/mothership speed
-;
-; --------------------------------------------------------------------------
-
-CheckNewExplosions
-
-	ldx #0
-	jsr CheckNewExplosion
-
-	ldx #1
-	jsr CheckNewExplosion
-
-	rts
-
-
-; ==========================================================================
-; SUPPORT - CHECK NEW EXPLOSION
-; ==========================================================================
-; Runs during main Game
-; 
-; 2) Is Bang set (Player to Mothership collision)? (both players)
-;    a) Set laser to remove it from screen
-;    b) Add points to player
-;    c) Explosion on, X, y == Current Mothership X, Y
-;
-; X == The Player's laser to work on.
-;
-; --------------------------------------------------------------------------
-
-CheckNewExplosion
-
-	lda zLASER_ON,X   ; Is laser on?
-	beq b_cne_Exit    ; No. Nothing to do.
-
-	lda zLASER_BANG,X ; Did Laser hit Mothership?
-	beq b_cne_Exit    ; No. Nothing to do.
-
-	lda #0
-	sta zLASER_NEW_Y  ; Flag this laser to get erased.
-
-	lda #1            ; Flag that this player shot the mothership.
-	sta zPLAYER_SHOT_THE_SHERIFF,X
-
-	lda zMOTHERSHIP_X
-	sta zEXPLOSION_NEW_X
-	lda zMOTHERSHIP_Y
-	sta zEXPLOSION_NEW_Y
-
-	lda #15 
-	sta zEXPLOSION_COUNT
-
-b_cne_Exit
-	rts
-
-
-
-
-
-
-; ==========================================================================
-; SUPPORT - MOVE GAME MOTHERSHIP
-; ==========================================================================
-; Runs during main Game
-; 
-; Moves the mothership.   
-; The actual redraw takes place in the VBI.
-; --------------------------------------------------------------------------
-
-GameMothershipMovement
-
-	lda zMOTHERSHIP_Y
-	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
-	bne b_gmm_skip_MS_Move ; No.  Skip horizontal movement.
-
-	ldy zMOTHERSHIP_X        ; Get current X
-
-	lda zMOTHERSHIP_DIR      ; Test direction.
-	bne b_gmm_Mothership_R2L ; 1 = Right to Left
-
-	iny                      ; Do left to right.
-	sty zMOTHERSHIP_NEW_X
-	cpy #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
-	beq b_gmm_MS_ReverseDirection
-	bne b_gmm_skip_MS_Move
-
-b_gmm_Mothership_R2L
-	dey                      ; Do right to left.
-	sty zMOTHERSHIP_NEW_X
-	cpy #MOTHERSHIP_MIN_X    ; Reached max means time to inc Y and reverse direction.
-	beq b_gmm_MS_ReverseDirection
-	bne b_gmm_skip_MS_Move
-
-b_gmm_MS_ReverseDirection
-	lda zMOTHERSHIP_DIR      ; Toggle X direction.
-	eor #$1
-	sta zMOTHERSHIP_DIR
-
-	ldx zMOTHERSHIP_ROW      ; Get current row.
-	cpx #22                  ; If on last row, then it has
-	beq b_gmm_skip_MS_Move   ; reached the end of incrementing rows.
-
-	inx                      ; Next row.
-	jsr Pmg_SetMotherShip    ; Given Mothership row (X), update the mother ship specs and save the row.
-
-b_gmm_skip_MS_Move
-
-	rts
 
 
 ; ==========================================================================
@@ -1401,24 +1281,24 @@ b_gmm_skip_MS_Move
 
 GamePlayersMovement
 
-	lda zAnimatePlayers
-	bne b_gpm_Exit
+	lda zAnimatePlayers   ; Check timer to delay movment. (VBI updates)
+	bne b_gpm_Exit        ; Timer not 0, so still running.
 
-	lda #2
-	sta zAnimatePlayers
+	lda #2                ; Player movement timer expired.  
+	sta zAnimatePlayers   ; Reset it.
 	
 	; First, run through the easy choices first that don't involve 
 	; interaction between the two players.
 	
 	ldx #0
-	stx zPLAYER_ONE_BUMP ; Clear the bump direction flag
-	stx zPLAYER_TWO_BUMP ; Clear the bump direction flag
+	stx zPLAYER_ONE_BUMP ; Clear the bump direction flags
+	stx zPLAYER_TWO_BUMP 
 
-	jsr GameMovePlayerLeft
+	jsr GameMovePlayerLeft    ; For Player 1 (X == 0 )
 	jsr GameMovePlayerRight
 
 	ldx #1
-	jsr GameMovePlayerRight
+	jsr GameMovePlayerRight   ; For Player 2 (X == 1 ) 
 	jsr GameMovePlayerLeft
 
 	; At this point the players have moved left or right, and 
@@ -1435,6 +1315,18 @@ GamePlayersMovement
 	beq b_gpm_Exit     ; Only one player.  (0&1 = 0, 1&0 = 0)  Finito.
 
 	; Further Work on both players moving...  possible collision.  
+
+; Side note...  In theory if the players collide on the same frame that
+; one of the players shoots, then that player will reverse direction,
+; and so will both players be moving in the same direction but they 
+; overlap?   I don't think this should actually happen.   Here the 
+; game resolves the basic collision due to movement.  After this they 
+; will not overlap and they will be going in opposite directions.   
+; The shooting has not yet been evaluated.  This collision code will 
+; flag that directions changed, so that if shooting also begins on 
+; this frame, the direction will not reverse.  This should prevent the
+; shooting player from reversing directions and overlapping the other
+; player moving in the same direction.
 
 	lda zPLAYER_ONE_DIR ; Are both moving in the same direction?
 	cmp zPLAYER_TWO_DIR
@@ -1488,6 +1380,133 @@ b_gpm_BumpTheGuns
 b_gpm_Exit
 
 	rts
+
+
+
+
+
+; ==========================================================================
+; SUPPORT - CHECK NEW EXPLOSIONS
+; ==========================================================================
+; Runs during main Game
+; 
+; For Each player check if the Laser hit the mothership.
+;
+; 2) Is Bang set (Player to Mothership collision)? (both players)
+;    a) Set laser to remove it from screen
+;    b) Add points to player
+;    c) Explosion on, X, y == Current Mothership X, Y
+;
+; If any bang occurred, then 
+; - adjust new mothership position 
+; - update hit counter/mothership speed
+;
+; --------------------------------------------------------------------------
+
+CheckNewExplosions
+
+	ldx #0
+	jsr CheckNewExplosion
+
+	ldx #1
+	jsr CheckNewExplosion
+
+	rts
+
+
+
+
+; ==========================================================================
+; SUPPORT - CHECK LASERS IN PROGRESS
+; ==========================================================================
+; Runs during main Game
+; 
+; 3) If laser is running, update Y =  Y - 4.
+;    a) if Y reaches min Y, set laser to remove it from screen
+;
+; --------------------------------------------------------------------------
+
+CheckLasersInProgress
+
+	ldx #0
+	jsr CheckLaserInProgress
+
+	ldx #1
+	jsr CheckLaserInProgress
+
+	rts
+
+
+
+
+
+
+; 4) Trigger pressed?
+;    a) if gun is Off, skip shooting
+;    b) if gun is crashed [alien is pushing], skip shooting
+;    c) If lazer Y, in bottom half of screen, skip shooting
+;       i) set lazer on, 
+;       ii) Laser Y = gun new Y - 4, Laser X = gun new X + 4
+;       iii) If no bounce this turn, then negate direction/set bounce.
+
+
+
+
+
+; ==========================================================================
+; SUPPORT - MOVE GAME MOTHERSHIP
+; ==========================================================================
+; Runs during main Game
+; 
+; Moves the mothership.   
+; The actual redraw takes place in the VBI.
+; --------------------------------------------------------------------------
+
+GameMothershipMovement
+
+	lda zMOTHERSHIP_Y
+	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
+	bne b_gmm_skip_MS_Move ; No.  Skip horizontal movement.
+
+	ldy zMOTHERSHIP_X        ; Get current X
+
+	lda zMOTHERSHIP_DIR      ; Test direction.
+	bne b_gmm_Mothership_R2L ; 1 = Right to Left
+
+	iny                      ; Do left to right.
+	sty zMOTHERSHIP_NEW_X
+	cpy #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
+	beq b_gmm_MS_ReverseDirection
+	bne b_gmm_skip_MS_Move
+
+b_gmm_Mothership_R2L
+	dey                      ; Do right to left.
+	sty zMOTHERSHIP_NEW_X
+	cpy #MOTHERSHIP_MIN_X    ; Reached max means time to inc Y and reverse direction.
+	beq b_gmm_MS_ReverseDirection
+	bne b_gmm_skip_MS_Move
+
+b_gmm_MS_ReverseDirection
+	lda zMOTHERSHIP_DIR      ; Toggle X direction.
+	eor #$1
+	sta zMOTHERSHIP_DIR
+
+	ldx zMOTHERSHIP_ROW      ; Get current row.
+	cpx #22                  ; If on last row, then it has
+	beq b_gmm_skip_MS_Move   ; reached the end of incrementing rows.
+
+	inx                      ; Next row.
+	jsr Pmg_SetMotherShip    ; Given Mothership row (X), update the mother ship specs and save the row.
+
+b_gmm_skip_MS_Move
+
+	rts
+
+
+
+
+
+
 
 
 ; ==========================================================================
@@ -1656,29 +1675,57 @@ b_gmprtb_Exit
 
 
 
-; ==========================================================================
-; SUPPORT - CHECK LASERS IN PROGRESS
-; ==========================================================================
-; Runs during main Game
-; 
-; 3) If laser is running, update Y =  Y - 4.
-;    a) if Y reaches min Y, set laser to remove it from screen
-;
-; --------------------------------------------------------------------------
-
-CheckLasersInProgress
-
-	ldx #0
-	jsr CheckLaserInProgress
-
-	ldx #1
-	jsr CheckLaserInProgress
-
-	rts
-
 
 ; ==========================================================================
 ; SUPPORT - CHECK NEW EXPLOSION
+; ==========================================================================
+; Runs during main Game
+; 
+; 2) Is Bang set (Player to Mothership collision)? (both players)
+;    a) Set laser to remove it from screen
+;    b) Add points to player
+;    c) Explosion on, X, y == Current Mothership X, Y
+;
+; X == The Player's laser to work on.
+;
+; --------------------------------------------------------------------------
+
+CheckNewExplosion
+
+	lda zLASER_ON,X   ; Is laser on?
+	beq b_cne_Exit    ; No. Nothing to do.
+
+	lda zLASER_BANG,X ; Did Laser hit Mothership?
+	beq b_cne_Exit    ; No. Nothing to do.
+
+	lda #0
+	sta zLASER_NEW_Y  ; Flag this laser to get erased.
+
+	lda #1            ; Flag that this player shot the mothership.
+	sta zPLAYER_SHOT_THE_SHERIFF,X
+
+	lda zMOTHERSHIP_X
+	sta zEXPLOSION_NEW_X
+	lda zMOTHERSHIP_Y
+	sta zEXPLOSION_NEW_Y
+
+	lda #15 
+	sta zEXPLOSION_COUNT ; jiffy count for eplosion player
+
+; If any bang occurred, then 
+; - adjust new mothership position 
+; - update hit counter/mothership speed
+
+b_cne_Exit
+	rts
+
+
+
+
+
+
+; ==========================================================================
+; SUPPORT - CHECK LASER IN PROGRESS
 ; ==========================================================================
 ; Runs during main Game
 ; 
