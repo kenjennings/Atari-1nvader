@@ -791,58 +791,7 @@ colti2
 ; reference their memory automatically.
 
 drawmounts          ; draw mountains
-;;	ldx #0
 
-;;drwmtsa  
-;;	lda mountc,x
-;;	sta gMOUNT_CHAR_MEM,x
-
-;;	lda #11    ; default = grey
-;;	sta gMOUNT_COLOR_MEM,x
-
-;;	lda mountc,x
-;;	cmp #$5d   ; is it a peak?
-;;	bne drwmtsd
-	
-;;	lda #15    ; white
-;;	sta gMOUNT_COLOR_MEM,x
-
-;drwmtsd  
-;;	inx
-;;	cpx #240
-;;	bne drwmtsa
-
-;;	ldx #160
-;;	lda #9
-		 
-;;drwmtsb  
-;;	sta gMOUNT_COLOR_MEM,x
-;;	inx
-;;	cpx #200
-;;	bne drwmtsb
-
-;;	lda #8
-		 
-;;drwmtsc  
-;;	sta gMOUNT_COLOR_MEM,x
-;;	inx
-;;	cpx #240
-;;	bne drwmtsc
-
-;;	lda #5
-;;	ldx #160
-;;	sta gMOUNT_COLOR_MEM,x
-;;	ldx #199
-;;	sta gMOUNT_COLOR_MEM,x
-
-;;	lda #3        ; colour stats
-;;	ldx #215
-		 
-;;drwmtse  
-;;	sta gMOUNT_COLOR_MEM,x
-;;	inx
-;;	cpx #225
-;;	bne drwmtse
 
 	rts
 
@@ -922,46 +871,7 @@ tcrz
 ;-- game init --------------------------
 
 titlinit 
-;;	lda #0
-;;	sta zGAME_OVER_FLAG
-;;	sta zPLAYER_ONE_DIR
-;;	sta zPLAYER_ONE_FIRE
-;;	sta zPLAYER_TWO_FIRE
-;;	sta zPLAYER_ONE_ON
-;;	sta zPLAYER_TWO_ON
-;;	sta zMOTHERSHIP_X+1
-;;	sta zPLAYER_ONE_X+1
-;;	sta zPLAYER_TWO_X+1
-;;	sta ZMOTHERSHIP_ROW
 
-;;	lda #1
-;;	sta zPLAYER_TWO_DIR
-;;	sta zMOTHERSHIP_DIR
-;;	sta zJOY_ONE_LAST_STATE
-;;	sta zJOY_TWO_LAST_STATE
-;;	sta zSHOW_SCORE_FLAG
-
-;;	lda #2
-;;	sta zMOTHERSHIP_COLOR
-
-;;	lda #13
-;;	sta zPLAYER_ONE_COLOR
-
-;;	lda #14
-;;	sta zPLAYER_TWO_COLOR
-
-;;	lda #148
-;;	sta zPLAYER_ONE_X
-
-;;	lda #172
-;;	sta zMOTHERSHIP_X
-
-;;	lda #196
-;;	sta zPLAYER_TWO_X
-
-;;	lda #242    ; touching bottom
-;;	sta zPLAYER_ONE_Y
-;;	sta zPLAYER_TWO_Y
 
 	rts
 		 

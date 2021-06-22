@@ -821,7 +821,7 @@ b_gsm_SetMothership_X               ; Start X coord.
 ;    b) if gun is crashed [alien is pushing], skip shooting
 ;    c) If lazer Y, in bottom half of screen, skip shooting
 ;       i) set lazer on, 
-;       ii) Laser Y = gun new Y - 4, Laser X = gun new X + 4
+;       ii) Laser Y = gun new Y - 4, Laser X = gun new X
 ;       iii) If no bounce this turn, then negate direction/set bounce.
 ;
 ; 5) If the mothership is on last row, 
@@ -1245,10 +1245,13 @@ b_gpm_AdjustOnRightSide
 
 b_gpm_BumpTheGuns
 
-	lda #1
-	sta zPLAYER_ONE_DIR ; 1 == right to left.
 	lda #0
 	sta zPLAYER_TWO_DIR ; 0 == left to right.
+	lda #1
+	sta zPLAYER_ONE_DIR ; 1 == right to left.
+	
+	sta zPLAYER_ONE_BUMP
+	sta zPLAYER_TWO_BUMP
 
 b_gpm_Exit
 
@@ -1585,7 +1588,7 @@ CheckNewExplosion
 	sta zEXPLOSION_NEW_Y
 
 	lda #15 
-	sta zEXPLOSION_COUNT ; jiffy count for eplosion player
+	sta zEXPLOSION_COUNT ; jiffy count for explosion player
 
 ; If any bang occurred, then 
 ; - adjust new mothership position 
@@ -1609,6 +1612,7 @@ b_cne_Exit
 ;
 ; X == The Player's laser to work on.
 ;
+; VBI will actually erase and turn off the laser.
 ; --------------------------------------------------------------------------
 
 CheckLaserInProgress
@@ -1620,8 +1624,9 @@ CheckLaserInProgress
 	cmp #LASER_END_Y    ; Is Laser at Y Limit?
 	bne b_clip_DoMove   ; No.  
 
-	lda #0              ; Zero New_Y is signal to remove from screen.
 	; Stop Laser Sound here.   If the other laser is not running
+
+	lda #0              ; Zero New_Y is signal to remove from screen.
 	beq b_clip_UpdateY
 
 b_clip_DoMove
@@ -1645,7 +1650,7 @@ b_clip_Exit
 ;    b) if gun is crashed [alien is pushing], skip shooting
 ;    c) If lazer Y, in bottom half of screen, skip shooting
 ;       i) set lazer on, 
-;       ii) Laser Y = gun new Y - 4, Laser X = gun new X + 4
+;       ii) Laser Y = gun new Y - 4, Laser X = gun new X
 ;       iii) If no bounce this turn, then negate direction/set bounce.
 ;
 ; Maybe add code to insure player releases the button before 
@@ -1679,7 +1684,24 @@ b_cps_StartShot             ; Yippie Ki Yay Bang Bang Shoot Shoot
 
 	inc zLASER_ON,X         ; Turn laser on for the VBI to draw.
 
-	; start sound effects for shooting.
+; start sound effects for shooting.
+
+	; Decide whether or not the gun has to change directions.
+
+	lda zPLAYER_BUMP,X      ; Has this frame already done a direction change?
+	bne b_cps_Exit          ; Yes.  Do not switch directions again.
+
+	inc zPLAYER_BUMP,X      ; Flag it has bumped. (probably not needed).
+	lda zPLAYER_DIR,X       ; Flip direction
+	beq b_cps_Dir1          ; Go do the Flip 0 to 1
+	
+	lda #0                  ; 0 == left to right. 
+	sta zPLAYER_DIR,X       ; Flip 1 to 0
+	beq b_cps_Exit          ; Done
+
+b_cps_Dir1
+	inc zPLAYER_DIR,X       ; Flip 0 to 1.  1 == right to left.
+
 
 b_cps_Exit
 	rts
