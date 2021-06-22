@@ -58,17 +58,19 @@
 ; list, and the display list interrupts.  
 ;
 ; This is a simple game, so there are only special screen 
-; considerations for the Title screen, the Main Game, and the 
-; Game Over.
+; considerations for the Title screen, the Main Game, and some 
+; display tweaking for the Game Over.  Certain visual components are
+; placed identically from screen to screen, so screen transitions 
+; are less obvious.
 ;
 ; Given the current program state, the Immediate VBI sets the 
 ; Disply List and Display List Interrupt vectors.  The main line 
-; game loop calls the associated state function 
+; game loop calls the associated state function.
 ;
 ; There are 2 kinds of displays to run.  The Title and the Game.
 ; Other activities occur on one of these displays.  The count down 
 ; and giant mothership animation occur on the Title screen.  The 
-; Game Over display occurs using the Game screen.  
+; Game Over display uses a display similar to the Game screen.  
 ; Alo, there are different DLI chains and lookup tables for colors 
 ; used depending on what the screen is doing.
 
@@ -149,7 +151,7 @@ GameLoop
 ; --------------------------------------------------------------------------
 
 
-; ==========================================================================\
+; ==========================================================================
 ; EVENT GAME INIT
 ; ==========================================================================
 ; The Game Starting Point.  Event Entry 0.
@@ -193,11 +195,11 @@ b_gi_LoopFillZero
 	lda #0
 	sta zThisDLI         ; Init the DLI index.
 
-	; Set up the DLI.   This should be safe here without knowing what the screen is 
-	; doing, because the default OS display does not have DLI options on any 
-	; mode instructions, AND a custom screen will not be started until the bottom of the 
-	; frame AND due to the frame sync of the main loop we know that this code is 
-	; executing very close to the top of the screen.
+	; Set up the DLI.   This should be safe here without knowing what the screen
+	; is doing, because the default OS display does not have DLI options on any 
+	; mode instructions, AND a custom screen will not be started until the bottom
+	; of the frame AND due to the frame sync of the main loop we know that this 
+	; code here  is executing very close to the top of the screen.
 
 	lda #NMI_VBI           ; Turn Off DLI
 	sta NMIEN
@@ -218,37 +220,26 @@ b_gi_LoopFillZero
 	sta SIZEM
 
 ; Scrolling Terrain Values ==================================================
-; This is a cconstant component on the Title and Game screens.
-; The motion must be continuous, uninterrupted.  So, this is 
-; iniatialized only once at startup, and there is never a time 
-; where this is considered idle, or must be reset to start 
-; at the beginning.
+; The mountains are a constant component on the Title and Game screens.
+; The motion is continuous.  There is never a time where this is considered 
+; idle, or must be reset to start at the beginning.
+; Display List LMS initialization for the mountains happens in the Display 
+; List declaration. 
 
-	lda #<GFX_MOUNTAINS1
-	sta DL_LMS_SCROLL_LAND1
+; NOT NEEDED, BECAUSE THESE ARE INITIALIZED BY THE DISK LOAD INTO PAGE 0
 
-	lda #<GFX_MOUNTAINS2
-	sta DL_LMS_SCROLL_LAND2
+;	lda #LAND_MAX_PAUSE
+;	sta zLandTimer            ; Number of jiffies to Pause.  When 0, run scroll.
 
-	lda #<GFX_MOUNTAINS3
-	sta DL_LMS_SCROLL_LAND3
+;	lda #LAND_STEP_TIMER
+;	sta zLandScrollTimer      ; How many frames to wait for each fine scroll.
 
-	lda #<GFX_MOUNTAINS4
-	sta DL_LMS_SCROLL_LAND4
+;	lda #0
+;	sta zLandHS               ; fine horizontal scroll value start.
+;	sta zLandColor            ; index for repeat DLIs on the scrolling land  
 
-	lda #0
-	sta zLandColor
-	sta zLandHS
-
-	lda #LAND_MAX_PAUSE
-	sta zLandTimer
-
-	lda #LAND_STEP_TIMER
-	sta zLandScrollTimer
-
-	lda #0
-	sta zLandPhase
-	sta zLandMotion
+;	sta zLandPhase            ; 0 == waiting  1 == scrolling.
+;	sta zLandMotion           ; 0 == left/right !0 == right/left
 
 
 	; Changing the Display List is potentially tricky.  If the update is
@@ -278,7 +269,7 @@ b_gi_LoopFillZero
 ;	sta FlaggedHiScore
 ;	sta InputStick             ; no input from joystick
 
-	jsr Pmg_IndexMarks ;diagnostics for screen problems
+;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
 	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
 	sta SDMCTL
@@ -399,8 +390,8 @@ GameSetupTitle
 
 
 ; Scrolling Terrain Values ==================================================
-; Note the scrolling land is setup once in the Init section and 
-; maintained forever by the VBI.
+; F Y I -- Note the scrolling land is setup once by declaring the Display 
+; List and then maintained forever by the VBI.
 
 
 ; ===== Setup Player postions.  Etc. =====
@@ -438,8 +429,6 @@ GameSetupTitle
 	sta zEventStage
 
 ;	jsr Pmg_IndexMarks ;diagnostics for screen problems
-
-
 
 	rts
 
@@ -489,7 +478,7 @@ b_gt_TitleAnimation
 b_gt_ExitTitleAnimation
 
 ; Note that the VBI handles everything about the fine scrolling lines for the 
-; author credits, the dcoumentation, and the scroling land.
+; author credits, the documentation, and the scrolling land.
 
 
 ; ===== Player management for Title screen.   
@@ -497,10 +486,9 @@ b_gt_ExitTitleAnimation
 	jsr PlayersSelectionInput ; Button transitions to selecting for game play.
 	; ++ if either player pressed the button to play.  
 	; 0 if both players are idle.
-	beq b_gt_EndTitleScreen  ; 0 = No input.
+	beq b_gt_EndTitleScreen  ; 0 = No input.  Continue running Title.
 
 	; Non-zero result means a player hit their button, so start the countdown to play...
-
 
 	; ===== Start the Countdown running on the next frame =====
 
@@ -517,9 +505,7 @@ b_gt_ExitTitleAnimation
 
 b_gt_EndTitleScreen
 
-	jsr Pmg_IndexMarks ;diagnostics for screen problems
-
-
+;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
 	rts
 
@@ -861,7 +847,7 @@ GameMain
 
 	jsr CheckLasersInProgress   ; 3
 
-;	jsr Check Player Trigger    ; 4
+	jsr CheckPlayersShooting    ; 4
 
 	jsr GameMothershipMovement  
 
@@ -975,46 +961,6 @@ b_ppsi_Exit
 	rts
 
 
-;	lda #0
-;	sta PSI_Response
-
-;	lda zPLAYER_ONE_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
-;	bmi b_psi_TryPlayer1Idle   ; Not playing yet, so test it.
-;	beq b_psi_TryPlayer2       ; 0 isn't supposed to be possible.
-;	inc PSI_Response           ; PLAYER_ON_ON == 1, so playing.
-;	bne b_psi_TryPlayer2
-
-;b_psi_TryPlayer1Idle           ; Player 1 is idle.  ($FF  is idle)
-;	lda STRIG0                 ; (Read) TRIG0 - Joystick 0 trigger (0 is pressed. 1 is not pressed)
-;	bne b_psi_TryPlayer2       ; Not pressed.  Go to player 2
-;	; ldy #PLAYER_ONE_SHOOT
-;	; jsr PlaySound 
-;	lda #$1                    ; (1) playing.
-;	sta zPLAYER_ONE_ON
-;	sta PSI_Response           ; +1 Signal that this is in motion.
-
-;b_psi_TryPlayer2
-;	lda zPLAYER_TWO_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
-;	bmi b_psi_TryPlayer2Idle   ; $FF is idle.
-;	beq b_psi_Exit             ; 1 means already playing. 0 isn't supposed to be possible.
-;	inc PSI_Response           ; PLAYER_ON_ON == 1, so playing.
-;	bne b_psi_Exit
-
-;b_psi_TryPlayer2Idle           ; Player 2 is idle.  ($FF  is idle)
-;	lda STRIG1                 ; (Read) TRIG1 - Joystick 1 trigger (0 is pressed. 1 is not pressed)
-;	bne b_psi_Exit             ; Not pressed.  Done.
-;	; ldy #PLAYER_TWO_SHOOT
-;	; jsr PlaySound 
-;	lda #$1                    ; (1) playing.
-;	sta zPLAYER_TWO_ON
-;	sta PSI_Response
-
-;b_psi_Exit
-;	lda PSI_Response           ; Player 1 and 2 are both Off/idle or one is playing. 
-
-;	rts
-
-
 
 
 
@@ -1113,79 +1059,6 @@ b_mmpu_MovePlayerUp
 
 b_mmpu_Exit
 	rts
-
-
-
-;b_mpu_TryPlayer2
-;	lda zPLAYER_TWO_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
-;	beq b_mpu_Exit             ; Zero should not really happen, but my OCD says this must be handled.
-;	bmi b_mpu_Exit             ; $FF is idle.
-
-;	lda zPLAYER_TWO_Y          ; Here we know Player 1 is Playing.  ($1 is playing)
-;	cmp #PLAYER_PLAY_Y         ; Is it at the Playing position?
-;	bne b_mpu_MovePlayer2Up    ; No.  Move it up.
-
-;	lda PSI_Response           ; Yes. (Ready is lower priority than Player not ready).
-;	bmi b_mpu_Exit             ; Already negative means a player is in motion. Skip rest.
-;	lda #1
-;	sta PSI_Response           ; Yes. Player idle.  So Player 1, Ready to Play.
-;	bne b_mpu_Exit             ; Done here.
-
-;b_mpu_MovePlayer2Up
-;	dec zPLAYER_TWO_NEW_Y      ; Tell VBI to move up one scan line.
-;	lda #$FF                   ; Signal this is in motion.
-;	sta PSI_Response
-
-;b_mpu_Exit
-;	lda PSI_Response           ; So that the caller gets the appropriate CPU flags -, 0, +
-;	rts
-
-
-
-
-
-;	lda #0
-;	sta PSI_Response           ; Flag no changes occurred
-
-;	lda zPLAYER_ONE_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing (moving)
-;	beq b_mpu_TryPlayer2       ; Zero is not playing
-;	bmi b_mpu_TryPlayer2       ; Negative is not really playing (yet)
-
-;	lda zPLAYER_ONE_Y          ; Here we know Player 1 is Playing.  ($1 is playing)
-;	cmp #PLAYER_PLAY_Y         ; Is it at the Playing position?
-;	bne b_mpu_MovePlayer1Up    ; No.  Move it up.
-;	lda #1
-;	sta PSI_Response           ; Yes. Ready to Play.
-;	bne b_mpu_TryPlayer2       ; Done here.
-
-;b_mpu_MovePlayer1Up
-;	lda #$FF
-;	sta PSI_Response           ; -1 Signal that this is still in motion.
-;	dec zPLAYER_ONE_NEW_Y      ; Tell VBI to move up one scan line.
-
-;b_mpu_TryPlayer2
-;	lda zPLAYER_TWO_ON         ; (0) not playing. (FF)=Title/Idle  (1) playing.
-;	beq b_mpu_Exit             ; Zero should not really happen, but my OCD says this must be handled.
-;	bmi b_mpu_Exit             ; $FF is idle.
-
-;	lda zPLAYER_TWO_Y          ; Here we know Player 1 is Playing.  ($1 is playing)
-;	cmp #PLAYER_PLAY_Y         ; Is it at the Playing position?
-;	bne b_mpu_MovePlayer2Up    ; No.  Move it up.
-
-;	lda PSI_Response           ; Yes. (Ready is lower priority than player 1 not ready).
-;	bmi b_mpu_Exit             ; Already negative means Player 1 is in motion.
-;	lda #1
-;	sta PSI_Response           ; Yes. Player 2 idle.  So Player 1, Ready to Play.
-;	bne b_mpu_Exit             ; Done here.
-
-;b_mpu_MovePlayer2Up
-;	dec zPLAYER_TWO_NEW_Y      ; Tell VBI to move up one scan line.
-;	lda #$FF                   ; Signal this is in motion.
-;	sta PSI_Response
-
-;b_mpu_Exit
-;	lda PSI_Response           ; So that the caller gets the appropriate CPU flags -, 0, +
-;	rts
 
 
 
@@ -1440,7 +1313,11 @@ CheckLasersInProgress
 
 
 
-
+; ==========================================================================
+; SUPPORT - CHECK PLAYERS SHOOTING
+; ==========================================================================
+; Runs during main Game
+; 
 ; 4) Trigger pressed?
 ;    a) if gun is Off, skip shooting
 ;    b) if gun is crashed [alien is pushing], skip shooting
@@ -1448,6 +1325,18 @@ CheckLasersInProgress
 ;       i) set lazer on, 
 ;       ii) Laser Y = gun new Y - 4, Laser X = gun new X + 4
 ;       iii) If no bounce this turn, then negate direction/set bounce.
+;
+; --------------------------------------------------------------------------
+
+CheckPlayersShooting
+
+	ldx #0
+	jsr CheckPlayerShooting
+
+	ldx #1
+	jsr CheckPlayerShooting
+
+	rts
 
 
 
@@ -1533,13 +1422,6 @@ GameMovePlayerLeft
 	lda zPLAYER_DIR,X       ; Is this player going left?  0 == left to right. 1 == right to left.
 	beq b_gmpl_Exit         ; 0 == Nope.  Done here.
 
-;	cpx #0                  ; Is this player 1?
-;	beq b_gmpl_CallMoveLeft ; Yes, do movement  
-
-	; process of elimination...  this must be player 2.
-;	lda zPLAYER_ONE_ON      ; Is player 1 playing?
-;	bne b_gmpl_Exit         ; Yes.  This function can't be used for player 2.
-
 	; The Simple move left toward bumper....
 b_gmpl_CallMoveLeft
 	jsr GameMovePlayerLeftToBumper
@@ -1615,13 +1497,6 @@ GameMovePlayerRight
 
 	lda zPLAYER_DIR,X       ; Is this player going right?
 	bne b_gmpr_Exit         ; 1 == Nope.  Done here.
-
-;	cpx #1                   ; Is this player 2?
-;	beq b_gmpr_CallMoveRight ; Yes, do movement  
-
-	; process of elimination...  this must be player 1.
-;	lda zPLAYER_TWO_ON      ; Is player 2 playing?
-;	bne b_gmpr_Exit         ; Yes.  This function can't be used for player 1.
 
 	; The Simple move right toward bumper....
 b_gmpr_CallMoveRight
@@ -1759,4 +1634,53 @@ b_clip_UpdateY
 b_clip_Exit
 	rts
 
+
+; ==========================================================================
+; SUPPORT - CHECK PLAYER SHOOTING
+; ==========================================================================
+; Runs during main Game
+; 
+; 4) Trigger pressed?
+;    a) if gun is Off, skip shooting
+;    b) if gun is crashed [alien is pushing], skip shooting
+;    c) If lazer Y, in bottom half of screen, skip shooting
+;       i) set lazer on, 
+;       ii) Laser Y = gun new Y - 4, Laser X = gun new X + 4
+;       iii) If no bounce this turn, then negate direction/set bounce.
+;
+; Maybe add code to insure player releases the button before 
+; attempting to shoot again.... ?????
+;
+; --------------------------------------------------------------------------
+
+CheckPlayerShooting
+
+	lda STRIG0,X            ; (Read) TRIG0 - Joystick trigger (0 is pressed. 1 is not pressed)
+	bne b_cps_Exit          ; Not pressed.
+
+	lda zPLAYER_ON,X        ; Is this player even playing?
+	beq b_cps_Exit          ; Nope.  Done here.
+
+	lda zPLAYER_CRASH,X     ; Is the gun crashed by alien?
+	bne b_cps_Exit          ; Yes.  Done here.
+
+	lda zLASER_ON,X         ; Is Laser on?
+	beq b_cps_StartShot     ; No.  Ok to shoot.
+
+	lda zLASER_NEW_Y,X      ; Is Laser still in bottom half of screen?
+	bmi b_cps_Exit          ; Yes.  Done here.
+
+b_cps_StartShot             ; Yippie Ki Yay Bang Bang Shoot Shoot
+	lda #LASER_START
+	sta zLASER_NEW_Y,X      ; New Y is set.
+
+	lda zPLAYER_NEW_X,X     ; Copy gun X position
+	sta zLASER_ONE_X,X      ; to the laser position.
+
+	inc zLASER_ON,X         ; Turn laser on for the VBI to draw.
+
+	; start sound effects for shooting.
+
+b_cps_Exit
+	rts
 

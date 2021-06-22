@@ -118,6 +118,11 @@ zDocsHS          .byte 15   ; fine horizontal scroll value start.
 
 
 ; Scrolling Terrain Values ==================================================
+; The mountains are a constant component on the Title and Game screens.
+; The motion is continuous.  There is never a time where this is considered 
+; idle, or must be reset to start at the beginning.
+; Display List LMS initialization for the mountains happens in the Display 
+; List declaration. 
 
 ; Gfx Rows and LMS are 1, 2, 3, 4...  
 ; GFX_MOUNTAINS1  ;   +0, HSCROL 8   ; +20, HSCROL 0
@@ -215,6 +220,7 @@ PLAYER_MAX_X =197 ; Farthest right next to bumper ( Max screen X - bumper width 
 
 PLAYER_X_SIZE=7   ; Width of guns in color clocks.  Needed for collision evaluation.
 
+LASER_START=208   ; Player gun Y  (PLAYER_PLAY_Y) - 4.
 LASER_END_Y=36    ; also MOTHERSHIP_MIN_Y
 
 ; Player 1 and player 2 values are interleaved.
