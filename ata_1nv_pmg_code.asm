@@ -116,6 +116,30 @@ b_pdbm_LoopZero
 	rts
 
 
+; ==========================================================================
+; DRAW LASER
+; ==========================================================================
+; Copy the image bitmaps for the Laser to the New Y positions.
+; Main code manages Y position.   
+; If New Y position is 0, then clear out the old position, and turn off 
+; laser.
+; 
+; X == laser to update
+;
+; Copy the Laser's NEW_Y to Y.
+; --------------------------------------------------------------------------
+
+Pmg_Draw_Lasers
+
+	ldx #0
+	jsr Pmg_Draw_Laser
+
+	ldx #1
+	jsr Pmg_Draw_Laser
+
+	rts
+	
+	
 
 ; ==========================================================================
 ; DRAW LASER
@@ -124,6 +148,8 @@ b_pdbm_LoopZero
 ; Main code manages Y position.   
 ; If New Y position is 0, then clear out the old position, and turn off 
 ; laser.
+;
+; (The laser always moves, so if the laser is ON then it must be drawn.)
 ; 
 ; X register is Laser to update.   Same code is used for both lasers.
 ;
@@ -152,9 +178,23 @@ Pmg_Draw_Laser
 	lda zPLAYER_PMG,X
 	sta zPMG_HARDWARE+1
 
-	ldy zLASER_NEW_Y,X
-	beq b_pdl_DoRemoval    ; If 0, then do laser removal at old position
+	lda zLASER_NEW_Y,X     ; If New Y is 0, then 
+	beq b_pdl_DoRemoval    ; Remove laser at old position
 
+	; New Laser Y should always be less than old Y.
+	; If not, then the laser has been restarted, so erase at old position.
+
+	tay                    ; Copy New Y into Y for later.
+	cmp zLASER_Y,X         ; Is new position greater than old position?
+	bcc b_pdl_StartTheDraw ; No.  Go do a normal render.
+
+	jsr b_pdl_DoRemoval    ; Completely erase old image.
+	ldx Pdl_Temp_Laser_Num ; Need to restore New Y again.
+	ldy zLASER_NEW_Y,X     
+
+b_pdl_StartTheDraw
+	lda #0
+	sty zLASER_Y,X         ;  Current Y == new Y
 
 	ldx #0
 b_pdl_CopyLaserFirst4
@@ -191,21 +231,33 @@ b_pdl_CopyLaserZero
 	beq b_pdl_Exit ; End, copy Y == New Y
 
 
+; This can happen when the laser Y reaches the min position or the middle of the 
+; screen.   So,it is variable.
 b_pdl_DoRemoval ; Zero the entire laser in the end position  and turn off laser.
-	ldy zLASER_Y,X
+	lda #0
+	ldy zLASER_Y,X             ; Is the old position at the end?
+	cpy #LASER_END_Y
+	bne b_pdl_SkipTurnOffLaser ; No.  Do not turn off laser.
+
+	; It is possible that Old Y in the end position MAY coincide with 
+	; restarting the laser. If the new Y is zero, then it is OK to 
+	; turn off the laser.
+	lda zLASER_NEW_Y,X
+	bne b_pdl_SkipTurnOffLaser ; Not 0.   Do not turn off.
 
 	lda #0
 	sta zLASER_ON,X   ; Turn off laser
-	sta zLASER_Y,X    ; Zero currnet Y position.
+	sta zLASER_Y,X    ; Zero current Y position.
 
+b_pdl_SkipTurnOffLaser
+	lda #0
 	ldx #7
 
 b_pdl_LoopDoErase
-	sta (zPMG_HARDWARE),Y
+	sta (zPMG_HARDWARE),Y ; Erase at old position
 	iny
 	dex
 	bpl b_pdl_LoopDoErase
-
 
 b_pdl_Exit
 	rts

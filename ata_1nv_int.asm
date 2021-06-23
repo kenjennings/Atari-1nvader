@@ -762,9 +762,18 @@ b_mdv_DoTheGame
 	sta zPLAYER_TWO_SHOT_THE_SHERIFF
 
 	lda zLASER_ONE_X          ; Set laser positions
-	sta HPOSP0
+	sta SHPOSP0
 	lda zLASER_TWO_X
-	sta HPOSP1
+	sta SHPOSP1
+
+	lda RANDOM                ; Set laser colors
+	and #$F0
+	ora #$0D
+	sta COLPM0
+	lda RANDOM              
+	and #$F0
+	ora #$0D
+	sta COLPM1
 
 	; Collect collisions.
 	lda P0PL            ; GTIA collision register Player 0 (laser 1)...
@@ -783,7 +792,7 @@ b_mdv_DoTheGame
 
 	jsr Pmg_Draw_Mothership ; automatically increments Y until it is NEW_Y
 
-	; jsr Pmg_Draw_Lasers   ; draw lasers if present.
+	jsr Pmg_Draw_Lasers   ; draw lasers if present.
 
 	jsr Pmg_ManagePlayerMovement  ;  Handles guns for Title and Game displays.
 
@@ -1182,14 +1191,7 @@ b_dli4_LoopColors
 	
 	dey
 	bpl b_dli4_LoopColors
-	
-; Temporary.  Do a little tidy work to make the rest of the screen stable.
 
-;	lda zLandHS
-;	sta WSYNC
-;	sta WSYNC
-;	sta HSCROL
-	
 	pla
 	tay
 
@@ -1211,8 +1213,6 @@ TITLE_DLI_5
 	mStart_DLI ; Saves A and Y
 
 	lda zLandHS
-;	sta WSYNC
-;	sta WSYNC
 	sta HSCROL
 	
 	ldy zLandColor           ; Get color index.
@@ -1220,9 +1220,6 @@ TITLE_DLI_5
 	lda TABLE_LAND_COLPF0,y  ; Load the three registers for PF0, PF1, PF2
 	sta WSYNC   ; (1.0)
 	sta COLPF0
-
-;	lda #$c2
-;	sta COLBK
 	
 	lda TABLE_LAND_COLPF1,y
 	sta COLPF1
@@ -1262,19 +1259,9 @@ TITLE_DLI_5
 
 b_dli5_FinalExit            ; Chain to next DLI
 
-;	lda zPLAYER_ONE_X
-;	sta WSYNC
-;	sta WSYNC
-;	sta wsync
-;	sta HPOSP0
-;	lda zPLAYER_TWO_X
-;	sta HPOSP1
-
 	pla
 	tay
 
-
-	
 	mChainDLI TITLE_DLI_5,TITLE_DLI_6 ; Done here.  Finally go to next DLI.
 
 
@@ -1294,11 +1281,6 @@ TITLE_DLI_6
 	mStart_DLI ; Saves A and Y
 
 	
-;	lda zPLAYER_ONE_X        ; Cut Player/Missile object to use player's HPOS 
-;	sta HPOSP0               ; to separate the guns from the missiles.
-;	lda zPLAYER_TWO_X
-;	sta HPOSP1
-	
 	lda #[COLOR_ORANGE2|$4] ; ($24) Change COLPF1 to use as alternate ground color.
 	sta WSYNC
 	sta COLPF1
@@ -1310,19 +1292,10 @@ TITLE_DLI_6
 	lda TABLE_COLOR_BLINE_BUMPER+6 ; bumper first
 	sta COLPF3
 
-;	lda TABLE_COLOR_BLINE_PM0+6,y    ; Player 1 gun
-;	sta COLPM0
-
-;	lda TABLE_COLOR_BLINE_PM1+6,y   ; Player 2 gun
-;	sta COLPM1
-
-	lda zPLAYER_ONE_X              ; Have to cut here for player positions v laser positions above
-	sta HPOSP0
+	lda zPLAYER_ONE_X        ; Cut Player/Missile object to use player's HPOS 
+	sta HPOSP0               ; to separate the guns from the missiles.
 	lda zPLAYER_TWO_X
 	sta HPOSP1
-
-;	lda #$0A
-;	sta colbk
 
 	ldy #5 ; Yup, 6 counting down to 0 is 7 scan lines, not 8. (Aaaand, counting oly 5.  sixth is above.)
 	sta WSYNC
@@ -1371,11 +1344,6 @@ b_dli6_NextLoop
 
 	pla
 	tay
-
-	
-;	lda #$82
-;	sta COLBK
-
 
 
 	mChainDLI TITLE_DLI_6,DoNothing_DLI ; Done here.  Park it until VBI restarts it.
