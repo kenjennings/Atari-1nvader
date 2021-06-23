@@ -841,18 +841,46 @@ GameMain
 
 ;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
+;	lda #$10
+;	sta COLBK
+;	sta WSYNC
+	
 	jsr GamePlayersMovement     ; 1
-
+	
+;	lda #$30
+;	sta COLBK
+;	sta WSYNC
+	
 ;	jsr CheckNewExplosions      ; 2
 
+;	lda #$50
+;	sta COLBK
+;	sta WSYNC
+	
 	jsr CheckLasersInProgress   ; 3
-
+	
+;	lda #$70
+;	sta COLBK
+;	sta WSYNC
+	
 	jsr CheckPlayersShooting    ; 4
+	
+;	lda #$90
+;	sta COLBK
+;	sta WSYNC
+	
+	jsr GameMothershipMovement  ; 5
 
-	jsr GameMothershipMovement  
+;	lda #$b0
+;	sta COLBK
+;	sta WSYNC
+	
+;	jsr Supervise Last Row motion. ; 6
 
-;	jsr Supervise Last Row motion.
-
+;	lda #$d0
+;	sta COLBK
+;	sta WSYNC
+	
 	rts
 
 

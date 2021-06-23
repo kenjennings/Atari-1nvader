@@ -412,8 +412,7 @@ MyDeferredVBI
 
 	lda zCurrentEvent           ; Is this is still 0 (INIT)? 
 	bne b_mdv_DoMyDeferredVBI   ; No.   Continue the Deferred VBI
-;	lda #$00
-;	sta COLBK
+
 	jmp XITVBV                  ; Yes.  We should not be here.  End now.  Return to OS.
 
 
@@ -1297,7 +1296,7 @@ TITLE_DLI_6
 	lda zPLAYER_TWO_X
 	sta HPOSP1
 
-	ldy #5 ; Yup, 6 counting down to 0 is 7 scan lines, not 8. (Aaaand, counting oly 5.  sixth is above.)
+	ldy #5 ; Yup, 6 counting down to 0 is 7 scan lines, not 8. (Aaaand, counting only 5.  sixth is above.)
 	sta WSYNC
 
 b_dli6_NextLoop  
@@ -1543,187 +1542,7 @@ b_GDLI0_NormalExit                ; Exit without changing the DLI vector.
 
 
 
-
+;==============================================================================
 
 DoNothing_DLI ; In testing mode jump here to not do anything or to stop the DLI chain.
 	 rti
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-; ;==============================================================================
-; ; LOAD PM SPECS 0                                                       A 
-; ;==============================================================================
-; ; Called by Score 1 DLI.
-; ; Load the table entry 1 values for P0,P1,P2,P3,M0,M1,M2,M3  
-; ; to the P/M registers.
-; ; -----------------------------------------------------------------------------
-
-; LoadPmSpecs0
-
-	; lda PRIOR_TABLE
-	; sta PRIOR
-
-	; lda HPOSP0_TABLE
-	; sta HPOSP0
-	; lda COLPM0_TABLE 
-	; sta COLPM0
-	; lda SIZEP0_TABLE
-	; sta SIZEP0
-
-	; lda HPOSP1_TABLE
-	; sta HPOSP1
-	; lda COLPM1_TABLE 
-	; sta COLPM1
-	; lda SIZEP1_TABLE
-	; sta SIZEP1
-
-	; lda HPOSP2_TABLE
-	; sta HPOSP2
-	; lda COLPM2_TABLE 
-	; sta COLPM2
-	; lda SIZEP2_TABLE
-	; sta SIZEP2
-
-	; lda HPOSP3_TABLE
-	; sta HPOSP3
-	; lda COLPM3_TABLE 
-	; sta COLPM3
-	; lda SIZEP3_TABLE
-	; sta SIZEP3
-	
-	; lda SIZEM_TABLE
-	; sta SIZEM
-	; lda HPOSM0_TABLE
-	; sta HPOSM0
-	; lda HPOSM1_TABLE
-	; sta HPOSM1
-	; lda HPOSM2_TABLE
-	; sta HPOSM2
-	; lda HPOSM3_TABLE
-	; sta HPOSM3
-
-	; rts
-
-
-; ;==============================================================================
-; ; LOAD PM SPECS 1                                                       A 
-; ;==============================================================================
-; ; Called by Score 2 DLI.
-; ; Load the table entry 1 values for P0,P1,P2,P3,M0,M1,M2,M3 
-; ; to the P/M registers.
-; ; -----------------------------------------------------------------------------
-
-; LoadPmSpecs1
-
-	; lda PRIOR_TABLE+1
-	; sta PRIOR
-
-	; lda HPOSP0_TABLE+1
-	; sta HPOSP0
-	; lda COLPM0_TABLE+1
-	; sta COLPM0
-	; lda SIZEP0_TABLE+1
-	; sta SIZEP0
-
-	; lda HPOSP1_TABLE+1
-	; sta HPOSP1
-	; lda COLPM1_TABLE+1 
-	; sta COLPM1
-	; lda SIZEP1_TABLE+1
-	; sta SIZEP1
-
-	; lda HPOSP2_TABLE+1
-	; sta HPOSP2
-	; lda COLPM2_TABLE+1 
-	; sta COLPM2
-	; lda SIZEP2_TABLE+1
-	; sta SIZEP2
-
-	; lda HPOSP3_TABLE+1
-	; sta HPOSP3
-	; lda COLPM3_TABLE+1 
-	; sta COLPM3
-	; lda SIZEP3_TABLE+1
-	; sta SIZEP3
-
-	; lda SIZEM_TABLE+1
-	; sta SIZEM
-	; lda HPOSM0_TABLE+1
-	; sta HPOSM0
-	; lda HPOSM1_TABLE+1
-	; sta HPOSM1
-	; lda HPOSM2_TABLE+1
-	; sta HPOSM2
-	; lda HPOSM3_TABLE+1
-	; sta HPOSM3
-
-	; rts
-
-
-; ;==============================================================================
-; ; LOAD PM SPECS 2                                                       A 
-; ;==============================================================================
-; ; Called on Title, Game, and Game Over displays.
-; ; Load the table entry 2 values for P0,P1,P2,P3,M0,M1,M2,M3 
-; ; to the P/M registers.
-; ; -----------------------------------------------------------------------------
-
-; LoadPmSpecs2
-
-	; lda PRIOR_TABLE+2
-	; sta PRIOR
-
-	; lda HPOSP0_TABLE+2
-	; sta HPOSP0
-	; lda COLPM0_TABLE+2
-	; sta COLPM0
-	; lda SIZEP0_TABLE+2
-	; sta SIZEP0
-
-	; lda HPOSP1_TABLE+2
-	; sta HPOSP1
-	; lda COLPM1_TABLE+2 
-	; sta COLPM1
-	; lda SIZEP1_TABLE+2
-	; sta SIZEP1
-
-	; lda HPOSP2_TABLE+2
-	; sta HPOSP2
-	; lda COLPM2_TABLE+2 
-	; sta COLPM2
-	; lda SIZEP2_TABLE+2
-	; sta SIZEP2
-
-	; lda HPOSP3_TABLE+2
-	; sta HPOSP3
-	; lda COLPM3_TABLE+2 
-	; sta COLPM3
-	; lda SIZEP3_TABLE+2
-	; sta SIZEP3
-
-	; lda SIZEM_TABLE+2
-	; sta SIZEM
-	; lda HPOSM0_TABLE+2
-	; sta HPOSM0
-	; lda HPOSM1_TABLE+2
-	; sta HPOSM1
-	; lda HPOSM2_TABLE+2
-	; sta HPOSM2
-	; lda HPOSM3_TABLE+2
-	; sta HPOSM3
-
-	; rts
-
