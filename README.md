@@ -11,6 +11,6 @@ Darren Foulds: https://github.com/darrenfoulds
 
 | **Title** | **Game** | 
 | ------- | ------- |
-| [![TITLE WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/08-WIP-Countdown.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | [![GAME_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/12-WIP-GameWithMovingGuns.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Game.md "Game") |
+| [![TITLE WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/08-WIP-Countdown.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | [![GAME_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/13-WIP-GameGunAndLaser.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Game.md "Game") |
 
 ---
