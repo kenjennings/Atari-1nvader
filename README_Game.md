@@ -65,9 +65,24 @@ Altirra also showed that setting the status text to black to make it invisible d
 
 ---
 
+**24 June 2021 -- Bang Bang Shoot Shoot**
+
+[![V12_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/13-WIP-GameGunAndLaser.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+Lasers are working.   Sort of.
+
+Pressing the joystick button fires the laser.  If the laser is within the bottom half of the screen it cannot be restarted.   If the laser is within the top half of the screen, then pressing the button will remove the laser and restart it.  
+
+There is a bug here.   OCCASIONALLY, for one frame the laser will disappear from its current path  and  appear in the horizontal overscan area, and then on the next frame it is back where it belongs.   Have not been able to track that down yet.   It is intermittent, and it SEEMS that it may stop misbehaving  after a few minutes  of run time.   Confirmed that this is not a weird behavior of atari800 as I saw it do the same thing in Altirra which is more trustworthy for timing.
+
+I was thinking it was possible the problem is timing between the VBI code and the main code -- maybe the main code was taking so long that the main line was overrunning the frame.  But, on further diagnostics the VBI code plus the main code take so little time that they complete before the scan line has reached the playfield.
+
+Weird, still digging looking for the logic issue.
+
+---
 **DD MMM 2021 -- TO-DO**
 
-[![V13_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/13-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V13_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/14-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
 
