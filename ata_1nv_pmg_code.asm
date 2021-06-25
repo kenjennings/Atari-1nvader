@@ -765,58 +765,26 @@ b_psip_End
 
 
 ; ==========================================================================
-; MANAGE PLAYER MOVEMENT
+; MANAGE PLAYERS MOVEMENT
 ; ==========================================================================
 ; The main code provided updates to player state for the New Y position.
+;
 ; If the New Y does not match the old Player Y player then update Y.
 ; Redraw players only if something changed.
+;
 ; Also, main code can flip on Redraw to force a redraw.
 ; --------------------------------------------------------------------------
 
-Pmg_ManagePlayerMovement
+Pmg_ManagePlayersMovement
 
 	dec zAnimatePlayers        ; Decrement.   Let Main reset when it reaches 0.
 
-	lda zPLAYER_ONE_REDRAW     ; Did Main set this?  
-	bne b_pmpm_TryPlayer2      ; Yup.   Don't need to check..  Just assume, go on to next player.
+	ldx #0
+	jsr Pmg_DeterminePlayerDraw
+	
+	ldx #1
+	jsr Pmg_DeterminePlayerDraw
 
-	lda zPLAYER_ONE_ON         ; Is player On?
-	beq b_pmpm_TryPlayer2      ; No.  Skip all these considerations. 
-
-	lda zPLAYER_ONE_NEW_Y      ; Is New Y == Y?
-	cmp zPLAYER_ONE_Y          
-	bne b_pmpm_Flag_P1_Redraw  ; No. End the checks and set Flag to redraw.
-
-	lda zPLAYER_ONE_NEW_X      ; Is New X == X?
-	cmp zPLAYER_ONE_X  
-	beq b_pmpm_TryPlayer2      ; Yes, Do not flag redraw.
-
-b_pmpm_Flag_P1_Redraw
-	inc zPLAYER_ONE_REDRAW     ; Force redraw.
-
-; ------------------------------
-
-b_pmpm_TryPlayer2              ; Repeat all the same test for Player 2
-	lda zPLAYER_TWO_REDRAW     ; Did Main flag to redraw now?
-	bne b_pmpm_TryPlayerRedraw ; Yes.  Skip all other checks, and redraw. 
-
-	lda zPLAYER_TWO_ON         ; Is Player 2 even running?
-	beq b_pmpm_TryPlayerRedraw ; Nope. See if redraw is still needed for other player.
-
-	lda zPLAYER_TWO_NEW_Y      ; Is New Y == Y?
-	cmp zPLAYER_TWO_Y      
-	bne b_pmpm_Flag_P2_Redraw  ; No.  End checks and set Flag to redraw.
-
-	lda zPLAYER_TWO_NEW_X      ; Is New X == X?
-	cmp zPLAYER_TWO_X  
-	beq b_pmpm_TryPlayerRedraw ; Yes, See if redraw is still needed for other player.
-
-b_pmpm_Flag_P2_Redraw
-	inc zPLAYER_TWO_REDRAW     ;  Force redraw.
-
-; ------------------------------
-
-b_pmpm_TryPlayerRedraw
 	lda zPLAYER_ONE_REDRAW
 	ora zPLAYER_TWO_REDRAW
 	beq b_pmpm_EndPlayerMovement ; Neither one is on by main or flagged by tests.
@@ -847,6 +815,37 @@ b_pmpm_Exit
 	sta zPLAYER_ONE_REDRAW
 	sta zPLAYER_TWO_REDRAW
 
+	rts
+
+
+; ==========================================================================
+; DETERMINE PLAYER DRAW
+; ==========================================================================
+; Determine if each player should be redrawn.
+;
+; X == the player to analyze
+; --------------------------------------------------------------------------
+
+Pmg_DeterminePlayerDraw
+
+	lda zPLAYER_REDRAW,X    ; Did Main set this?  
+	bne b_pdpd_Exit         ; Yup.   Don't need to check..  Just assume, go on to next player.
+
+	lda zPLAYER_ON,X        ; Is player On?
+	beq b_pdpd_Exit         ; No.  Skip all these considerations. 
+
+	lda zPLAYER_NEW_Y,X     ; Is New Y == Y?
+	cmp zPLAYER_Y,X          
+	bne b_pdpd_Flag_Redraw  ; No. End the checks and set Flag to redraw.
+
+	lda zPLAYER_NEW_X,X     ; Is New X == X?
+	cmp zPLAYER_X,X  
+	beq b_pdpd_Exit         ; Yes, Do not flag redraw.
+
+b_pdpd_Flag_Redraw
+	inc zPLAYER_ONE_REDRAW  ; Force redraw.
+
+b_pdpd_Exit
 	rts
 
 

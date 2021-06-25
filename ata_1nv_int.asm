@@ -730,7 +730,7 @@ b_mdv_EndDocsScrolling
 
 b_mdv_DoPlayerMovement
 
-	jsr Pmg_ManagePlayerMovement
+	jsr Pmg_ManagePlayersMovement
 
 b_mdv_EndPlayerMovement
 
@@ -793,7 +793,7 @@ b_mdv_DoTheGame
 
 	jsr Pmg_Draw_Lasers   ; draw lasers if present.
 
-	jsr Pmg_ManagePlayerMovement  ;  Handles guns for Title and Game displays.
+	jsr Pmg_ManagePlayersMovement  ;  Handles guns for Title and Game displays.
 
 
 
