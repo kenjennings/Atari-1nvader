@@ -1708,7 +1708,7 @@ b_cps_StartShot             ; Yippie Ki Yay Bang Bang Shoot Shoot
 	sta zLASER_NEW_Y,X      ; New Y is set.
 
 	lda zPLAYER_NEW_X,X     ; Copy gun X position
-	sta zLASER_ONE_X,X      ; to the laser position.
+	sta zLASER_X,X          ; to the laser position.
 
 	inc zLASER_ON,X         ; Turn laser on for the VBI to draw.
 
