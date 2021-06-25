@@ -182,8 +182,8 @@ GameInit
 	ldx #7
 	lda #0
 b_gi_LoopFillZero
-	sta PCOLOR0,x 
-	sta SHPOSP0,x
+	sta PCOLOR0,x ; Init - Zero color registers.
+	sta SHPOSP0,x ; Init - Zero PM HPOS Values
 	dex
 	bpl b_gi_LoopFillZero
 

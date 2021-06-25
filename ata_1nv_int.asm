@@ -760,10 +760,10 @@ b_mdv_DoTheGame
 	sta zPLAYER_ONE_SHOT_THE_SHERIFF  ; Flag that this player did not shoot the mothership.
 	sta zPLAYER_TWO_SHOT_THE_SHERIFF
 
-	lda zLASER_ONE_X          ; Set laser positions
-	sta SHPOSP0
-	lda zLASER_TWO_X
-	sta SHPOSP1
+	lda zLASER_ONE_X      ; Start VBI. Copy Laser 1 X to SHPOSP0
+	sta SHPOSP0           ; Start VBI. Copy Laser 1 X to SHPOSP0
+	lda zLASER_TWO_X      ; Start VBI. Copy Laser 2 X to SHPOSP1
+	sta SHPOSP1           ; Start VBI. Copy Laser 2 X to SHPOSP1
 
 	lda RANDOM                ; Set laser colors
 	and #$F0
@@ -916,10 +916,10 @@ ExitMyDeferredVBI
 
 ;b_mdv_ReloadFromShadow
 
-	lda SHPOSP0
-	sta HPOSP0
-	lda SHPOSP1
-	sta HPOSP1
+	lda SHPOSP0  ; VBI Copy SHPOSP0 to HPOSP0
+	sta HPOSP0   ; VBI Copy SHPOSP0 to HPOSP0
+	lda SHPOSP1  ; VBI Copy SHPOSP1 to HPOSP1
+	sta HPOSP1   ; VBI Copy SHPOSP1 to HPOSP1
 	lda SHPOSP2
 	sta HPOSP2
 	lda SHPOSP3
@@ -1291,10 +1291,10 @@ TITLE_DLI_6
 	lda TABLE_COLOR_BLINE_BUMPER+6 ; bumper first
 	sta COLPF3
 
-	lda zPLAYER_ONE_X        ; Cut Player/Missile object to use player's HPOS 
-	sta HPOSP0               ; to separate the guns from the missiles.
-	lda zPLAYER_TWO_X
-	sta HPOSP1
+	lda zPLAYER_ONE_X ; DLI Gun's HPOSP0 value to separate from laser
+	sta HPOSP0        ; DLI Gun's HPOSP0 value to separate from laser
+	lda zPLAYER_TWO_X ; DLI Gun's HPOSP1 value to separate from laser
+	sta HPOSP1        ; DLI Gun's HPOSP1 value to separate from laser
 
 	ldy #5 ; Yup, 6 counting down to 0 is 7 scan lines, not 8. (Aaaand, counting only 5.  sixth is above.)
 	sta WSYNC

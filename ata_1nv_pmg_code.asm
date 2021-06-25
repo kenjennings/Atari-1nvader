@@ -503,11 +503,12 @@ Pmg_SetHPOSZero
 
 	lda #$00                ; 0 position
 
-	sta HPOSP0 ; Player positions 0, 1, 2, 3
+	sta HPOSP0 ; Zero Player positions 0, 1, 2, 3
 	sta HPOSP1
 	sta HPOSP2
 	sta HPOSP3
-	sta HPOSM0 ; Missile positions 0, 1, 2, 3
+
+	sta HPOSM0 ; Zero Missile positions 0, 1, 2, 3
 	sta HPOSM1
 	sta HPOSM2
 	sta HPOSM3
@@ -826,20 +827,20 @@ b_pmpm_RedrawPlayers
 b_pmpm_EndPlayerMovement ; Decide if Lazer or Player sets the HPOS at the start of the frame.
 	lda zCurrentEvent    ; Is this is 0? 
 	beq b_pmpm_Exit      ; No.  Next section
-	cmp #EVENT_GAME       ; Is it game?
+	cmp #EVENT_GAME      ; Is it game?
 	bcc b_pmpm_SetPlayer ; No. So, no lasers.
 
-	lda zLASER_ONE_X     ; Copy laser X to shadow registers.
-	sta SHPOSP0
-	lda zLASER_TWO_X
-	sta SHPOSP1
+	lda zLASER_ONE_X     ; Copy laser 1  X to shadow registers.
+	sta SHPOSP0          ; Copy laser 1  X to shadow registers.
+	lda zLASER_TWO_X     ; Copy laser 2  X to shadow registers.
+	sta SHPOSP1          ; Copy laser 2  X to shadow registers.
 	jmp b_pmpm_Exit
 
 b_pmpm_SetPlayer         ; In any other case, Guns X position goes to shadow register.
-	lda zPLAYER_ONE_X
-	sta SHPOSP0
-	lda zPLAYER_TWO_X
-	sta SHPOSP1
+	lda zPLAYER_ONE_X    ; Copy Player 1  X to shadow register
+	sta SHPOSP0          ; Copy Player 1  X to shadow register
+	lda zPLAYER_TWO_X    ; Copy Player 2  X to shadow register
+	sta SHPOSP1          ; Copy Player 2  X to shadow register
 
 b_pmpm_Exit
 	lda #0
