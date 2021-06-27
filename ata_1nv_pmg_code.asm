@@ -444,7 +444,7 @@ Pmg_SetMotherShip
 
 	inc zSHOW_SCORE_FLAG
 
-	jsr showscr
+;	jsr showscr
 
 	rts
 
@@ -793,8 +793,8 @@ b_pmpm_RedrawPlayers
 	jsr Pmg_Draw_Players ;  This will copy Players' NEW_Y to Y, NEW_X to X
 
 b_pmpm_EndPlayerMovement ; Decide if Lazer or Player sets the HPOS at the start of the frame.
-	lda zCurrentEvent    ; Is this is 0? 
-	beq b_pmpm_Exit      ; No.  Next section
+	lda zCurrentEvent    ; Is this 0? 
+	beq b_pmpm_Exit      ; Yes.  Should not be here
 	cmp #EVENT_GAME      ; Is it game?
 	bcc b_pmpm_SetPlayer ; No. So, no lasers.
 
