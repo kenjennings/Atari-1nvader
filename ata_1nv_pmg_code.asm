@@ -173,6 +173,9 @@ Pmg_Draw_Laser
 
 	stx Pdl_Temp_Laser_Num ; Save X identifying player for later
 
+	jsr Pmg_SetLaserColor ; set laser color from table and increment the index.
+
+	; Setup  pointer to the Player/Missile hardware memory map.
 	lda #0                 ; Setup zero page pointer to Player memory
 	sta zPMG_HARDWARE
 	lda zPLAYER_PMG,X
@@ -183,7 +186,6 @@ Pmg_Draw_Laser
 
 	; New Laser Y should always be less than old Y.
 	; If not, then the laser has been restarted, so erase at old position.
-
 	tay                    ; Copy New Y into Y for later.
 	cmp zLASER_Y,X         ; Is new position greater than old position?
 	bcc b_pdl_StartTheDraw ; No.  Go do a normal render.
@@ -262,6 +264,60 @@ b_pdl_LoopDoErase
 
 b_pdl_Exit
 	rts
+
+
+
+; ==========================================================================
+; SET LASER COLOR
+; ==========================================================================
+; Update the laser color from the index into the color table.
+;
+; Update the index to the next value.
+; 
+; X == current player.  Will be mangled in code.  Expect temp variable
+; was already set before calling this.
+;
+; X will be returned as the current player number.
+; --------------------------------------------------------------------------
+
+Pmg_SetLaserColor
+
+	lda zLASER_COLOR,X       ; Get index into color table.
+	asl                      ; times 2
+	tax                      ; save (for increment)
+	lda Pdl_Temp_Laser_Num   ; Get player number
+	beq b_pdl_0ColorIndex    ; 0 needs no increment
+	inx                      ; Player 2 laser needs +1
+
+b_pdl_0ColorIndex            ; Update the color index for the player's laser.
+	lda TABLE_COLOR_LASERS,X ; Color from table
+	ldx Pdl_Temp_Laser_Num   ; get player number back.
+	sta COLPM0,X             ; Goes into color register.
+
+	ldy zLASER_COLOR,X       ; Get the player's laser's color index
+	iny                      ; increment it
+	cpy #6                   
+	bne b_pdl_SkipColorReset ; It has not reached limit.  Skip reset.
+	ldy #0                   ; Restart index.
+b_pdl_SkipColorReset
+	sty zLASER_COLOR,X       ; Update with new index value
+
+	rts
+
+
+; Old Version randomized the colors.
+
+;	lda RANDOM               ; Set laser colors
+;	and #$F0
+;	ora #$0D
+;	sta COLPM0
+;	lda RANDOM              
+;	and #$F0
+;	ora #$0D
+;	sta COLPM1
+
+
+
 
 
 
@@ -383,7 +439,7 @@ Pmg_Draw_Mothership
 
 	lda zMOTHERSHIP_Y
 	cmp zMOTHERSHIP_NEW_Y  ; Target position, but can't move there in one step....
-	beq b_pdms_Exit
+	beq b_pdms_DoHPOS
 
 	ldy zMOTHERSHIP_Y      ; Get current mothership Y (msy) 
 	lda #0
@@ -405,13 +461,52 @@ b_pdms_LoopDraw
 	cpx #8                 
 	bne b_pdms_LoopDraw    ; End after copying 8.
 
-b_pdms_Exit
+b_pdms_DoHPOS
 	lda zMOTHERSHIP_NEW_X  ; And set new X position
 	sta zMOTHERSHIP_X
 	sta SHPOSP2
 
+; Draw animated window on mothership.  The window moves in the same
+; direction relative to the ship movement.  Therefore there are two
+; versionf of animation.  One that counts up throrugh the animation 
+; frames, and one that counts down through the frames.
+
+	dec zMOTHERSHIP_ANIM_FRAME   ; Decrement clock for animation.
+	bpl b_pdms_Exit              ; If still positive, skip animation
+	lda #3                       ; Reset counter.. then do animation.
+	sta zMOTHERSHIP_ANIM_FRAME
+	
+	ldx zMOTHERSHIP_ANIM         ; X = current windows animation frame
+	lda zMOTHERSHIP_DIR          ; Mothership direction.  0 = left to right.   1 = Right to Left
+	beq b_pdms_DoAnimL2R         ; 0, do Left to Right motion.
+
+	inx                          ; Right to Left.  Count up through the animation frames.
+	cpx #5                       ; Went past the end?
+	bne b_pdms_WriteAnimByte     ; No.  Read to use the frame.
+	ldx #0                       ; Yes, reset to beginning of this animation loop
+	beq b_pdms_WriteAnimByte     ; And draw it.
+
+b_pdms_DoAnimL2R                 
+	dex                          ; Left to Right.  Count down through the frames.
+	bpl b_pdms_WriteAnimByte     ; Still positive value?  Yes, ready to use the frame.
+	ldx #4                       ; No.  Reset to begining  of this animation loop.
+
+b_pdms_WriteAnimByte
+	stx zMOTHERSHIP_ANIM         ; Save updated animation frame.
+	ldy zMOTHERSHIP_NEW_Y        ; Get (New) position of mothership.
+	iny                          ; Plus 3 for correct offset.
+	iny
+	iny
+	lda PMG_MOTHERSHIP_ANIM,X    ; Get the windows frame
+	sta PLAYERADR2,y             ; update the image in the player.
+
+b_pdms_Exit
 	rts
 
+
+
+
+	
 
 ; Speed control for horizontal movement should be in the main code that 
 ; updates the position.

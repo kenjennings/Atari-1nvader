@@ -765,14 +765,6 @@ b_mdv_DoTheGame
 	lda zLASER_TWO_X      ; Start VBI. Copy Laser 2 X to SHPOSP1
 	sta SHPOSP1           ; Start VBI. Copy Laser 2 X to SHPOSP1
 
-	lda RANDOM                ; Set laser colors
-	and #$F0
-	ora #$0D
-	sta COLPM0
-	lda RANDOM              
-	and #$F0
-	ora #$0D
-	sta COLPM1
 
 	; Collect collisions.
 	lda P0PL            ; GTIA collision register Player 0 (laser 1)...
@@ -785,13 +777,13 @@ b_mdv_DoTheGame
 	sta HITCLR          ; Always reset the P/M collision bits for next frame.
 
 
-	jsr Gfx_ShowScreen   ; Forcing redraw of score now for test evidence
+	jsr Gfx_ShowScreen             ; Forcing redraw of score now for test evidence
 
-	jsr Gfx_RunGameStars ; Animate the flashing stars
+	jsr Gfx_RunGameStars           ; Animate the flashing stars
 
-	jsr Pmg_Draw_Mothership ; automatically increments Y until it is NEW_Y
+	jsr Pmg_Draw_Mothership        ; automatically increments Y until it is NEW_Y
 
-	jsr Pmg_Draw_Lasers   ; draw lasers if present.
+	jsr Pmg_Draw_Lasers            ; draw lasers if present.
 
 	jsr Pmg_ManagePlayersMovement  ;  Handles guns for Title and Game displays.
 
