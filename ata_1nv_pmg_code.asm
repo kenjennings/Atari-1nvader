@@ -286,10 +286,10 @@ Pmg_SetLaserColor
 	asl                      ; times 2
 	tax                      ; save (for increment)
 	lda Pdl_Temp_Laser_Num   ; Get player number
-	beq b_pdl_0ColorIndex    ; 0 needs no increment
+	beq b_pslc_0ColorIndex   ; 0 needs no increment
 	inx                      ; Player 2 laser needs +1
 
-b_pdl_0ColorIndex            ; Update the color index for the player's laser.
+b_pslc_0ColorIndex           ; Update the color index for the player's laser.
 	lda TABLE_COLOR_LASERS,X ; Color from table
 	ldx Pdl_Temp_Laser_Num   ; get player number back.
 	sta COLPM0,X             ; Goes into color register.
@@ -297,9 +297,9 @@ b_pdl_0ColorIndex            ; Update the color index for the player's laser.
 	ldy zLASER_COLOR,X       ; Get the player's laser's color index
 	iny                      ; increment it
 	cpy #6                   
-	bne b_pdl_SkipColorReset ; It has not reached limit.  Skip reset.
+	bne b_pslc_SkipColorReset ; It has not reached limit.  Skip reset.
 	ldy #0                   ; Restart index.
-b_pdl_SkipColorReset
+b_pslc_SkipColorReset
 	sty zLASER_COLOR,X       ; Update with new index value
 
 	rts
@@ -938,7 +938,7 @@ Pmg_DeterminePlayerDraw
 	beq b_pdpd_Exit         ; Yes, Do not flag redraw.
 
 b_pdpd_Flag_Redraw
-	inc zPLAYER_ONE_REDRAW  ; Force redraw.
+	inc zPLAYER_REDRAW,X    ; Force redraw.
 
 b_pdpd_Exit
 	rts

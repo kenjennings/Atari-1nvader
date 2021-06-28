@@ -704,6 +704,8 @@ b_gsm_Loop_ZeroPlayerScores
 	sta zPLAYER_TWO_CRASH
 	sta zLASER_ONE_ON
 	sta zLASER_TWO_ON
+	sta zPLAYER_ONE_DEBOUNCE
+	sta zPLAYER_TWO_DEBOUNCE
 	
 	sta SHPOSM3 ; Remove the animated colors from the title.
 	sta SHPOSM2
@@ -724,7 +726,7 @@ b_gsm_Loop_ZeroPlayerScores
 	lda #2                          ; initial ms speed
 	sta zMOTHERSHIP_MOVE_SPEED
 	lda #10                         ; should be 10
-	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
+	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld - every 10 shots it speeds up
 	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
 
 	lda RANDOM                      ; Random starting direction for Mothership
@@ -978,7 +980,7 @@ PlayerSelectionInput
 
 b_ppsi_TryPlayerIdle           ; Player is idle.  ($FF  is idle)
 	lda STRIG0,X               ; (Read) TRIG0 - Joystick trigger (0 is pressed. 1 is not pressed)
-	bne b_ppsi_Exit            ; Not pressed.  Go to player 2
+	bne b_ppsi_Exit            ; 1 == Not pressed.  Go to player 2
 	; ldy #PLAYER_ONE_SHOOT
 	; jsr PlaySound 
 	lda #$1                    ; (1) playing.
@@ -1386,7 +1388,7 @@ GameMothershipMovement
 
 	lda zMOTHERSHIP_Y
 	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
-	bne b_gmm_skip_MS_Move ; No.  Skip horizontal movement.
+	bne b_gmm_skip_MS_Move ; No.  Skip this and do horizontal movement.
 
 	ldy zMOTHERSHIP_X        ; Get current X
 
@@ -1689,8 +1691,12 @@ b_clip_Exit
 CheckPlayerShooting
 
 	lda STRIG0,X            ; (Read) TRIG0 - Joystick trigger (0 is pressed. 1 is not pressed)
-	bne b_cps_Exit          ; Not pressed.
+	beq b_cps_TryLaserShot  ; Fire button pressed.
+	lda #0
+	sta zPLAYER_DEBOUNCE,X  ; Turn off debounce to allow shooting again.
+	beq b_cps_Exit          ; Done here.
 
+b_cps_TryLaserShot
 	lda zPLAYER_ON,X        ; Is this player even playing?
 	beq b_cps_Exit          ; Nope.  Done here.
 
@@ -1698,14 +1704,23 @@ CheckPlayerShooting
 	bne b_cps_Exit          ; Yes.  Done here.
 
 	lda zLASER_ON,X         ; Is Laser on?
-	beq b_cps_StartShot     ; No.  Ok to shoot.
+	beq b_cps_TestDebounce  ; No.  Ok to shoot.
 
 	lda zLASER_NEW_Y,X      ; Is Laser still in bottom half of screen?
 	bmi b_cps_Exit          ; Yes.  Done here.
 
-b_cps_StartShot             ; Yippie Ki Yay Bang Bang Shoot Shoot
+b_cps_TestDebounce          ; The button must have been released before shooting again.
+	lda zPLAYER_DEBOUNCE,X  ; 1 is trigger is still held.  0 is trigger has been released.
+	bne b_cps_Exit          ; Nope.  No machine gunning here.  Let go the button first.
+
+; Yippie Ki Yay Bang Bang Shoot Shoot.  
+
+	inc zPLAYER_DEBOUNCE,X  ; Flag to do debounce tests.
 	lda #LASER_START
 	sta zLASER_NEW_Y,X      ; New Y is set.
+
+	lda #0
+	sta zLASER_COLOR,X      ; Reset laser color pattern.
 
 	lda zPLAYER_NEW_X,X     ; Copy gun X position
 	sta zLASER_X,X          ; to the laser position.
@@ -1729,7 +1744,6 @@ b_cps_StartShot             ; Yippie Ki Yay Bang Bang Shoot Shoot
 
 b_cps_Dir1
 	inc zPLAYER_DIR,X       ; Flip 0 to 1.  1 == right to left.
-
 
 b_cps_Exit
 	rts
