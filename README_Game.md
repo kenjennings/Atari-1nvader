@@ -67,7 +67,7 @@ Altirra also showed that setting the status text to black to make it invisible d
 
 **24 June 2021 -- Bang Bang Shoot Shoot**
 
-[![V12_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/13-WIP-GameGunAndLaser.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V13_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/13-WIP-GameGunAndLaser.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 Lasers are working.   Sort of.
 
@@ -80,9 +80,22 @@ I was thinking it was possible the problem is timing between the VBI code and th
 Weird, still digging looking for the logic issue.
 
 ---
+
+**28 June 2021 -- Baseline Stable Behavior**
+
+[![V14_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/14-WIP-GameGunAndLaserBaseline.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+After suffering from self-induced premature optimization several rounds of debugging appear to have everything working now.  Also, code size is currently reduced to 8,539 bytes where not too long ago this was around 11K.
+
+Testing so far looks like everything for joystick input, gun movement, and laser shooting are all stable for one player (either one) or both players at the same time.
+
+Remaining TO-DOs -- Collision detection, explosion, mothership adjustments when shot and the mothership speed up behaviors, and scoring.
+
+---
+
 **DD MMM 2021 -- TO-DO**
 
-[![V13_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/14-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V15_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/15-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
 
