@@ -259,6 +259,10 @@ zPLAYER_FIRE
 zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag (laser 1 color)
 zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag (laser 2 color)
 
+zPLAYER_DEBOUNCE      
+zPLAYER_ONE_DEBOUNCE .byte $00 ; Set when laser is shot.   cleared when button released.  Cannot shoot again unless button released.
+zPLAYER_TWO_DEBOUNCE .byte $00 ; Set when laser is shot.   cleared when button released.  Cannot shoot again unless button released.
+
 zPLAYER_COLOR
 zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color 
 zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color 
@@ -298,6 +302,11 @@ zLASER_TWO_NEW_Y   .byte $00 ; Laser 2 Y coord
 zLASER_BANG
 zLASER_ONE_BANG    .byte $00 ; Laser 1 collision with mothership (P0 to P2)
 zLASER_TWO_BANG    .byte $00 ; Laser 2 collision with mothership (P1 to P2) 
+
+zLASER_COLOR 
+zLASER_ONE_COLOR    .byte $00 ; Laser 1 index into TABLE_COLOR_LASERS
+zLASER_TWO_COLOR    .byte $00 ; Laser 2 index into TABLE_COLOR_LASERS 
+
 
 
 
@@ -401,7 +410,9 @@ zMOTHERSHIP_NEW_X           .byte $00 ; Game mothership X coord
 zMOTHERSHIP_Y               .byte $00 ; Game mothership Y coord 
 zMOTHERSHIP_NEW_Y           .byte $00 ; Game mothership Y coord 
 
-zMOTHERSHIP_DIR             .byte $00 ; Mothership direction 
+zMOTHERSHIP_DIR             .byte $00 ; Mothership direction.  0 = left to right.   1 = Right to Left
+zMOTHERSHIP_ANIM            .byte $00 ; Animation frame for windows
+zMOTHERSHIP_ANIM_FRAME      .byte 3   ; delay for animation 
 zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed  
 zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter 
 zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threahold 

@@ -40,238 +40,6 @@ WIN_CYCLE_SPEED   = 5    ; Speed of color animation on Win screen
 GAME_OVER_SPEED   = 4    ; Speed of Game over background animation
 
 
-; Timer values.  NTSC.
-; About 9-ish Inputs per second.
-; After processing input (from the joystick) this is the number of frames
-; to count before new input is accepted.  This prevents moving the frog at
-; 60 fps and maybe compensates for any jitter/uneven toggling of the joystick
-; bits by flaky controllers.
-; At 9 events per second the frog moves horizontally 18 color clocks, max. 
-INPUTSCAN_FRAMES = $07  ; previously $09
-
-
-; PAL Timer values.  PAL ?? guesses...
-; About 7 keys per second.
-; KEYSCAN_FRAMES = $07
-; based on number of frogs, how many frames between boat movements...
-; ANIMATION_FRAMES .byte 25,21,17,14,12,11,10,9,8,7,6,5
-; Not really sure what to do about the new model using the 
-; BOAT_FRAMES/BOAT_SHIFT lists.
-; PAL would definitely be a different set of speeds.
-
-
-; ==========================================================================
-; RESET TIMERS
-; ==========================================================================
-; Reset Input Scan Timer and AnimateFrames Timer.
-;
-; A  is the time to set for animation.
-; --------------------------------------------------------------------------
-
-ResetTimers
-
-	sta zAnimateFrames
-
-	pha ; preserve it for caller.
-
-	lda zInputScanFrames
-	bne EndResetTimers
-
-	lda #INPUTSCAN_FRAMES
-	sta zInputScanFrames
-
-EndResetTimers
-	pla ; get this back for the caller.
-
-	rts
-
-
-; ==========================================================================
-; CHECK INPUT                                                 A  X
-; ==========================================================================
-; Check for input from the controller....
-;
-; Eliminate Down direction.
-; Eliminate conflicting directions.
-; Add trigger to the input stick value.
-;
-; STICK0 Joystick bits that matter:  
-; ----1111  OR  "NA NA NA NA Right Left Down Up".
-; A zero value bit means joystick is pushed in that direction.
-; Note that 1 bit means no input and 0 bit means the direction
-; is pressed.  For logical reasons I want to reverse this and 
-; turn it into 1 bit means input.
-; 
-; The original version of this was an obscenely ill-conceived,
-; sloppy mess of a dozen bit floggings and comparisons.
-; The new version eliminates a lot of that original bit mashing
-; with a simple lookup table. The only extra part now is adding
-; the trigger to the input information.
-;
-; Description of the bit twiddling below:
-;
-; Cook the bits to turn on the directions we care about and zero
-; the other bits, therefore, if the resulting stick value is 0 then 
-; it means no input, which is an easier evaluation.
-; - Down input is ignored (masked out).
-; - Since up movement is the most likely to result in death the 
-;   up movement must be exclusively up.  If a horizontal 
-;   movement is also on at the same time then the up movement 
-;   will be masked out.
-;
-; Arcade controllers with individual buttons would allow 
-; accidentally (or intentionally) pushing both left and right 
-; directions at the same time.  To avoid unnecessary fiddling 
-; with the frog in this situation eliminate both motions if both
-; are engaged.
-;
-; STRIG0 Button
-; 0 is button pressed., !0 is not pressed.
-; If STRIG0 input then set bit $10 (OR ---1----  for trigger.
-;
-; Return  A  with InputStick value of cooked Input bits where 
-; the direction and trigger set are 1 bits.  
-;
-; Resulting Bit values:   
-; 00011101  OR  "NA NA NA Trigger Right Left NA Up"
-; THEREFORE,
-; STICK   / BITS    / FILTERED / BITS
-; R L D U / 0 0 0 0 / - - - -  / 0 0 0 0  - input is technically impossible 
-; R L D - / 0 0 0 1 / - - - -  / 0 0 0 0  - input is technically impossible 
-; R L - U / 0 0 1 0 / - - - -  / 0 0 0 0  - input is technically impossible 
-; R L - - / 0 0 1 1 / - - - -  / 0 0 0 0  - input is technically impossible 
-; R - D U / 0 1 0 0 / - - - -  / 0 0 0 0  - input is technically impossible 
-; R - D - / 0 1 0 1 / R - - -  / 1 0 0 0  - down ignored 
-; R - - U / 0 1 1 0 / R - - -  / 1 0 0 0  - up must be exclusively up 
-; R - - - / 0 1 1 1 / R - - -  / 1 0 0 0  - right 
-; - L D U / 1 0 0 0 / - - - -  / 0 0 0 0 -  input is technically impossible 
-; - L D - / 1 0 0 1 / - L - -  / 0 1 0 0  - down ignored 
-; - L - U / 1 0 1 0 / - L - -  / 0 1 0 0  - up must be exclusively up 
-; - L - - / 1 0 1 1 / - L - -  / 0 1 0 0  - left  
-; - - D U / 1 1 0 0 / - - - -  / 0 0 0 0  - input is technically impossible 
-; - - D - / 1 1 0 1 / - - - -  / 0 0 0 0  - down ignored 
-; - - - U / 1 1 1 0 / - - - U  / 0 0 0 1  - up is exclusively up 
-; - - - - / 1 1 1 1 / - - - -  / 0 0 0 0  - nothing
-; --------------------------------------------------------------------------
-
-STICKEMUPORNOT_TABLE ; cooked joystick values
-	.by $00 $00 $00 $00 $00 $08 $08 $08 $00 $04 $04 $04 $00 $00 $01 $00
-
-CheckInput
-
-;	lda InputScanFrames        ; Is input timer delay  0?
-;	bne SetNoInput             ; No. thus nothing to scan. (and exit)
-
-;	ldx STICK0                 ; The OS nicely separates PIA nybbles for us
-;	lda STICKEMUPORNOT_TABLE,x ; Convert input into workable, filtered output.
-;	sta InputStick             ; Save it.
-
-;AddTriggerInput
-;	lda STRIG0                 ; 0 is button pressed., !0 is not pressed.
-;	bne DoneWithBitCookery     ; if non-zero, then no button pressed.
-
-;	lda InputStick             ; The current stick input value.
-;	ora #%00010000             ; Turn on 5th bit/$10 for the trigger.
-;	sta InputStick             ; Save it.  (fall through for return..)
-
-DoneWithBitCookery             ; Some input was captured?
-;	lda InputStick             ; Return the input value?
-;	beq ExitCheckInput         ; No, nothing happened here.  Just exit.
-
-;	lda #INPUTSCAN_FRAMES      ; Because there was input collected, then
-;	sta InputScanFrames        ; Reset the input timer.
-
-;ExitInputCollection            ; Input occurred
-	lda #0                     ; Kill the attract mode flag
-	sta ATRACT                 ; to prevent color cycling.
-
-;	lda InputStick             ; Return the input value.
-	rts
-
-SetNoInput
-;	lda #0
-;	sta InputStick             ; Force no data for input.
-
-ExitCheckInput
-	rts
-
-
-; ==========================================================================
-; CHECK FOR CONSOLE INPUT
-; ==========================================================================
-; Support Routine CHECK FOR CONSOLE INPUT
-; Evaluate if console key is pressed.
-; This is called during the Title-specific event.
-; If a console key is pressed then do the associated game config value 
-; changes, prepare the Title line scrolling, and set the Title screen 
-; to execute at Stage 2.
-;
-; Returns:
-; 0 for no input.
-; !0 for a CONSOLE key was pressed.
-; --------------------------------------------------------------------------
-
-CheckForConsoleInput
-
-CheckOptionKey
-;	lda CONSOL                 ; Get Option, Select, Start buttons
-;	and #CONSOLE_OPTION        ; Is Option pressed?  0 = pressed. 1 = not
-;	bne CheckSelectKey         ; No.  Try the select.
-
-;	jsr PlayTink               ; Button pressed. Set Pokey channel 2 to tink sound.
-
-	; increment starting frogs.
-	; generate string for right buffer
-;	ldx NewLevelStart          
-;	inx
-;	cpx #[MAX_FROG_SPEED+1]    ; 13 + 1
-;	bne bCFCI_SkipResetLevel
-;	ldx #0
-bCFCI_SkipResetLevel
-;	stx NewLevelStart          ; Updated starting level.
-
-;	jsr TitlePrepLevel
-;	jsr MultiplyFrogsCrossed ; Multiply by 18, make index base, set difficulty address pointers.
-;	jmp bCFCI_StartupStage2
-
-
-CheckSelectKey
-;	lda CONSOL                 ; Get Option, Select, Start buttons
-;	and #CONSOLE_SELECT        ; Is SELECT pressed?  0 = pressed. 1 = not
-;	bne bCFCI_End              ; No.  Finished with all.
-
-;	jsr PlayTink               ; Button pressed. Set Pokey channel 2 to tink sound.
-
-	; increment lives.
-	; generate string for right buffer
-;	ldx NewNumberOfLives
-;	inx
-;	cpx #[MAX_FROG_LIVES+1]    ; 7 + 1
-;	bne bCFCI_SkipResetLives
-;	ldx #1
-
-bCFCI_SkipResetLives
-;	stx NewNumberOfLives      ; Get the updated number of new lives for the next game.
-;	jsr TitlePrepLives        ; Get the scrolling buffer ready.
-;	jsr WriteNewLives         ; Update the status line to match the new number of frogs.
-
-bCFCI_StartupStage2
-;	lda #2
-;	sta EventStage            ; Stage 2 is the shift Left Buffer down.
-;	lda #6
-;	sta EventCounter          ; Do it six times.
-;	lda #TITLE_DOWN_SPEED
-;	jsr ResetTimers           ; Reset animation/input frame counter.
-
-;	jsr PlayDowns             ; Play down movement sound for title graphics on OPTION and SELECT
-	bne bCFCI_Exit            ; Return !0 exit.
-
-bCFCI_End
-	lda #0  ; 0 means nothing happened.
-
-bCFCI_Exit
-	rts
-
 
 ;==============================================================================
 ;                                                           SCREENWAITFRAME  A
@@ -292,12 +60,6 @@ bLoopWaitFrame
 
 	pla                 ; restore A
 	rts                 ; No.  Clock changed means frame ended.  exit.
-
-
-
-
-
-
 
 
 ;==============================================================================
@@ -348,10 +110,7 @@ TABLE_GAME_DISPLAY_LIST_INTERRUPT
 
 MyImmediateVBI
 
-; ======== MANAGE CHANGING DISPLAY LIST ========
-;	lda #$c2
-;	sta COLBK
-
+; ======== MANAGE CHANGING DISPLAY LIST AND DISPLAY LIST INTERRUPTS ========
 
 	lda zCurrentEvent                       ; Is the game at 0 (INIT)?
 	beq ExitMyImmediateVBI                  ; Yes.  Then we should not be here.
@@ -363,7 +122,7 @@ MyImmediateVBI
 	sta SDLSTL                              
 	lda TABLE_GAME_DISPLAY_LIST_INTERRUPT,x ; Copy Display List Interrupt chain table starting address
 	sta VDSLST
-	inx                                     ; and the high bytes.
+	inx                                     ; and the high bytes...
 	lda TABLE_GAME_DISPLAY_LIST,x
 	sta SDLSTH
 	lda TABLE_GAME_DISPLAY_LIST_INTERRUPT,x
@@ -734,12 +493,9 @@ b_mdv_DoPlayerMovement
 
 b_mdv_EndPlayerMovement
 
-
 ; ========  END OF TITLE SCREEN  ========
 
 	jmp ExitMyDeferredVBI
-
-
 
 
 ; ====================  GAME SCREEN  ===================
@@ -781,6 +537,8 @@ b_mdv_DoTheGame
 
 	jsr Gfx_RunGameStars           ; Animate the flashing stars
 
+; process explosion here and force mothership adjustment
+
 	jsr Pmg_Draw_Mothership        ; automatically increments Y until it is NEW_Y
 
 	jsr Pmg_Draw_Lasers            ; draw lasers if present.
@@ -788,82 +546,9 @@ b_mdv_DoTheGame
 	jsr Pmg_ManagePlayersMovement  ;  Handles guns for Title and Game displays.
 
 
-
 ; ========  END OF GAME SCREEN  ========
 
 	jmp ExitMyDeferredVBI
-
-
-
-
-; ======== Manage InputScanFrames Delay Counter ========
-; It is MAIN's job to act when the timer is 0, and reset it if needed.
-
-DoManageInputClock
-;	lda InputScanFrames          ; Is input delay already 0?
-;	beq DoAnimateClock           ; Yes, do not decrement it again.
-;	dec InputScanFrames          ; Minus 1.
-
-; ======== Manage Main code's timer.  Decrement while non-zero. ========
-; It is MAIN's job to act when the timer is 0, and reset it if needed.
-
-DoAnimateClock
-;	lda AnimateFrames            ; Is animation countdown already 0?
-;	beq DoAnimateClock2          ; Yes, do not decrement now.
-;	dec AnimateFrames            ; Minus 1
-
-; ======== Manage Another Main code timer.  Decrement while non-zero. ========
-; It is MAIN's job to act when the timer is 0, and reset it if needed.
-
-DoAnimateClock2
-;	lda AnimateFrames2           ; Is animation countdown already 0?
-;	beq DoAnimateClock3          ; Yes, do not decrement now.
-;	dec AnimateFrames2           ; Minus 1
-
-; ======== Manage Another Main code timer.  Decrement while non-zero. ========
-; It is MAIN's job to act when the timer is 0, and reset it if needed.
-
-DoAnimateClock3
-;	lda AnimateFrames3           ; Is animation countdown already 0?
-;	beq DoAnimateClock4          ; Yes, do not decrement now.
-;	dec AnimateFrames3           ; Minus 1
-
-; ======== Manage Another Main code timer.  Decrement while non-zero. ========
-; It is MAIN's job to act when the timer is 0, and reset it if needed.
-
-DoAnimateClock4
-;	lda AnimateFrames4           ; Is animation countdown already 0?
-;	beq EndOfTimers              ; Yes, do not decrement now.
-;	dec AnimateFrames4           ; Minus 1
-
-EndOfTimers
-
-; ======== Manage Frog Eyeball motion ========
-; If the timer is non-zero, Change eyeball position and force redraw.
-; This nicely multi-tasks the eyes to return to center even if MAIN is 
-; is not doing anything related to the frog.
-
-DoAnimateEyeballs
-;	lda FrogRefocus              ; Is the eye move counter greater than 0?
-;	beq EndOfClockChecks         ; No, Nothing else to do here.
-;	dec FrogRefocus              ; Subtract 1.
-;	bne EndOfClockChecks         ; Has not reached 0, so nothing left to do here.
-;	lda FrogShape                ; Maybe the player raced the timer to the next screen...
-;	cmp #SHAPE_FROG              ; ... so verify the frog is still displayable.
-;	bne EndOfClockChecks         ; Not the frog, so do not animate eyes.
-;	lda #1                       ; Inform the Frog renderer  
-;	sta FrogEyeball              ; to use the default/centered eyeball.
-;	sta FrogUpdate               ; and set mandatory redraw.
-
-EndOfClockChecks
-
-
-DoPromptColorchange
-;	jsr ToggleButtonPrompt        ; Manipulates colors for prompt.
-
-
-
-
 
 
 ; =====================  GAME OVER  ====================
@@ -879,7 +564,6 @@ b_mdv_DoGameOver
 	jsr Gfx_RunGameStars ; Animate the flashing stars
 
 
-
 ; ======================================================
 ; Something else, etc.  maybe.
 
@@ -887,9 +571,6 @@ b_mdv_DoGameOver
 ; ========  END OF GAME OVER SCREEN  ========
 
 	jmp ExitMyDeferredVBI                    ; Return to OS.
-
-
-
 
 
 ; ====================  END OF VBI  ====================
@@ -932,15 +613,7 @@ ExitMyDeferredVBI
 DoCheesySoundService              ; World's most inept sound sequencer.
 	jsr SoundService
 
-;	lda #$00
-;	sta COLBK
-	
 	jmp XITVBV                    ; Return to OS.  SYSVBV for Immediate interrupt.
-
-
-
-
-
 
 
 ;==============================================================================

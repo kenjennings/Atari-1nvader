@@ -173,16 +173,12 @@ Pmg_Draw_Laser
 
 	stx Pdl_Temp_Laser_Num ; Save X identifying player for later
 
-	jsr Pmg_SetLaserColor ; set laser color from table and increment the index.
+	jsr Pmg_SetLaserColor  ; set laser color from table and increment the index.
 
-	; Setup  pointer to the Player/Missile hardware memory map.
-	lda #0                 ; Setup zero page pointer to Player memory
-	sta zPMG_HARDWARE
-	lda zPLAYER_PMG,X
-	sta zPMG_HARDWARE+1
+	jsr Pmg_Setup_Hardware  ; Setup zero page pointer to Player memory
 
 	lda zLASER_NEW_Y,X     ; If New Y is 0, then 
-	beq b_pdl_DoRemoval    ; Remove laser at old position
+	beq Pmg_DoRemoval      ; Remove laser at old position and stop laser.
 
 	; New Laser Y should always be less than old Y.
 	; If not, then the laser has been restarted, so erase at old position.
@@ -190,79 +186,104 @@ Pmg_Draw_Laser
 	cmp zLASER_Y,X         ; Is new position greater than old position?
 	bcc b_pdl_StartTheDraw ; No.  Go do a normal render.
 
-	jsr b_pdl_DoRemoval    ; Completely erase old image.
+	jsr Pmg_DoRemoval      ; Completely erase old image first.
 	ldx Pdl_Temp_Laser_Num ; Need to restore New Y again.
 	ldy zLASER_NEW_Y,X     
+
+; Copy the image into Player memory is done in 4 line blocks,
+; because the lasers move 4 scan lines per frame.
+;
+; The first draw needs to do only the top 4 lines of laser image data.
+; The second draw needs to copy all 8 bytes of laser image data.
+; All draws after copy the full 8 bytes of image and then blank the 
+; 4 lines that follow to erase the old laser as it moves up the 
+; screen.
 
 b_pdl_StartTheDraw
 	lda #0
 	sty zLASER_Y,X         ;  Current Y == new Y
 
 	ldx #0
-b_pdl_CopyLaserFirst4
-	lda PMG_IMG_LASER,X
-	sta (zPMG_HARDWARE),Y
+b_pdl_CopyLaserFirst4      ; Copy the first 4 bytes of the laser image
+	lda PMG_IMG_LASER,X    ; byte from laser image...
+	sta (zPMG_HARDWARE),Y  ; copy to Player/Missile memory
 	iny
 	inx
-	cpx #4
-	bne b_pdl_CopyLaserFirst4
+	cpx #4                 
+	bne b_pdl_CopyLaserFirst4 ; Loop until 4th  byte copied.
 
-	cpy #PLAYER_PLAY_Y
-	beq b_pdl_Exit
+	cpy #PLAYER_PLAY_Y      ; If Y reached the Player's gun position
+	beq b_pdl_Exit          ; No more copying.
 
 
-b_pdl_CopyLaserNext4
-	lda PMG_IMG_LASER,X
-	sta (zPMG_HARDWARE),Y
+b_pdl_CopyLaserNext4        ; Copy the first 4 bytes of the laser image
+	lda PMG_IMG_LASER,X     ; byte from laser image...
+	sta (zPMG_HARDWARE),Y   ; copy to Player/Missile memory
 	iny
 	inx
 	cpx #8
-	bne b_pdl_CopyLaserNext4
+	bne b_pdl_CopyLaserNext4 ; Loop until 8th byte copied.
 
-	cpy #PLAYER_PLAY_Y
-	beq b_pdl_Exit
+	cpy #PLAYER_PLAY_Y      ; If Y reached the Player's gun position
+	beq b_pdl_Exit          ; No more copying.
 
 
-	lda #0                   ; Erase the following 4 bytes
+	lda #0                  ; Erase the following 4 bytes
 b_pdl_CopyLaserZero
-	sta (zPMG_HARDWARE),Y
+	sta (zPMG_HARDWARE),Y   ; zero byte in  Player/Missile memory
 	iny
 	inx
 	cpx #12
-	bne b_pdl_CopyLaserZero
-	beq b_pdl_Exit ; End, copy Y == New Y
+	bne b_pdl_CopyLaserZero ; Loop until reaching the 12th line.
 
+b_pdl_Exit                  ; End, copy Y == New Y
+	rts
+        
 
-; This can happen when the laser Y reaches the min position or the middle of the 
-; screen.   So,it is variable.
-b_pdl_DoRemoval ; Zero the entire laser in the end position  and turn off laser.
+; ==========================================================================
+; DO REMOVAL
+; ==========================================================================
+; REMOVING the laser can happen automatically when the laser Y reaches 
+; the minimum position or anywhere above the middle of the screen if 
+; the player restarted the laser shot.  So,it is a variable situation.
+; If the New Y is 0, then the laser is being automatically turned off.
+; Otherwise, the laser is being restarted, so after clearing it DO NOT
+; turn off the laser.
+;
+; (The laser always moves, so if the laser is ON then it must be drawn.)
+; 
+; X register is Laser to update.   Same code is used for both lasers.
+; --------------------------------------------------------------------------
+
+Pmg_DoRemoval
+
 	lda #0
 	ldy zLASER_Y,X             ; Is the old position at the end?
 	cpy #LASER_END_Y
-	bne b_pdl_SkipTurnOffLaser ; No.  Do not turn off laser.
+	bne b_pdr_SkipTurnOffLaser ; No.  Do not turn off laser.
 
 	; It is possible that Old Y in the end position MAY coincide with 
 	; restarting the laser. If the new Y is zero, then it is OK to 
 	; turn off the laser.
 	lda zLASER_NEW_Y,X
-	bne b_pdl_SkipTurnOffLaser ; Not 0.   Do not turn off.
+	bne b_pdr_SkipTurnOffLaser ; Not 0.   Do not turn off.
 
 	lda #0
 	sta zLASER_ON,X   ; Turn off laser
 	sta zLASER_Y,X    ; Zero current Y position.
 	sta zLASER_X,X    ; Maybe this will help.
 
-b_pdl_SkipTurnOffLaser
+b_pdr_SkipTurnOffLaser
 	lda #0
 	ldx #7
 
-b_pdl_LoopDoErase
+b_pdr_LoopDoErase
 	sta (zPMG_HARDWARE),Y ; Erase at old position
 	iny
 	dex
-	bpl b_pdl_LoopDoErase
+	bpl b_pdr_LoopDoErase
 
-b_pdl_Exit
+b_pdr_Exit
 	rts
 
 
@@ -325,9 +346,7 @@ b_pslc_SkipColorReset
 ; DRAW PLAYERS
 ; ==========================================================================
 ; Copy the image bitmaps for the guns to the player Y positions.
-; zPLAYER_ONE_Y and zPLAYER_TWO_Y 
 ;
-; If the Player is Off, then copy 8 bytes instead.
 ; We're cheating a little here.   Usually for a general purpose 
 ; routine the player should be erased at the old Y, and redrawn 
 ; at the new Y.  However, in this simple game the player's gun image 
@@ -337,82 +356,86 @@ b_pslc_SkipColorReset
 ;
 ; Zero the redraw flags.
 ; Copy the Players' NEW_Y to Y.
+;
+; X == Player gun to update
 ; --------------------------------------------------------------------------
 
 Pmg_Draw_Players
 
-	lda zPLAYER_ONE_REDRAW
-	beq b_pdp_ProcessPlayer2
-
-;	lda #0
-;	sta zPLAYER_ONE_REDRAW
-
-	lda zPLAYER_ONE_NEW_X
-	sta zPLAYER_ONE_X
-
-	ldx #7
-	ldy zPLAYER_ONE_NEW_Y
-	sty zPLAYER_ONE_Y
-	bne b_pdp_DrawPlayer1
-
-b_pdp_LoopErasePlayer1     ; Erase Player 1
-	sta PLAYERADR0,Y
-	iny
-	dex
-	bpl b_pdp_LoopErasePlayer1
-	bmi b_pdp_ProcessPlayer2
-
-b_pdp_DrawPlayer1
 	ldx #0
-b_pdp_LoopDrawPlayer1	
-	lda PMG_IMG_CANNON,x
-	sta PLAYERADR0,y
-	iny
-	inx
-	cpx #8
-	bne b_pdp_LoopDrawPlayer1
+	jsr Pmg_Draw_Player
 
-b_pdp_ProcessPlayer2
-	lda zPLAYER_TWO_REDRAW
+	ldx #1
+	jsr Pmg_Draw_Player
+
+	rts
+
+
+; ==========================================================================
+; DRAW PLAYER
+; ==========================================================================
+; Copy the image bitmaps for the guns to the player Y positions.
+; zPLAYER_ONE_Y and zPLAYER_TWO_Y 
+;
+; We're cheating a little here.   Usually for a general purpose 
+; routine the player should be erased at the old Y, and redrawn 
+; at the new Y.  However, in this simple game the player's gun image 
+; includes a 0 byte at the start and the end, so when moved one 
+; scan line at a time (the only possible movement it can do) a 
+; redraw will delete any old image.
+;
+; Zero the redraw flags.
+; Copy the Players' NEW_Y to Y.
+; Copy the Players' NEW_X to X.
+; --------------------------------------------------------------------------
+
+Pmg_Draw_Player
+
+	lda zPLAYER_REDRAW,X
 	beq b_pdp_Exit
-	
-;	lda #0
-;	sta zPLAYER_TWO_REDRAW
 
-	lda zPLAYER_TWO_NEW_X
-	sta zPLAYER_TWO_X
+	jsr Pmg_Setup_Hardware   ; Setup zero page pointer to Player memory
 
-	ldx #7
-	ldy zPLAYER_TWO_NEW_Y
-	sty zPLAYER_TWO_Y
-	bne b_pdp_DrawPlayer2
+	lda zPLAYER_NEW_X,X     ; Copy New X to Current X
+	sta zPLAYER_X,X
 
-b_pdp_LoopErasePlayer2   ; Erase Player 2
-	sta PLAYERADR1,Y
+	lda #0
+	sta zPLAYER_REDRAW,X    ; Turn off redraw flag.
+
+	ldy zPLAYER_NEW_Y,X     ; Get New Y position.
+	bne b_pdps_DrawPlayer   ; If New Y is not 0, then draw gun.
+
+	; New Y is 0, so erase at old position.
+	ldy zPLAYER_Y,X         ; Get old position in Y  
+	sta zPLAYER_Y,X         ; Zero old position from A (Set zero above).
+	ldx #7                  
+b_pdps_LoopErasePlayer
+	sta (zPMG_HARDWARE),Y   ; Zero Player memory
 	iny
 	dex
-	bpl b_pdp_LoopErasePlayer2
-	bmi b_pdp_Exit
+	bpl b_pdps_LoopErasePlayer
+	bmi b_pdp_Exit          ; Done.
 
-b_pdp_DrawPlayer2
+b_pdps_DrawPlayer           ; Update the Player image at new Y position.
+	sty zPLAYER_Y,X         ; From above, Copy New Y position to current position.
 	ldx #0
-b_pdp_LoopDrawPlayer2
-	lda PMG_IMG_CANNON,x
-	sta PLAYERADR1,y
+b_pdps_LoopDrawPlayer
+	lda PMG_IMG_CANNON,X    ; byte from gun image...
+	sta (zPMG_HARDWARE),Y   ; copy to Player/Missile memory
 	iny
 	inx
 	cpx #8
-	bne b_pdp_LoopDrawPlayer2
+	bne b_pdps_LoopDrawPlayer
 
 b_pdp_Exit
 	rts
 
 
+
 ; ==========================================================================
 ; DRAW MOTHERSHIP
 ; ==========================================================================
-; Draw the small mothership.   This should only be called when the Y
-; value changes.
+; Draw the small mothership
 ;
 ; If the Old position is not the same as the New position then increment 
 ; the old position and redraw.
@@ -749,10 +772,8 @@ Pmg_AdustMissileHPOS
 	rts
 
 
-
-
 ; ==========================================================================
-; CycleIdlePlayer
+; CYCLE IDLE PLAYER
 ; ==========================================================================
 ; One of the Players MAY be offline during the countdown.
 ; Whichever one it is, strobe the brightness.
@@ -760,30 +781,38 @@ Pmg_AdustMissileHPOS
 
 Pmg_CycleIdlePlayer
 
-	lda zPLAYER_ONE_ON
-	bpl b_pcip_CheckPlayer2 ; Player  on (+1)  Nothing to do.
+	ldx #0
+	jsr Pmg_CyclePlayer
 
-	inc zPLAYER_ONE_COLOR   ; Player Idle.  Cycle idle color.
-	lda zPLAYER_ONE_COLOR
-	and #$0F
-	sta zPLAYER_ONE_COLOR
-	rts                     ; Stop here. Logically, Two can't be off if One is Off.
+	ldx #1
+	jsr Pmg_CyclePlayer
 
-b_pcip_CheckPlayer2
-	lda zPLAYER_TWO_ON
-	bpl b_pcip_End          ; Player  on (+1)  Nothing to do.
-
-	inc zPLAYER_TWO_COLOR   ; Player Off.  Cycle idle color.
-	lda zPLAYER_TWO_COLOR
-	and #$0F
-	sta zPLAYER_TWO_COLOR
-
-b_pcip_End
 	rts
 
 
 ; ==========================================================================
-; SquashIdlePlayer
+; CYCLE PLAYER
+; ==========================================================================
+; One of the Players MAY be offline during the countdown.
+; Whichever one it is, strobe the brightness.
+; --------------------------------------------------------------------------
+
+Pmg_CyclePlayer
+
+	lda zPLAYER_ON,X
+	bpl b_pcp_End       ; Player  on (+1)  Nothing to do.
+
+	inc zPLAYER_COLOR,X ; Player Idle.  Cycle idle color.
+	lda zPLAYER_COLOR,X
+	and #$0F
+	sta zPLAYER_COLOR,X
+
+b_pcp_End
+	rts
+
+
+; ==========================================================================
+; SQUASH IDLE PLAYER
 ; ==========================================================================
 ; While the mothership is leaving squash the idle player, if there is one.
 ; --------------------------------------------------------------------------
@@ -792,69 +821,124 @@ Psip_Temp_Byte_Count .byte 0
 
 Pmg_SquashIdlePlayer
 
-	lda zPLAYER_ONE_ON
-	bpl b_psip_CheckPlayer2  ; Player moving (-1) or on (+1)  Nothing to do.
+	ldx #0
+	jsr Pmg_SquashPlayer
 
-	ldy zPLAYER_ONE_Y        ; Player Off.   
+	ldx #1
+	jsr Pmg_SquashPlayer
+	
+	rts
+
+
+;	lda zPLAYER_ONE_ON
+;	bpl b_psip_CheckPlayer2  ; Player moving (-1) or on (+1)?  On is nothing to do.
+
+;	ldy zPLAYER_ONE_Y        ; Player Off.   
+;	cpy #PLAYER_SQUASH_Y     ; Did Y position reach the bottom?
+;	bne b_psip_SquashP1      ; No.  Continue squashing.
+;	lda #0                   ; Formally turn off Player 1.
+;	sta zPLAYER_ONE_ON
+;	beq b_psip_End
+
+;b_psip_SquashP1
+;	inc zPLAYER_ONE_Y        ; Y = Y + 1
+;	lda #PLAYER_SQUASH_Y     ; Subtract from 
+;	sec                      ; the squash'd Y
+;	sbc zPLAYER_ONE_Y        ; giving the number of bytes to write
+;	sta Psip_Temp_Byte_Count ; save number of bytes to write
+
+;	ldy zPLAYER_ONE_Y        ; Get the adjusted Y
+;	sty zPLAYER_ONE_NEW_Y    ; Normalize new == old
+;	ldx #0
+
+;b_psip_LoopCopy1             ; Yes.  Long, grody, messy loop.
+;	lda PMG_IMG_CANNON,x     ; Get player image
+;	sta PLAYERADR0,y         ; Save to Player memory.
+;	iny
+;	cpx Psip_Temp_Byte_Count ; Is X at the limit?
+;	beq b_psip_End           ; Yes, then we're done.
+;	inx
+;	bpl b_psip_LoopCopy1     ; Next byte to copy.
+
+
+;b_psip_CheckPlayer2
+;	lda zPLAYER_TWO_ON
+;	bpl b_psip_End           ; Player moving (-1) or on (+1)  Nothing to do.
+
+;	ldy zPLAYER_TWO_Y        ; Player Off.   
+;	cpy #PLAYER_SQUASH_Y     ; Did Y position reach the bottom?
+;	bne b_psip_SquashP2      ; No.  Continue squashing.
+;	lda #0                   ; Formally turn off Player 2.
+;	sta zPLAYER_TWO_ON
+;	beq b_psip_End
+
+;b_psip_SquashP2
+;	inc zPLAYER_TWO_Y        ; Y = Y + 1
+;	lda #PLAYER_SQUASH_Y     ; Subtract from 
+;	sec                      ; the squash'd Y
+;	sbc zPLAYER_TWO_Y        ; giving the number of bytes to write
+;	sta Psip_Temp_Byte_Count ; save number of bytes to write
+
+;	ldy zPLAYER_TWO_Y        ; Get the adjusted Y
+;	sty zPLAYER_TWO_NEW_Y    ; Normalize new == old
+;	ldx #0
+
+;b_psip_LoopCopy2             ; Yes.  Long, grody, messy loop.
+;	lda PMG_IMG_CANNON,x     ; Get player image
+;	sta PLAYERADR1,y         ; Save to Player memory.
+;	iny
+;	cpx Psip_Temp_Byte_Count ; Is X at the limit?
+;	beq b_psip_End           ; Yes, then we're done.
+;	inx
+;	bpl b_psip_LoopCopy2     ; Next byte to copy.
+
+;b_psip_End
+;	rts
+
+
+; ==========================================================================
+; SQUASH IDLE PLAYER
+; ==========================================================================
+; While the mothership is leaving squash the idle player, if there is one.
+; Negative ON flag means the player is in motion to become ON.
+; 
+; --------------------------------------------------------------------------
+
+Pmg_SquashPlayer
+
+	lda zPLAYER_ON,X
+	bpl b_psp_End            ; Player moving (-1) or on (+1)? On is nothing to do.
+
+	jsr Pmg_Setup_Hardware
+
+	ldy zPLAYER_Y,X          ; Player Off.   
 	cpy #PLAYER_SQUASH_Y     ; Did Y position reach the bottom?
-	bne b_psip_SquashP1      ; No.  Continue squashing.
+	bne b_psp_Squash         ; No.  Continue squashing.
 	lda #0                   ; Formally turn off Player 1.
-	sta zPLAYER_ONE_ON
-	beq b_psip_End
+	sta zPLAYER_ON,X
+	beq b_psp_End
 
-b_psip_SquashP1
-	inc zPLAYER_ONE_Y        ; Y = Y + 1
+b_psp_Squash
+	inc zPLAYER_Y,X          ; Y = Y + 1
 	lda #PLAYER_SQUASH_Y     ; Subtract from 
 	sec                      ; the squash'd Y
-	sbc zPLAYER_ONE_Y        ; giving the number of bytes to write
+	sbc zPLAYER_Y,X          ; giving the number of bytes to write
 	sta Psip_Temp_Byte_Count ; save number of bytes to write
 
-	ldy zPLAYER_ONE_Y        ; Get the adjusted Y
-	sty zPLAYER_ONE_NEW_Y    ; Normalize new == old
-	ldx #0
+	ldy zPLAYER_Y,X          ; Get the adjusted Y
+	sty zPLAYER_NEW_Y,X      ; Normalize new == old
 
-b_psip_LoopCopy1             ; Yes.  Long, grody, messy loop.
-	lda PMG_IMG_CANNON,x     ; Get player image
-	sta PLAYERADR0,y         ; Save to Player memory.
+	ldx #0
+b_psp_LoopCopy               ; Yes.  Grody, messy loop.
+	lda PMG_IMG_CANNON,X     ; byte from gun image...
+	sta (zPMG_HARDWARE),Y    ; copy to Player/Missile memory
 	iny
 	cpx Psip_Temp_Byte_Count ; Is X at the limit?
-	beq b_psip_End           ; Yes, then we're done.
+	beq b_psp_End            ; Yes, then we're done.
 	inx
-	bpl b_psip_LoopCopy1     ; Next byte to copy.
+	bpl b_psp_LoopCopy       ; Next byte to copy.
 
-
-b_psip_CheckPlayer2
-	lda zPLAYER_TWO_ON
-	bpl b_psip_End           ; Player moving (-1) or on (+1)  Nothing to do.
-
-	ldy zPLAYER_TWO_Y        ; Player Off.   
-	cpy #PLAYER_SQUASH_Y     ; Did Y position reach the bottom?
-	bne b_psip_SquashP2      ; No.  Continue squashing.
-	lda #0                   ; Formally turn off Player 2.
-	sta zPLAYER_TWO_ON
-	beq b_psip_End
-
-b_psip_SquashP2
-	inc zPLAYER_TWO_Y        ; Y = Y + 1
-	lda #PLAYER_SQUASH_Y     ; Subtract from 
-	sec                      ; the squash'd Y
-	sbc zPLAYER_TWO_Y        ; giving the number of bytes to write
-	sta Psip_Temp_Byte_Count ; save number of bytes to write
-
-	ldy zPLAYER_TWO_Y        ; Get the adjusted Y
-	sty zPLAYER_TWO_NEW_Y    ; Normalize new == old
-	ldx #0
-
-b_psip_LoopCopy2             ; Yes.  Long, grody, messy loop.
-	lda PMG_IMG_CANNON,x     ; Get player image
-	sta PLAYERADR1,y         ; Save to Player memory.
-	iny
-	cpx Psip_Temp_Byte_Count ; Is X at the limit?
-	beq b_psip_End           ; Yes, then we're done.
-	inx
-	bpl b_psip_LoopCopy2     ; Next byte to copy.
-
-b_psip_End
+b_psp_End
 	rts
 
 
@@ -906,9 +990,9 @@ b_pmpm_SetPlayer         ; In any other case, Guns X position goes to shadow reg
 	sta SHPOSP1          ; Copy Player 2  X to shadow register
 
 b_pmpm_Exit
-	lda #0
-	sta zPLAYER_ONE_REDRAW
-	sta zPLAYER_TWO_REDRAW
+;	lda #0
+;	sta zPLAYER_ONE_REDRAW
+;	sta zPLAYER_TWO_REDRAW
 
 	rts
 
@@ -924,7 +1008,7 @@ b_pmpm_Exit
 Pmg_DeterminePlayerDraw
 
 	lda zPLAYER_REDRAW,X    ; Did Main set this?  
-	bne b_pdpd_Exit         ; Yup.   Don't need to check..  Just assume, go on to next player.
+	bne b_pdpd_Exit         ; Yup. No need to check, just assume, go on to next player.
 
 	lda zPLAYER_ON,X        ; Is player On?
 	beq b_pdpd_Exit         ; No.  Skip all these considerations. 
@@ -945,51 +1029,20 @@ b_pdpd_Exit
 
 
 ; ==========================================================================
-; INDEX MARKS
+; SETUP HARDWARE
 ; ==========================================================================
-; Diagnostic help.
-; Abuse the Player Missile graphics to put up registration marks every 4th
-; scan line to verify positioning of screen graphics.  (Was having a 
-; little problem with the Game screen having an extra scan line in the 
-; display which dropped the mountains and the stats line down. 
+; Support.
+; Given the player number in X, setup the Hardware pointer to the 
+; Player/Missile memory map.
+;
+; X == the player/gun/laser number.
 ; --------------------------------------------------------------------------
 
-; ==========================================================================
-; INDEX MARKS
-; ==========================================================================
-; Diagnostic help.
-; Abuse the Player Missile graphics to put up registration marks every 4th
-; scan line to verify positioning of screen graphics.  (Was having a 
-; little problem with the Game screen having an extra scan line in the 
-; display which dropped the mountains and the stats line down. 
-; --------------------------------------------------------------------------
+Pmg_Setup_Hardware
 
-;gPMG_SaveIndexMark .byte $0
+	lda #0                 ; Setup zero page pointer to Player memory
+	sta zPMG_HARDWARE
+	lda zPLAYER_PMG,X
+	sta zPMG_HARDWARE+1
 
-Pmg_IndexMarks
-
-;	lda #$AA
-;	sta gPMG_SaveIndexMark
-	
-;	ldy #12
-
-;b_pim_LoopSetIndexMarks
-;	lda gPMG_SaveIndexMark
-;	sta PLAYERADR0,y
-;	sta PLAYERADR1,y
-;	sta PLAYERADR2,y
-;	sta PLAYERADR3,y
-
-;	EOR #$FF
-;	sta gPMG_SaveIndexMark
-	
-;	tya
-;	clc
-;	adc #4
-;	tay
-	
-;	cmp #228
-;	bne b_pim_LoopSetIndexMarks
-	
 	rts
-	

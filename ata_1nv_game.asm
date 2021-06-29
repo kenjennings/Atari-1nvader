@@ -662,7 +662,7 @@ b_mdv_LoopSetCountdownColor
 	bne b_mdv_LoopSetCountdownColor
 
 
-	jsr Pmg_IndexMarks ;diagnostics for screen problems
+;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
 
 
