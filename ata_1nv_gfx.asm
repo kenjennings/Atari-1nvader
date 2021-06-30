@@ -720,6 +720,8 @@ TABLE_COLOR_LASERS ; Interleaved, so it can be addressed by  X player index.  0 
 ;	.byte $0F,$6E,$68,$62,$68,$6e
 	.byte $0F,$0F,$3E,$6e,$38,$68,$32,$62,$38,$68,$3e,$6e
 
+TABLE_COLOR_EXPLOSION 
+	.byte $00,$90,$96,$9A,$9E,$0E
 
 ; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left
 

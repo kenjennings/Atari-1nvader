@@ -714,7 +714,8 @@ b_gsm_Loop_ZeroPlayerScores
 
 
 	lda #$80                        ;  128 = 80 (BCD values)
-	sta zSHIP_HITS
+	sta zMOTHERSHIP_HITS
+;	sta zSHIP_HITS
 ;	lda #0
 ;	sta zSHIP_HITS+1
 
@@ -1613,7 +1614,7 @@ CheckNewExplosion
 	sta zPLAYER_SHOT_THE_SHERIFF,X
 
 	lda zMOTHERSHIP_X
-	sta zEXPLOSION_NEW_X
+	sta zEXPLOSION_X
 	lda zMOTHERSHIP_Y
 	sta zEXPLOSION_NEW_Y
 
@@ -1713,7 +1714,7 @@ b_cps_TestDebounce          ; The button must have been released before shooting
 	lda zPLAYER_DEBOUNCE,X  ; 1 is trigger is still held.  0 is trigger has been released.
 	bne b_cps_Exit          ; Nope.  No machine gunning here.  Let go the button first.
 
-; Yippie Ki Yay Bang Bang Shoot Shoot.  
+; Yippie-Ki-Yay Bang Bang Shoot Shoot.  
 
 	inc zPLAYER_DEBOUNCE,X  ; Flag to do debounce tests.
 	lda #LASER_START
@@ -1747,4 +1748,33 @@ b_cps_Dir1
 
 b_cps_Exit
 	rts
+
+
+
+
+
+;	; calculate zMOTHERSHIP_POINTS (mspts)
+	;
+	; NOTE that MOTHERSHIP_ROW is being treated as a regular 
+	; integer for indexing purposes.  The original code handled 
+	; this as BCD, creating gaps between values $09/9 and
+	; $10/16.
+	
+GetMothershipPoints
+
+	
+	lda #0       ; 0000 pts
+	sta zMOTHERSHIP_POINTS
+	sta zMOTHERSHIP_POINTS+1
+
+	ldx ZMOTHERSHIP_ROW
+	lda TABLE_MOTHERSHIP_POINTS_LOW,X
+	sta zMOTHERSHIP_POINTS
+	lda TABLE_MOTHERSHIP_POINTS_HIGH,X
+	sta zMOTHERSHIP_POINTS+1
+
+	rts
+
+
+
 

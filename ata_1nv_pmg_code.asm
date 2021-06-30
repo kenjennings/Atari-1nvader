@@ -16,6 +16,100 @@
 ; --------------------------------------------------------------------------
 
 
+;==============================================================================
+;												Pmg_Init  A  X  Y
+;==============================================================================
+; One-time setup tasks to do Player/Missile graphics.
+; Zero all positions.
+; Clear all bitmaps.
+; Set  GRACTL and SDMCTL for  pmgraphics.
+; Set PRIOR
+; -----------------------------------------------------------------------------
+
+Pmg_Init
+
+	jsr Pmg_AllZeroHPOS  ; get all Players/Missiles off screen.
+
+	; clear all bitmap images
+	jsr Pmg_Zero_PM_Memory
+
+	; Tell ANTIC where P/M memory is located for DMA to GTIA
+	lda #>PMADR
+	sta PMBASE
+
+	; Enable GTIA to accept DMA to the GRAFxx registers.
+	lda #[ENABLE_PLAYERS|ENABLE_MISSILES]
+	sta GRACTL
+
+	; Set all the ANTIC screen controls and DMA options.
+	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
+	sta SDMCTL
+
+	; Setup PRIOR 
+	lda #[FIFTH_PLAYER|GTIA_MODE_DEFAULT|1] ; Normal CTIA color interpretation
+	sta GPRIOR
+
+	rts 
+
+
+;==============================================================================
+;											Pmg_AllZero  A  X
+;==============================================================================
+; Simple hardware reset of all Player/Missile registers.
+; Typically used only at program startup to zero everything
+; and prevent any screen glitchiness on startup.
+;
+; Reset all Players and Missiles horizontal positions to 0, so
+; that none are visible no matter the size or bitmap contents.
+; Zero all colors.
+; Also reset sizes to zero.
+; -----------------------------------------------------------------------------
+
+Pmg_AllZeroHPOS
+
+	jsr Pmg_SetHPOSZero   ; Sets all HPOS off screen.
+
+	lda #$00                ; 0 position
+	ldx #$03                ; four objects, 3 to 0
+
+bAZ_LoopZeroPMSpecs
+	sta SIZEP0,x            ; Player width 3, 2, 1, 0
+	sta PCOLOR0,x           ; And black the colors.
+	dex
+	bpl bAZ_LoopZeroPMSpecs
+
+	sta SIZEM
+
+	rts
+
+
+;==============================================================================
+;											Pmg_SetHPOSZero  A  X
+;==============================================================================
+; Zero the hardware HPOS registers.
+;
+; Useful for DLI which needs to remove Players from the screen.
+; With no other changes (i.e. the size,) this is sufficient to remove 
+; visibility for all Player/Missile overlay objects 
+; -----------------------------------------------------------------------------
+
+Pmg_SetHPOSZero
+
+	lda #$00                ; 0 position
+
+	sta HPOSP0 ; Zero Player positions 0, 1, 2, 3
+	sta HPOSP1
+	sta HPOSP2
+	sta HPOSP3
+
+	sta HPOSM0 ; Zero Missile positions 0, 1, 2, 3
+	sta HPOSM1
+	sta HPOSM2
+	sta HPOSM3
+
+	rts
+
+
 ; ==========================================================================
 ; ZERO PM MEMORY 
 ; ==========================================================================
@@ -50,6 +144,25 @@ b_pzpm_LoopZero
 
 	rts
 
+
+; ==========================================================================
+; SETUP HARDWARE
+; ==========================================================================
+; Support.
+; Given the player number in X, setup the Hardware pointer to the 
+; Player/Missile memory map.
+;
+; X == the player/gun/laser number.
+; --------------------------------------------------------------------------
+
+Pmg_Setup_Hardware
+
+	lda #0                 ; Setup zero page pointer to Player memory
+	sta zPMG_HARDWARE
+	lda zPLAYER_PMG,X
+	sta zPMG_HARDWARE+1
+
+	rts
 
 
 ; ==========================================================================
@@ -101,7 +214,7 @@ b_pdbm_LoopDraw
 	rts
 
 	; Useless trivia -- The P/M DMA does not read the first 8 bytes of the
-	; tmemeory map, so we really only need to zero the second 8 bytes.
+	; memory map, so we really only need to zero the second 8 bytes.
 	
 b_pdbm_Zero                ; Zero 8 bytes from position 8 to 15 
 
@@ -117,7 +230,7 @@ b_pdbm_LoopZero
 
 
 ; ==========================================================================
-; DRAW LASER
+; DRAW LASERS
 ; ==========================================================================
 ; Copy the image bitmaps for the Laser to the New Y positions.
 ; Main code manages Y position.   
@@ -175,10 +288,10 @@ Pmg_Draw_Laser
 
 	jsr Pmg_SetLaserColor  ; set laser color from table and increment the index.
 
-	jsr Pmg_Setup_Hardware  ; Setup zero page pointer to Player memory
+	jsr Pmg_Setup_Hardware ; Setup zero page pointer to Player memory
 
 	lda zLASER_NEW_Y,X     ; If New Y is 0, then 
-	beq Pmg_DoRemoval      ; Remove laser at old position and stop laser.
+	beq Pmg_RemoveLaser    ; Remove laser at old position and stop laser.
 
 	; New Laser Y should always be less than old Y.
 	; If not, then the laser has been restarted, so erase at old position.
@@ -186,7 +299,7 @@ Pmg_Draw_Laser
 	cmp zLASER_Y,X         ; Is new position greater than old position?
 	bcc b_pdl_StartTheDraw ; No.  Go do a normal render.
 
-	jsr Pmg_DoRemoval      ; Completely erase old image first.
+	jsr Pmg_RemoveLaser    ; Completely erase old image first.
 	ldx Pdl_Temp_Laser_Num ; Need to restore New Y again.
 	ldy zLASER_NEW_Y,X     
 
@@ -241,7 +354,7 @@ b_pdl_Exit                  ; End, copy Y == New Y
         
 
 ; ==========================================================================
-; DO REMOVAL
+; REMOVE LASER
 ; ==========================================================================
 ; REMOVING the laser can happen automatically when the laser Y reaches 
 ; the minimum position or anywhere above the middle of the screen if 
@@ -255,7 +368,7 @@ b_pdl_Exit                  ; End, copy Y == New Y
 ; X register is Laser to update.   Same code is used for both lasers.
 ; --------------------------------------------------------------------------
 
-Pmg_DoRemoval
+Pmg_RemoveLaser
 
 	lda #0
 	ldy zLASER_Y,X             ; Is the old position at the end?
@@ -338,8 +451,86 @@ b_pslc_SkipColorReset
 ;	sta COLPM1
 
 
+; ==========================================================================
+; DRAW EXPLOSION
+; ==========================================================================
+; Copy the image bitmaps for the boom to the explosion New Y position.
+;
+; This is a bit more simple than the code sharing the guns.
+; There is the slight possibility that a new explosion may need to 
+; start before the old explosion is finished, so this routine needs
+; to handle both in the same call.  (Stop the old explosion, start 
+; the next explosion.)
+;
+; If the explosion New Y is zero or does not match the Current Y, then 
+; first erase the explosion at the Old Y position.
+;
+; If the New Y is not zero, then copy the explosion image to the 
+; Player/Missile memory.
+;
+; Copy the New Y to the Current Y.
+; Copy the X position to the HPOS.
+; --------------------------------------------------------------------------
 
+Pmg_DrawExplosion
 
+	lda zEXPLOSION_NEW_Y      ; Get New Y postion.
+	beq b_pde_RemoveExplosion ; It's 0.  Erase at current position.
+
+	cmp zEXPLOSION_Y          ; Non-zero. Does it match current postion?
+	beq b_pde_Exit            ; Yes.  Nothing to do here.
+
+b_pde_RemoveExplosion
+	ldy zEXPLOSION_Y          ; Get current position.
+	beq b_pde_DrawExplosion   ; If zero, then skip this, and draw.
+	ldx #7                    ; loop counter.
+	lda #0
+b_pde_EraseLoop
+	sta PLAYERADR3,Y          ; Zero byte into Player memory
+	iny
+	dex
+	bpl b_pde_EraseLoop
+
+b_pde_DrawExplosion
+	ldy zEXPLOSION_NEW_Y      ; Is there a new position?
+	beq b_pde_StopExplosion   ; No.  Stop the explosion things.
+	ldx #0                    ; loop counter.
+	txa
+b_pde_DrawLoop
+	lda PMG_IMG_EXPLOSION,X   ; Get byte from image.
+	sta PLAYERADR3,Y          ; Write image byte into Player memory
+	iny
+	inx
+	cpx #8
+	bne b_pde_DrawLoop
+
+; Copy data for new Current position information and 
+; reset the color/counter state.
+	lda #1
+	sta zEXPLOSION_ON        ; Let others know this is running.
+	lda zEXPLOSION_NEW_Y     
+	sta zEXPLOSION_Y         ; Current Y Position == New Y Position
+	ldx zEXPLOSION_X         ; To be used later at SetHardware
+	ldy #5
+	sty zEXPLOSION_COUNT     ; Start of explosion color cycle
+	lda TABLE_COLOR_EXPLOSION+5; Get first color from table.
+	jmp b_pde_SetHardware
+
+b_pde_StopExplosion          ; Turn off all the running specs.
+	lda #0
+	sta zEXPLOSION_ON
+	sta zEXPLOSION_COUNT
+	sta zEXPLOSION_X
+	sta zEXPLOSION_Y
+	tax
+
+b_pde_SetHardware
+	stx SHPOSP3              ; HPOS Shadow register = X Position.
+	sta PCOLOR3              ; Update OS shadow register.
+	sta COLPM3               ; Update hardware register to be redundant.
+
+b_pde_Exit
+	rts
 
 
 ; ==========================================================================
@@ -429,7 +620,6 @@ b_pdps_LoopDrawPlayer
 
 b_pdp_Exit
 	rts
-
 
 
 ; ==========================================================================
@@ -527,10 +717,6 @@ b_pdms_Exit
 	rts
 
 
-
-
-	
-
 ; Speed control for horizontal movement should be in the main code that 
 ; updates the position.
                                    ; should be 2
@@ -563,121 +749,6 @@ Pmg_SetMotherShip
 	inc zSHOW_SCORE_FLAG
 
 ;	jsr showscr
-
-	rts
-
-
-;==============================================================================
-;												Pmg_Init  A  X  Y
-;==============================================================================
-; One-time setup tasks to do Player/Missile graphics.
-; Zero all positions.
-; Clear all bitmaps.
-; Set  GRACTL and SDMCTL for  pmgraphics.
-; Set PRIOR
-; -----------------------------------------------------------------------------
-
-Pmg_Init
-
-	jsr Pmg_AllZero  ; get all Players/Missiles off screen, etc.
-	
-	; clear all bitmap images
-;	jsr Pmg_ClearBitmaps
-	jsr Pmg_Zero_PM_Memory
-
-;	; Load text labels into P/M memory
-;	jsr LoadPMGTextLines
-
-	; Tell ANTIC where P/M memory is located for DMA to GTIA
-	lda #>PMADR
-	sta PMBASE
-
-	; Enable GTIA to accept DMA to the GRAFxx registers.
-	lda #[ENABLE_PLAYERS|ENABLE_MISSILES]
-	sta GRACTL
-
-	; Set all the ANTIC screen controls and DMA options.
-	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
-	sta SDMCTL
-
-	; Setup PRIOR 
-	lda #[FIFTH_PLAYER|GTIA_MODE_DEFAULT|1] ; Normal CTIA color interpretation
-	sta GPRIOR
-
-	rts 
-
-
-;==============================================================================
-;											Pmg_SetHPOSZero  A  X
-;==============================================================================
-; Zero the hardware HPOS registers.
-;
-; Useful for DLI which needs to remove Players from the screen.
-; With no other changes (i.e. the size,) this is sufficient to remove 
-; visibility for all Player/Missile overlay objects 
-; -----------------------------------------------------------------------------
-
-Pmg_SetHPOSZero
-
-	lda #$00                ; 0 position
-
-	sta HPOSP0 ; Zero Player positions 0, 1, 2, 3
-	sta HPOSP1
-	sta HPOSP2
-	sta HPOSP3
-
-	sta HPOSM0 ; Zero Missile positions 0, 1, 2, 3
-	sta HPOSM1
-	sta HPOSM2
-	sta HPOSM3
-
-	rts
-
-
-;==============================================================================
-;											Pmg_AllZero  A  X
-;==============================================================================
-; Simple hardware reset of all Player/Missile registers.
-; Typically used only at program startup to zero everything
-; and prevent any screen glitchiness on startup.
-;
-; Reset all Players and Missiles horizontal positions to 0, so
-; that none are visible no matter the size or bitmap contents.
-; Zero all colors.
-; Also reset sizes to zero.
-; -----------------------------------------------------------------------------
-
-Pmg_AllZero
-
-	jsr Pmg_SetHPOSZero   ; Sets all HPOS off screen.
-
-	lda #$00                ; 0 position
-	ldx #$03                ; four objects, 3 to 0
-
-bAZ_LoopZeroPMSpecs
-	sta SIZEP0,x            ; Player width 3, 2, 1, 0
-	sta PCOLOR0,x           ; And black the colors.
-	dex
-	bpl bAZ_LoopZeroPMSpecs
-
-	sta SIZEM
-
-	rts
-
-
-
-
-
-;==============================================================================
-;											Pmg_SetAllZero  A  X
-;==============================================================================
-; Zero the table entries for the animated object on screen.
-;
-; -----------------------------------------------------------------------------
-
-Pmg_SetAllZero
-
-	lda #$00            ; 0 position
 
 	rts
 
@@ -830,72 +901,6 @@ Pmg_SquashIdlePlayer
 	rts
 
 
-;	lda zPLAYER_ONE_ON
-;	bpl b_psip_CheckPlayer2  ; Player moving (-1) or on (+1)?  On is nothing to do.
-
-;	ldy zPLAYER_ONE_Y        ; Player Off.   
-;	cpy #PLAYER_SQUASH_Y     ; Did Y position reach the bottom?
-;	bne b_psip_SquashP1      ; No.  Continue squashing.
-;	lda #0                   ; Formally turn off Player 1.
-;	sta zPLAYER_ONE_ON
-;	beq b_psip_End
-
-;b_psip_SquashP1
-;	inc zPLAYER_ONE_Y        ; Y = Y + 1
-;	lda #PLAYER_SQUASH_Y     ; Subtract from 
-;	sec                      ; the squash'd Y
-;	sbc zPLAYER_ONE_Y        ; giving the number of bytes to write
-;	sta Psip_Temp_Byte_Count ; save number of bytes to write
-
-;	ldy zPLAYER_ONE_Y        ; Get the adjusted Y
-;	sty zPLAYER_ONE_NEW_Y    ; Normalize new == old
-;	ldx #0
-
-;b_psip_LoopCopy1             ; Yes.  Long, grody, messy loop.
-;	lda PMG_IMG_CANNON,x     ; Get player image
-;	sta PLAYERADR0,y         ; Save to Player memory.
-;	iny
-;	cpx Psip_Temp_Byte_Count ; Is X at the limit?
-;	beq b_psip_End           ; Yes, then we're done.
-;	inx
-;	bpl b_psip_LoopCopy1     ; Next byte to copy.
-
-
-;b_psip_CheckPlayer2
-;	lda zPLAYER_TWO_ON
-;	bpl b_psip_End           ; Player moving (-1) or on (+1)  Nothing to do.
-
-;	ldy zPLAYER_TWO_Y        ; Player Off.   
-;	cpy #PLAYER_SQUASH_Y     ; Did Y position reach the bottom?
-;	bne b_psip_SquashP2      ; No.  Continue squashing.
-;	lda #0                   ; Formally turn off Player 2.
-;	sta zPLAYER_TWO_ON
-;	beq b_psip_End
-
-;b_psip_SquashP2
-;	inc zPLAYER_TWO_Y        ; Y = Y + 1
-;	lda #PLAYER_SQUASH_Y     ; Subtract from 
-;	sec                      ; the squash'd Y
-;	sbc zPLAYER_TWO_Y        ; giving the number of bytes to write
-;	sta Psip_Temp_Byte_Count ; save number of bytes to write
-
-;	ldy zPLAYER_TWO_Y        ; Get the adjusted Y
-;	sty zPLAYER_TWO_NEW_Y    ; Normalize new == old
-;	ldx #0
-
-;b_psip_LoopCopy2             ; Yes.  Long, grody, messy loop.
-;	lda PMG_IMG_CANNON,x     ; Get player image
-;	sta PLAYERADR1,y         ; Save to Player memory.
-;	iny
-;	cpx Psip_Temp_Byte_Count ; Is X at the limit?
-;	beq b_psip_End           ; Yes, then we're done.
-;	inx
-;	bpl b_psip_LoopCopy2     ; Next byte to copy.
-
-;b_psip_End
-;	rts
-
-
 ; ==========================================================================
 ; SQUASH IDLE PLAYER
 ; ==========================================================================
@@ -1027,22 +1032,3 @@ b_pdpd_Flag_Redraw
 b_pdpd_Exit
 	rts
 
-
-; ==========================================================================
-; SETUP HARDWARE
-; ==========================================================================
-; Support.
-; Given the player number in X, setup the Hardware pointer to the 
-; Player/Missile memory map.
-;
-; X == the player/gun/laser number.
-; --------------------------------------------------------------------------
-
-Pmg_Setup_Hardware
-
-	lda #0                 ; Setup zero page pointer to Player memory
-	sta zPMG_HARDWARE
-	lda zPLAYER_PMG,X
-	sta zPMG_HARDWARE+1
-
-	rts
