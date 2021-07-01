@@ -537,7 +537,7 @@ b_mdv_DoTheGame
 
 	jsr Gfx_RunGameStars           ; Animate the flashing stars
 
-; process explosion here and force mothership adjustment
+	jsr GameProcessExplosion       ; Handle collision detection, start explosion
 
 	jsr Pmg_Draw_Mothership        ; automatically increments Y until it is NEW_Y
 

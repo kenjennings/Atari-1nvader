@@ -1777,4 +1777,109 @@ GetMothershipPoints
 
 
 
+; ==========================================================================
+; SUPPORT - PROCESS EXPLOSION
+; ==========================================================================
+; Runs during VBI.
+;
+; Evaluating collision and updating the explosion must occur during the VBI
+; instead of main code.   If the logic for managing the explosion occurs 
+; during the main line code and the collision detection during the VBI 
+; then the explosion starts a frame late and in the wrong position.
+; in other words, this  would happen:
+; Frame: 
+; - Display overlapping mothership and laser.  
+; - Main code processes movement.
+; VBI 
+;  - detects collision and flags for explosion start.
+; Frame:
+; - Display moved mothership and laser again.
+; - Main code starting explosion at current (wrong) position.
+; VBI
+; - etc
+; Frame:
+; - Explosion is now displayed.
+;
+; So, collision evaluation and explosion maintenance will occur during the 
+; VBI, so that the explosion can start on the frame after the collision 
+; in the correct spot:
+; Frame: 
+; - Display overlapping mothership and laser.  
+; - Main code processes movement.
+; VBI 
+; - detects collision and flags for explosion start.
+; - Draws explosion at old mothership position
+; - Draws mothership at new row location.
+; Frame:
+; - Display motherhship in reset position
+; - Display explosion.
+; - Main updates score.
+; - Main code processes movements.
+;
+; Depending on the animation duration for the explosion there's a 
+; possibility that the old animation will still be running when the 
+; new one must start.   The Pmg draw code handles the restart 
+; automatically.
+; --------------------------------------------------------------------------
 
+GameProcessExplosion
+
+	lda zLASER_ONE_BANG          ; Did either laser collide 
+	ora zLASER_TWO_BANG          ; with the mothership?
+	beq b_gpe_DoCurrentExplosion ; No.  Just process current explosion.
+
+	lda zMOTHERSHIP_Y            ; Copy current mothership position to new
+	sta zEXPLOSION_NEW_Y         ; explosion position to initiate explostion.
+	lda zMOTHERSHIP_X
+	sta zEXPLOSION_X
+
+	jsr Pmg_DrawExplosion            ; Start new explosion cycle.
+
+	lda zLASER_ONE_BANG              ; Inform Main routine who shot the ship
+	sta zPLAYER_ONE_SHOT_THE_SHERIFF
+	beq b_gpe_EvaluateLaserTwo       ; Stop laser 1 if it hit.
+	lda #0
+	sta zLASER_ONE_NEW_Y             ; Zero Laser 1 New Y to stop it
+	
+b_gpe_EvaluateLaserTwo
+	lda zLASER_TWO_BANG              ; Inform Main routine who shot the ship
+	sta zPLAYER_TWO_SHOT_THE_SHERIFF
+	beq b_gpe_ResetMothership        ; Stop laser 2 if it hit.
+	lda #0
+	sta zLASER_TWO_NEW_Y             ; Zero Laser 2 New Y to stop it
+
+b_gpe_ResetMothership                ;  force mothership adjustment
+	lda #MOTHERSHIP_MIN_X
+	sta zMOTHERSHIP_NEW_X
+	lda #MOTHERSHIP_MIN_Y
+	sta zMOTHERSHIP_NEW_Y
+	lda #0
+	sta zMOTHERSHIP_DIR
+
+	rts                          ; And done.
+
+
+b_gpe_DoCurrentExplosion
+	lda zEXPLOSION_ON            ; Is an explosion running?
+	beq b_gpe_Exit               ; Nope.  Exit.
+
+	ldx zEXPLOSION_COUNT         ; Get current counter.
+	beq b_gpe_StopExplosion      ; If it reached 0, then stop explosion
+
+	dex
+	stx zEXPLOSION_COUNT
+	lda TABLE_COLOR_EXPLOSION,X  ; Get color from table.
+	sta PCOLOR3                  ; Update OS shadow register.
+	sta COLPM3                   ; Update hardware register to be redundant.
+	rts
+
+
+b_gpe_StopExplosion
+	lda #0
+	sta zEXPLOSION_NEW_Y
+	jsr Pmg_DrawExplosion        ; Start (or stop) explosion cycle.
+
+b_gpe_Exit
+	rts
+	
+	

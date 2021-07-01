@@ -370,17 +370,22 @@ b_pdl_Exit                  ; End, copy Y == New Y
 
 Pmg_RemoveLaser
 
-	lda #0
+	lda zLASER_NEW_Y,X         ; Is new position 0?     
+	beq b_pdr_TurnOffLaser     ; Yes.  turn off.
+
 	ldy zLASER_Y,X             ; Is the old position at the end?
 	cpy #LASER_END_Y
-	bne b_pdr_SkipTurnOffLaser ; No.  Do not turn off laser.
-
+	beq b_pdr_TurnOffLaser     ; Yes.  Stop it .
+	
 	; It is possible that Old Y in the end position MAY coincide with 
 	; restarting the laser. If the new Y is zero, then it is OK to 
 	; turn off the laser.
-	lda zLASER_NEW_Y,X
-	bne b_pdr_SkipTurnOffLaser ; Not 0.   Do not turn off.
 
+	bne b_pdr_SkipTurnOffLaser ; Then this must be an erase and redraw. 
+
+
+
+b_pdr_TurnOffLaser
 	lda #0
 	sta zLASER_ON,X   ; Turn off laser
 	sta zLASER_Y,X    ; Zero current Y position.

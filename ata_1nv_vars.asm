@@ -42,7 +42,7 @@ zMOTHERSHIP_HITS            .byte $00 ; Number of times the mothership is hit.
 zMOTHERSHIP_SHOT_BY_ONE     .byte $0  ; Collision between PM0 (shot) and PM2
 zMOTHERSHIP_SHOT_BY_TWO     .byte $0  ; Collision between PM1 (shot) and PM2
 
-zEXPLOSION_ON               .byte $00 ; Explosion is present.  (-1 is start)
+zEXPLOSION_ON               .byte $00 ; Explosion is present.   
 zEXPLOSION_COUNT            .byte $00 ; Timer/index for Explosion. 
 zEXPLOSION_X                .byte $00 
 zEXPLOSION_Y                .byte $00
