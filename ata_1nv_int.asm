@@ -513,25 +513,7 @@ b_mdv_DoTheGame
 	lda #0
 	sta zDLIStarLinecounter   ; reset DLI counter.
 
-	sta zPLAYER_ONE_SHOT_THE_SHERIFF  ; Flag that this player did not shoot the mothership.
-	sta zPLAYER_TWO_SHOT_THE_SHERIFF
-
-	lda zLASER_ONE_X      ; Start VBI. Copy Laser 1 X to SHPOSP0
-	sta SHPOSP0           ; Start VBI. Copy Laser 1 X to SHPOSP0
-	lda zLASER_TWO_X      ; Start VBI. Copy Laser 2 X to SHPOSP1
-	sta SHPOSP1           ; Start VBI. Copy Laser 2 X to SHPOSP1
-
-
-	; Collect collisions.
-	lda P0PL            ; GTIA collision register Player 0 (laser 1)...
-	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
-	sta zLASER_ONE_BANG ; Laser 1 collision with mothership (P0 to P2)
-	lda P1PL            ; GTIA collision register Player 1 (laser 2)...
-	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
-	sta zLASER_TWO_BANG ; Laser 1 collision with mothership (P1 to P2)
-
-	sta HITCLR          ; Always reset the P/M collision bits for next frame.
-
+	jsr Pmg_CollectCollisions      ; Collect collision bits, set flags, hit HITCLR
 
 	jsr Gfx_ShowScreen             ; Forcing redraw of score now for test evidence
 

@@ -730,28 +730,12 @@ b_gsm_Loop_ZeroPlayerScores
 	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld - every 10 shots it speeds up
 	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
 
-	lda RANDOM                      ; Random starting direction for Mothership
-	and #$01
-	sta zMOTHERSHIP_DIR             ; 0 == left to right. 1 == right to left.
-
-	bne b_gsm_SetMothershipMax_X    ; 0 == left to right. 1 == right to left.
-	lda #MOTHERSHIP_MIN_X           ; Left == Minimum
-	bne b_gsm_SetMothership_X       ; Save X
-	
-b_gsm_SetMothershipMax_X
-	lda #MOTHERSHIP_MAX_X           ; Right == Maximum
-
-b_gsm_SetMothership_X               ; Start X coord.
-	sta zMOTHERSHIP_NEW_X
-	sta zMOTHERSHIP_X
+	jsr GameRandomizeMothership
+	lda zMOTHERSHIP_NEW_X
 	sta SHPOSP2
 
 	ldx #0
-;	stx zMOTHERSHIP_ROW
-	stx zMOTHERSHIP_Y               ; Zero old P/M Y position
-	jsr Pmg_SetMotherShip
-;	lda TABLE_ROW_TO_Y,x            ; row 2 y table
-;	sta zMOTHERSHIP_NEW_Y           ; New Y position.
+	jsr Pmg_SetMotherShip  ; Convert Row to Y position.
 
 	; Setting random direction for both players.
 	; Not doing any comparison for the player on or off,
@@ -1387,6 +1371,9 @@ CheckPlayersShooting
 
 GameMothershipMovement
 
+	lda zPLAYER_ONE_SHOT_THE_SHERIFF
+	ora zPLAYER_TWO_SHOT_THE_SHERIFF
+	
 	lda zMOTHERSHIP_Y
 	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
 	bne b_gmm_skip_MS_Move ; No.  Skip this and do horizontal movement.
@@ -1762,7 +1749,6 @@ b_cps_Exit
 	
 GetMothershipPoints
 
-	
 	lda #0       ; 0000 pts
 	sta zMOTHERSHIP_POINTS
 	sta zMOTHERSHIP_POINTS+1
@@ -1772,6 +1758,32 @@ GetMothershipPoints
 	sta zMOTHERSHIP_POINTS
 	lda TABLE_MOTHERSHIP_POINTS_HIGH,X
 	sta zMOTHERSHIP_POINTS+1
+
+	rts
+
+; ==========================================================================
+; SUPPORT - RANDOMIZE MOTHERSHIP
+; ==========================================================================
+; At game start and anytime the mothership is shot, then randomize
+; the new start X start.
+; --------------------------------------------------------------------------
+
+GameRandomizeMothership
+
+	lda RANDOM                      ; Random starting direction for Mothership
+	and #$01
+	sta zMOTHERSHIP_DIR             ; 0 == left to right. 1 == right to left.
+
+	bne b_grm_SetMothershipMax_X    ; 0 == left to right. 1 == right to left.
+	lda #MOTHERSHIP_MIN_X           ; Left == Minimum
+	bne b_grm_SetMothership_X       ; Save X
+	
+b_grm_SetMothershipMax_X
+	lda #MOTHERSHIP_MAX_X           ; Right == Maximum
+
+b_grm_SetMothership_X               ; Start X coord.
+	sta zMOTHERSHIP_NEW_X
+	sta zMOTHERSHIP_X
 
 	rts
 
@@ -1848,15 +1860,20 @@ b_gpe_EvaluateLaserTwo
 	lda #0
 	sta zLASER_TWO_NEW_Y             ; Zero Laser 2 New Y to stop it
 
-b_gpe_ResetMothership                ;  force mothership adjustment
-	lda #MOTHERSHIP_MIN_X
-	sta zMOTHERSHIP_NEW_X
-	lda #MOTHERSHIP_MIN_Y
-	sta zMOTHERSHIP_NEW_Y
-	lda #0
-	sta zMOTHERSHIP_DIR
+b_gpe_ResetMothership                ; force mothership adjustment
+	jsr GameRandomizeMothership      ; Choose random direction, set new X accordingly.
+	sec                              ; Subtract 3
+	lda zMOTHERSHIP_ROW              ; from the
+	sbc #3                           ; mothership row. 
+	bpl b_gpe_ContinueReset          ; If the result is positive, then update row. 
+	lda #0                           ; Negative must be limited to 0.
+b_gpe_ContinueReset
+	sta zMOTHERSHIP_ROW              ; Save mothership row.
+	tax
+	jsr Pmg_SetMotherShip            ; Set Mothership Y to new row in X register.
 
-	rts                          ; And done.
+	; Stil to do -- count hits.  adjust mothership speed to hits.
+	rts                              ; And done.
 
 
 b_gpe_DoCurrentExplosion

@@ -229,6 +229,51 @@ b_pdbm_LoopZero
 	rts
 
 
+
+; ==========================================================================
+; COLLECT COLLISIONS
+; ==========================================================================
+; Analyze collision registers and set various variables for other 
+; code to reference later.
+;
+; If the mothership is on row 22 where the guns are, then zero all flags.
+;
+; End by strobing HITCLR.
+; --------------------------------------------------------------------------
+
+Pmg_CollectCollisions
+	lda #0
+	sta zPLAYER_ONE_SHOT_THE_SHERIFF  ; Flag that the player did not shoot the mothership.
+	sta zPLAYER_TWO_SHOT_THE_SHERIFF
+
+	lda zLASER_ONE_X      ; Start VBI. Copy Laser 1 X to SHPOSP0
+	sta SHPOSP0           ; Start VBI. Copy Laser 1 X to SHPOSP0
+	lda zLASER_TWO_X      ; Start VBI. Copy Laser 2 X to SHPOSP1
+	sta SHPOSP1           ; Start VBI. Copy Laser 2 X to SHPOSP1
+
+	lda zMOTHERSHIP_ROW
+	cmp #22               ; Bottom row where the guns are
+	bne b_pcc_SetCollisionFlags
+
+	lda #0
+	sta zLASER_ONE_BANG
+	sta zLASER_TWO_BANG
+	beq b_pcc_EndOfCollisionDetection
+	
+b_pcc_SetCollisionFlags
+	lda P0PL            ; GTIA collision register Player 0 (laser 1)...
+	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
+	sta zLASER_ONE_BANG ; Laser 1 collision with mothership (P0 to P2)
+	lda P1PL            ; GTIA collision register Player 1 (laser 2)...
+	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
+	sta zLASER_TWO_BANG ; Laser 1 collision with mothership (P1 to P2)
+
+b_pcc_EndOfCollisionDetection
+	sta HITCLR          ; Always reset the P/M collision bits for next frame.
+
+	rts
+
+
 ; ==========================================================================
 ; DRAW LASERS
 ; ==========================================================================
@@ -290,15 +335,16 @@ Pmg_Draw_Laser
 
 	jsr Pmg_Setup_Hardware ; Setup zero page pointer to Player memory
 
-	lda zLASER_NEW_Y,X     ; If New Y is 0, then 
-	beq Pmg_RemoveLaser    ; Remove laser at old position and stop laser.
+	ldy zLASER_NEW_Y,X     ; If new position is 0 then
+	beq Pmg_RemoveLaser    ; remove laser at old position and stop laser.
 
-	; New Laser Y should always be less than old Y.
-	; If not, then the laser has been restarted, so erase at old position.
-	tay                    ; Copy New Y into Y for later.
-	cmp zLASER_Y,X         ; Is new position greater than old position?
-	bcc b_pdl_StartTheDraw ; No.  Go do a normal render.
+	sec                    ; Usually, new Laser Y is 4 scan lines less than 
+	lda zLASER_Y,X         ; the old laser Y.  If it is exactly 4, then  
+	sbc zLASER_NEW_Y,X     ; there is no need to erase the old image.
+	cmp #4
+	beq b_pdl_StartTheDraw ; New Y = Y - 4, so draw immediately.
 
+	; Otherwise, restart between explosion and start...
 	jsr Pmg_RemoveLaser    ; Completely erase old image first.
 	ldx Pdl_Temp_Laser_Num ; Need to restore New Y again.
 	ldy zLASER_NEW_Y,X     
@@ -370,33 +416,28 @@ b_pdl_Exit                  ; End, copy Y == New Y
 
 Pmg_RemoveLaser
 
-	lda zLASER_NEW_Y,X         ; Is new position 0?     
-	beq b_pdr_TurnOffLaser     ; Yes.  turn off.
+	ldy zLASER_Y,X         ; Need this in Y.
+	lda zLASER_NEW_Y,X     ; Is new position 0?     
+	bne b_pdr_EraseLaser   ; No.  only erase it from screen.
 
-	ldy zLASER_Y,X             ; Is the old position at the end?
-	cpy #LASER_END_Y
-	beq b_pdr_TurnOffLaser     ; Yes.  Stop it .
-	
-	; It is possible that Old Y in the end position MAY coincide with 
-	; restarting the laser. If the new Y is zero, then it is OK to 
-	; turn off the laser.
-
-	bne b_pdr_SkipTurnOffLaser ; Then this must be an erase and redraw. 
-
-
+;	cpy #LASER_END_Y       ; Is the old position at the end?
+;	; It is possible that Old Y in the end position MAY coincide with 
+;	; restarting the laser. If the new Y is zero, then it is OK to 
+;	; turn off the laser.
+;	bne b_pdr_EraseLaser ; Then this must be an erase and redraw. 
 
 b_pdr_TurnOffLaser
 	lda #0
-	sta zLASER_ON,X   ; Turn off laser
-	sta zLASER_Y,X    ; Zero current Y position.
-	sta zLASER_X,X    ; Maybe this will help.
+	sta zLASER_ON,X        ; Turn off laser
+	sta zLASER_Y,X         ; Zero current Y position.
+	sta zLASER_X,X         ; Maybe this will help.
 
-b_pdr_SkipTurnOffLaser
+b_pdr_EraseLaser
 	lda #0
 	ldx #7
 
 b_pdr_LoopDoErase
-	sta (zPMG_HARDWARE),Y ; Erase at old position
+	sta (zPMG_HARDWARE),Y  ; Erase at old position
 	iny
 	dex
 	bpl b_pdr_LoopDoErase
@@ -516,9 +557,9 @@ b_pde_DrawLoop
 	lda zEXPLOSION_NEW_Y     
 	sta zEXPLOSION_Y         ; Current Y Position == New Y Position
 	ldx zEXPLOSION_X         ; To be used later at SetHardware
-	ldy #5
+	ldy #SIZEOF_EXPLOSION_TABLE
 	sty zEXPLOSION_COUNT     ; Start of explosion color cycle
-	lda TABLE_COLOR_EXPLOSION+5; Get first color from table.
+	lda TABLE_COLOR_EXPLOSION+SIZEOF_EXPLOSION_TABLE; Get first color from table.
 	jmp b_pde_SetHardware
 
 b_pde_StopExplosion          ; Turn off all the running specs.
@@ -719,42 +760,6 @@ b_pdms_WriteAnimByte
 	sta PLAYERADR2,y             ; update the image in the player.
 
 b_pdms_Exit
-	rts
-
-
-; Speed control for horizontal movement should be in the main code that 
-; updates the position.
-                                   ; should be 2
-;	lda #2                         ; initial ms speed
-;	sta zMOTHERSHIP_MOVE_SPEED     ; Loop this many times.
-;	lda #10                        ; should be 10
-;	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
-;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count 
-
-
-;==============================================================================
-;												SetMotherShip  X
-;==============================================================================
-; Given Mothership row (X), update the mother ship specifications.
-; Save the row.
-;
-; Really, this is more like mainline support code, but since the 
-; mother ship is a player, we're putting the routine here.
-; -----------------------------------------------------------------------------
-
-Pmg_SetMotherShip
-
-	stx zMOTHERSHIP_ROW   ; Set msy from
-	lda TABLE_ROW_TO_Y,X  ; row 2 y table
-;	sta zMOTHERSHIP_Y
-	sta zMOTHERSHIP_NEW_Y
-
-	jsr GetMothershipPoints ; X will contain Mothership Row
-
-	inc zSHOW_SCORE_FLAG
-
-;	jsr showscr
-
 	rts
 
 
@@ -1036,4 +1041,41 @@ b_pdpd_Flag_Redraw
 
 b_pdpd_Exit
 	rts
+
+
+
+
+; Speed control for horizontal movement should be in the main code that 
+; updates the position.
+                                   ; should be 2
+;	lda #2                         ; initial ms speed
+;	sta zMOTHERSHIP_MOVE_SPEED     ; Loop this many times.
+;	lda #10                        ; should be 10
+;	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
+;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count 
+
+
+;==============================================================================
+;												SetMotherShip  X
+;==============================================================================
+; Given Mothership row (X), update the mother ship specifications.
+; Save the row.
+;
+; Really, this is more like mainline support code, but since the 
+; mother ship is a player, we're putting the routine here.
+; -----------------------------------------------------------------------------
+
+Pmg_SetMotherShip
+
+	stx zMOTHERSHIP_ROW   ; Set msy from
+	lda TABLE_ROW_TO_Y,X  ; row 2 y table
+	sta zMOTHERSHIP_NEW_Y
+
+;	jsr GetMothershipPoints ; X will contain Mothership Row
+
+;	inc zSHOW_SCORE_FLAG
+
+	rts
+
+
 
