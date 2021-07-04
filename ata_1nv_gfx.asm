@@ -715,12 +715,13 @@ TABLE_COLOR_BLINE_PM0
 TABLE_COLOR_BLINE_PM1
 	.byte $84,$86,$88,$8a,$8c,$8a,$88,$ff
 
+SIZEOF_LASER_COLOR_TABLE=5
 TABLE_COLOR_LASERS ; Interleaved, so it can be addressed by  X player index.  0 to 5
 ;	.byte $0F,$3E,$38,$32,$38,$3e
 ;	.byte $0F,$6E,$68,$62,$68,$6e
 	.byte $0F,$0F,$3E,$6e,$38,$68,$32,$62,$38,$68,$3e,$6e
 
-SIZEOF_EXPLOSION_TABLE=7  ; Actually, offset size.  entries -1
+SIZEOF_EXPLOSION_TABLE=7  ; Actually, size is 8.  7 is the starting index.
 TABLE_COLOR_EXPLOSION 
 	.byte $00,$90,$92,$94,$96,$98,$9E,$0E
 

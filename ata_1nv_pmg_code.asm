@@ -296,8 +296,7 @@ Pmg_Draw_Lasers
 	jsr Pmg_Draw_Laser
 
 	rts
-	
-	
+
 
 ; ==========================================================================
 ; DRAW LASER
@@ -446,7 +445,6 @@ b_pdr_Exit
 	rts
 
 
-
 ; ==========================================================================
 ; SET LASER COLOR
 ; ==========================================================================
@@ -476,7 +474,7 @@ b_pslc_0ColorIndex           ; Update the color index for the player's laser.
 
 	ldy zLASER_COLOR,X       ; Get the player's laser's color index
 	iny                      ; increment it
-	cpy #6                   
+	cpy #[SIZEOF_LASER_COLOR_TABLE+1]                   
 	bne b_pslc_SkipColorReset ; It has not reached limit.  Skip reset.
 	ldy #0                   ; Restart index.
 b_pslc_SkipColorReset
@@ -696,27 +694,38 @@ b_pdp_Exit
 
 Pmg_Draw_Mothership
 
-	lda zMOTHERSHIP_Y
-	cmp zMOTHERSHIP_NEW_Y  ; Target position, but can't move there in one step....
-	beq b_pdms_DoHPOS
+	ldy zMOTHERSHIP_Y
+	cpy zMOTHERSHIP_NEW_Y  ; Target position, (but can't move down in one step)....
+	beq b_pdms_DoHPOS      ; New Y == Old Y. No vertical movement. Skip it.
+	bmi b_pdms_ShiftDown   ; New Y > Old Y. Shift down one step.
 
+	ldx #7                 ; New Y < Old Y. Moving to a different row. Erase, redraw. 
+	lda #0
+b_pdms_LoopErase           ; Clear entire image at current position.
+	sta PLAYERADR2,Y       
+	iny
+	dex
+	bpl b_pdms_LoopErase
+	ldy zMOTHERSHIP_NEW_Y  ; Y == New position.
+	ldx #0                 ; X = start index for image.
+	beq b_pdms_LoopDraw    ; Redraw image at new position.
+
+b_pdms_ShiftDown           ; Moving down from row to row.
 	ldy zMOTHERSHIP_Y      ; Get current mothership Y (msy) 
 	lda #0
-	tax
 
 	sta PLAYERADR2,Y       ; Write 0 to Y + 0 P/M memory
 	iny                    ; Y + 1
 	sta PLAYERADR2,Y       ; Write 0 to Y + 1 P/M memory
 	iny                    ; Y + 1  (Or Y + 2 total)
 	sty zMOTHERSHIP_Y      ; Save as the new "current" position.
+	tax                    ; X == 0
 
 b_pdms_LoopDraw
 	lda PMG_IMG_MOTHERSHIP,X ; Get byte from saved image
 	sta PLAYERADR2,Y       ; Write to P/M memory
-
 	iny                    ; One position lower.
 	inx                    ; next byte
-
 	cpx #8                 
 	bne b_pdms_LoopDraw    ; End after copying 8.
 
@@ -727,8 +736,8 @@ b_pdms_DoHPOS
 
 ; Draw animated window on mothership.  The window moves in the same
 ; direction relative to the ship movement.  Therefore there are two
-; versionf of animation.  One that counts up throrugh the animation 
-; frames, and one that counts down through the frames.
+; versions of animation code.  One that counts up throrugh the 
+; animation frames, and one that counts down through the frames.
 
 	dec zMOTHERSHIP_ANIM_FRAME   ; Decrement clock for animation.
 	bpl b_pdms_Exit              ; If still positive, skip animation
@@ -1043,39 +1052,6 @@ b_pdpd_Exit
 	rts
 
 
-
-
-; Speed control for horizontal movement should be in the main code that 
-; updates the position.
-                                   ; should be 2
-;	lda #2                         ; initial ms speed
-;	sta zMOTHERSHIP_MOVE_SPEED     ; Loop this many times.
-;	lda #10                        ; should be 10
-;	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
-;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count 
-
-
-;==============================================================================
-;												SetMotherShip  X
-;==============================================================================
-; Given Mothership row (X), update the mother ship specifications.
-; Save the row.
-;
-; Really, this is more like mainline support code, but since the 
-; mother ship is a player, we're putting the routine here.
-; -----------------------------------------------------------------------------
-
-Pmg_SetMotherShip
-
-	stx zMOTHERSHIP_ROW   ; Set msy from
-	lda TABLE_ROW_TO_Y,X  ; row 2 y table
-	sta zMOTHERSHIP_NEW_Y
-
-;	jsr GetMothershipPoints ; X will contain Mothership Row
-
-;	inc zSHOW_SCORE_FLAG
-
-	rts
 
 
 

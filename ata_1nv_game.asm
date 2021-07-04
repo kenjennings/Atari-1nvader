@@ -669,7 +669,6 @@ b_mdv_LoopSetCountdownColor
 	rts
 
 
-
 ; ==========================================================================
 ; GAME SETUP MAIN
 ; ==========================================================================
@@ -735,7 +734,8 @@ b_gsm_Loop_ZeroPlayerScores
 	sta SHPOSP2
 
 	ldx #0
-	jsr Pmg_SetMotherShip  ; Convert Row to Y position.
+	sta zMOTHERSHIP_Y      ; Force old position not the row 0 position. 
+	jsr GameSetMotherShip  ; Convert Row to Y position on screen.
 
 	; Setting random direction for both players.
 	; Not doing any comparison for the player on or off,
@@ -774,7 +774,6 @@ b_gsm_Loop_ZeroPlayerScores
 ;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
 	rts
-
 
 
 ; ==========================================================================
@@ -871,7 +870,6 @@ GameMain
 	rts
 
 
-
 ; ==========================================================================
 ; GAME LAST ROW
 ; ==========================================================================
@@ -883,7 +881,6 @@ GameLastRow
 	rts
 
 
-
 ; ==========================================================================
 ; GAME SETUP OVER
 ; ==========================================================================
@@ -893,7 +890,6 @@ GameLastRow
 GameSetupOver
 
 	rts
-
 
 
 ; ==========================================================================
@@ -974,11 +970,6 @@ b_ppsi_TryPlayerIdle           ; Player is idle.  ($FF  is idle)
 
 b_ppsi_Exit
 	rts
-
-
-
-
-
 
 
 ; ==========================================================================
@@ -1074,9 +1065,6 @@ b_mmpu_MovePlayerUp
 
 b_mmpu_Exit
 	rts
-
-
-
 
 
 ; ==========================================================================
@@ -1273,9 +1261,6 @@ b_gpm_Exit
 	rts
 
 
-
-
-
 ; ==========================================================================
 ; SUPPORT - CHECK NEW EXPLOSIONS
 ; ==========================================================================
@@ -1305,8 +1290,6 @@ CheckNewExplosions
 	rts
 
 
-
-
 ; ==========================================================================
 ; SUPPORT - CHECK LASERS IN PROGRESS
 ; ==========================================================================
@@ -1326,9 +1309,6 @@ CheckLasersInProgress
 	jsr CheckLaserInProgress
 
 	rts
-
-
-
 
 
 ; ==========================================================================
@@ -1355,67 +1335,6 @@ CheckPlayersShooting
 	jsr CheckPlayerShooting
 
 	rts
-
-
-
-
-
-; ==========================================================================
-; SUPPORT - MOVE GAME MOTHERSHIP
-; ==========================================================================
-; Runs during main Game
-; 
-; Moves the mothership.   
-; The actual redraw takes place in the VBI.
-; --------------------------------------------------------------------------
-
-GameMothershipMovement
-
-	lda zPLAYER_ONE_SHOT_THE_SHERIFF
-	ora zPLAYER_TWO_SHOT_THE_SHERIFF
-	
-	lda zMOTHERSHIP_Y
-	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
-	bne b_gmm_skip_MS_Move ; No.  Skip this and do horizontal movement.
-
-	ldy zMOTHERSHIP_X        ; Get current X
-
-	lda zMOTHERSHIP_DIR      ; Test direction.
-	bne b_gmm_Mothership_R2L ; 1 = Right to Left
-
-	iny                      ; Do left to right.
-	sty zMOTHERSHIP_NEW_X
-	cpy #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
-	beq b_gmm_MS_ReverseDirection
-	bne b_gmm_skip_MS_Move
-
-b_gmm_Mothership_R2L
-	dey                      ; Do right to left.
-	sty zMOTHERSHIP_NEW_X
-	cpy #MOTHERSHIP_MIN_X    ; Reached max means time to inc Y and reverse direction.
-	beq b_gmm_MS_ReverseDirection
-	bne b_gmm_skip_MS_Move
-
-b_gmm_MS_ReverseDirection
-	lda zMOTHERSHIP_DIR      ; Toggle X direction.
-	eor #$1
-	sta zMOTHERSHIP_DIR
-
-	ldx zMOTHERSHIP_ROW      ; Get current row.
-	cpx #22                  ; If on last row, then it has
-	beq b_gmm_skip_MS_Move   ; reached the end of incrementing rows.
-
-	inx                      ; Next row.
-	jsr Pmg_SetMotherShip    ; Given Mothership row (X), update the mother ship specs and save the row.
-
-b_gmm_skip_MS_Move
-
-	rts
-
-
-
-
-
 
 
 
@@ -1449,9 +1368,6 @@ b_gmpl_CallMoveLeft
 
 b_gmpl_Exit
 	rts
-
-
-
 
 
 ; ==========================================================================
@@ -1493,8 +1409,6 @@ b_gmpltb_Exit
 	rts
 
 
-
-
 ; ==========================================================================
 ; SUPPORT - MOVE PLAYER RIGHT                                      X
 ; ==========================================================================
@@ -1525,9 +1439,6 @@ b_gmpr_CallMoveRight
 
 b_gmpr_Exit
 	rts
-
-
-
 
 
 ; ==========================================================================
@@ -1567,9 +1478,6 @@ GameMovePlayerRightToBumper
 
 b_gmprtb_Exit
 	rts
-
-
-
 
 
 ; ==========================================================================
@@ -1614,10 +1522,6 @@ CheckNewExplosion
 
 b_cne_Exit
 	rts
-
-
-
-
 
 
 ; ==========================================================================
@@ -1674,6 +1578,7 @@ b_clip_Exit
 ; Maybe add code to insure player releases the button before 
 ; attempting to shoot again.... ?????
 ;
+; X == the Player/gun/laser
 ; --------------------------------------------------------------------------
 
 CheckPlayerShooting
@@ -1700,93 +1605,83 @@ b_cps_TryLaserShot
 b_cps_TestDebounce          ; The button must have been released before shooting again.
 	lda zPLAYER_DEBOUNCE,X  ; 1 is trigger is still held.  0 is trigger has been released.
 	bne b_cps_Exit          ; Nope.  No machine gunning here.  Let go the button first.
-
-; Yippie-Ki-Yay Bang Bang Shoot Shoot.  
-
-	inc zPLAYER_DEBOUNCE,X  ; Flag to do debounce tests.
-	lda #LASER_START
-	sta zLASER_NEW_Y,X      ; New Y is set.
-
-	lda #0
-	sta zLASER_COLOR,X      ; Reset laser color pattern.
-
-	lda zPLAYER_NEW_X,X     ; Copy gun X position
-	sta zLASER_X,X          ; to the laser position.
-
-	inc zLASER_ON,X         ; Turn laser on for the VBI to draw.
-
-; start sound effects for shooting.
-
-	; Decide whether or not the gun has to change directions.
-
-	lda zPLAYER_BUMP,X      ; Has this frame already done a direction change?
-	bne b_cps_Exit          ; Yes.  Do not switch directions again.
-
-	inc zPLAYER_BUMP,X      ; Flag it has bumped. (probably not needed).
-	lda zPLAYER_DIR,X       ; Flip direction
-	beq b_cps_Dir1          ; Go do the Flip 0 to 1
-	
-	lda #0                  ; 0 == left to right. 
-	sta zPLAYER_DIR,X       ; Flip 1 to 0
-	beq b_cps_Exit          ; Done
-
-b_cps_Dir1
-	inc zPLAYER_DIR,X       ; Flip 0 to 1.  1 == right to left.
+  
+	jsr StartShot           ; Yippie-Ki-Yay Bang Bang Shoot Shoot.
 
 b_cps_Exit
 	rts
 
 
-
-
-
-;	; calculate zMOTHERSHIP_POINTS (mspts)
-	;
-	; NOTE that MOTHERSHIP_ROW is being treated as a regular 
-	; integer for indexing purposes.  The original code handled 
-	; this as BCD, creating gaps between values $09/9 and
-	; $10/16.
-	
-GetMothershipPoints
-
-	lda #0       ; 0000 pts
-	sta zMOTHERSHIP_POINTS
-	sta zMOTHERSHIP_POINTS+1
-
-	ldx ZMOTHERSHIP_ROW
-	lda TABLE_MOTHERSHIP_POINTS_LOW,X
-	sta zMOTHERSHIP_POINTS
-	lda TABLE_MOTHERSHIP_POINTS_HIGH,X
-	sta zMOTHERSHIP_POINTS+1
-
-	rts
-
 ; ==========================================================================
-; SUPPORT - RANDOMIZE MOTHERSHIP
+; SUPPORT - START SHOT
 ; ==========================================================================
-; At game start and anytime the mothership is shot, then randomize
-; the new start X start.
+; Runs during main Game
+; 
+;       i) set lazer on, 
+;       ii) Laser Y = gun new Y - 4, Laser X = gun new X
+;       iii) If no bounce this turn, then negate direction/set bounce.
+;
+; Looking at the video of the game frame by frame the laser 
+; does begin at exactly the right location relative to the player.
+; Over the next two frames the player moves left or right away
+; from the laser origin.   This make the human viewer perceive that
+; the laser did started offset from the center of the gun.
+; Therefore, the game fudges the start position of the laser offset
+; by one, so that the second/third frame of the laser and the next
+; two frames of the gun all coincide, so it looks better centered 
+; on the gun.
+;
+; X == the Player/gun/laser
 ; --------------------------------------------------------------------------
 
-GameRandomizeMothership
+StartShot
 
-	lda RANDOM                      ; Random starting direction for Mothership
-	and #$01
-	sta zMOTHERSHIP_DIR             ; 0 == left to right. 1 == right to left.
+	inc zLASER_ON,X          ; Turn laser on for the VBI to draw.
+	inc zPLAYER_DEBOUNCE,X   ; Flag to do debounce tests on the next shot.
+	lda #LASER_START
+	sta zLASER_NEW_Y,X       ; New Y is set.
 
-	bne b_grm_SetMothershipMax_X    ; 0 == left to right. 1 == right to left.
-	lda #MOTHERSHIP_MIN_X           ; Left == Minimum
-	bne b_grm_SetMothership_X       ; Save X
+	lda #0
+	sta zLASER_COLOR,X       ; Reset laser color pattern.
+
+; start sound effects for shooting.
+
+	; Decide whether or not the gun has to change directions.
+
+	lda zPLAYER_BUMP,X       ; Has this frame already done a direction change?
+	bne b_ss_TweakLaserStart ; Yes.  Do not switch directions again.
+
+	inc zPLAYER_BUMP,X       ; Flag it has bumped. (probably not needed).
+	lda zPLAYER_DIR,X        ; Flip direction
+	beq b_ss_Dir1            ; Go do the Flip 0 to 1
 	
-b_grm_SetMothershipMax_X
-	lda #MOTHERSHIP_MAX_X           ; Right == Maximum
+	lda #0                   ; 0 == left to right. 
+	sta zPLAYER_DIR,X        ; Flip 1 to 0
+	beq b_ss_TweakLaserStart ; Done
 
-b_grm_SetMothership_X               ; Start X coord.
-	sta zMOTHERSHIP_NEW_X
-	sta zMOTHERSHIP_X
+b_ss_Dir1
+	inc zPLAYER_DIR,X        ; Flip 0 to 1.  1 == right to left.
 
+; Again, evaluate gun direction to determine how to offset 
+; the starting X position for the laser.
+; If moving left, then subtract 1 from Player X to set laser X.
+; If moving right, then add 1 to the Player X to set laser X.
+b_ss_TweakLaserStart
+	ldy zPLAYER_NEW_X,X      ; Hold Gun's X position in Y reg.
+	lda zPLAYER_DIR,X       
+	bne b_ss_TweakR2L        ; 1 == right to left.
+
+	iny                      ; 0 == left to right.
+	bne b_ss_SaveNewLaserX
+
+b_ss_TweakR2L                ; 1 == right to left.
+	dey
+
+b_ss_SaveNewLaserX
+	sty zLASER_X,X          ; to the laser position.
+
+b_ss_Exit
 	rts
-
 
 
 ; ==========================================================================
@@ -1864,13 +1759,13 @@ b_gpe_ResetMothership                ; force mothership adjustment
 	jsr GameRandomizeMothership      ; Choose random direction, set new X accordingly.
 	sec                              ; Subtract 3
 	lda zMOTHERSHIP_ROW              ; from the
-	sbc #3                           ; mothership row. 
+	sbc #2                           ; mothership row. 
 	bpl b_gpe_ContinueReset          ; If the result is positive, then update row. 
 	lda #0                           ; Negative must be limited to 0.
 b_gpe_ContinueReset
-	sta zMOTHERSHIP_ROW              ; Save mothership row.
+;	sta zMOTHERSHIP_ROW              ; Save mothership row.
 	tax
-	jsr Pmg_SetMotherShip            ; Set Mothership Y to new row in X register.
+	jsr GameSetMotherShip            ; Set Mothership Y to new row in X register.
 
 	; Stil to do -- count hits.  adjust mothership speed to hits.
 	rts                              ; And done.
@@ -1881,7 +1776,7 @@ b_gpe_DoCurrentExplosion
 	beq b_gpe_Exit               ; Nope.  Exit.
 
 	ldx zEXPLOSION_COUNT         ; Get current counter.
-	beq b_gpe_StopExplosion      ; If it reached 0, then stop explosion
+	beq b_gpe_StopExplosion      ; If it is 0 now, then stop explosion
 
 	dex
 	stx zEXPLOSION_COUNT
@@ -1898,5 +1793,135 @@ b_gpe_StopExplosion
 
 b_gpe_Exit
 	rts
+
+
+; ==========================================================================
+; SUPPORT - MOVE GAME MOTHERSHIP
+; ==========================================================================
+; Runs during main Game
+; 
+; Moves the mothership.   
+; The actual redraw takes place in the VBI.
+; --------------------------------------------------------------------------
+
+GameMothershipMovement
+
+;	lda zPLAYER_ONE_SHOT_THE_SHERIFF
+;	ora zPLAYER_TWO_SHOT_THE_SHERIFF
+
+	lda zMOTHERSHIP_Y
+	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
+	bne b_gmm_skip_MS_Move ; No.  Skip this until vertical positions match. (VBI does this).
+
+	ldy zMOTHERSHIP_X        ; Get current X
+
+	lda zMOTHERSHIP_DIR      ; Test direction.
+	bne b_gmm_Mothership_R2L ; 1 = Right to Left
+
+	iny                      ; Do left to right.
+	sty zMOTHERSHIP_NEW_X
+	cpy #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
+	beq b_gmm_MS_ReverseDirection
+	bne b_gmm_skip_MS_Move
+
+b_gmm_Mothership_R2L
+	dey                      ; Do right to left.
+	sty zMOTHERSHIP_NEW_X
+	cpy #MOTHERSHIP_MIN_X    ; Reached max means time to inc Y and reverse direction.
+	beq b_gmm_MS_ReverseDirection
+	bne b_gmm_skip_MS_Move
+
+b_gmm_MS_ReverseDirection
+	lda zMOTHERSHIP_DIR      ; Toggle X direction.
+	eor #$1
+	sta zMOTHERSHIP_DIR
+
+	ldx zMOTHERSHIP_ROW      ; Get current row.
+	cpx #22                  ; If on last row, then it has
+	beq b_gmm_skip_MS_Move   ; reached the end of incrementing rows.
+
+	inx                      ; Next row.
+	jsr GameSetMotherShip    ; Given Mothership row (X), update the mother ship specs and save the row.
+
+b_gmm_skip_MS_Move
+
+	rts
+
+
+;	; calculate zMOTHERSHIP_POINTS (mspts)
+	;
+	; NOTE that MOTHERSHIP_ROW is being treated as a regular 
+	; integer for indexing purposes.  The original code handled 
+	; this as BCD, creating gaps between values $09/9 and
+	; $10/16.
+
+GetMothershipPoints
+
+	lda #0       ; 0000 pts
+	sta zMOTHERSHIP_POINTS
+	sta zMOTHERSHIP_POINTS+1
+
+	ldx ZMOTHERSHIP_ROW
+	lda TABLE_MOTHERSHIP_POINTS_LOW,X
+	sta zMOTHERSHIP_POINTS
+	lda TABLE_MOTHERSHIP_POINTS_HIGH,X
+	sta zMOTHERSHIP_POINTS+1
+
+	rts
+
+; Speed control for horizontal movement should be in the main code that 
+; updates the position.
+                                   ; should be 2
+;	lda #2                         ; initial ms speed
+;	sta zMOTHERSHIP_MOVE_SPEED     ; Loop this many times.
+;	lda #10                        ; should be 10
+;	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
+;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count 
+
+;==============================================================================
+;												SetMotherShip  X
+;==============================================================================
+; Given Mothership row (X), update the mother ship specifications.
+; Save the row.
+;
+; -----------------------------------------------------------------------------
+
+GameSetMotherShip
+
+	stx zMOTHERSHIP_ROW   ; Set msy from
+	lda TABLE_ROW_TO_Y,X  ; row 2 y table
+	sta zMOTHERSHIP_NEW_Y
+
+;	jsr GetMothershipPoints ; X will contain Mothership Row
+
+;	inc zSHOW_SCORE_FLAG
+
+	rts
+
+
+; ==========================================================================
+; SUPPORT - RANDOMIZE MOTHERSHIP
+; ==========================================================================
+; At game start and anytime the mothership is shot, then randomize
+; the new start X start.
+; --------------------------------------------------------------------------
+
+GameRandomizeMothership
+
+	lda RANDOM                      ; Random starting direction for Mothership
+	and #$01
+	sta zMOTHERSHIP_DIR             ; 0 == left to right. 1 == right to left.
+
+	bne b_grm_SetMothershipMax_X    ; 0 == left to right. 1 == right to left.
+	lda #MOTHERSHIP_MIN_X           ; Left == Minimum
+	bne b_grm_SetMothership_X       ; Save X
 	
-	
+b_grm_SetMothershipMax_X
+	lda #MOTHERSHIP_MAX_X           ; Right == Maximum
+
+b_grm_SetMothership_X               ; Start X coord.
+	sta zMOTHERSHIP_NEW_X
+	sta zMOTHERSHIP_X
+
+	rts
+
