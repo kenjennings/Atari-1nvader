@@ -708,8 +708,9 @@ Pmg_ProcessMothership
 	ldy zMOTHERSHIP_Y       ; Distance apart is more than 8.  (or negative.) 
 	jsr Pmg_EraseMothership ; Probably moving due to game start or explosion. Erase. 
 	ldy zMOTHERSHIP_NEW_Y   ; Y == New position.
-	jsr Pmg_DrawMothership  ; Redraw.  
 	sty zMOTHERSHIP_Y       ; Current Y is now == New Y
+	jsr Pmg_DrawMothership  ; Redraw.  
+
 	jmp b_pdms_DoHPOS       ; Next to X position, and animate windows.
 
 b_pdms_ShiftDown            ; Moving down two lines (transition from row to row) 

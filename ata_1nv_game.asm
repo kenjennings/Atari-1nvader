@@ -684,11 +684,16 @@ b_mdv_LoopSetCountdownColor
 
 GameSetupMain
 
-	ldy #5
-	lda #0
+	lda #0                  ; Zero a lot of things . . 
 
+	sta SHPOSM3             ; Remove the animated colors from the title.
+	sta SHPOSM2
+	sta SHPOSM1
+	sta SHPOSM0
+
+	ldy #5
 b_gsm_Loop_ZeroPlayerScores
-	sta zPLAYER_ONE_SCORE,y
+	sta zPLAYER_ONE_SCORE,y ; maybe something more here... like points add, or mothership value, too.
 	sta zPLAYER_TWO_SCORE,y
 	dey
 	bpl b_gsm_Loop_ZeroPlayerScores
@@ -702,11 +707,8 @@ b_gsm_Loop_ZeroPlayerScores
 	sta zLASER_TWO_ON
 	sta zPLAYER_ONE_DEBOUNCE
 	sta zPLAYER_TWO_DEBOUNCE
-	
-	sta SHPOSM3 ; Remove the animated colors from the title.
-	sta SHPOSM2
-	sta SHPOSM1
-	sta SHPOSM0
+
+	; M O T H E R S H I P 
 
 	lda #$80                        ;  128 = 80 (BCD values)
 	sta zMOTHERSHIP_HITS
@@ -723,14 +725,13 @@ b_gsm_Loop_ZeroPlayerScores
 	jsr GameRandomizeMothership     ; Set random direction , and starting X position.
 	lda zMOTHERSHIP_NEW_X
 	sta SHPOSP2
- 
-;	ldx #0
-;	jsr GameSetMotherShipRow        ; Convert Row 0 to Y position on screen.
-	lda #34
-	sta zMOTHERSHIP_NEW_Y           ; Force new/target position to row 0.
-	lda #26
+	ldx #0
+	jsr GameSetMotherShipRow        ; Convert Row 0 to Y position on screen.
+	lda #24
 	sta zMOTHERSHIP_Y               ; Force "old" position above the row 0 position. 
-            
+
+	; P L A Y E R S 
+
 	lda #PM_SIZE_NORMAL
 	sta SIZEP2
 	sta SIZEP3
@@ -738,7 +739,7 @@ b_gsm_Loop_ZeroPlayerScores
 	; Setting random direction for both players.
 	; Not doing any comparison for the player on or off,
 	; because whatever is set here doesn't cause anything 
-	; to happen during the game . . .
+	; to happen during the game if the player is OFF . . .
 
 	lda RANDOM                      ; Set random direction.
 	and #$01
@@ -746,6 +747,8 @@ b_gsm_Loop_ZeroPlayerScores
 	lda RANDOM                      ; Set random direction.
 	and #$01
 	sta zPLAYER_TWO_DIR             ; 0 == left to right. 1 == right to left.
+
+	; O T H E R    G A M E    V I S U A L S 
 
 	lda #1
 	sta zSHOW_SCORE_FLAG
@@ -760,7 +763,6 @@ b_gsm_Loop_ZeroPlayerScores
 
 	lda #EVENT_GAME                 ; Fire up the game screen.
 	sta zCurrentEvent
-
 
 	rts
 

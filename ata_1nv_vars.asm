@@ -101,7 +101,7 @@ TABLE_STAR_LOCATION ; star
 ; This is also do-able with a LSR to multiply times 8 then add offset.
 
 TABLE_ROW_TO_Y ; r2ytab 
-.byte 36,44,52,60     ; 0  - 3
+.byte 38,44,52,60     ; 0  - 3 ; 36
 .byte 68,76,84,92     ; 4  - 7
 .byte 100,108,116,124 ; 8  - 11
 .byte 132,140,148,156 ; 12 - 15
