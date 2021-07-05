@@ -667,9 +667,11 @@ b_pdp_Exit
 
 
 ; ==========================================================================
-; DRAW MOTHERSHIP
+; PROCESS MOTHERSHIP
 ; ==========================================================================
-; Draw the small mothership
+; Runs During VBI .
+;
+; Draw the small mothership due to changing vertical position.
 ;
 ; If the Old position is not the same as the New position then increment 
 ; the old position and redraw.
@@ -692,25 +694,108 @@ b_pdp_Exit
 ; If the Y value is negative, then the image is overwritten with 0 bytes.
 ; --------------------------------------------------------------------------
 
-Pmg_Draw_Mothership
+Pmg_ProcessMothership
 
-	ldy zMOTHERSHIP_Y
-	cpy zMOTHERSHIP_NEW_Y  ; Target position, (but can't move down in one step)....
-	beq b_pdms_DoHPOS      ; New Y == Old Y. No vertical movement. Skip it.
-	bmi b_pdms_ShiftDown   ; New Y > Old Y. Shift down one step.
+	sec
+	lda zMOTHERSHIP_NEW_Y   ; New Y position
+	sbc zMOTHERSHIP_Y       ; Old Y position.
+	beq b_pdms_DoHPOS       ; Old Y == New Y. No vertical movement. Skip redrawing.
 
-	ldx #7                 ; New Y < Old Y. Moving to a different row. Erase, redraw. 
+	cmp #8
+	beq b_pdms_ShiftDown    ; If New Y - Old Y <= 8, then shift down
+	bcc b_pdms_ShiftDown    ; Old Y < New Y. Shift down one step.
+
+	ldy zMOTHERSHIP_Y       ; Distance apart is more than 8.  (or negative.) 
+	jsr Pmg_EraseMothership ; Probably moving due to game start or explosion. Erase. 
+	ldy zMOTHERSHIP_NEW_Y   ; Y == New position.
+	jsr Pmg_DrawMothership  ; Redraw.  
+	jmp b_pdms_DoHPOS       ; Next to X position, and animate windows.
+
+b_pdms_ShiftDown            ; Moving down two lines (transition from row to row) 
+	jsr Pmg_ShiftMothership
+
+b_pdms_DoHPOS
+	lda zMOTHERSHIP_NEW_X   ; And set new X position
+	sta zMOTHERSHIP_X
+	sta SHPOSP2
+
+	jsr Pmg_AnimateMothershipWindows
+
+b_pdms_Exit
+	rts
+
+
+; ==========================================================================
+; ERASE MOTHERHSIP
+; ==========================================================================
+; Erase 8 bytes at Y position.
+;
+; Y == Vertical position to target
+; --------------------------------------------------------------------------
+
+Pmg_EraseMothership
+
 	lda #0
-b_pdms_LoopErase           ; Clear entire image at current position.
-	sta PLAYERADR2,Y       
-	iny
-	dex
-	bpl b_pdms_LoopErase
-	ldy zMOTHERSHIP_NEW_Y  ; Y == New position.
-	ldx #0                 ; X = start index for image.
-	beq b_pdms_LoopDraw    ; Redraw image at new position.
 
-b_pdms_ShiftDown           ; Moving down from row to row.
+	sta PLAYERADR2,Y       
+	sta PLAYERADR2+1,Y
+	sta PLAYERADR2+2,Y
+	sta PLAYERADR2+3,Y
+
+	sta PLAYERADR2+4,Y       
+	sta PLAYERADR2+5,Y
+	sta PLAYERADR2+6,Y
+	sta PLAYERADR2+7,Y
+
+	rts
+
+
+; ==========================================================================
+; DRAW MOTHERHSIP
+; ==========================================================================
+; Draw 8 bytes at Y position.
+;
+; Y == Vertical position to target
+; --------------------------------------------------------------------------
+
+Pmg_DrawMothership
+
+	lda PMG_IMG_MOTHERSHIP
+	sta PLAYERADR2,Y
+
+	lda PMG_IMG_MOTHERSHIP+1
+	sta PLAYERADR2+1,Y
+
+	lda PMG_IMG_MOTHERSHIP+2
+	sta PLAYERADR2+2,Y
+
+	lda PMG_IMG_MOTHERSHIP+3
+	sta PLAYERADR2+3,Y
+
+	lda PMG_IMG_MOTHERSHIP+4
+	sta PLAYERADR2+4,Y
+	
+	lda PMG_IMG_MOTHERSHIP+5
+	sta PLAYERADR2+5,Y
+
+	lda PMG_IMG_MOTHERSHIP+6
+	sta PLAYERADR2+6,Y
+
+	lda PMG_IMG_MOTHERSHIP+7
+	sta PLAYERADR2+7,Y
+
+	rts
+
+
+; ==========================================================================
+; SHIFT MOTHERHSIP
+; ==========================================================================
+; Move Mothership down 2 lines.  (Transitioning from row to row.)
+;
+; --------------------------------------------------------------------------
+
+Pmg_ShiftMothership
+
 	ldy zMOTHERSHIP_Y      ; Get current mothership Y (msy) 
 	lda #0
 
@@ -719,56 +804,54 @@ b_pdms_ShiftDown           ; Moving down from row to row.
 	sta PLAYERADR2,Y       ; Write 0 to Y + 1 P/M memory
 	iny                    ; Y + 1  (Or Y + 2 total)
 	sty zMOTHERSHIP_Y      ; Save as the new "current" position.
-	tax                    ; X == 0
 
-b_pdms_LoopDraw
-	lda PMG_IMG_MOTHERSHIP,X ; Get byte from saved image
-	sta PLAYERADR2,Y       ; Write to P/M memory
-	iny                    ; One position lower.
-	inx                    ; next byte
-	cpx #8                 
-	bne b_pdms_LoopDraw    ; End after copying 8.
+	jsr Pmg_DrawMothership ; Redraw at updated current Y position.
 
-b_pdms_DoHPOS
-	lda zMOTHERSHIP_NEW_X  ; And set new X position
-	sta zMOTHERSHIP_X
-	sta SHPOSP2
+	rts
 
+
+; ==========================================================================
+; ANIMATE MOTHERSHIP WINDOWS
+; ==========================================================================
 ; Draw animated window on mothership.  The window moves in the same
 ; direction relative to the ship movement.  Therefore there are two
 ; versions of animation code.  One that counts up throrugh the 
 ; animation frames, and one that counts down through the frames.
+; --------------------------------------------------------------------------
 
-	dec zMOTHERSHIP_ANIM_FRAME   ; Decrement clock for animation.
-	bpl b_pdms_Exit              ; If still positive, skip animation
-	lda #3                       ; Reset counter.. then do animation.
+Pmg_AnimateMothershipWindows
+
+	dec zMOTHERSHIP_ANIM_FRAME ; Decrement clock for animation.
+	bpl b_pamsw_Exit           ; If still positive, skip animation
+
+	lda #3                     ; Reset counter.. then do animation.
 	sta zMOTHERSHIP_ANIM_FRAME
-	
-	ldx zMOTHERSHIP_ANIM         ; X = current windows animation frame
-	lda zMOTHERSHIP_DIR          ; Mothership direction.  0 = left to right.   1 = Right to Left
-	beq b_pdms_DoAnimL2R         ; 0, do Left to Right motion.
 
-	inx                          ; Right to Left.  Count up through the animation frames.
-	cpx #5                       ; Went past the end?
-	bne b_pdms_WriteAnimByte     ; No.  Read to use the frame.
-	ldx #0                       ; Yes, reset to beginning of this animation loop
-	beq b_pdms_WriteAnimByte     ; And draw it.
+	ldx zMOTHERSHIP_ANIM       ; X = current windows animation frame
+	lda zMOTHERSHIP_DIR        ; Mothership direction.  0 = Left to right. 1 = Right to Left
+	beq b_pamsw_DoAnimL2R      ; 0, do Left to Right motion.
 
-b_pdms_DoAnimL2R                 
-	dex                          ; Left to Right.  Count down through the frames.
-	bpl b_pdms_WriteAnimByte     ; Still positive value?  Yes, ready to use the frame.
-	ldx #4                       ; No.  Reset to begining  of this animation loop.
+	inx                        ; Right to Left.  Count up through the animation frames.
+	cpx #5                     ; Went past the end?
+	bne b_pamsw_WriteAnimByte  ; No.  Ready to use the frame.
+	ldx #0                     ; Yes, reset to beginning of this animation loop
+	beq b_pamsw_WriteAnimByte  ; And draw it.
 
-b_pdms_WriteAnimByte
-	stx zMOTHERSHIP_ANIM         ; Save updated animation frame.
-	ldy zMOTHERSHIP_NEW_Y        ; Get (New) position of mothership.
-	iny                          ; Plus 3 for correct offset.
+b_pamsw_DoAnimL2R              ; Left to Right.    
+	dex                        ; Count down through the frames.
+	bpl b_pamsw_WriteAnimByte  ; Still positive value?  Yes, ready to use the frame.
+	ldx #4                     ; No.  Reset to begining  of this animation loop.
+
+b_pamsw_WriteAnimByte
+	stx zMOTHERSHIP_ANIM       ; Save updated animation frame.
+	ldy zMOTHERSHIP_NEW_Y      ; Get (New) position of mothership.
+	iny                        ; Plus 3 for correct offset.
 	iny
 	iny
-	lda PMG_MOTHERSHIP_ANIM,X    ; Get the windows frame
-	sta PLAYERADR2,y             ; update the image in the player.
+	lda PMG_MOTHERSHIP_ANIM,X  ; Get the windows frame
+	sta PLAYERADR2,y           ; update the image in the player.
 
-b_pdms_Exit
+b_pamsw_Exit
 	rts
 
 

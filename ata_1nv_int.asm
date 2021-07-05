@@ -521,7 +521,7 @@ b_mdv_DoTheGame
 
 	jsr GameProcessExplosion       ; Handle collision detection, start explosion
 
-	jsr Pmg_Draw_Mothership        ; automatically increments Y until it is NEW_Y
+	jsr Pmg_ProcessMothership      ; automatically increments Y until it is NEW_Y
 
 	jsr Pmg_Draw_Lasers            ; draw lasers if present.
 

@@ -28,7 +28,7 @@
 	ORG LOMEM_DOS           ; First usable memory after DOS (2.0s)
 ;	ORG LOMEM_DOS_DUP       ; Use this if LOMEM_DOS won't work.  or just use $5000 or $6000
 
-	icl "ata_1nv_vars.asm"  ; Other variables declarations
+	icl "ata_1nv_vars.asm"  ; Other variables' declarations
 ; --------------------------------------------------------------------------
 
 ; ==========================================================================
@@ -46,11 +46,13 @@
 	icl "ata_1nv_pmg_code.asm"  ; Routines for Player/Missile graphics animation.
 
 
-	icl "ata_1nv_int.asm"       ; Code for I/O, Isplay List Interrupts, and Vertical Blank Interrupt.
-
-	icl "ata_1nv_game.asm"      ; Code for game logic.
+	icl "ata_1nv_int.asm"       ; Code for I/O, Display List Interrupts, and Vertical Blank Interrupt.
 
 	icl "ata_1nv_audio.asm"     ; The world's lamest sound sequencer.
+
+	icl "ata_1nv_support.asm"   ; The bulk of the game logic code.
+
+	icl "ata_1nv_game.asm"      ; Code for game event loop.
 
 ; --------------------------------------------------------------------------
 
