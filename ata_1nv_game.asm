@@ -663,11 +663,6 @@ b_mdv_LoopSetCountdownColor
 	dey 
 	bne b_mdv_LoopSetCountdownColor
 
-
-;	jsr Pmg_IndexMarks ;diagnostics for screen problems
-
-
-
 	rts
 
 
@@ -713,18 +708,12 @@ b_gsm_Loop_ZeroPlayerScores
 	sta SHPOSM1
 	sta SHPOSM0
 
-
 	lda #$80                        ;  128 = 80 (BCD values)
 	sta zMOTHERSHIP_HITS
 ;	sta zSHIP_HITS
 ;	lda #0
 ;	sta zSHIP_HITS+1
-
-	lda #1
-	sta zSHOW_SCORE_FLAG
-;;	jsr showscr
-	jsr Gfx_ShowScreen
-                                    ; should be 2
+                                  ; should be 2
 	lda #2                          ; initial ms speed
 	sta zMOTHERSHIP_MOVE_SPEED
 	lda #10                         ; should be 10
@@ -734,34 +723,40 @@ b_gsm_Loop_ZeroPlayerScores
 	jsr GameRandomizeMothership     ; Set random direction , and starting X position.
 	lda zMOTHERSHIP_NEW_X
 	sta SHPOSP2
-       
-	ldx #0
-	jsr GameSetMotherShipRow  ; Convert Row 0 to Y position on screen.
-	sec
-	lda zMOTHERSHIP_NEW_Y       
-	sbc #8
-	sta zMOTHERSHIP_Y         ; Force "old" position above the row 0 position. 
-	
-	; Setting random direction for both players.
-	; Not doing any comparison for the player on or off,
-	; because whatever is set here doesn't cause anything 
-	; to happen during the game . . .
+ 
+;	ldx #0
+;	jsr GameSetMotherShipRow        ; Convert Row 0 to Y position on screen.
+	lda #34
+	sta zMOTHERSHIP_NEW_Y           ; Force new/target position to row 0.
+	lda #26
+	sta zMOTHERSHIP_Y               ; Force "old" position above the row 0 position. 
+            
 	lda #PM_SIZE_NORMAL
 	sta SIZEP2
 	sta SIZEP3
 
+	; Setting random direction for both players.
+	; Not doing any comparison for the player on or off,
+	; because whatever is set here doesn't cause anything 
+	; to happen during the game . . .
+
 	lda RANDOM                      ; Set random direction.
 	and #$01
-	sta zPLAYER_ONE_DIR              ; 0 == left to right. 1 == right to left.
+	sta zPLAYER_ONE_DIR             ; 0 == left to right. 1 == right to left.
 	lda RANDOM                      ; Set random direction.
 	and #$01
 	sta zPLAYER_TWO_DIR             ; 0 == left to right. 1 == right to left.
 
-	lda #2                          ; Reset the animation timer for players/left/right movement.
-	sta zAnimatePlayers
+	lda #1
+	sta zSHOW_SCORE_FLAG
+;;	jsr showscr
+	jsr Gfx_ShowScreen
 
 	lda #$0A
 	sta zSTATS_TEXT_COLOR           ; Turn on stats line.
+
+	lda #2                          ; Reset the animation timer for players/left/right movement.
+	sta zAnimatePlayers
 
 	lda #EVENT_GAME                 ; Fire up the game screen.
 	sta zCurrentEvent

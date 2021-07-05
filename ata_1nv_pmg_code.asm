@@ -701,14 +701,15 @@ Pmg_ProcessMothership
 	sbc zMOTHERSHIP_Y       ; Old Y position.
 	beq b_pdms_DoHPOS       ; Old Y == New Y. No vertical movement. Skip redrawing.
 
-	cmp #8
-	beq b_pdms_ShiftDown    ; If New Y - Old Y <= 8, then shift down
-	bcc b_pdms_ShiftDown    ; Old Y < New Y. Shift down one step.
+	cmp #8                  ; Is distance apart 8 (or less)?
+	beq b_pdms_ShiftDown    ; If New Y - Old Y = 8, then shift down for moving row to row
+	bcc b_pdms_ShiftDown    ; Old Y < New Y < 8.  Shifting down is in progress... 
 
 	ldy zMOTHERSHIP_Y       ; Distance apart is more than 8.  (or negative.) 
 	jsr Pmg_EraseMothership ; Probably moving due to game start or explosion. Erase. 
 	ldy zMOTHERSHIP_NEW_Y   ; Y == New position.
 	jsr Pmg_DrawMothership  ; Redraw.  
+	sty zMOTHERSHIP_Y       ; Current Y is now == New Y
 	jmp b_pdms_DoHPOS       ; Next to X position, and animate windows.
 
 b_pdms_ShiftDown            ; Moving down two lines (transition from row to row) 
@@ -844,12 +845,13 @@ b_pamsw_DoAnimL2R              ; Left to Right.
 
 b_pamsw_WriteAnimByte
 	stx zMOTHERSHIP_ANIM       ; Save updated animation frame.
-	ldy zMOTHERSHIP_NEW_Y      ; Get (New) position of mothership.
+;	ldy zMOTHERSHIP_NEW_Y      ; Get (New) position of mothership.
+	ldy zMOTHERSHIP_Y          ; Get (New) position of mothership.
 	iny                        ; Plus 3 for correct offset.
 	iny
 	iny
 	lda PMG_MOTHERSHIP_ANIM,X  ; Get the windows frame
-	sta PLAYERADR2,y           ; update the image in the player.
+	sta PLAYERADR2,Y           ; update the image in the player.
 
 b_pamsw_Exit
 	rts
