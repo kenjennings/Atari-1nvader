@@ -933,21 +933,25 @@ Gfx_MothershipPointsToDigits
 	tax                                ; X == A for indexing.
 	ldy #2                             ; Starting offset into points as digits string
 
-
+b_gmsptd_LoopCopyDigits
 	lda TABLE_MOTHERSHIP_POINTS,X      ; Get two digits as byte/nybbles
 	pha                                ; Save to do second digit.
+
 	and #$F0                           ; Mask to keep first digit.
-	asr                                ; Right shift
-	asr                                ; to move digit
-	asr                                ; into the  
-	asr                                ; low nybble.
+	lsr                                ; Right shift
+	lsr                                ; to move digit
+	lsr                                ; into the  
+	lsr                                ; low nybble.
 	sta zMOTHERSHIP_POINTS_AS_DIGITS,Y ; Save as byte. 
+
 	iny                                ; Next position in digits string.
 	pla                                ; Get value saved earlier.
+
 	and #$0F                           ; Mask to keep second digit.
 	sta zMOTHERSHIP_POINTS_AS_DIGITS,Y ; Save as byte. 
 	inx                                ; Next position in table.
 	iny                                ; Next postion in digits string.
+
 	cpy #6                             ; Did index reach end of digits string?
 	bne b_gmsptd_LoopCopyDigits        ; No, loop again.
 
