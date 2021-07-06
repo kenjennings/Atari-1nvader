@@ -53,23 +53,24 @@ zEXPLOSION_NEW_Y            .byte $00
 ; STATISTICS . . .
 
 zMOTHERSHIP_ROW_AS_DIGITS   .byte $0,$0 ; Mothership text line row number as 2 digits for display
-zSHIP_HITS_AS_DIGITS        .byte $0,$0 ; Remaoining hits on mothership  as digits.
+zSHIP_HITS_AS_DIGITS        .byte $0,$0 ; Remaining hits on mothership  as digits.
 
 
 ; ==========================================================================
 ; SCORING . . .
 
-zSHOW_SCORE_FLAG            .byte $00 ; Flag to update score on screen.
+zSHOW_SCORE_FLAG             .byte $00 ; Flag to update score on screen.
 
 zMOTHERSHIP_POINTS           .word $0000 ; Current Points for hitting mothership
-zMOTHERSHIP_POINTS_AS_DIGITS .byte $0,$0,$0,$0,$0,$0 ; Points to add to score.
+zMOTHERSHIP_POINTS_AS_DIGITS .byte $00,$00,$00,$00,$00,$00 ; Points for current row.
 
-zHIGH_SCORE                  .byte $00,$00,$00,$00,$00,$00 ; 6 digits
+zPLAYERPOINTS_TO_ADD         .byte $00,$00,$00,$00,$00,$00 ; Mothership points to add to player
 
 zPLAYER_SCORE      
-zPLAYER_ONE_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 digit BCD 
-zPLAYER_TWO_SCORE  .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
+zPLAYER_ONE_SCORE            .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 digit BCD 
+zPLAYER_TWO_SCORE            .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
 
+zHIGH_SCORE                  .byte $00,$00,$00,$00,$00,$00 ; 6 digits
 
 ; ==========================================================================
 
@@ -88,6 +89,12 @@ TABLE_MOTHERSHIP_POINTS_HIGH
 TABLE_MOTHERSHIP_POINTS_LOW
 	.byte $00,$00,$75,$50,$25,$00,$75,$50,$25,$00,$75,$50,$25,$00,$75,$50,$25,$00,$75,$50,$25,$01
 
+TABLE_MOTHERSHIP_POINTS
+	.byte $10,$00,$05,$00,$04,$75,$04,$50,$04,$25 ;  0 -  4
+	.byte $04,$00,$03,$75,$03,$50,$03,$25,$03,$00 ;  5 -  9
+	.byte $02,$75,$02,$50,$02,$25,$02,$00,$01,$75 ; 10 - 14
+	.byte $01,$50,$01,$25,$01,$00,$00,$75,$00,$50 ; 15 - 19
+	.byte $00,$25,$00,$01                         ; 20 - 21
 
 ; Are there really 8 stars? In the video it appears there are 4
 ; in screen at any time.  It seems like the code wraps around 
@@ -107,6 +114,17 @@ TABLE_ROW_TO_Y ; r2ytab
 .byte 132,140,148,156 ; 12 - 15
 .byte 164,172,180,188 ; 16 - 19
 .byte 196,204,212     ; 20 - 22
+
+TABLE_TO_TENS ; 0 to 21.  (22 is last row which should be undisplayed.)
+	.byte $0,$0,$0,$0,$0,$0,$0,$0,$0,$0
+	.byte $1,$1,$1,$1,$1,$1,$1,$1,$1,$1
+	.byte $2,$2,$2
+
+TABLE_TO_ONES ; 0 to 21.  (22 is last row which should be undisplayed.)
+	.byte $0,$1,$2,$3,$4,$5,$6,$7,$8,$9
+	.byte $0,$1,$2,$3,$4,$5,$6,$7,$8,$9
+	.byte $0,$1,$2
+
 
 
 ; ======== E N D   O F   V A R I A B L E S ======== 

@@ -118,25 +118,24 @@ TABLE_LO_GFX_GAMEOVER
 
 
 Gfx_Choose_Game_Over_Text
-	lda RANDOM                   ; Get a random value
-	cmp #8                       ; Is it 0 to 7?
+	ldx RANDOM                   ; Get a random value
+	cpx #8                       ; Is it 0 to 7?
 	bcs b_gcgot_UseDefault       ; Nope.  Then use default.
 	
-	clc
-	adc #2                       ; Turn 0 to 7 into 2 to 9.
+	inx
+	inx                          ; Turn 0 to 7 into 2 to 9.
 
-	ldx zNUMBER_OF_PLAYERS       ; Is this 1 (0) or 2 (1)  players 
-	bne b_gcgot_Continue         ; Not 1 player.  We're done with index.
-	
-	sbc #1                       ; Remove 1 from index to use single loser message.
+	lda zPLAYER_ONE_ON
+	and zPLAYER_TWO_ON
+	bne b_gcgot_Continue         ; Two Players.   We're done with index.
+
+	dex                          ; Remove 1 from index to use single loser message.
 	bne b_gcgot_Continue         ; Skip over forced default.
 
 b_gcgot_UseDefault
-	lda #0                       ; Force default message
+	ldx #0                       ; Force default message
 	
 b_gcgot_Continue
-	tax 
-	
 	lda TABLE_LO_GFX_GAMEOVER,X  ; Save address of the chosen text.
 	sta zGAME_OVER_TEXT
 	lda TABLE_HI_GFX_GAMEOVER,X
@@ -894,4 +893,64 @@ b_gss_LoopCopyScores
 
 ; shscz    
 	rts
+
+
+
+; ==========================================================================
+; ROW NUMBER TO DIGITS
+; ==========================================================================
+; Convert Row Number to bytes for easier transfer to screen.
+; This has to convert an integer that could be 0 to 21 at any time.
+; It's easier just to use a lookup table.
+; --------------------------------------------------------------------------
+
+Gfx_RowNumberToDigits
+
+	ldx zMOTHERSHIP_ROW
+
+	lda TABLE_TO_TENS,X
+	sta zMOTHERSHIP_ROW_AS_DIGITS
+
+	lda TABLE_TO_ONES,X
+	sta zMOTHERSHIP_ROW_AS_DIGITS+1
+
+	rts
+
+
+
+; ==========================================================================
+; MOTHERSHIP POINTS TO DIGITS
+; ==========================================================================
+; Given a Row Number get the point value, and distribute as individual 
+; digits.  This facilitates simplifying the math, and maps the value
+; in a form that's easier to copy to the screen.
+; --------------------------------------------------------------------------
+
+Gfx_MothershipPointsToDigits
+
+	lda zMOTHERSHIP_ROW             
+	asl                                ; Times 2 to index point table.
+	tax                                ; X == A for indexing.
+	ldy #2                             ; Starting offset into points as digits string
+
+
+	lda TABLE_MOTHERSHIP_POINTS,X      ; Get two digits as byte/nybbles
+	pha                                ; Save to do second digit.
+	and #$F0                           ; Mask to keep first digit.
+	asr                                ; Right shift
+	asr                                ; to move digit
+	asr                                ; into the  
+	asr                                ; low nybble.
+	sta zMOTHERSHIP_POINTS_AS_DIGITS,Y ; Save as byte. 
+	iny                                ; Next position in digits string.
+	pla                                ; Get value saved earlier.
+	and #$0F                           ; Mask to keep second digit.
+	sta zMOTHERSHIP_POINTS_AS_DIGITS,Y ; Save as byte. 
+	inx                                ; Next position in table.
+	iny                                ; Next postion in digits string.
+	cpy #6                             ; Did index reach end of digits string?
+	bne b_gmsptd_LoopCopyDigits        ; No, loop again.
+
+	rts
+
 
