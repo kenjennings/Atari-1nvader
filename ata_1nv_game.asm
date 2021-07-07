@@ -710,11 +710,7 @@ b_gsm_Loop_ZeroPlayerScores
 
 	; M O T H E R S H I P 
 
-	lda #$80                        ;  128 = 80 (BCD values)
-	sta zMOTHERSHIP_HITS
-;	sta zSHIP_HITS
-;	lda #0
-;	sta zSHIP_HITS+1
+	jsr GameResetHitCounter
                                   ; should be 2
 	lda #2                          ; initial ms speed
 	sta zMOTHERSHIP_MOVE_SPEED
@@ -723,8 +719,6 @@ b_gsm_Loop_ZeroPlayerScores
 	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
 
 	jsr GameRandomizeMothership     ; Set random direction , and starting X position.
-	lda zMOTHERSHIP_NEW_X
-	sta SHPOSP2
 	ldx #0
 	jsr GameSetMotherShipRow        ; Convert Row 0 to Y position on screen.
 	lda #24

@@ -36,6 +36,7 @@ zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter
 zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threahold 
 zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
 zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
+
 zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
 zMOTHERSHIP_HITS            .byte $00 ; Number of times the mothership is hit.
 
@@ -53,7 +54,7 @@ zEXPLOSION_NEW_Y            .byte $00
 ; STATISTICS . . .
 
 zMOTHERSHIP_ROW_AS_DIGITS   .byte $0,$0 ; Mothership text line row number as 2 digits for display
-zSHIP_HITS_AS_DIGITS        .byte $0,$0 ; Remaining hits on mothership  as digits.
+zSHIP_HITS_AS_DIGITS        .byte $0,$0 ; Remaining hits on mothership as digits.
 
 
 ; ==========================================================================

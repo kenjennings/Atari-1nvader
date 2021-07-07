@@ -975,15 +975,15 @@ b_gmm_Exit_MS_Move
 
 GetMothershipPoints
 
-	lda #0       ; 0000 pts
-	sta zMOTHERSHIP_POINTS
-	sta zMOTHERSHIP_POINTS+1
+;	lda #0       ; 0000 pts
+;	sta zMOTHERSHIP_POINTS
+;	sta zMOTHERSHIP_POINTS+1
 
-	ldx ZMOTHERSHIP_ROW
-	lda TABLE_MOTHERSHIP_POINTS_LOW,X
-	sta zMOTHERSHIP_POINTS
-	lda TABLE_MOTHERSHIP_POINTS_HIGH,X
-	sta zMOTHERSHIP_POINTS+1
+;	ldx ZMOTHERSHIP_ROW
+;	lda TABLE_MOTHERSHIP_POINTS_LOW,X
+;	sta zMOTHERSHIP_POINTS
+;	lda TABLE_MOTHERSHIP_POINTS_HIGH,X
+;	sta zMOTHERSHIP_POINTS+1
 
 	rts
 
@@ -1011,6 +1011,10 @@ GameSetMotherShipRow
 	lda TABLE_ROW_TO_Y,X  ; row 2 y table
 	sta zMOTHERSHIP_NEW_Y
 
+	jsr GameRowNumberToDigits ; Set value converted to copy to screen.
+
+	jsr GameMothershipPointsToDigits ; Copy point value to screen display version.
+	
 ;	jsr GetMothershipPoints ; X will contain Mothership Row
 
 ;	inc zSHOW_SCORE_FLAG
@@ -1042,6 +1046,130 @@ b_grm_SetMothership_X               ; Start horizontal position coord.
 	sta zMOTHERSHIP_NEW_X
 	sta zMOTHERSHIP_X
 
+	rts
+
+
+; ==========================================================================
+; ROW NUMBER TO DIGITS
+; ==========================================================================
+; Convert Row Number to bytes for easier transfer to screen.
+; This has to convert an integer that could be 0 to 21 at any time.
+; It's easier just to use a lookup table.
+; --------------------------------------------------------------------------
+
+GameRowNumberToDigits
+
+	ldx zMOTHERSHIP_ROW
+
+	lda TABLE_TO_TENS,X
+	sta zMOTHERSHIP_ROW_AS_DIGITS
+
+	lda TABLE_TO_ONES,X
+	sta zMOTHERSHIP_ROW_AS_DIGITS+1
+
+	rts
+
+
+; ==========================================================================
+; MOTHERSHIP POINTS TO DIGITS
+; ==========================================================================
+; Given a Row Number get the point value, and distribute as individual 
+; digits.  This facilitates simplifying the math, and maps the value
+; in a form that's easier to copy to the screen.
+; --------------------------------------------------------------------------
+
+GameMothershipPointsToDigits
+
+	lda zMOTHERSHIP_ROW             
+	asl                                ; Times 2 to index point table.
+	tax                                ; X == A for indexing.
+	ldy #2                             ; Starting offset into points as digits string
+
+b_gmsptd_LoopCopyDigits
+	lda TABLE_MOTHERSHIP_POINTS,X      ; Get two digits as byte/nybbles
+	pha                                ; Save to do second digit.
+
+	and #$F0                           ; Mask to keep first digit.
+	lsr                                ; Right shift
+	lsr                                ; to move digit
+	lsr                                ; into the  
+	lsr                                ; low nybble.
+	sta zMOTHERSHIP_POINTS_AS_DIGITS,Y ; Save as byte. 
+
+	iny                                ; Next position in digits string.
+	pla                                ; Get value saved earlier.
+
+	and #$0F                           ; Mask to keep second digit.
+	sta zMOTHERSHIP_POINTS_AS_DIGITS,Y ; Save as byte. 
+	inx                                ; Next position in table.
+	iny                                ; Next postion in digits string.
+
+	cpy #6                             ; Did index reach end of digits string?
+	bne b_gmsptd_LoopCopyDigits        ; No, loop again.
+
+	rts
+
+
+; ==========================================================================
+; MOTHERSHIP POINTS FOR PLAYER
+; ==========================================================================
+; When an explosion occurs, copy the current point value for the 
+; mothership to the temporary buffer for passing the score on 
+; to the Player(s)
+; --------------------------------------------------------------------------
+
+GameMothershipPointsForPlayer
+
+	ldx #5
+
+b_gmspfp_CopyLoop
+	lda zMOTHERSHIP_POINTS_AS_DIGITS,X
+	sta zPLAYERPOINTS_TO_ADD,X
+	
+	dex
+	bpl b_gmspfp_CopyLoop
+
+	rts
+
+
+; ==========================================================================
+; RESET HIT COUNTER
+; ==========================================================================
+; Reset the byte counter, and reset the two-byte BCD-like version 
+; used for copying to the screen.
+; --------------------------------------------------------------------------
+
+GameResetHitCounter
+
+	lda #$80
+	sta zMOTHERSHIP_HITS
+
+	lda #$08
+	sta zSHIP_HITS_AS_DIGITS
+	lda #$00
+	sta zSHIP_HITS_AS_DIGITS+1
+
+	rts
+
+
+; ==========================================================================
+; DECREMENT HIT COUNTER
+; ==========================================================================
+; Subtract 1 from hit counter, and from the two-byte, BCD-like 
+; version used for copying to the screen.
+; --------------------------------------------------------------------------
+
+GameDecrementtHitCounter
+
+	dec zMOTHERSHIP_HITS
+
+	dec zSHIP_HITS_AS_DIGITS+1 
+	bpl b_gdhc_Exit
+	lda #$00
+	sta zSHIP_HITS_AS_DIGITS+1
+	dec zSHIP_HITS_AS_DIGITS
+
+b_gdhc_Exit
 	rts
 
 
