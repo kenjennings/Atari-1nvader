@@ -1173,3 +1173,90 @@ b_gdhc_Exit
 	rts
 
 
+; ==========================================================================
+; ADD SCORE TO PLAYER
+; ==========================================================================
+; Add the Mothership points to the player credited with the hit.
+; --------------------------------------------------------------------------
+
+GameAddScoreToPlayer
+
+	ldx #0
+	jsr GameAddScore
+
+	ldx #1
+	jsr GameAddScore
+
+	rts
+
+
+; ==========================================================================
+; ADD SCORE
+; ==========================================================================
+; Add the Mothership points to the player credited with the hit.
+; I'm sure this is highly-awful, low-quality hackage.
+; --------------------------------------------------------------------------
+
+gCarryToNextDigit .byte 0
+
+GameAddScore
+
+	lda zPLAYER_SHOT_THE_SHERIFF,X  ; Did this player get the hit?
+	beq b_gas_Exit                  ; No.  Nothing to do here.
+
+	lda #0
+	sta gCarryToNextDigit           ; Clear the artificial carry.
+	ldy #5                          ; Index into mothership points.
+
+	cpx #0                          ; If this is not zero, then
+	bne b_gas_OtherPlayer           ; set index into score for player 2
+
+	ldx #5                          ; Index into score for player 1 
+	bne b_gas_AddLoop               ; Go add.
+
+b_gas_OtherPlayer
+	ldx #11 ; Index into Player score.
+
+b_gas_AddLoop
+	clc
+	lda zMOTHERSHIP_POINTS_AS_DIGITS,Y ; Get mothership points
+	adc zPLAYER_SCORE,X                ; Add to player score
+	adc gCarryToNextDigit              ; Add carry from last add.
+
+	cmp #10                            ; Did Adding go over 9?
+	bcs b_gas_Carried                  ; Yes, it carried.
+
+	sta zPLAYER_SCORE,X                ; Save the added score.
+	lda #0                             ; Setup 0 for artificial carry.
+	beq b_gas_LoopControl              ; Go to end of loop
+
+b_gas_Carried                          ; Player score carried over 9.
+	sec
+	sbc #10                            ; Subtract 10 from score
+	sta zPLAYER_SCORE,X                ; Save the adjusted score.
+	lda #1                             ; Setup 1 for artificial carry.
+
+b_gas_LoopControl
+	sta gCarryToNextDigit              ; Save the carry digit     
+	dex                                ; Move left to next digit
+	dey                                ; Move left to next digit
+	bpl b_gas_AddLoop
+
+b_gas_Exit
+	rts
+
+
+; ==========================================================================
+; CHECK HIGH SCORES
+; ==========================================================================
+; Add the Mothership points to the player credited with the hit.
+; --------------------------------------------------------------------------
+
+GameCheckHighScores
+
+
+	rts
+
+
+
+
