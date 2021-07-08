@@ -1125,7 +1125,7 @@ GameMothershipPointsForPlayer
 b_gmspfp_CopyLoop
 	lda zMOTHERSHIP_POINTS_AS_DIGITS,X
 	sta zPLAYERPOINTS_TO_ADD,X
-	
+
 	dex
 	bpl b_gmspfp_CopyLoop
 
@@ -1195,6 +1195,8 @@ GameAddScoreToPlayer
 ; ==========================================================================
 ; Add the Mothership points to the player credited with the hit.
 ; I'm sure this is highly-awful, low-quality hackage.
+;
+; X == Player to award points (if the player shot the sheriff).
 ; --------------------------------------------------------------------------
 
 gCarryToNextDigit .byte 0
@@ -1249,12 +1251,53 @@ b_gas_Exit
 ; ==========================================================================
 ; CHECK HIGH SCORES
 ; ==========================================================================
-; Add the Mothership points to the player credited with the hit.
+; Test Player score v High score, and copy player score to high 
+; score if greater than the high score.
+; 
+; X == player to test
 ; --------------------------------------------------------------------------
 
 GameCheckHighScores
 
+	lda zPLAYER_ON,X
+	beq b_gchs_Exit
 
+	ldy #0                         ; Index into high score points.
+
+	cpx #0                         ; If this is first player, then X is 
+	beq b_ghcs_SaveX               ; already 0 for score index.  Just go.
+
+	ldx #6                         ; Index into score for player 1 
+
+b_ghcs_SaveX
+	stx SAVEX                      ; Need to get this X value back again later.
+
+b_gchs_CheckLoop                   ; Check while digits are equal.
+	lda zPLAYER_SCORE,X
+	cmp zHIGH_SCORE,Y              
+	beq b_gchs_LoopControl         ; If it is the same continue looping.
+	bcc b_gchs_Exit                ; If it is less than, then exit.  No hi score.
+
+	; A digit is greater than hi score, so copy!
+	ldx SAVEX                      ; Restore index value determined earlier.
+	ldy #0                         ; Index into high score points.
+
+b_gchs_CopyHiScoreLoop
+	lda zPLAYER_SCORE,X            ; Copy the six 
+	sta zHIGH_SCORE,Y              ; bytes of the 
+	inx                            ; player score
+	iny                            ; to the 
+	cpy #6                         ; high score.
+	bne b_gchs_CopyHiScoreLoop
+	rts
+
+b_gchs_LoopControl                 
+	inx                            ; next index in player score.
+	iny                            ; Next index in high score
+	cpy #6
+	bne b_gchs_CheckLoop
+
+b_gchs_Exit
 	rts
 
 

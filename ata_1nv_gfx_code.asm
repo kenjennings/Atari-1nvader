@@ -155,7 +155,6 @@ b_gcgot_Continue
 ; through the Players used as the idle guns.
 ; --------------------------------------------------------------------------
 
-
 Gfx_Clear_Stats
 
 	lda #0
@@ -795,10 +794,10 @@ rts
 
 Gfx_ShowScreen
 
-	lda zSHOW_SCORE_FLAG
-	bne b_gss_ShowChars ; shsca
+;	lda zSHOW_SCORE_FLAG
+;	bne b_gss_ShowChars ; shsca
 
-	rts ;     jmp shscz
+;	rts ;     jmp shscz
 
 
 ; shsca    

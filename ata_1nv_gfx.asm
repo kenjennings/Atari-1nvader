@@ -730,7 +730,7 @@ TABLE_COLOR_EXPLOSION
 
 GFX_STATSLINE  ; "          L:00   PT:0000   H:00         "  ; "L:", "PT:", "H:" Use P/M graphics
 	.sb "          "
-GFX_STAT_LINE
+GFX_STAT_ROW
 	.sb $9,$9
 	.sb "      "
 GFX_STAT_POINTS
