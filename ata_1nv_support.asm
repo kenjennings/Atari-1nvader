@@ -856,14 +856,15 @@ GameProcessExplosion
 	; Force mothership adjustment
 	jsr GameRandomizeMothership      ; Choose random direction, set new X accordingly.
 
+	jsr GameMothershipPointsForPlayer ; Copy current point value for adding score
+
 	ldx zMOTHERSHIP_ROW              ; Subtract 2
 	dex                              ; from the
 	dex                              ; mothership row. 
 	bpl b_gpe_ContinueReset          ; If the result is positive, then update row. 
 	ldx #0                           ; Negative must be limited to 0.
 b_gpe_ContinueReset
-	stx zMOTHERSHIP_ROW              ; Save mothership row.
-	jsr GameSetMotherShipRow         ; Set Mothership Y to new row in X register.
+	jsr GameSetMotherShipRow         ; Set New Mothership Y to new row in X register.
 
 	; Figure out who is going to get credit for this. . .
 	lda zLASER_ONE_BANG              ; Inform Main routine who shot the ship
@@ -999,8 +1000,9 @@ GetMothershipPoints
 ;==============================================================================
 ;												SetMotherShip  X
 ;==============================================================================
-; Given Mothership row (X), update the mother ship specifications.
-; Save the row.
+; Given Mothership row (X), save the row, 
+; update the mother ship points value
+; 
 ;
 ; X == row number.
 ; -----------------------------------------------------------------------------

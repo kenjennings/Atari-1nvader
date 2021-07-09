@@ -744,9 +744,6 @@ b_gsm_Loop_ZeroPlayerScores
 
 	; O T H E R    G A M E    V I S U A L S 
 
-	lda #1
-	sta zSHOW_SCORE_FLAG
-;;	jsr showscr
 	jsr Gfx_ShowScreen
 
 	lda #$0A
@@ -811,6 +808,12 @@ b_gsm_Loop_ZeroPlayerScores
 GameMain
 
 ;	jsr Pmg_IndexMarks ;diagnostics for screen problems
+
+	jsr GameAddScoreToPlayer
+
+	jsr GameCheckHighScores
+
+	jsr Gfx_ShowScreen
 
 ;	lda #$10
 ;	sta COLBK

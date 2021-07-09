@@ -472,13 +472,13 @@ GFX_COUNTDOWN  ; The first 4 chars here are for countdown "3..." , , "!GO!"
 GFX_SCORE_LINE ; | 000000 P1      HI 000000     P2 000000 | 
 	.sb " "
 GFX_SCORE_P1 
-	.sb $9,$9,$9,$9,$9,$9
+	.sb $0,$0,$0,$0,$0,$0
 	.sb "          "
 GFX_SCORE_HI 
-	.sb $9,$9,$9,$9,$9,$9
+	.sb $0,$0,$0,$0,$0,$0
 	.sb "          "
 GFX_SCORE_P2
-	.sb $09,$09,$09,$09,$09,$09
+	.sb $0,$0,$0,$0,$0,$0
 	.sb " "
 
 
@@ -666,23 +666,23 @@ GFX_MOUNTAINS4
 
 TABLE_COLOR_AUTHOR1 ; COLPF0 Darren
 	.byte COLOR_LITE_BLUE+$8,COLOR_LITE_BLUE+$a,COLOR_LITE_BLUE+$c,COLOR_LITE_BLUE+$e
-	.byte COLOR_BLUE2+$2,COLOR_BLUE2+$4,COLOR_BLUE2+$6,COLOR_BLUE2+$8
+	.byte COLOR_BLUE2+$4,COLOR_BLUE2+$6,COLOR_BLUE2+$8,COLOR_BLUE2+$a
 	
 TABLE_COLOR_COMP1 ; COLPF0 Darren
 	.byte COLOR_BLUE_GREEN+$8,COLOR_BLUE_GREEN+$a,COLOR_BLUE_GREEN+$c,COLOR_BLUE_GREEN+$e
-	.byte COLOR_AQUA+$2,COLOR_AQUA+$4,COLOR_AQUA+$6,COLOR_AQUA+$8
+	.byte COLOR_AQUA+$4,COLOR_AQUA+$6,COLOR_AQUA+$8,COLOR_AQUA+$a
 
 TABLE_COLOR_AUTHOR2 ; COLPF1 Ken
 	.byte COLOR_RED_ORANGE+$8,COLOR_RED_ORANGE+$a,COLOR_RED_ORANGE+$c,COLOR_RED_ORANGE+$e
-	.byte COLOR_ORANGE2+$2,COLOR_ORANGE2+$4,COLOR_ORANGE2+$6,COLOR_ORANGE2+$8
+	.byte COLOR_ORANGE2+$4,COLOR_ORANGE2+$6,COLOR_ORANGE2+$8,COLOR_ORANGE2+$a
 
 TABLE_COLOR_COMP2 ; COLPF1 Ken
 	.byte COLOR_PURPLE+$8,COLOR_PURPLE+$a,COLOR_PURPLE+$c,COLOR_PURPLE+$e
-	.byte COLOR_PINK+$2,COLOR_PINK+$4,COLOR_PINK+$6,COLOR_PINK+$8
+	.byte COLOR_PINK+$4,COLOR_PINK+$6,COLOR_PINK+$8,COLOR_PINK+$a
 	
 TABLE_COLOR_DOCS ; COLPF0 Documentation
 	.byte COLOR_YELLOW_GREEN+$8,COLOR_YELLOW_GREEN+$a,COLOR_YELLOW_GREEN+$c,COLOR_YELLOW_GREEN+$e
-	.byte COLOR_GREEN+$2,COLOR_GREEN+$4,COLOR_GREEN+$6,COLOR_GREEN+$8
+	.byte COLOR_GREEN+$4,COLOR_GREEN+$6,COLOR_GREEN+$8,COLOR_GREEN+$a
 
 
 TABLE_LAND_COLPF0
@@ -698,16 +698,10 @@ TABLE_LAND_COLPF2
 ; This is 40 chars, because it won't "move" by LMS changes.
 GFX_BUMPERLINE
 	.byte $C2,$04,$05,$48,$49,$06,$44,$4b,$5b,$00,$44,$45,$06,$48,$49,$04,$0b,$1b,$46,$C3
-	
 
-;TABLE_COLOR_BLINE_BACK
-;	.byte $26,$24,$24,$22,$22,$20,$20,$ff
 
 TABLE_COLOR_BLINE_BUMPER
 	.byte $72,$76,$7A,$7C,$7A,$76,$72,$ff
-
-;TABLE_COLOR_BLINE_PF0
-;	.byte $3c,$3a,$38,$36,$34,$32,$30,$ff
 
 TABLE_COLOR_BLINE_PM0
 	.byte $54,$56,$58,$5a,$5c,$5a,$58,$ff
@@ -715,11 +709,11 @@ TABLE_COLOR_BLINE_PM0
 TABLE_COLOR_BLINE_PM1
 	.byte $84,$86,$88,$8a,$8c,$8a,$88,$ff
 
+
 SIZEOF_LASER_COLOR_TABLE=5
 TABLE_COLOR_LASERS ; Interleaved, so it can be addressed by  X player index.  0 to 5
-;	.byte $0F,$3E,$38,$32,$38,$3e
-;	.byte $0F,$6E,$68,$62,$68,$6e
 	.byte $0F,$0F,$3E,$6e,$38,$68,$32,$62,$38,$68,$3e,$6e
+
 
 SIZEOF_EXPLOSION_TABLE=7  ; Actually, size is 8.  7 is the starting index.
 TABLE_COLOR_EXPLOSION 
@@ -731,13 +725,13 @@ TABLE_COLOR_EXPLOSION
 GFX_STATSLINE  ; "          L:00   PT:0000   H:00         "  ; "L:", "PT:", "H:" Use P/M graphics
 	.sb "          "
 GFX_STAT_ROW
-	.sb $9,$9
+	.sb $0,$0
 	.sb "      "
 GFX_STAT_POINTS
-	.sb $9,$9,$9,$9
+	.sb $0,$0,$0,$0
 	.sb "      "
 GFX_STAT_HITS
-	.sb $9,$9
+	.sb $0,$0
 	.sb "          " 
 
 ; The first 21 bytes of data are blank which is used to show no star. 

@@ -786,94 +786,42 @@ rts
 ; ==========================================================================
 ; SHOW SCREEN
 ; ==========================================================================
-; If the Score Redraw flag is set, update the Players and High scores 
-; on screen.  Forgoing the BCD packed bytes in the original.  This 
-; simplifies the copy to the screen.  The scores use 6 individual 
-; bytes, one for each decimal position, not three bytes of packed BCD.
+; Update the Scores and Statistics to the screen.  
+; I discarded the original game's code that used BCD packed bytes for 
+; all the numeric values on screen. 
+; Here all the digits are individual bytes with natural values 
+; zero through 9. 
+; To display these using the proper screen code only requires setting 
+; bit $40.
 ; --------------------------------------------------------------------------
 
 Gfx_ShowScreen
 
-;	lda zSHOW_SCORE_FLAG
-;	bne b_gss_ShowChars ; shsca
+	ldy #$01
+b_gss_CopyStatsLoop
+	lda zMOTHERSHIP_ROW_AS_DIGITS,y
+	ora #$40
+	sta GFX_STAT_ROW,y
 
-;	rts ;     jmp shscz
-
-
-; shsca    
-b_gss_ShowChars 
-	lda #0      ; turn flag off
-	sta zSHOW_SCORE_FLAG
-
-
- ; check p1 score for hi score
- 
- 	ldy #0
-
-b_gss_LoopCompareP1
-	lda zHIGH_SCORE,y
-	cmp zPLAYER_ONE_SCORE,y
-	beq b_gss_ContinueCheckingP1Score ; They are the same.  Try more.
-	bcc b_gss_CopyP1ToHiScore ; HiScore Less Than P1 Score.
-	bcs b_gss_CheckP2Score; chkhip2 ; Not greater than
-
-b_gss_ContinueCheckingP1Score
-	iny
-	cpy #6
-	bne b_gss_LoopCompareP1
-	beq b_gss_CheckP2Score
-
-
-b_gss_CopyP1ToHiScore
-	ldy #5
-
-b_gss_LoopCopyP1ToHiScore
-	lda zPLAYER_ONE_SCORE,y
-	sta zHIGH_SCORE,y
+	lda zSHIP_HITS_AS_DIGITS,y
+	ora #$40
+	sta GFX_STAT_HITS,y
 
 	dey
-	bpl b_gss_LoopCopyP1ToHiScore
+	bpl b_gss_CopyStatsLoop
 
 
-b_gss_CheckP2Score
-; chkhip2  ; check p2 score for hiscore
-
- 	ldy #0
-
-b_gss_LoopCompareP2
-	lda zHIGH_SCORE,y
-	cmp zPLAYER_TWO_SCORE,y
-	beq b_gss_ContinueCheckingP2Score ; They are the same.  Try more.
-	bcc b_gss_CopyP2ToHiScore ; HiScore Less Than P2 Score.
-	bcs b_gss_ShowScoresOnScreen; chkhip2 ; Not greater than
-
-b_gss_ContinueCheckingP2Score
-	iny
-	cpy #6
-	bne b_gss_LoopCompareP2
-	beq b_gss_ShowScoresOnScreen
-
-
-b_gss_CopyP2ToHiScore
-	ldy #5
-
-b_gss_LoopCopyP2ToHiScore
-	lda zPLAYER_TWO_SCORE,y
-	sta zHIGH_SCORE,y
+	ldy #$03
+b_gss_CopyPointsLoop
+	lda zMOTHERSHIP_ROW_AS_DIGITS,y
+	ora #$40
+	sta GFX_STAT_POINTS,y
 
 	dey
-	bpl b_gss_LoopCopyP2ToHiScore
+	bpl b_gss_CopyPointsLoop
 
 
-; chkhiz   ; done hiscore check
-
-; Copy all the scores to the graphics memory.
-
-b_gss_ShowScoresOnScreen
-; shscc    ; show high score.
-
-	ldy #5
-
+	ldy #$05
 b_gss_LoopCopyScores
 	lda zPLAYER_ONE_SCORE,y
 	ora #$40                ; Turn $0 to $9 into $40 to $49
@@ -889,7 +837,6 @@ b_gss_LoopCopyScores
 
 	dey
 	bpl b_gss_LoopCopyScores
-
-; shscz    
+   
 	rts
 
