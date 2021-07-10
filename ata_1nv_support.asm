@@ -846,6 +846,12 @@ GameProcessExplosion
 	ora zLASER_TWO_BANG              ; with the mothership?
 	beq b_gpe_DoCurrentExplosion     ; No.  Just process current explosion.
 
+
+	jsr GameMothershipPointsForPlayer ; Copy current point value for adding score
+
+	jsr GameShotCredits              ; Figure out who is going to get credit for this. . .
+
+
 	lda zMOTHERSHIP_Y                ; Copy current mothership position to new
 	sta zEXPLOSION_NEW_Y             ; explosion position to initiate explosion.
 	lda zMOTHERSHIP_X
@@ -853,10 +859,7 @@ GameProcessExplosion
 
 	jsr Pmg_DrawExplosion            ; Start new explosion cycle.
 
-	; Force mothership adjustment
 	jsr GameRandomizeMothership      ; Choose random direction, set new X accordingly.
-
-	jsr GameMothershipPointsForPlayer ; Copy current point value for adding score
 
 	ldx zMOTHERSHIP_ROW              ; Subtract 2
 	dex                              ; from the
@@ -866,21 +869,8 @@ GameProcessExplosion
 b_gpe_ContinueReset
 	jsr GameSetMotherShipRow         ; Set New Mothership Y to new row in X register.
 
-	; Figure out who is going to get credit for this. . .
-	lda zLASER_ONE_BANG              ; Inform Main routine who shot the ship
-	sta zPLAYER_ONE_SHOT_THE_SHERIFF
-	beq b_gpe_EvaluateLaserTwo       ; No hit, so no change to laser 1.
-	lda #0
-	sta zLASER_ONE_NEW_Y             ; Zero Laser 1 New Y to stop it
-	
-b_gpe_EvaluateLaserTwo
-	lda zLASER_TWO_BANG              ; Inform Main routine who shot the ship
-	sta zPLAYER_TWO_SHOT_THE_SHERIFF
-	beq b_gpe_Exit                   ; No hit, so no change to laser 2.
-	lda #0
-	sta zLASER_TWO_NEW_Y             ; Zero Laser 2 New Y to stop it
-
 	; Still to do -- count hits.  adjust mothership speed to hits.
+
 	rts                             ; And done.
 
 
@@ -905,6 +895,48 @@ b_gpe_StopExplosion
 	jsr Pmg_DrawExplosion        ; Stop explosion cycle.
 
 b_gpe_Exit
+	rts
+
+
+; ==========================================================================
+; SUPPORT - SHOT CREDITS
+; ==========================================================================
+; Runs during VBI.
+;
+; Figure out which player (or both) get credit for hitting the mothership
+; and stop that player's laser.
+; --------------------------------------------------------------------------
+
+GameShotCredits
+
+	ldx #0
+	jsr GameShotCredit
+
+	ldx #1
+	jsr GameShotCredit
+
+	rts
+
+
+; ==========================================================================
+; SUPPORT - SHOT CREDIT
+; ==========================================================================
+; Runs during VBI.
+;
+; Figure out which player (or both) get credit for hitting the mothership
+; and stop that player's laser.
+; --------------------------------------------------------------------------
+
+GameShotCredit
+
+	lda zLASER_BANG,X              ; Inform Main routine who shot the ship
+	sta zPLAYER_SHOT_THE_SHERIFF,X
+	beq b_gsc_Exit                 ; No hit, so no change to laser.
+
+	lda #0
+	sta zLASER_NEW_Y,X             ; Zero Laser's New Y to stop it
+
+b_gsc_Exit
 	rts
 
 
