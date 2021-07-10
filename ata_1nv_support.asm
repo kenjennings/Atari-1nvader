@@ -1048,8 +1048,6 @@ GameSetMotherShipRow
 	jsr GameRowNumberToDigits ; Set value converted to copy to screen.
 
 	jsr GameMothershipPointsToDigits ; Copy point value to screen display version.
-	
-;	jsr GetMothershipPoints ; X will contain Mothership Row
 
 ;	inc zSHOW_SCORE_FLAG
 
@@ -1283,7 +1281,7 @@ b_gas_Exit
 
 
 ; ==========================================================================
-; CHECK HIGH SCORES
+; CHECK HIGH SCORE
 ; ==========================================================================
 ; Test Player score v High score, and copy player score to high 
 ; score if greater than the high score.
@@ -1292,6 +1290,27 @@ b_gas_Exit
 ; --------------------------------------------------------------------------
 
 GameCheckHighScores
+
+	ldx #0
+	jsr GameCheckHighScore
+
+	ldx #1
+	jsr GameCheckHighScore
+
+	rts
+
+
+
+; ==========================================================================
+; CHECK HIGH SCORE
+; ==========================================================================
+; Test Player score v High score, and copy player score to high 
+; score if greater than the high score.
+; 
+; X == player to test
+; --------------------------------------------------------------------------
+
+GameCheckHighScore
 
 	lda zPLAYER_ON,X
 	beq b_gchs_Exit

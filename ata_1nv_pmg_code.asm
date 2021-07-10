@@ -724,6 +724,7 @@ b_pdms_DoHPOS
 	jsr Pmg_AnimateMothershipWindows
 
 b_pdms_Exit
+
 	rts
 
 

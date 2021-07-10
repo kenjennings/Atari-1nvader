@@ -813,7 +813,7 @@ b_gss_CopyStatsLoop
 
 	ldy #$03
 b_gss_CopyPointsLoop
-	lda zMOTHERSHIP_ROW_AS_DIGITS,y
+	lda zMOTHERSHIP_POINTS_AS_DIGITS+2,y
 	ora #$40
 	sta GFX_STAT_POINTS,y
 

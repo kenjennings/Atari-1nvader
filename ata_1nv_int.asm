@@ -523,6 +523,9 @@ b_mdv_DoTheGame
 
 	jsr Pmg_ProcessMothership      ; automatically increments Y until it is NEW_Y
 
+;	lda #$40
+;	sta COLBK
+
 	jsr Pmg_Draw_Lasers            ; draw lasers if present.
 
 	jsr Pmg_ManagePlayersMovement  ;  Handles guns for Title and Game displays.
@@ -588,6 +591,8 @@ ExitMyDeferredVBI
 	lda SHPOSM3
 	sta HPOSM3
 
+;	lda #$00
+;	sta COLBK
 
 	jsr Gfx_RunScrollingLand
 
@@ -1150,7 +1155,7 @@ b_GDLI0_ActiveStar
 
 	pha
 	lda TABLE_GFX_STAR_IN_COLOR,y   ; Get the inner, brighter color.
-	
+
 
 ; FYI, the rest of this is wait wait wait.
 	sta WSYNC
@@ -1172,21 +1177,17 @@ b_GDLI0_ShortcutToExit             ; If star was Inactive this is the easy exit 
 
 	pla                            ; Done executing this series of DLIs.   
 	tay
-;	lda #$52
-;	sta COLBK
+
 	mChainDLI GAME_DLI_0,TITLE_DLI_5 ; Do the land colors next.
 
 
 b_GDLI0_NormalExit                ; Exit without changing the DLI vector.
-;	lda #$02
-;	sta COLBK
 
 	pla
 	tay
 	pla
 
 	rti
-
 
 
 ;==============================================================================
