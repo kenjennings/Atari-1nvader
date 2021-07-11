@@ -292,7 +292,6 @@ GamePlayersMovement
 	; rebounded from the bumpers if applicable.   No 
 	; consideration of player collisions has occurred yet.
 
-
 	; If there is only one player playing, whether player 1 or 2, 
 	; then the player's gun movement has been solved, and no more
 	; logic is needed.
@@ -325,9 +324,6 @@ GamePlayersMovement
 	lda zPLAYER_ONE_DIR ; 1 == right to left.
 	bne b_gpm_Exit  ; Yes, so, no collision.
 
-;	lda zPLAYER_TWO_DIR ; 0 == left to right.
-;	beq b_gpm_Exit  ; Yes, so, no collision.
-
 	; Here we know two players are running, and
 	; they are traveling toward each other.
 	; Inevitably the two must meet.
@@ -348,21 +344,18 @@ GamePlayersMovement
 	sta zPLAYER_TWO_NEW_X
 	bpl b_gpm_BumpTheGuns
 
-; On the right side of screen adjust gun 1 to 2.
 
-b_gpm_AdjustOnRightSide
-
+b_gpm_AdjustOnRightSide      ; On the right side of screen adjust gun 1 to 2.
 	lda zPLAYER_TWO_NEW_X
 	sec
 	sbc #PLAYER_X_SIZE
 	sta zPLAYER_ONE_NEW_X
 
 b_gpm_BumpTheGuns
-
 	lda #0
-	sta zPLAYER_TWO_DIR ; 0 == left to right.
+	sta zPLAYER_TWO_DIR         ; 0 == left to right.
 	lda #1
-	sta zPLAYER_ONE_DIR ; 1 == right to left.
+	sta zPLAYER_ONE_DIR         ; 1 == right to left.
 	
 	sta zPLAYER_ONE_BUMP
 	sta zPLAYER_TWO_BUMP
@@ -473,8 +466,7 @@ GameMovePlayerLeft
 	lda zPLAYER_DIR,X       ; Is this player going left?  0 == left to right. 1 == right to left.
 	beq b_gmpl_Exit         ; 0 == Nope.  Done here.
 
-	; The Simple move left toward bumper....
-b_gmpl_CallMoveLeft
+b_gmpl_CallMoveLeft         ; The Simple move left toward bumper....
 	jsr GameMovePlayerLeftToBumper
 
 b_gmpl_Exit
@@ -541,11 +533,10 @@ GameMovePlayerRight
 	lda zPLAYER_ON,X         ; Is this player even playing?
 	beq b_gmpr_Exit          ; Nope.  Done here.
 
-	lda zPLAYER_DIR,X       ; Is this player going right?
-	bne b_gmpr_Exit         ; 1 == Nope.  Done here.
+	lda zPLAYER_DIR,X        ; Is this player going right?
+	bne b_gmpr_Exit          ; 1 == Nope.  Done here.
 
-	; The Simple move right toward bumper....
-b_gmpr_CallMoveRight
+b_gmpr_CallMoveRight         ; The Simple move right toward bumper....
 	jsr GameMovePlayerRightToBumper
 
 b_gmpr_Exit
@@ -839,57 +830,55 @@ b_ss_Exit
 
 GameProcessExplosion
 
-	lda zPLAYER_ONE_SHOT_THE_SHERIFF              ; Did either laser collide 
-	ora zPLAYER_TWO_SHOT_THE_SHERIFF              ; with the mothership?
-	beq b_gpe_DoCurrentExplosion     ; No.  Just process current explosion.
+	lda zPLAYER_ONE_SHOT_THE_SHERIFF  ; Did either laser collide 
+	ora zPLAYER_TWO_SHOT_THE_SHERIFF  ; with the mothership?
+	beq b_gpe_DoCurrentExplosion      ; No.  Just process current explosion.
 
 
 	jsr GameMothershipPointsForPlayer ; Copy current point value for adding score
 
-	jsr GameShotStop               ; Stop Laser that hit the mothership. . .
+	jsr GameShotStop                  ; Stop Laser that hit the mothership. . .
 
 
-	lda zMOTHERSHIP_Y                ; Copy current mothership position to new
-	sta zEXPLOSION_NEW_Y             ; explosion position to initiate explosion.
+	lda zMOTHERSHIP_Y                 ; Copy current mothership position to new
+	sta zEXPLOSION_NEW_Y              ; explosion position to initiate explosion.
 	lda zMOTHERSHIP_X
 	sta zEXPLOSION_X
 
-	jsr Pmg_DrawExplosion            ; Start new explosion cycle.
+	jsr Pmg_DrawExplosion             ; Start new explosion cycle.
 
-	jsr GameRandomizeMothership      ; Choose random direction, set new X accordingly.
+	jsr GameRandomizeMothership       ; Choose random direction, set new X accordingly.
 
-	ldx zMOTHERSHIP_ROW              ; Subtract 2
-	dex                              ; from the
-	dex                              ; mothership row. 
-	bpl b_gpe_ContinueReset          ; If the result is positive, then update row. 
-	ldx #0                           ; Negative must be limited to 0.
+	ldx zMOTHERSHIP_ROW               ; Subtract 2
+	dex                               ; from the
+	dex                               ; mothership row. 
+	bpl b_gpe_ContinueReset           ; If the result is positive, then update row. 
+	ldx #0                            ; Negative must be limited to 0.
 b_gpe_ContinueReset
-	jsr GameSetMotherShipRow         ; Set New Mothership Y to new row in X register.
+	jsr GameSetMotherShipRow          ; Set New Mothership Y to new row in X register.
 
-	; Still to do -- count hits.  adjust mothership speed to hits.
-
-	rts                             ; And done.
+	rts                               ; And done.
 
 
 b_gpe_DoCurrentExplosion
-	lda zEXPLOSION_ON            ; Is an explosion running?
-	beq b_gpe_Exit               ; Nope.  Exit.
+	lda zEXPLOSION_ON                 ; Is an explosion running?
+	beq b_gpe_Exit                    ; Nope.  Exit.
 
-	ldx zEXPLOSION_COUNT         ; Get current counter.
-	beq b_gpe_StopExplosion      ; If it is 0 now, then stop explosion
+	ldx zEXPLOSION_COUNT              ; Get current counter.
+	beq b_gpe_StopExplosion           ; If it is 0 now, then stop explosion
 
 	dex
 	stx zEXPLOSION_COUNT
-	lda TABLE_COLOR_EXPLOSION,X  ; Get color from table.
-	sta PCOLOR3                  ; Update OS shadow register.
-	sta COLPM3                   ; Update hardware register to be redundant.
+	lda TABLE_COLOR_EXPLOSION,X       ; Get color from table.
+	sta PCOLOR3                       ; Update OS shadow register.
+	sta COLPM3                        ; Update hardware register to be redundant.
 	rts
 
 
 b_gpe_StopExplosion
 	lda #0
 	sta zEXPLOSION_NEW_Y
-	jsr Pmg_DrawExplosion        ; Stop explosion cycle.
+	jsr Pmg_DrawExplosion            ; Stop explosion cycle.
 
 b_gpe_Exit
 	rts
@@ -950,9 +939,6 @@ b_gsc_Exit
 ; --------------------------------------------------------------------------
 
 GameMothershipMovement
-
-;	lda zPLAYER_ONE_SHOT_THE_SHERIFF
-;	ora zPLAYER_TWO_SHOT_THE_SHERIFF
 
 	lda zMOTHERSHIP_Y
 	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
@@ -1028,8 +1014,6 @@ GameSetMotherShipRow
 	jsr GameRowNumberToDigits ; Set value converted to copy to screen.
 
 	jsr GameMothershipPointsToDigits ; Copy point value to screen display version.
-
-;	inc zSHOW_SCORE_FLAG
 
 	rts
 
@@ -1153,7 +1137,7 @@ b_gmspfp_CopyLoop
 
 GameResetHitCounter
 
-	lda #$80
+	lda #80 
 	sta zMOTHERSHIP_HITS
 
 	lda #$08
@@ -1161,7 +1145,7 @@ GameResetHitCounter
 	lda #$00
 	sta zSHIP_HITS_AS_DIGITS+1
 
-	; TO-DO -- set mothership speed.
+	; TO-DO -- set mothership speed per hit count.
 
 	rts
 
@@ -1182,7 +1166,7 @@ GameDecrementtHitCounter
 
 	dec zSHIP_HITS_AS_DIGITS+1 ; Subtract from ones place digit.
 	bpl b_gdhc_Exit            ; If it is still positive then done.
-	lda #$00                   ; Ones digit went to -1
+	lda #$9                    ; Ones digit went to -1
 	sta zSHIP_HITS_AS_DIGITS+1 ; Reset ones to "ten" (actually 0)
 	dec zSHIP_HITS_AS_DIGITS   ; Subtract 1 from tens position.
 

@@ -711,7 +711,7 @@ b_gsm_Loop_ZeroPlayerScores
 	; M O T H E R S H I P 
 
 	jsr GameResetHitCounter
-                                  ; should be 2
+                                     ; should be 2
 	lda #2                          ; initial ms speed
 	sta zMOTHERSHIP_MOVE_SPEED
 	lda #10                         ; should be 10
