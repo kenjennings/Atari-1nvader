@@ -93,9 +93,23 @@ Remaining TO-DOs -- Collision detection, explosion, mothership adjustments when 
 
 ---
 
+**11 July 2021 -- Scores And Stats**
+
+[![V15_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/15-WIP-GameScoresAndStats.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+A litany of stupid programmer tricks have been resolved.  Finally got many display items working... 
+
+- The math to add to the player scores, the high score comparisons, and the gfx update to display these thngs. 
+
+- Also, the statistics information for the line counter, points to award for hitting the mothership on the current line, the hit counter, and the gfx update to display these things.
+
+Remaining TO-DOs -- mothership speed up behaviors, game over logic.
+
+---
+
 **DD MMM 2021 -- TO-DO**
 
-[![V15_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/15-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V16_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/16-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
 
