@@ -835,6 +835,11 @@ b_gss_LoopCopyScores
 	ora #$40                ; Turn $0 to $9 into $40 to $49
 	sta GFX_SCORE_HI,y
 
+
+;	lda zPLAYERPOINTS_TO_ADD,Y
+;	ora #$40
+;	sta GFX_STAT_HITS+5,y
+
 	dey
 	bpl b_gss_LoopCopyScores
    

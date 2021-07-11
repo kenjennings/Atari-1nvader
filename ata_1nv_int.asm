@@ -515,16 +515,11 @@ b_mdv_DoTheGame
 
 	jsr Pmg_CollectCollisions      ; Collect collision bits, set flags, hit HITCLR
 
-	jsr Gfx_ShowScreen             ; Forcing redraw of score now for test evidence
-
 	jsr Gfx_RunGameStars           ; Animate the flashing stars
 
 	jsr GameProcessExplosion       ; Handle collision detection, start explosion
 
 	jsr Pmg_ProcessMothership      ; automatically increments Y until it is NEW_Y
-
-;	lda #$40
-;	sta COLBK
 
 	jsr Pmg_Draw_Lasers            ; draw lasers if present.
 

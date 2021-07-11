@@ -51,18 +51,10 @@ zEXPLOSION_NEW_Y            .byte $00
 
 
 ; ==========================================================================
-; STATISTICS . . .
-
-zMOTHERSHIP_ROW_AS_DIGITS   .byte $0,$0 ; Mothership text line row number as 2 digits for display
-zSHIP_HITS_AS_DIGITS        .byte $0,$0 ; Remaining hits on mothership as digits.
-
-
-; ==========================================================================
 ; SCORING . . .
 
 zSHOW_SCORE_FLAG             .byte $00 ; Flag to update score on screen.
 
-zMOTHERSHIP_POINTS           .word $0000 ; Current Points for hitting mothership
 zMOTHERSHIP_POINTS_AS_DIGITS .byte $00,$00,$00,$00,$00,$00 ; Points for current row.
 
 zPLAYERPOINTS_TO_ADD         .byte $00,$00,$00,$00,$00,$00 ; Mothership points to add to player
@@ -72,6 +64,14 @@ zPLAYER_ONE_SCORE            .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 d
 zPLAYER_TWO_SCORE            .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
 
 zHIGH_SCORE                  .byte $00,$00,$00,$00,$00,$00 ; 6 digits
+
+
+; ==========================================================================
+; STATISTICS . . .
+
+zSHIP_HITS_AS_DIGITS        .byte $00,$00,$00,$00 ; Remaining hits on mothership as digits.
+zMOTHERSHIP_ROW_AS_DIGITS   .byte $00,$00 ; Mothership text line row number as 2 digits for display
+
 
 ; ==========================================================================
 
@@ -83,12 +83,7 @@ zHIGH_SCORE                  .byte $00,$00,$00,$00,$00,$00 ; 6 digits
 ; 10 = 0275 ; 11 = 0250 ; 12 = 0225 ; 13 = 0200
 ; 14 = 0175 ; 15 = 0150 ; 16 = 0125 ; 17 = 0100
 ; 18 = 0075 ; 19 = 0050 ; 20 = 0025 ; 21 = 0001
-	
-TABLE_MOTHERSHIP_POINTS_HIGH
-	.byte $10,$05,$04,$04,$04,$04,$03,$03,$03,$03,$02,$02,$02,$02,$01,$01,$01,$01,$00,$00,$00,$00
 
-TABLE_MOTHERSHIP_POINTS_LOW
-	.byte $00,$00,$75,$50,$25,$00,$75,$50,$25,$00,$75,$50,$25,$00,$75,$50,$25,$00,$75,$50,$25,$01
 
 TABLE_MOTHERSHIP_POINTS
 	.byte $10,$00,$05,$00,$04,$75,$04,$50,$04,$25 ;  0 -  4
@@ -125,7 +120,6 @@ TABLE_TO_ONES ; 0 to 21.  (22 is last row which should be undisplayed.)
 	.byte $0,$1,$2,$3,$4,$5,$6,$7,$8,$9
 	.byte $0,$1,$2,$3,$4,$5,$6,$7,$8,$9
 	.byte $0,$1,$2
-
 
 
 ; ======== E N D   O F   V A R I A B L E S ======== 

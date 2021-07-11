@@ -274,10 +274,6 @@ zLASER_NEW_Y
 zLASER_ONE_NEW_Y   .byte $00 ; Laser 1 Y coord
 zLASER_TWO_NEW_Y   .byte $00 ; Laser 2 Y coord
 
-zLASER_BANG
-zLASER_ONE_BANG    .byte $00 ; Laser 1 collision with mothership (P0 to P2)
-zLASER_TWO_BANG    .byte $00 ; Laser 2 collision with mothership (P1 to P2) 
-
 zLASER_COLOR 
 zLASER_ONE_COLOR    .byte $00 ; Laser 1 index into TABLE_COLOR_LASERS
 zLASER_TWO_COLOR    .byte $00 ; Laser 2 index into TABLE_COLOR_LASERS 

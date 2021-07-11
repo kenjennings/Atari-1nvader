@@ -746,7 +746,7 @@ b_gsm_Loop_ZeroPlayerScores
 
 	jsr Gfx_ShowScreen
 
-	lda #$0A
+	lda #$08
 	sta zSTATS_TEXT_COLOR           ; Turn on stats line.
 
 	lda #2                          ; Reset the animation timer for players/left/right movement.

@@ -607,17 +607,14 @@ b_gmprtb_Exit
 
 CheckNewExplosion
 
-	lda zLASER_ON,X   ; Is laser on?
-	beq b_cne_Exit    ; No. Nothing to do.
+	lda zLASER_ON,X                ; Is laser on?
+	beq b_cne_Exit                 ; No. Nothing to do.
 
-	lda zLASER_BANG,X ; Did Laser hit Mothership?
-	beq b_cne_Exit    ; No. Nothing to do.
+	lda zPLAYER_SHOT_THE_SHERIFF,X ; Did Laser hit Mothership?
+	beq b_cne_Exit                 ; No. Nothing to do.
 
 	lda #0
-	sta zLASER_NEW_Y  ; Flag this laser to get erased.
-
-	lda #1            ; Flag that this player shot the mothership.
-	sta zPLAYER_SHOT_THE_SHERIFF,X
+	sta zLASER_NEW_Y               ; Flag this laser to get erased.
 
 	lda zMOTHERSHIP_X
 	sta zEXPLOSION_X
@@ -625,7 +622,7 @@ CheckNewExplosion
 	sta zEXPLOSION_NEW_Y
 
 	lda #15 
-	sta zEXPLOSION_COUNT ; jiffy count for explosion player
+	sta zEXPLOSION_COUNT          ; jiffy count for explosion graphic
 
 ; If any bang occurred, then 
 ; - adjust new mothership position 
@@ -842,14 +839,14 @@ b_ss_Exit
 
 GameProcessExplosion
 
-	lda zLASER_ONE_BANG              ; Did either laser collide 
-	ora zLASER_TWO_BANG              ; with the mothership?
+	lda zPLAYER_ONE_SHOT_THE_SHERIFF              ; Did either laser collide 
+	ora zPLAYER_TWO_SHOT_THE_SHERIFF              ; with the mothership?
 	beq b_gpe_DoCurrentExplosion     ; No.  Just process current explosion.
 
 
 	jsr GameMothershipPointsForPlayer ; Copy current point value for adding score
 
-	jsr GameShotCredits              ; Figure out who is going to get credit for this. . .
+	jsr GameShotStop               ; Stop Laser that hit the mothership. . .
 
 
 	lda zMOTHERSHIP_Y                ; Copy current mothership position to new
@@ -899,7 +896,7 @@ b_gpe_Exit
 
 
 ; ==========================================================================
-; SUPPORT - SHOT CREDITS
+; SUPPORT - SHOT STOP
 ; ==========================================================================
 ; Runs during VBI.
 ;
@@ -907,30 +904,31 @@ b_gpe_Exit
 ; and stop that player's laser.
 ; --------------------------------------------------------------------------
 
-GameShotCredits
+GameShotStop
 
 	ldx #0
-	jsr GameShotCredit
+	jsr GameStopLaser
 
 	ldx #1
-	jsr GameShotCredit
+	jsr GameStopLaser
 
 	rts
 
 
 ; ==========================================================================
-; SUPPORT - SHOT CREDIT
+; SUPPORT - STOP LASER
 ; ==========================================================================
 ; Runs during VBI.
 ;
-; Figure out which player (or both) get credit for hitting the mothership
-; and stop that player's laser.
+; If the Player's laser hit the mothership stop that player's laser.
+;
+; This all used to be a lot more complicated, but several optimizations
+; and removing unused variables eliminated some complexity.
 ; --------------------------------------------------------------------------
 
-GameShotCredit
+GameStopLaser
 
-	lda zLASER_BANG,X              ; Inform Main routine who shot the ship
-	sta zPLAYER_SHOT_THE_SHERIFF,X
+	lda zPLAYER_SHOT_THE_SHERIFF,X ; Did player's laser hit mothership?
 	beq b_gsc_Exit                 ; No hit, so no change to laser.
 
 	lda #0
@@ -989,7 +987,10 @@ b_gmm_UpdateDirection
 
 b_gmm_CheckLastRow
 	ldx zMOTHERSHIP_ROW      ; Get current row.
-	cpx #22                  ; If on last row, then it has
+	; HACK HACK HACK HACK -- testing scoring algorithms and counts.
+	; HACK HACK HACK HACK -- keeping mothership to row 21, so game doesn't end.
+	cpx #21                  ; If on last row, then it has
+;	cpx #22                  ; If on last row, then it has
 	beq b_gmm_Exit_MS_Move   ; reached the end of incrementing rows.
 
 	inx                      ; Next row.
@@ -998,27 +999,6 @@ b_gmm_CheckLastRow
 b_gmm_Exit_MS_Move
 	rts
 
-
-;	; calculate zMOTHERSHIP_POINTS (mspts)
-	;
-	; NOTE that MOTHERSHIP_ROW is being treated as a regular 
-	; integer for indexing purposes.  The original code handled 
-	; this as BCD, creating gaps between values $09/9 and
-	; $10/16.
-
-GetMothershipPoints
-
-;	lda #0       ; 0000 pts
-;	sta zMOTHERSHIP_POINTS
-;	sta zMOTHERSHIP_POINTS+1
-
-;	ldx ZMOTHERSHIP_ROW
-;	lda TABLE_MOTHERSHIP_POINTS_LOW,X
-;	sta zMOTHERSHIP_POINTS
-;	lda TABLE_MOTHERSHIP_POINTS_HIGH,X
-;	sta zMOTHERSHIP_POINTS+1
-
-	rts
 
 ; Speed control for horizontal movement should be in the main code that 
 ; updates the position.
@@ -1040,7 +1020,7 @@ GetMothershipPoints
 ; -----------------------------------------------------------------------------
 
 GameSetMotherShipRow
-
+	
 	stx zMOTHERSHIP_ROW   ; Set msy from
 	lda TABLE_ROW_TO_Y,X  ; row 2 y table
 	sta zMOTHERSHIP_NEW_Y
@@ -1181,6 +1161,8 @@ GameResetHitCounter
 	lda #$00
 	sta zSHIP_HITS_AS_DIGITS+1
 
+	; TO-DO -- set mothership speed.
+
 	rts
 
 
@@ -1189,17 +1171,22 @@ GameResetHitCounter
 ; ==========================================================================
 ; Subtract 1 from hit counter, and from the two-byte, BCD-like 
 ; version used for copying to the screen.
+; If subtracting 1 from counter, then 80 hits have occurred and then
+; reset hit counter.  (Also reset mothership speed).
 ; --------------------------------------------------------------------------
 
 GameDecrementtHitCounter
 
-	dec zMOTHERSHIP_HITS
+	dec zMOTHERSHIP_HITS        ; If this goes to 0, then
+	beq GameResetHitCounter     ; go up to reset counter
 
-	dec zSHIP_HITS_AS_DIGITS+1 
-	bpl b_gdhc_Exit
-	lda #$00
-	sta zSHIP_HITS_AS_DIGITS+1
-	dec zSHIP_HITS_AS_DIGITS
+	dec zSHIP_HITS_AS_DIGITS+1 ; Subtract from ones place digit.
+	bpl b_gdhc_Exit            ; If it is still positive then done.
+	lda #$00                   ; Ones digit went to -1
+	sta zSHIP_HITS_AS_DIGITS+1 ; Reset ones to "ten" (actually 0)
+	dec zSHIP_HITS_AS_DIGITS   ; Subtract 1 from tens position.
+
+	; TO-DO -- set mothership speed.
 
 b_gdhc_Exit
 	rts
@@ -1225,56 +1212,62 @@ GameAddScoreToPlayer
 ; ==========================================================================
 ; ADD SCORE
 ; ==========================================================================
-; Add the Mothership points to the player credited with the hit.
-; I'm sure this is highly-awful, low-quality hackage.
+; If this player shot the mothership, then:
+; - Count the hit againt the mothership's hit counter.
+; - Add the Mothership points to the player credited with the hit.
+;
+; Working with individual bytes per digit means the carry flag will 
+; not occur in CPU.   The carry state is determined by logic, then
+; the A register is started with 0 or 1 per carry for the math
+; on the next digit.
+;
+; I'm sure this is highly-awful, sub-optimal, low-quality hackage.
 ;
 ; X == Player to award points (if the player shot the sheriff).
 ; --------------------------------------------------------------------------
 
-gCarryToNextDigit .byte 0
-
 GameAddScore
 
-	lda zPLAYER_SHOT_THE_SHERIFF,X  ; Did this player get the hit?
-	beq b_gas_Exit                  ; No.  Nothing to do here.
+	lda zPLAYER_SHOT_THE_SHERIFF,X     ; Did this player get the hit?
+	beq b_gas_Exit                     ; No.  Nothing to do here.
 
-	lda #0
-	sta gCarryToNextDigit           ; Clear the artificial carry.
-	ldy #5                          ; Index into mothership points.
+	jsr GameDecrementtHitCounter       ; Player award means minus 1 hit.
 
-	cpx #0                          ; If this is not zero, then
-	bne b_gas_OtherPlayer           ; set index into score for player 2
+	lda #0                             ; Clear the artificial carry.
+	ldy #5                             ; Index into mothership points.
 
-	ldx #5                          ; Index into score for player 1 
-	bne b_gas_AddLoop               ; Go add.
+	cpx #0                             ; If this is not zero, then
+	bne b_gas_OtherPlayer              ; set index into score for player 2
+
+	ldx #5                             ; Index into Player score. (For player 1)
+	bne b_gas_AddLoop                  ; Go add.
 
 b_gas_OtherPlayer
-	ldx #11 ; Index into Player score.
+	ldx #11                            ; Index into Player score. (For player 2)                 
 
-b_gas_AddLoop
-	clc
-	lda zMOTHERSHIP_POINTS_AS_DIGITS,Y ; Get mothership points
+b_gas_AddLoop                          ; on first entry A for carry == 0
+	clc                                ; Clear CPU carry.
+	adc zPLAYERPOINTS_TO_ADD,Y         ; Add mothership points (+ A as carry)
 	adc zPLAYER_SCORE,X                ; Add to player score
-	adc gCarryToNextDigit              ; Add carry from last add.
 
-	cmp #10                            ; Did Adding go over 9?
-	bcs b_gas_Carried                  ; Yes, it carried.
-
-	sta zPLAYER_SCORE,X                ; Save the added score.
-	lda #0                             ; Setup 0 for artificial carry.
-	beq b_gas_LoopControl              ; Go to end of loop
+	cmp #10                            ; Did Adding go over 9? (>= 10? )
+	bcc b_gas_NoCarry                  ; No.  Do not carry.
 
 b_gas_Carried                          ; Player score carried over 9.
 	sec
 	sbc #10                            ; Subtract 10 from score
 	sta zPLAYER_SCORE,X                ; Save the adjusted score.
 	lda #1                             ; Setup 1 for artificial carry.
+	bne b_gas_LoopControl              ; Go to end of loop
 
-b_gas_LoopControl
-	sta gCarryToNextDigit              ; Save the carry digit     
+b_gas_NoCarry                          ; Player score carried over 9.
+	sta zPLAYER_SCORE,X                ; Save the added score.
+	lda #0                             ; Setup 0 for artificial carry.
+
+b_gas_LoopControl    
 	dex                                ; Move left to next digit
 	dey                                ; Move left to next digit
-	bpl b_gas_AddLoop
+	bpl b_gas_AddLoop                  ; Loop until index goes to -1
 
 b_gas_Exit
 	rts
@@ -1298,7 +1291,6 @@ GameCheckHighScores
 	jsr GameCheckHighScore
 
 	rts
-
 
 
 ; ==========================================================================
@@ -1352,7 +1344,4 @@ b_gchs_LoopControl
 
 b_gchs_Exit
 	rts
-
-
-
 

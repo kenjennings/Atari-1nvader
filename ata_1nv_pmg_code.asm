@@ -253,20 +253,15 @@ Pmg_CollectCollisions
 
 	lda zMOTHERSHIP_ROW
 	cmp #22               ; Bottom row where the guns are
-	bne b_pcc_SetCollisionFlags
-
-	lda #0
-	sta zLASER_ONE_BANG
-	sta zLASER_TWO_BANG
 	beq b_pcc_EndOfCollisionDetection
 	
 b_pcc_SetCollisionFlags
 	lda P0PL            ; GTIA collision register Player 0 (laser 1)...
 	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
-	sta zLASER_ONE_BANG ; Laser 1 collision with mothership (P0 to P2)
+	sta zPLAYER_ONE_SHOT_THE_SHERIFF ; Laser 1 collision with mothership (P0 to P2)
 	lda P1PL            ; GTIA collision register Player 1 (laser 2)...
 	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
-	sta zLASER_TWO_BANG ; Laser 1 collision with mothership (P1 to P2)
+	sta zPLAYER_TWO_SHOT_THE_SHERIFF ; Laser 1 collision with mothership (P1 to P2)
 
 b_pcc_EndOfCollisionDetection
 	sta HITCLR          ; Always reset the P/M collision bits for next frame.
