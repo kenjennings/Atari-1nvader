@@ -243,7 +243,7 @@ b_pdbm_LoopZero
 
 Pmg_CollectCollisions
 	lda #0
-	sta zPLAYER_ONE_SHOT_THE_SHERIFF  ; Flag that the player did not shoot the mothership.
+	sta zPLAYER_ONE_SHOT_THE_SHERIFF  ; Flag that the players did not shoot the mothership.
 	sta zPLAYER_TWO_SHOT_THE_SHERIFF
 
 	lda zLASER_ONE_X      ; Start VBI. Copy Laser 1 X to SHPOSP0
@@ -251,19 +251,19 @@ Pmg_CollectCollisions
 	lda zLASER_TWO_X      ; Start VBI. Copy Laser 2 X to SHPOSP1
 	sta SHPOSP1           ; Start VBI. Copy Laser 2 X to SHPOSP1
 
-	lda zMOTHERSHIP_ROW
-	cmp #22               ; Bottom row where the guns are
-	bne b_pcc_SetCollisionFlags
-	lda #0
-	sta zSTATS_TEXT_COLOR
+	lda zMOTHERSHIP_ROW               ; Is the mothership in the bottom 
+	cmp #22                           ; row with the guns?
+	bne b_pcc_SetCollisionFlags       ; Nope.   Go collect collitions.
+	lda #0                            ; Yes, Zero the stats color
+	sta zSTATS_TEXT_COLOR             ; which will blank the stats line.
 	beq b_pcc_EndOfCollisionDetection
 	
 b_pcc_SetCollisionFlags
-	lda P0PL            ; GTIA collision register Player 0 (laser 1)...
-	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
+	lda P0PL                         ; GTIA collision register Player 0 (laser 1)...
+	and #COLPMF2_BIT                 ; Hit Player 2 (mothership)?
 	sta zPLAYER_ONE_SHOT_THE_SHERIFF ; Laser 1 collision with mothership (P0 to P2)
-	lda P1PL            ; GTIA collision register Player 1 (laser 2)...
-	and #COLPMF2_BIT    ; Hit Player 2 (mothership)?
+	lda P1PL                         ; GTIA collision register Player 1 (laser 2)...
+	and #COLPMF2_BIT                 ; Hit Player 2 (mothership)?
 	sta zPLAYER_TWO_SHOT_THE_SHERIFF ; Laser 1 collision with mothership (P1 to P2)
 
 b_pcc_EndOfCollisionDetection

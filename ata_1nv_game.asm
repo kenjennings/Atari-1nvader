@@ -712,12 +712,12 @@ b_gsm_Loop_ZeroPlayerScores
 	; M O T H E R S H I P 
 
 	jsr GameResetHitCounter
-                                     ; should be 2
-	lda #2                          ; initial ms speed
-	sta zMOTHERSHIP_MOVE_SPEED
-	lda #10                         ; should be 10
-	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld - every 10 shots it speeds up
-	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count
+                                    
+;	lda #0                         ; initial mothership speed
+;	sta zMOTHERSHIP_MOVE_SPEED
+;	lda #10                         ; should be 10
+;	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld - every 10 shots it speeds up
+;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count offset
 
 	jsr GameRandomizeMothership     ; Set random direction , and starting X position.
 	ldx #0

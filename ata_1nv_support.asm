@@ -493,8 +493,8 @@ b_gmpl_Exit
 
 GameMovePlayerLeftToBumper
 
-	lda zPLAYER_BUMP,X ; Has there already been a  direction change.
-	bne b_gmpltb_Exit  ; Yes, do not test this bounce.
+	lda zPLAYER_BUMP,X  ; Has there already been a  direction change.
+	bne b_gmpltb_Exit   ; Yes, do not test this bounce.
 
 	ldy zPLAYER_X,X     ; Subtract one from player position.
 	dey
@@ -563,20 +563,20 @@ b_gmpr_Exit
 
 GameMovePlayerRightToBumper
 
-	lda zPLAYER_BUMP,X ; Has there already been a  direction change.
-	bne b_gmprtb_Exit  ; Yes, do not test this bounce.
+	lda zPLAYER_BUMP,X  ; Has there already been a  direction change.
+	bne b_gmprtb_Exit   ; Yes, do not test this bounce.
 
-	ldy zPLAYER_X,X    ; Add one to player position.
+	ldy zPLAYER_X,X     ; Add one to player position.
 	iny
 	
 	sty zPLAYER_NEW_X,X ; Save new position.
-	cpy #PLAYER_MAX_X  ; Has it reached the maximum?
-	bne b_gmprtb_Exit  ; No.  Exit now.
+	cpy #PLAYER_MAX_X   ; Has it reached the maximum?
+	bne b_gmprtb_Exit   ; No.  Exit now.
 	
-	lda #1             ; Yes.  Set direction right to left.
-	sta zPLAYER_DIR,X  ; Bounce.
+	lda #1              ; Yes.  Set direction right to left.
+	sta zPLAYER_DIR,X   ; Bounce.
 
-	inc zPLAYER_BUMP,X ; Remember there was a direction change.
+	inc zPLAYER_BUMP,X  ; Remember there was a direction change.
 
 b_gmprtb_Exit
 	rts
@@ -607,17 +607,13 @@ CheckNewExplosion
 	lda #0
 	sta zLASER_NEW_Y               ; Flag this laser to get erased.
 
-	lda zMOTHERSHIP_X
+	lda zMOTHERSHIP_X              ; Set Explosion X, Y == Mothership X, Y
 	sta zEXPLOSION_X
 	lda zMOTHERSHIP_Y
 	sta zEXPLOSION_NEW_Y
 
 	lda #15 
 	sta zEXPLOSION_COUNT          ; jiffy count for explosion graphic
-
-; If any bang occurred, then 
-; - adjust new mothership position 
-; - update hit counter/mothership speed
 
 b_cne_Exit
 	rts
@@ -645,7 +641,7 @@ CheckLaserInProgress
 	cmp #LASER_END_Y    ; Is Laser at Y Limit?
 	bne b_clip_DoMove   ; No.  
 
-	; Stop Laser Sound here.   If the other laser is not running
+	; Stop Laser Sound here.  If the other laser is not running
 
 	lda #0              ; Zero New_Y is signal to remove from screen.
 	beq b_clip_UpdateY
@@ -724,11 +720,11 @@ b_cps_Exit
 ; does begin at exactly the right location relative to the player.
 ; Over the next two frames the player moves left or right away
 ; from the laser origin.   This make the human viewer perceive that
-; the laser did started offset from the center of the gun.
-; Therefore, the game fudges the start position of the laser offset
-; by one, so that the second/third frame of the laser and the next
-; two frames of the gun all coincide, so it looks better centered 
-; on the gun.
+; the laser started offset from the center of the gun.
+; Therefore, to compensate for the illusion the game fudges the start 
+; position of the laser offset by one, so that the second/third frame of 
+; the laser and the next two frames of the gun all coincide, so it 
+; appears to be better centered on the gun.
 ;
 ; X == the Player/gun/laser
 ; --------------------------------------------------------------------------
@@ -934,8 +930,78 @@ b_gsc_Exit
 ; 
 ; Horizontally moves the mothership.
 ; When the end of the line is reached, flip the direction, and move 
-; to the next row.   (This triggers vertical move down which will be 
-; animated by the VBI.)
+; to the next row.   (This triggers the vertical move down which will 
+; be animated by the VBI.)
+;
+; ==========================================================================
+; F Y I -- MOTHERSHIP SPEED CONTROL
+; ==========================================================================
+; The original game had a series of variables and triggered
+; speed change by maintaining a separate counter for every 10 hits.
+; SPEEDUP THRESHOLD, SPEEDUP COUNTER, MOVE SPEED and MOVE COUNTER.
+; The logic around these is mostly separate from the hit counter, but 
+; would synchronize to the mothership hit counter reset.
+;
+; SPEEDUP THRESHOLD statically holds "10." 
+; SPEEDUP COUNTER starts at the SPEEDUP THRESHOLD value and it 
+; decrements with each mothership hit.
+; When SPEEDUP COUNTER reaches 0, reset it to the SPEEDUP THRESHOLD and 
+; then increment the MOVE SPEED.  
+; MOVE SPEED starts at "2".  This indicates the number of times the 
+; mothership should move a pixel (C64's half-color clock pixels.)
+; (And so, 2 "pixels" is one Atari color clock.)
+; MOVE COUNTER is set to the value of MOVE SPEED.  It is used as a
+; loop counter to move the mothership horizontally one pixel per 
+; each loop.
+;
+; Thus every 10 motherhip hits increments the MOVE SPEED and the 
+; MOVE SPEED is limited to count from 2 to 9, or 8 values.  This 
+; matches the 80 mothership hits.  And then all values return to 
+; the original "2" speed.
+;
+; For the Atari version looping to move the mothership will not 
+; be required.  The mothership can be moved in one step with 
+; addition instead of incrementing by 1.  Instead of checking for 
+; equality when reaching the left or right side of the screen the
+; comparisons simply need to change to "greater than or equal to", 
+; or "less than or equal to".  Also, counting hits indirectly is 
+; not needed.  The Atari code increments the speed counter when 
+; the ones digit for the hit counter decrements to become "0". 
+; Also, the code resets the speed controls when it resets the 
+; overall hit counter.
+;
+; Furthermore, the C64 increments movement by half-color clock pixels
+; where Atari Player/missile graphics are based on color-clocks.   
+; When the C64 is moving an even number of pixels, this corresponds 
+; to half the number of Atari pixels, so this has a direct parallel.
+;
+; However, where there are an odd number of pixels for the C64 the 
+; Atari can't directly use the same amount of horizontal movement.  
+; The Atari uses a two frame average where each frame moves a 
+; different number of color clocks, so that the average of two 
+; frames works out to the same effective distance used for the C64 
+; version.
+; 
+; This chart explains how the pixel distance is equal over two 
+; sequential frames.   The Atari color clocks are one-half the
+; number of C64 half-color clock pixels.
+:
+; MOVE   C64              ATARI       HIT COUNTER
+; SPEED  PIXELS           PIXELS      VALUE RANGE
+;  2 ==   2   2  (4)  ==  1  1 (2)  ; 80 to 71 hit counter
+;  3 ==  2+1 2+1 (6)  ==  1  2 (3)  ; 70 to 61 hit counter
+;  4 ==   4   4  (8)  ==  2  2 (4)  ; 60 to 51 hit counter
+;  5 ==  4+1 4+1 (10) ==  2  3 (5)  ; 50 to 41 hit counter
+;  6 ==   6   6  (12) ==  3  3 (6)  ; 40 to 31 hit counter
+;  7 ==  6+1 6+1 (14) ==  3  4 (7)  ; 30 to 21 hit counter
+;  8 ==   8   8  (16) ==  4  4 (8)  ; 20 to 11 hit counter.
+;  9 ==  8+1 8+1 (18) ==  4  5 (9)  ; 10 to 1  hit counter.
+; 
+; Then the Atari version uses a lookup table based on the current 
+; speed index.  Since "Speed" is now an index, not a direct count of 
+; pixels, the Atari code can iterate from 0 to 7 instead of 2 to 9.
+; Also, each call to draw the mothership toggles an index offset 
+; from +0 to +1 used to chose between the two frame increment values.
 ; --------------------------------------------------------------------------
 
 GameMothershipMovement
@@ -944,22 +1010,58 @@ GameMothershipMovement
 	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
 	bne b_gmm_Exit_MS_Move ; No.  Skip this until vertical positions match. (VBI does this).
 
-	ldy zMOTHERSHIP_X        ; Get current X
+; Determine speed (distance to move) here.
+; See discussion above.   There are two possible entries 
+; from the table (indexed by Move speed + 0, and Move speed + 1)
+; Toggle the counter value to create the +0/+1 offset each frame.
 
-	lda zMOTHERSHIP_DIR      ; Test direction. ; 0 == left to right. 1 == right to left.
+	ldy zMOTHERSHIP_MOVE_SPEED      ; index into speed table.
+	dec zMOTHERSHIP_SPEEDUP_COUNTER ; toggle the offsetter, 1,0,-1 (1).
+	bpl b_gmm_ContinueSpeedSetup    ; If still positive, then collect speed value 
+	lda #1                          ; Offsetter Went negative.  
+	sta zMOTHERSHIP_SPEEDUP_COUNTER ; Reset the offsetter to 1.
+	iny                             ; increment the index into the speed table.
+
+b_gmm_ContinueSpeedSetup
+	lda TABLE_SPEED_CONTROL,y       ; A == value from speed table to add/subtract 
+	sta zMOTHERSHIP_MOVEMENT        ; Save new value to add/subtract  
+
+	lda zMOTHERSHIP_X               ; A == Get current X position
+
+
+	ldy zMOTHERSHIP_DIR      ; Test direction. ; 0 == left to right. 1 == right to left.
 	bne b_gmm_Mothership_R2L ; 1 = Right to Left
 
-	iny                      ; Do left to right.
-	sty zMOTHERSHIP_NEW_X
-	cpy #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
-	bne b_gmm_Exit_MS_Move
-	beq b_gmm_MS_ReverseDirection
+; Moving Left to Right
 
-b_gmm_Mothership_R2L
-	dey                      ; Do right to left.
-	sty zMOTHERSHIP_NEW_X
-	cpy #MOTHERSHIP_MIN_X    ; Reached max means time to inc Y and reverse direction.
-	bne b_gmm_Exit_MS_Move
+	clc                      ; Doing left to right. 
+	adc zMOTHERSHIP_MOVEMENT ; A already contains the X position.  Add the movement.
+	cmp #MOTHERSHIP_MAX_X    ; Is the new value at the max?
+	bcc b_gmm_Save_MSX_L2R   ; A  less than max, so just save it.
+	lda #MOTHERSHIP_MAX_X    ; reset to max.
+
+b_gmm_Save_MSX_L2R
+	sta zMOTHERSHIP_NEW_X    ; Save new Mothership X
+	cmp #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
+	bne b_gmm_Exit_MS_Move   
+	beq b_gmm_MS_ReverseDirection 
+
+; Moving Right to Left
+
+b_gmm_Mothership_R2L 
+	sec                      ; Doing right to left. 
+	sbc zMOTHERSHIP_MOVEMENT ; A already contains the increment value, Add X
+	cmp #MOTHERSHIP_MIN_X    ; Is the new value at the min?
+	bcs b_gmm_Save_MSX_R2L   ; A >= min, so just save the new value. 
+	lda #MOTHERSHIP_MIN_X    ; reset to min.
+	
+b_gmm_Save_MSX_R2L
+	sta zMOTHERSHIP_NEW_X    ; Save new Mothership X
+	cmp #MOTHERSHIP_MIN_X    ; Reached min means time to inc Y and reverse direction.
+	bne b_gmm_Exit_MS_Move   ; Not at min.  Exit.
+
+; Flip direction is Mothership reaches Min or Max position.
+; Also setup Mothership to move to the next row.
 
 b_gmm_MS_ReverseDirection
 	lda zMOTHERSHIP_DIR      ; Toggle X direction.
@@ -980,7 +1082,7 @@ b_gmm_CheckLastRow
 	beq b_gmm_Exit_MS_Move   ; reached the end of incrementing rows.
 
 	inx                      ; Next row.
-	jsr GameSetMotherShipRow ; Given Mothership row (X), update the mother ship specs and save the row.
+	jsr GameSetMotherShipRow ; Given Mothership row (X), update the mother ship wow and set new, target Y position. 
 
 b_gmm_Exit_MS_Move
 	rts
@@ -998,11 +1100,11 @@ b_gmm_Exit_MS_Move
 
 GameSetMotherShipRow
 	
-	stx zMOTHERSHIP_ROW   ; Set msy from
-	lda TABLE_ROW_TO_Y,X  ; row 2 y table
-	sta zMOTHERSHIP_NEW_Y
+	stx zMOTHERSHIP_ROW              ; Save new Row.
+	lda TABLE_ROW_TO_Y,X             ; Get new target Y position.
+	sta zMOTHERSHIP_NEW_Y            ; Save for VBI to redraw mothership.
 
-	jsr GameRowNumberToDigits ; Set value converted to copy to screen.
+	jsr GameRowNumberToDigits        ; Setup value converted to copy to screen.
 
 	jsr GameMothershipPointsToDigits ; Copy point value to screen display version.
 
@@ -1046,16 +1148,7 @@ b_grm_SetMothership_X               ; Start horizontal position coord.
 
 GameRowNumberToDigits
 
-;	ldx zMOTHERSHIP_ROW
-
-;	lda TABLE_TO_TENS,X
-;	sta zMOTHERSHIP_ROW_AS_DIGITS
-
-;	lda TABLE_TO_ONES,X
-;	sta zMOTHERSHIP_ROW_AS_DIGITS+1
-
-
-	ldx zMOTHERSHIP_ROW             
+	ldx zMOTHERSHIP_ROW             ; Get the current Row.
 	lda TABLE_TO_DIGITS,X           ; Get two digits as byte/nybble
 	pha                             ; Save to do second digit.
 
@@ -1127,8 +1220,8 @@ GameMothershipPointsForPlayer
 	ldx #5
 
 b_gmspfp_CopyLoop
-	lda zMOTHERSHIP_POINTS_AS_DIGITS,X
-	sta zPLAYERPOINTS_TO_ADD,X
+	lda zMOTHERSHIP_POINTS_AS_DIGITS,X ; Copy current picture of point
+	sta zPLAYERPOINTS_TO_ADD,X         ; Save to player(s) awarded value.
 
 	dex
 	bpl b_gmspfp_CopyLoop
@@ -1141,19 +1234,21 @@ b_gmspfp_CopyLoop
 ; ==========================================================================
 ; Reset the byte counter, and reset the two-byte BCD-like version 
 ; used for copying to the screen.
+; Also reset the mothership speed to original value.
 ; --------------------------------------------------------------------------
 
 GameResetHitCounter
 
-	lda #80 
+	lda #80                         ; Just count integer 80 for hits.
 	sta zMOTHERSHIP_HITS
 
 	lda #$08
-	sta zSHIP_HITS_AS_DIGITS
+	sta zSHIP_HITS_AS_DIGITS        ; Tens digit is "8"
 	lda #$00
-	sta zSHIP_HITS_AS_DIGITS+1
+	sta zSHIP_HITS_AS_DIGITS+1      ; Ones digit is "0"
 
-	; TO-DO -- set mothership speed per hit count.
+	sta zMOTHERSHIP_MOVE_SPEED      ; Zero move speed.
+	sta zMOTHERSHIP_SPEEDUP_COUNTER ; Zero speed offset
 
 	rts
 
@@ -1163,22 +1258,28 @@ GameResetHitCounter
 ; ==========================================================================
 ; Subtract 1 from hit counter, and from the two-byte, BCD-like 
 ; version used for copying to the screen.
-; If subtracting 1 from counter, then 80 hits have occurred and then
-; reset hit counter.  (Also reset mothership speed).
+; If subtracting from counter goes to 0, then 80 hits have occurred and so
+; reset the hit counter.
+; When new ones digit value is "0", then increment the mothership speed.
 ; --------------------------------------------------------------------------
 
 GameDecrementtHitCounter
 
-	dec zMOTHERSHIP_HITS        ; If this goes to 0, then
-	beq GameResetHitCounter     ; go up to reset counter
+	dec zMOTHERSHIP_HITS         ; If this goes to 0, then
+	beq GameResetHitCounter      ; go up to reset counter (will not return here.)
 
-	dec zSHIP_HITS_AS_DIGITS+1 ; Subtract from ones place digit.
-	bpl b_gdhc_Exit            ; If it is still positive then done.
-	lda #$9                    ; Ones digit went to -1
-	sta zSHIP_HITS_AS_DIGITS+1 ; Reset ones to "ten" (actually 0)
-	dec zSHIP_HITS_AS_DIGITS   ; Subtract 1 from tens position.
+	dec zSHIP_HITS_AS_DIGITS+1   ; Subtract from ones place digit.
+	beq b_gdhc_CheckSpeedControl ; If ones is 0, then go to next mothership speed.
+	bpl b_gdhc_Exit              ; Some other non-zero digit.  Done here.
 
-	; TO-DO -- set mothership speed.
+	lda #$9                      ; Ones digit went to -1
+	sta zSHIP_HITS_AS_DIGITS+1   ; Reset ones to 9
+	dec zSHIP_HITS_AS_DIGITS     ; Subtract 1 from tens position.
+	rts
+
+b_gdhc_CheckSpeedControl        ; Need to add +2 for 2 entries for hpos+ entries.
+	inc  zMOTHERSHIP_MOVE_SPEED ; Speedup++
+	inc  zMOTHERSHIP_MOVE_SPEED ; Speedup++
 
 b_gdhc_Exit
 	rts
@@ -1336,72 +1437,4 @@ b_gchs_LoopControl
 
 b_gchs_Exit
 	rts
-
-
-; ==========================================================================
-; MOTHERSHIP SPEED CONTROL
-; ==========================================================================
-; The original game had a series of variables and triggered
-; speed change by maintaining a separate counter for every 10 hits.
-; SPEEDUP THRESHOLD, SPEEDUP COUNTER, MOVE SPEED and MOVE COUNTER.
-; The logic around these is mostly separate from the hit counter, but 
-; would synchronize to the mothership hit counter reset.
-;
-; SPEEDUP THRESHOLD statically holds "10." 
-; SPEEDUP COUNTER starts at the SPEEDUP THRESHOLD value and it 
-; decrements with each mothership hit.
-; When SPEEDUP COUNTER reaches 0, reset it to the SPEEDUP THRESHOLD and 
-; then increment the MOVE SPEED.  
-; MOVE SPEED starts at "2".  This indicates the number of times the 
-; mothership should move a pixel (C64's half-color clock pixels.)
-; And so, 2 "pixels" is one Atari color clock.
-; MOVE COUNTER is set to the value of MOVE SPEED.  It is used as a
-; loop counter to move the mothership horizontally one pixel per 
-; each loop.
-;
-; Thus every 10 motherhip hits increments the MOVE SPEED and the 
-; MOVE SPEED is limited to count from 2 to 9, or 8 values.  This is
-; matches the 80 mothership hits.  And then all values return to 
-; the original "2" speed.
-;
-; For the Atari version looping to move the mothership is not required.
-; The mothership can be moved in one step.  Intead of checking for 
-; equality when reaching the left or right side of the screen the
-; comparison simply needs to be changed to "greater than or equal to", 
-; or "less than or equal to".  Also, counting hits indirectly is not
-; needed.  The Atari code resets the speed controls when it resets 
-; the overall hit counter.  Also, it increments ther speed counter
-; whenever the ones digit for the hit counter becomes "0".
-;
-; Furthermore, the C64 increments movement by half-color clock pixels
-; where Atari Player/missile graphics are based on color-clocks.   Where 
-; the C64 is moving an even number of pixels, this corresponds to the 
-; half the number of Atari pixels, so this has a direct parallel. 
-; However, where there are an odd number of pixels for the C64 the 
-; Atari can't directly use the same amount of horizontal movememnt.  
-; The Atari uses a two frame average where each frame moves a different
-; number of color clocks, so that the average of two frames works out 
-; to the same effective distance used for the C64 version.
-; 
-; This chart explains how the pixel distance is equal over two 
-; sequential frames.   The Atari color clocks are one-half the
-; number of C64 half-color clock pixels.
-:
-; MOVE   C64              ATARI       HIT COUNTER
-; SPEED  PIXELS           PIXELS      VALUE RANGE
-;  2 ==   2   2  (4)  ==  1  1 (2)  ; 80 to 71 hit counter
-;  3 ==  2+1 2+1 (6)  ==  1  2 (3)  ; 70 to 61 hit counter
-;  4 ==   4   4  (8)  ==  2  2 (4)  ; 60 to 51 hit counter
-;  5 ==  4+1 4+1 (10) ==  2  3 (5)  ; 50 to 41 hit counter
-;  6 ==   6   6  (12) ==  3  3 (6)  ; 40 to 31 hit counter
-;  7 ==  6+1 6+1 (14) ==  3  4 (7)  ; 30 to 21 hit counter
-;  8 ==   8   8  (16) ==  4  4 (8)  ; 20 to 11 hit counter.
-;  9 ==  8+1 8+1 (18) ==  4  5 (9)  ; 10 to 1  hit counter.
-; 
-; Then the Atari version uses a lookup table based on the current speed 
-; index and alternates between +0 and +1 offset to acquire the new 
-; --------------------------------------------------------------------------
-
-
-
 

@@ -31,10 +31,11 @@ zMOTHERSHIP_NEW_Y           .byte $00 ; Game mothership Y coord
 zMOTHERSHIP_DIR             .byte $00 ; Mothership direction.  0 = left to right.   1 = Right to Left
 zMOTHERSHIP_ANIM            .byte $00 ; Animation frame for windows
 zMOTHERSHIP_ANIM_FRAME      .byte 3   ; delay for animation 
-zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed  
-zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter 
-zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threahold 
+zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed index into speed table 0, 2, 4, ..., 14 
+;zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter -- toggle 0 and 1.               
+;zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threshold 
 zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
+zMOTHERSHIP_MOVEMENT        .byte $00 ; Value to add/subtract from Mothership X
 zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
 
 zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
@@ -115,16 +116,10 @@ TABLE_TO_DIGITS ; 0 to 21.  (22 is last row which should be undisplayed.)
 	.byte $00,$01,$02,$03,$04,$05,$06,$07,$08,$09
 	.byte $10,$11,$12,$13,$14,$15,$16,$17,$18,$19
 	.byte $20,$21,$22
-	
-;TABLE_TO_TENS ; 0 to 21.  (22 is last row which should be undisplayed.)
-;	.byte $0,$0,$0,$0,$0,$0,$0,$0,$0,$0
-;	.byte $1,$1,$1,$1,$1,$1,$1,$1,$1,$1
-;	.byte $2,$2,$2
 
-;TABLE_TO_ONES ; 0 to 21.  (22 is last row which should be undisplayed.)
-;	.byte $0,$1,$2,$3,$4,$5,$6,$7,$8,$9
-;	.byte $0,$1,$2,$3,$4,$5,$6,$7,$8,$9
-;	.byte $0,$1,$2
+TABLE_SPEED_CONTROL ; How many pixels to move each frame ( two values - frame +0, frame +1, looping.)
+	.byte 1,1,1,2,2,2,2,3 ; speed option 1, 2, 3, 4, two values each.
+	.byte 3,3,3,4,4,4,4,5 
 
 
 ; ======== E N D   O F   V A R I A B L E S ======== 
