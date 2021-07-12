@@ -975,8 +975,8 @@ b_gmm_CheckLastRow
 	ldx zMOTHERSHIP_ROW      ; Get current row.
 	; HACK HACK HACK HACK -- testing scoring algorithms and counts.
 	; HACK HACK HACK HACK -- keeping mothership to row 21, so game doesn't end.
-	cpx #21                  ; If on last row, then it has
-;	cpx #22                  ; If on last row, then it has
+;	cpx #21                  ; If on last row, then it has
+	cpx #22                  ; If on last row, then it has
 	beq b_gmm_Exit_MS_Move   ; reached the end of incrementing rows.
 
 	inx                      ; Next row.
@@ -985,15 +985,6 @@ b_gmm_CheckLastRow
 b_gmm_Exit_MS_Move
 	rts
 
-
-; Speed control for horizontal movement should be in the main code that 
-; updates the position.
-                                   ; should be 2
-;	lda #2                         ; initial ms speed
-;	sta zMOTHERSHIP_MOVE_SPEED     ; Loop this many times.
-;	lda #10                        ; should be 10
-;	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld
-;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count 
 
 ;==============================================================================
 ;												SetMotherShip  X
@@ -1055,13 +1046,30 @@ b_grm_SetMothership_X               ; Start horizontal position coord.
 
 GameRowNumberToDigits
 
-	ldx zMOTHERSHIP_ROW
+;	ldx zMOTHERSHIP_ROW
 
-	lda TABLE_TO_TENS,X
-	sta zMOTHERSHIP_ROW_AS_DIGITS
+;	lda TABLE_TO_TENS,X
+;	sta zMOTHERSHIP_ROW_AS_DIGITS
 
-	lda TABLE_TO_ONES,X
-	sta zMOTHERSHIP_ROW_AS_DIGITS+1
+;	lda TABLE_TO_ONES,X
+;	sta zMOTHERSHIP_ROW_AS_DIGITS+1
+
+
+	ldx zMOTHERSHIP_ROW             
+	lda TABLE_TO_DIGITS,X           ; Get two digits as byte/nybble
+	pha                             ; Save to do second digit.
+
+	and #$F0                        ; Mask to keep first digit.
+	lsr                             ; Right shift
+	lsr                             ; to move digit
+	lsr                             ; into the  
+	lsr                             ; low nybble.
+	sta zMOTHERSHIP_ROW_AS_DIGITS   ; Save as byte. 
+
+	pla                             ; Get value saved earlier.
+
+	and #$0F                        ; Mask to keep second digit.
+	sta zMOTHERSHIP_ROW_AS_DIGITS+1 ; Save as byte. 
 
 	rts
 
@@ -1328,4 +1336,72 @@ b_gchs_LoopControl
 
 b_gchs_Exit
 	rts
+
+
+; ==========================================================================
+; MOTHERSHIP SPEED CONTROL
+; ==========================================================================
+; The original game had a series of variables and triggered
+; speed change by maintaining a separate counter for every 10 hits.
+; SPEEDUP THRESHOLD, SPEEDUP COUNTER, MOVE SPEED and MOVE COUNTER.
+; The logic around these is mostly separate from the hit counter, but 
+; would synchronize to the mothership hit counter reset.
+;
+; SPEEDUP THRESHOLD statically holds "10." 
+; SPEEDUP COUNTER starts at the SPEEDUP THRESHOLD value and it 
+; decrements with each mothership hit.
+; When SPEEDUP COUNTER reaches 0, reset it to the SPEEDUP THRESHOLD and 
+; then increment the MOVE SPEED.  
+; MOVE SPEED starts at "2".  This indicates the number of times the 
+; mothership should move a pixel (C64's half-color clock pixels.)
+; And so, 2 "pixels" is one Atari color clock.
+; MOVE COUNTER is set to the value of MOVE SPEED.  It is used as a
+; loop counter to move the mothership horizontally one pixel per 
+; each loop.
+;
+; Thus every 10 motherhip hits increments the MOVE SPEED and the 
+; MOVE SPEED is limited to count from 2 to 9, or 8 values.  This is
+; matches the 80 mothership hits.  And then all values return to 
+; the original "2" speed.
+;
+; For the Atari version looping to move the mothership is not required.
+; The mothership can be moved in one step.  Intead of checking for 
+; equality when reaching the left or right side of the screen the
+; comparison simply needs to be changed to "greater than or equal to", 
+; or "less than or equal to".  Also, counting hits indirectly is not
+; needed.  The Atari code resets the speed controls when it resets 
+; the overall hit counter.  Also, it increments ther speed counter
+; whenever the ones digit for the hit counter becomes "0".
+;
+; Furthermore, the C64 increments movement by half-color clock pixels
+; where Atari Player/missile graphics are based on color-clocks.   Where 
+; the C64 is moving an even number of pixels, this corresponds to the 
+; half the number of Atari pixels, so this has a direct parallel. 
+; However, where there are an odd number of pixels for the C64 the 
+; Atari can't directly use the same amount of horizontal movememnt.  
+; The Atari uses a two frame average where each frame moves a different
+; number of color clocks, so that the average of two frames works out 
+; to the same effective distance used for the C64 version.
+; 
+; This chart explains how the pixel distance is equal over two 
+; sequential frames.   The Atari color clocks are one-half the
+; number of C64 half-color clock pixels.
+:
+; MOVE   C64              ATARI       HIT COUNTER
+; SPEED  PIXELS           PIXELS      VALUE RANGE
+;  2 ==   2   2  (4)  ==  1  1 (2)  ; 80 to 71 hit counter
+;  3 ==  2+1 2+1 (6)  ==  1  2 (3)  ; 70 to 61 hit counter
+;  4 ==   4   4  (8)  ==  2  2 (4)  ; 60 to 51 hit counter
+;  5 ==  4+1 4+1 (10) ==  2  3 (5)  ; 50 to 41 hit counter
+;  6 ==   6   6  (12) ==  3  3 (6)  ; 40 to 31 hit counter
+;  7 ==  6+1 6+1 (14) ==  3  4 (7)  ; 30 to 21 hit counter
+;  8 ==   8   8  (16) ==  4  4 (8)  ; 20 to 11 hit counter.
+;  9 ==  8+1 8+1 (18) ==  4  5 (9)  ; 10 to 1  hit counter.
+; 
+; Then the Atari version uses a lookup table based on the current speed 
+; index and alternates between +0 and +1 offset to acquire the new 
+; --------------------------------------------------------------------------
+
+
+
 

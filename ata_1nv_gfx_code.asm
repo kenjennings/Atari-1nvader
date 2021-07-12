@@ -787,24 +787,35 @@ rts
 ; SHOW SCREEN
 ; ==========================================================================
 ; Update the Scores and Statistics to the screen.  
+;
 ; I discarded the original game's code that used BCD packed bytes for 
 ; all the numeric values on screen. 
 ; Here all the digits are individual bytes with natural values 
 ; zero through 9. 
 ; To display these using the proper screen code only requires setting 
 ; bit $40.
+;
+; Also, incorporated some additional hackisms:
+; * if the stats color is 0, then write blanks instead.
+; * If the player is off then write blanks instead for the player's score.
 ; --------------------------------------------------------------------------
 
 Gfx_ShowScreen
 
-	ldy #$01
+	ldy #$01                        ; Number of digits (+0 and +1)
 b_gss_CopyStatsLoop
-	lda zMOTHERSHIP_ROW_AS_DIGITS,y
-	ora #$40
-	sta GFX_STAT_ROW,y
+	lda zSTATS_TEXT_COLOR           ; Is stats color off?  (i.e. 0?)
+	beq b_gss_WriteStatRow          ; Yes, copy 0 to screen (conveniently, blank space)
+	lda zMOTHERSHIP_ROW_AS_DIGITS,y ; No.  Get the actual digit from the score.
+	ora #$40                        ; Turn on bit to put it in the write char code.
+b_gss_WriteStatRow                   
+	sta GFX_STAT_ROW,y              ; Write to statistics.
 
+	lda zSTATS_TEXT_COLOR
+	beq b_gss_WriteStatHits
 	lda zSHIP_HITS_AS_DIGITS,y
 	ora #$40
+b_gss_WriteStatHits
 	sta GFX_STAT_HITS,y
 
 	dey
@@ -813,8 +824,11 @@ b_gss_CopyStatsLoop
 
 	ldy #$03
 b_gss_CopyPointsLoop
+	lda zSTATS_TEXT_COLOR
+	beq b_gss_WritePoints
 	lda zMOTHERSHIP_POINTS_AS_DIGITS+2,y
 	ora #$40
+b_gss_WritePoints
 	sta GFX_STAT_POINTS,y
 
 	dey
@@ -823,15 +837,21 @@ b_gss_CopyPointsLoop
 
 	ldy #$05
 b_gss_LoopCopyScores
-	lda zPLAYER_ONE_SCORE,y
+	lda zPLAYER_ONE_ON      ; If player 1 is on?
+	beq b_gss_WriteP1Score  ; No, write the zero byte (blank space) instead.
+	lda zPLAYER_ONE_SCORE,y ; Player on, get a digit from the score.
 	ora #$40                ; Turn $0 to $9 into $40 to $49
+b_gss_WriteP1Score
 	sta GFX_SCORE_P1,y
 
-	lda zPLAYER_TWO_SCORE,y
+	lda zPLAYER_TWO_ON      ; If player 1 is on?
+	beq b_gss_WriteP2Score  ; No, write the zero byte (blank space) instead.
+	lda zPLAYER_TWO_SCORE,y ; Player on, get a digit from the score.
 	ora #$40                ; Turn $0 to $9 into $40 to $49
+b_gss_WriteP2Score
 	sta GFX_SCORE_P2,y
 
-	lda zHIGH_SCORE,y
+	lda zHIGH_SCORE,y       ; Always show high score.
 	ora #$40                ; Turn $0 to $9 into $40 to $49
 	sta GFX_SCORE_HI,y
 

@@ -111,15 +111,20 @@ TABLE_ROW_TO_Y ; r2ytab
 .byte 164,172,180,188 ; 16 - 19
 .byte 196,204,212     ; 20 - 22
 
-TABLE_TO_TENS ; 0 to 21.  (22 is last row which should be undisplayed.)
-	.byte $0,$0,$0,$0,$0,$0,$0,$0,$0,$0
-	.byte $1,$1,$1,$1,$1,$1,$1,$1,$1,$1
-	.byte $2,$2,$2
+TABLE_TO_DIGITS ; 0 to 21.  (22 is last row which should be undisplayed.)
+	.byte $00,$01,$02,$03,$04,$05,$06,$07,$08,$09
+	.byte $10,$11,$12,$13,$14,$15,$16,$17,$18,$19
+	.byte $20,$21,$22
+	
+;TABLE_TO_TENS ; 0 to 21.  (22 is last row which should be undisplayed.)
+;	.byte $0,$0,$0,$0,$0,$0,$0,$0,$0,$0
+;	.byte $1,$1,$1,$1,$1,$1,$1,$1,$1,$1
+;	.byte $2,$2,$2
 
-TABLE_TO_ONES ; 0 to 21.  (22 is last row which should be undisplayed.)
-	.byte $0,$1,$2,$3,$4,$5,$6,$7,$8,$9
-	.byte $0,$1,$2,$3,$4,$5,$6,$7,$8,$9
-	.byte $0,$1,$2
+;TABLE_TO_ONES ; 0 to 21.  (22 is last row which should be undisplayed.)
+;	.byte $0,$1,$2,$3,$4,$5,$6,$7,$8,$9
+;	.byte $0,$1,$2,$3,$4,$5,$6,$7,$8,$9
+;	.byte $0,$1,$2
 
 
 ; ======== E N D   O F   V A R I A B L E S ======== 

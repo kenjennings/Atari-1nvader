@@ -253,6 +253,9 @@ Pmg_CollectCollisions
 
 	lda zMOTHERSHIP_ROW
 	cmp #22               ; Bottom row where the guns are
+	bne b_pcc_SetCollisionFlags
+	lda #0
+	sta zSTATS_TEXT_COLOR
 	beq b_pcc_EndOfCollisionDetection
 	
 b_pcc_SetCollisionFlags
