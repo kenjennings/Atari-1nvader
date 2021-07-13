@@ -23,6 +23,9 @@ MOTHERSHIP_MIN_X = 40  ; Farthest Left off the normal width screen.
 MOTHERSHIP_MAX_X = 208 ; Farthest right off the normal width screen.
 MOTHERSHIP_MIN_Y = 36  ; starting position of mothership, last position for laser.
 
+zMOTHERSHIP_MIN_X           .byte MOTHERSHIP_MIN_X
+zMOTHERSHIP_MAX_X           .byte MOTHERSHIP_MAX_X
+
 zMOTHERSHIP_X               .byte $00 ; Game mothership X coord 
 zMOTHERSHIP_NEW_X           .byte $00 ; Game mothership X coord 
 zMOTHERSHIP_Y               .byte $00 ; Game mothership Y coord 

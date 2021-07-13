@@ -950,11 +950,31 @@ GameMothershipMovement
 	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
 	bne b_gmm_Exit_MS_Move ; No.  Skip this until vertical positions match. (VBI does this).
 
+; Determine min/max for this row.   Row 22 allows mothership to 
+; move off the screen completely.   When the Stats Text Color 
+; is zero, then we're on row 22.
+
+	lda zSTATS_TEXT_COLOR      ; If this is zero, mothership is on row 22.
+	bne b_gmm_SetRegularMinMax ; Set Min/Max to normal values.
+
+	lda #10                    ; Here set Min/Max off screen
+	sta zMOTHERSHIP_MIN_X
+	lda #245
+	sta zMOTHERSHIP_MAX_X
+	bne b_gmm_ContinueSetSpeed
+
+b_gmm_SetRegularMinMax
+	lda #MOTHERSHIP_MIN_X
+	sta zMOTHERSHIP_MIN_X
+	lda #MOTHERSHIP_MAX_X
+	sta zMOTHERSHIP_MAX_X
+	
 ; Determine speed (distance to move) here.
 ; See discussion above.   There are two possible entries 
 ; from the table (indexed by Move speed + 0, and Move speed + 1)
 ; Toggle the counter value to create the +0/+1 offset each frame.
 
+b_gmm_ContinueSetSpeed
 	ldy zMOTHERSHIP_MOVE_SPEED      ; index into speed table.
 	dec zMOTHERSHIP_SPEEDUP_COUNTER ; toggle the offsetter, 1,0,-1 (1).
 	bpl b_gmm_ContinueSpeedSetup    ; If still positive, then collect speed value 
@@ -976,13 +996,13 @@ b_gmm_ContinueSpeedSetup
 
 	clc                      ; Doing left to right. 
 	adc zMOTHERSHIP_MOVEMENT ; A already contains the X position.  Add the movement.
-	cmp #MOTHERSHIP_MAX_X    ; Is the new value at the max?
+	cmp zMOTHERSHIP_MAX_X    ; Is the new value at the max?
 	bcc b_gmm_Save_MSX_L2R   ; A  less than max, so just save it.
-	lda #MOTHERSHIP_MAX_X    ; reset to max.
+	lda zMOTHERSHIP_MAX_X    ; reset to max.
 
 b_gmm_Save_MSX_L2R
 	sta zMOTHERSHIP_NEW_X    ; Save new Mothership X
-	cmp #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
+	cmp zMOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
 	bne b_gmm_Exit_MS_Move   
 	beq b_gmm_MS_ReverseDirection 
 
@@ -991,19 +1011,20 @@ b_gmm_Save_MSX_L2R
 b_gmm_Mothership_R2L 
 	sec                      ; Doing right to left. 
 	sbc zMOTHERSHIP_MOVEMENT ; A already contains the increment value, Add X
-	cmp #MOTHERSHIP_MIN_X    ; Is the new value at the min?
+	cmp zMOTHERSHIP_MIN_X    ; Is the new value at the min?
 	bcs b_gmm_Save_MSX_R2L   ; A >= min, so just save the new value. 
-	lda #MOTHERSHIP_MIN_X    ; reset to min.
+	lda zMOTHERSHIP_MIN_X    ; reset to min.
 	
 b_gmm_Save_MSX_R2L
 	sta zMOTHERSHIP_NEW_X    ; Save new Mothership X
-	cmp #MOTHERSHIP_MIN_X    ; Reached min means time to inc Y and reverse direction.
+	cmp zMOTHERSHIP_MIN_X    ; Reached min means time to inc Y and reverse direction.
 	bne b_gmm_Exit_MS_Move   ; Not at min.  Exit.
 
 ; Flip direction is Mothership reaches Min or Max position.
 ; Also setup Mothership to move to the next row.
 
 b_gmm_MS_ReverseDirection
+; here if row is 22, all movememnt is done.   end game screen is next
 	lda zMOTHERSHIP_DIR      ; Toggle X direction.
 	beq b_gmm_Set_R2L        ; is 0, set 1 = Right to Left
 	lda #0
