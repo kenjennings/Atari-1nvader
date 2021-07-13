@@ -18,6 +18,7 @@
 PMADR ; Declare the base address locations for each player bitmap.
 
 ; Define the begining location for each Player/Missile bitmap.
+
 ; Defining without declaring space will not create 256 bytes for 
 ; each bitmap, so it will not be allocated/created as part of the 
 ; assembly and so save space in the executable.
@@ -34,7 +35,7 @@ PLAYERADR3 = PMADR+$700
 ; Also, its best to evaluate the P/M collisions after the screen has been 
 ; drawn, and before the next movement occurs.
 
-spr1     ; mothership sprite
+;spr1     ; mothership sprite
 ;	.BYTE 0,126,0                  ; ........ .111111. ........
 ;	.BYTE 1,255,128                ; .......1 11111111 1.......
 ;	.BYTE 3,255,192                ; ......11 11111111 11......
@@ -58,11 +59,10 @@ PMG_IMG_MOTHERSHIP
 	.BYTE $7e  ; .111111.
 	.BYTE $24  ; ..1..1..
 
+; Animated window movement bytes.  
+; Replace the 4th byte in the image above.
+
 PMG_MOTHERSHIP_ANIM
-;	.BYTE $5A  ; .1.11.1.
-;	.BYTE $00  ; .11.111.
-;	.BYTE $00  ; .111.11.
-	
 	.byte $5e  ; .1.1111.
 	.byte $6e  ; .11.111.
 	.byte $76  ; .111.11.
@@ -106,7 +106,8 @@ PMG_IMG_BIGGERSHIP_R ; Title Screen version.
 	.byte $08  ; ...1.... ....1...
 	.byte $08  ; ...1.... ....1...
 
-spr2     ; cannon sprite
+
+;spr2     ; cannon sprite
 ;	.BYTE 0,8,0                    ; ........ ....1... ........
 ;	.BYTE 0,28,0                   ; ........ ...111.. ........
 ;	.BYTE 0,28,0                   ; ........ ...111.. ........
@@ -120,21 +121,13 @@ spr2     ; cannon sprite
 ;	.byte 0,0,0,0,0,0,0,0,0,0,0,0
 ;	.byte 0,0,0,255
 
-PMG_IMG_CANNON
-;	.BYTE $00  ; ........
-;	.BYTE $18  ; ...11...
-;	.BYTE $7e  ; .111111.
-;	.BYTE $ff  ; 11111111
-;	.BYTE $ff  ; 11111111
-;	.BYTE $ff  ; 11111111
-;	.BYTE $ff  ; 11111111
-;	.BYTE $00  ; ........
 
 ; 15 C-64 high res pixels works out to less than 7 color clocks 
 ; wide on real video hardware.   So, instead of 8 pixels, let's  
 ; do 7 pixels for the Atari gun.   The odd number provides a  
 ; center line for the gun turret and lazer shots.
 
+PMG_IMG_CANNON
 	.BYTE $00  ; ........
 	.BYTE $10  ; ...1....
 	.BYTE $7c  ; .11111..
@@ -146,8 +139,7 @@ PMG_IMG_CANNON
 
 
 
-
-spr3     ; laser sprite
+;spr3     ; laser sprite
 ;	.BYTE 0,8,0                    ; ........ ....1... ........
 ;	.BYTE 0,4,0                    ; ........ .....1.. ........
 ;	.BYTE 0,8,0                    ; ........ ....1... ........
@@ -161,19 +153,11 @@ spr3     ; laser sprite
 ;	.byte 0,0,0,0,0,0,0,0,0,0,0,0
 ;	.byte 0,0,0,255
 
+
+; Image centered, so the Laser X can be set to Gun X and the 
+; laser will align to the center of the gun.
+
 PMG_IMG_LASER
-;	.BYTE $40  ; .1......
-;	.BYTE $20  ; ..1.....
-;	.BYTE $40  ; .1......
-;	.BYTE $80  ; 1.......
-;	.BYTE $40  ; .1......
-;	.BYTE $20  ; ..1.....
-;	.BYTE $40  ; .1......
-;	.BYTE $40  ; .1......
-
-; Adjusting image, so Laser X can be set to Gun X and it 
-; aligns to the center of the gun.
-
 	.BYTE $10  ; ...1....
 	.BYTE $08  ; ....1...
 	.BYTE $10  ; ...1....
@@ -183,7 +167,7 @@ PMG_IMG_LASER
 	.BYTE $10  ; ...1....
 	.BYTE $10  ; ...1....
 
-spr4     ; explosion
+;spr4     ; explosion
 ;	.BYTE 0,66,0                  ; ........ .1....1. ........
 ;	.BYTE 1,36,128                ; .......1 ..1..1.. 1.......
 ;	.BYTE 0,129,0                 ; ........ 1......1 ........
@@ -197,15 +181,6 @@ spr4     ; explosion
 ;	.byte 0,0,0,255
 
 PMG_IMG_EXPLOSION
-; this pattern is too dense
-;	.BYTE $24  ; ..1..1..
-;	.BYTE $5a  ; .1.11.1.
-;	.BYTE $24  ; ..1..1..
-;	.BYTE $c3  ; 11....11
-;	.BYTE $24  ; ..1..1..
-;	.BYTE $5a  ; .1.11.1.
-;	.BYTE $24  ; ..1..1..
-
 	.BYTE $81  ; 1......1
 	.BYTE $24  ; ..1..1..
 	.BYTE $00  ; ........
@@ -213,34 +188,6 @@ PMG_IMG_EXPLOSION
 	.BYTE $00  ; ........
 	.BYTE $24  ; ..1..1..
 	.BYTE $81  ; 1......1
-
-; ==========================================================================
-; PLAYER MISSILE IMAGE SHAPE LOOKUPS
-
-;PMG_IMG_MOTHERSHIP_ID = 0
-;PMG_IMG_EXPLOSION_ID  = 1
-;PMG_IMG_CANNON_ID     = 2
-;PMG_IMG_LASER_ID      = 3
-
-;TABLE_LO_PMG_IMAGES
-;	.byte <PMG_IMG_MOTHERSHIP,<PMG_IMG_EXPLOSION,<PMG_IMG_CANNON,<PMG_IMG_LASER
-
-;TABLE_HI_PMG_IMAGES
-;	.byte >PMG_IMG_MOTHERSHIP,>PMG_IMG_EXPLOSION,>PMG_IMG_CANNON,>PMG_IMG_LASER
-
-
-; ==========================================================================
-; PLAYER MISSILE HARDWARE LOOKUPS
-
-;PMG_PLAYER0_ID = 0
-;PMG_PLAYER1_ID = 1
-;PMG_PLAYER2_ID = 2
-;PMG_PLAYER3_ID = 3
-;PMG_MISSILE_ID = 4 ; No missile sharing, so no masking missile 3, 2, 1, 0
-
-;TABLE_HI_PMG
-;	.byte >PLAYERADR0,>PLAYERADR1,>PLAYERADR2,>PLAYERADR3,>MISSILEADR
-
 
 
 ; ==========================================================================
@@ -410,7 +357,7 @@ PM_TITLE_BITMAP_LINE6 ; .by 00000000 10100010 10001000 10101110 11111010 0010000
 ; Because no space was actually declared for each Player/Missile bitmap, 
 ; the end of Player/Missile space needs to be specified, to make the 
 ; Assembler NOT overwrite this memory with whatever comes next.  
-; (Saves space in the Atari's structure executable file format.)
+; (Saves lots of space in the Atari's structure executable file format.)
 ; --------------------------------------------------------------------------
 
 	.align $0800

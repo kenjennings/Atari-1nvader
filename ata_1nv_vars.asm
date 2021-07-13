@@ -32,8 +32,6 @@ zMOTHERSHIP_DIR             .byte $00 ; Mothership direction.  0 = left to right
 zMOTHERSHIP_ANIM            .byte $00 ; Animation frame for windows
 zMOTHERSHIP_ANIM_FRAME      .byte 3   ; delay for animation 
 zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed index into speed table 0, 2, 4, ..., 14 
-;zMOTHERSHIP_MOVE_COUNTER    .byte $00 ; Game mothership speed counter -- toggle 0 and 1.               
-;zMOTHERSHIP_SPEEDUP_THRESH  .byte $00 ; Game mothership speed up threshold 
 zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
 zMOTHERSHIP_MOVEMENT        .byte $00 ; Value to add/subtract from Mothership X
 zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
@@ -85,7 +83,6 @@ zMOTHERSHIP_ROW_AS_DIGITS   .byte $00,$00 ; Mothership text line row number as 2
 ; 14 = 0175 ; 15 = 0150 ; 16 = 0125 ; 17 = 0100
 ; 18 = 0075 ; 19 = 0050 ; 20 = 0025 ; 21 = 0001
 
-
 TABLE_MOTHERSHIP_POINTS
 	.byte $10,$00,$05,$00,$04,$75,$04,$50,$04,$25 ;  0 -  4
 	.byte $04,$00,$03,$75,$03,$50,$03,$25,$03,$00 ;  5 -  9
@@ -105,7 +102,7 @@ TABLE_STAR_LOCATION ; star
 ; This is also do-able with a LSR to multiply times 8 then add offset.
 
 TABLE_ROW_TO_Y ; r2ytab 
-.byte 38,44,52,60     ; 0  - 3 ; 36
+.byte 36,44,52,60     ; 0  - 3 ; 36
 .byte 68,76,84,92     ; 4  - 7
 .byte 100,108,116,124 ; 8  - 11
 .byte 132,140,148,156 ; 12 - 15

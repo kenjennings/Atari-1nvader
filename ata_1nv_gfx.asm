@@ -334,6 +334,7 @@ DISPLAY_LIST_GAMEOVER                                       ; Main Game and Game
 ; and after start to make sure the DLI to START the stars does not begin 
 ; on text mode line 2, and the DLI to begin the scrolling mountains 
 ; does not begin on the moded 6 line for stars.
+
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE               ; 00 (020 - 027) (2) P1 score, High score, P2 score
 	mDL_BLANK [DL_BLANK_1|DL_DLI] 
 DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first star's LMS address
@@ -358,7 +359,6 @@ DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first
 
 DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over Text
 
-;	.rept 9
 	.rept 8
 		mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+4   ; 07 (083 - 090) (171) (6) Stars
 		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 07 (082 - 082) 
@@ -379,13 +379,9 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over
 															; 14 (145 - 145) 
 															; 14 (146 - 153) (171) (6) Stars
 															; 15 (154 - 154) 
-															; 15 (155 - 162) (171) (6) Stars
-;	mDL_LMS   [DL_TEXT_6|DL_HSCROLL|DL_DLI],GFX_STARS_LINE+5     
+															; 15 (155 - 162) (171) (6) Stars   
 	mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5     
 	
-;		mDL_BLANK DL_BLANK_5
-;		mDL_BLANK [DL_BLANK_8|DL_DLI] 
-	; 16 (164 - 171) (171) (6) Stars
 
 	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
 
@@ -641,22 +637,22 @@ GFX_END_DOCS
 mountc	; mountain screen view chars
 		; Note all values modified -$20 for Atari character codes.
 GFX_MOUNTAINS1
-	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
+	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the first two chars in the buffer.
 	.byte $00,$bd,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$bd,$00,$00,$00 
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$bd,$00,$00,$00,$00,$00,$00,$00,$00,$00,$3d,$00
 
 GFX_MOUNTAINS2
-	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
+	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the first two chars in the buffer.
 	.byte $bb,$be,$bc,$7d,$00,$00,$00,$00,$00,$00,$00,$00,$7d,$00,$00,$bb,$be,$bc,$00,$00 
 	.byte $00,$00,$00,$00,$00,$7b,$7c,$bb,$be,$bc,$7d,$00,$00,$00,$00,$00,$7d,$bb,$be,$bc
 
 GFX_MOUNTAINS3
-	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
+	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the first two chars in the buffer.
 	.byte $3d,$00,$00,$bc,$7c,$00,$00,$00,$00,$3b,$3c,$7b,$7e,$7c,$bb,$00,$00,$00,$bc,$00 
 	.byte $00,$00,$00,$00,$7b,$00,$00,$7c,$00,$7b,$7e,$7c,$00,$00,$00,$7b,$7e,$7c,$00,$3d
 
 GFX_MOUNTAINS4
-	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the foirst two chars in the buffer.
+	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the first two chars in the buffer.
 	.byte $3f,$3c,$00,$00,$00,$7c,$00,$00,$3b,$00,$00,$3c,$00,$bb,$00,$00,$00,$00,$00,$bc 
 	.byte $00,$00,$00,$7b,$00,$00,$00,$00,$00,$00,$00,$00,$7c,$00,$7b,$00,$00,$00,$3b,$3f
 
@@ -693,6 +689,7 @@ TABLE_LAND_COLPF1
 
 TABLE_LAND_COLPF2
 	.byte $0E,$0C,$9A,$98,$96,$94,$92,$90
+
 
 
 ; This is 40 chars, because it won't "move" by LMS changes.

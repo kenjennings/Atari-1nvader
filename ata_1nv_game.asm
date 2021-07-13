@@ -299,8 +299,6 @@ GameSetupTitle
 	lda #$00
 	sta zSTATS_TEXT_COLOR
 
-;	jsr Gfx_Clear_Stats
-
 	jsr Gfx_ShowScreen
 
 	; ===== The Big Logo =====
@@ -622,17 +620,11 @@ b_gc_EndMothership             ; Fall through here to run the game.
 
 b_gc_StartGame
 
-; Stuff Goes here to start the game. . . .
-
-; init flashing stars.
-; Init player motions.
-; Switch states.
-; Init mothership, scores, etc.
-
 	lda #EVENT_SETUP_GAME   
 	sta zCurrentEvent
 
 b_gc_End
+
 
 ; Flashy color scroll on the Countdown text.
 
@@ -711,15 +703,10 @@ b_gsm_Loop_ZeroPlayerScores
 
 	; M O T H E R S H I P 
 
-	jsr GameResetHitCounter
+	jsr GameResetHitCounter         ; initilize hit counter and speed
                                     
-;	lda #0                         ; initial mothership speed
-;	sta zMOTHERSHIP_MOVE_SPEED
-;	lda #10                         ; should be 10
-;	sta zMOTHERSHIP_SPEEDUP_THRESH  ; speedup threshld - every 10 shots it speeds up
-;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; speedup count offset
-
 	jsr GameRandomizeMothership     ; Set random direction , and starting X position.
+
 	ldx #0
 	jsr GameSetMotherShipRow        ; Convert Row 0 to Y position on screen.
 	lda #24
@@ -745,10 +732,10 @@ b_gsm_Loop_ZeroPlayerScores
 
 	; O T H E R    G A M E    V I S U A L S 
 
-	jsr Gfx_ShowScreen
-
 	lda #$08
 	sta zSTATS_TEXT_COLOR           ; Turn on stats line.
+
+	jsr Gfx_ShowScreen
 
 	lda #2                          ; Reset the animation timer for players/left/right movement.
 	sta zAnimatePlayers
@@ -802,13 +789,11 @@ b_gsm_Loop_ZeroPlayerScores
 ;       iii) update other player if needed.
 ;
 ; 6) If mothership reaches limit MIN, or MAX on last row.
-;    a) remove all guns and mothership,. (lasers/explosions not possible to be visible). 
+;    a) shift off all guns and mothership. 
 ;    b) Set flag to go to End Game.
 ; --------------------------------------------------------------------------
 
 GameMain
-
-;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
 	jsr GameAddScoreToPlayer
 
@@ -816,46 +801,18 @@ GameMain
 
 	jsr Gfx_ShowScreen
 
-;	lda #$10
-;	sta COLBK
-;	sta WSYNC
-	
-	jsr GamePlayersMovement     ; 1
-	
-;	lda #$30
-;	sta COLBK
-;	sta WSYNC
-	
-;	jsr CheckNewExplosions      ; 2
+	jsr GamePlayersMovement        ; 1
 
-;	lda #$50
-;	sta COLBK
-;	sta WSYNC
-	
-	jsr CheckLasersInProgress   ; 3
-	
-;	lda #$70
-;	sta COLBK
-;	sta WSYNC
-	
-	jsr CheckPlayersShooting    ; 4
-	
-;	lda #$90
-;	sta COLBK
-;	sta WSYNC
-	
-	jsr GameMothershipMovement  ; 5
+;	jsr CheckNewExplosions         ; 2  -- handled in the VBI instead
 
-;	lda #$b0
-;	sta COLBK
-;	sta WSYNC
-	
+	jsr CheckLasersInProgress      ; 3
+
+	jsr CheckPlayersShooting       ; 4
+
+	jsr GameMothershipMovement     ; 5
+
 ;	jsr Supervise Last Row motion. ; 6
 
-;	lda #$d0
-;	sta COLBK
-;	sta WSYNC
-	
 	rts
 
 

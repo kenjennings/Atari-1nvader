@@ -236,7 +236,11 @@ b_pdbm_LoopZero
 ; Analyze collision registers and set various variables for other 
 ; code to reference later.
 ;
-; If the mothership is on row 22 where the guns are, then zero all flags.
+; If the mothership is on row 22 where the guns are, then keep the 
+; collision flags as zero.
+; Collisions are not collected, so that the mothership hitting the guns 
+; doesn't trigger the laser hit consequences.  (Lasers are the same 
+; player object as the guns.)
 ;
 ; End by strobing HITCLR.
 ; --------------------------------------------------------------------------
@@ -257,7 +261,7 @@ Pmg_CollectCollisions
 	lda #0                            ; Yes, Zero the stats color
 	sta zSTATS_TEXT_COLOR             ; which will blank the stats line.
 	beq b_pcc_EndOfCollisionDetection
-	
+
 b_pcc_SetCollisionFlags
 	lda P0PL                         ; GTIA collision register Player 0 (laser 1)...
 	and #COLPMF2_BIT                 ; Hit Player 2 (mothership)?

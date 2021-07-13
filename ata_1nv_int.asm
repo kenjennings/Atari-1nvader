@@ -511,7 +511,7 @@ b_mdv_DoGameManagement
 
 b_mdv_DoTheGame
 	lda #0
-	sta zDLIStarLinecounter   ; reset DLI counter.
+	sta zDLIStarLinecounter        ; reset DLI counter.
 
 	jsr Pmg_CollectCollisions      ; Collect collision bits, set flags, hit HITCLR
 
@@ -523,7 +523,7 @@ b_mdv_DoTheGame
 
 	jsr Pmg_Draw_Lasers            ; draw lasers if present.
 
-	jsr Pmg_ManagePlayersMovement  ;  Handles guns for Title and Game displays.
+	jsr Pmg_ManagePlayersMovement  ; Handles guns for Title and Game displays.
 
 
 ; ========  END OF GAME SCREEN  ========
@@ -880,7 +880,9 @@ TITLE_DLI_5
 	sta WSYNC   ; (1.1)      ; Skip 3 more scan lines.
 	sta WSYNC   ; (1.2)
 	sta WSYNC   ; (1.3)
-
+	
+	sta WSYNC   ; (1.4)      ; 4th line, start new colors.
+	
 	sta COLPF0               ; Load the three registers for PF0, PF1, PF2 
 
 	lda TABLE_LAND_COLPF1,y

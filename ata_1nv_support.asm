@@ -179,6 +179,160 @@ b_mmpu_Exit
 
 
 ; ==========================================================================
+; ADD SCORE TO PLAYER
+; ==========================================================================
+; Add the Mothership points to the player credited with the hit.
+; --------------------------------------------------------------------------
+
+GameAddScoreToPlayer
+
+	ldx #0
+	jsr GameAddScore
+
+	ldx #1
+	jsr GameAddScore
+
+	rts
+
+
+; ==========================================================================
+; ADD SCORE
+; ==========================================================================
+; If this player shot the mothership, then:
+; - Count the hit againt the mothership's hit counter.
+; - Add the Mothership points to the player credited with the hit.
+;
+; Working with individual bytes per digit means the carry flag will 
+; not occur in CPU.   The carry state is determined by logic, then
+; the A register is started with 0 or 1 per carry for the math
+; on the next digit.
+;
+; I'm sure this is highly-awful, sub-optimal, low-quality hackage.
+;
+; X == Player to award points (if the player shot the sheriff).
+; --------------------------------------------------------------------------
+
+GameAddScore
+
+	lda zPLAYER_SHOT_THE_SHERIFF,X     ; Did this player get the hit?
+	beq b_gas_Exit                     ; No.  Nothing to do here.
+
+	jsr GameDecrementtHitCounter       ; Player award means minus 1 hit.
+
+	lda #0                             ; Clear the artificial carry.
+	ldy #5                             ; Index into mothership points.
+
+	cpx #0                             ; If this is not zero, then
+	bne b_gas_OtherPlayer              ; set index into score for player 2
+
+	ldx #5                             ; Index into Player score. (For player 1)
+	bne b_gas_AddLoop                  ; Go add.
+
+b_gas_OtherPlayer
+	ldx #11                            ; Index into Player score. (For player 2)                 
+
+b_gas_AddLoop                          ; on first entry A for carry == 0
+	clc                                ; Clear CPU carry.
+	adc zPLAYERPOINTS_TO_ADD,Y         ; Add mothership points (+ A as carry)
+	adc zPLAYER_SCORE,X                ; Add to player score
+
+	cmp #10                            ; Did Adding go over 9? (>= 10? )
+	bcc b_gas_NoCarry                  ; No.  Do not carry.
+
+b_gas_Carried                          ; Player score carried over 9.
+	sec
+	sbc #10                            ; Subtract 10 from score
+	sta zPLAYER_SCORE,X                ; Save the adjusted score.
+	lda #1                             ; Setup 1 for artificial carry.
+	bne b_gas_LoopControl              ; Go to end of loop
+
+b_gas_NoCarry                          ; Player score carried over 9.
+	sta zPLAYER_SCORE,X                ; Save the added score.
+	lda #0                             ; Setup 0 for artificial carry.
+
+b_gas_LoopControl    
+	dex                                ; Move left to next digit
+	dey                                ; Move left to next digit
+	bpl b_gas_AddLoop                  ; Loop until index goes to -1
+
+b_gas_Exit
+	rts
+
+
+; ==========================================================================
+; CHECK HIGH SCORE
+; ==========================================================================
+; Test Player score v High score, and copy player score to high 
+; score if greater than the high score.
+; 
+; X == player to test
+; --------------------------------------------------------------------------
+
+GameCheckHighScores
+
+	ldx #0
+	jsr GameCheckHighScore
+
+	ldx #1
+	jsr GameCheckHighScore
+
+	rts
+
+
+; ==========================================================================
+; CHECK HIGH SCORE
+; ==========================================================================
+; Test Player score v High score, and copy player score to high 
+; score if greater than the high score.
+; 
+; X == player to test
+; --------------------------------------------------------------------------
+
+GameCheckHighScore
+
+	lda zPLAYER_ON,X
+	beq b_gchs_Exit
+
+	ldy #0                         ; Index into high score points.
+
+	cpx #0                         ; If this is first player, then X is 
+	beq b_ghcs_SaveX               ; already 0 for score index.  Just go.
+
+	ldx #6                         ; Index into score for player 1 
+
+b_ghcs_SaveX
+	stx SAVEX                      ; Need to get this X value back again later.
+
+b_gchs_CheckLoop                   ; Check while digits are equal.
+	lda zPLAYER_SCORE,X
+	cmp zHIGH_SCORE,Y              
+	beq b_gchs_LoopControl         ; If it is the same continue looping.
+	bcc b_gchs_Exit                ; If it is less than, then exit.  No hi score.
+
+	; A digit is greater than hi score, so copy!
+	ldx SAVEX                      ; Restore index value determined earlier.
+	ldy #0                         ; Index into high score points.
+
+b_gchs_CopyHiScoreLoop
+	lda zPLAYER_SCORE,X            ; Copy the six 
+	sta zHIGH_SCORE,Y              ; bytes of the 
+	inx                            ; player score
+	iny                            ; to the 
+	cpy #6                         ; high score.
+	bne b_gchs_CopyHiScoreLoop
+	rts
+
+b_gchs_LoopControl                 
+	inx                            ; next index in player score.
+	iny                            ; Next index in high score
+	cpy #6
+	bne b_gchs_CheckLoop
+
+b_gchs_Exit
+	rts
+
+
+; ==========================================================================
 ; SUPPORT - MOVE GAME PLAYERS GUNS
 ; ==========================================================================
 ; Runs during main Game
@@ -366,83 +520,6 @@ b_gpm_Exit
 
 
 ; ==========================================================================
-; SUPPORT - CHECK NEW EXPLOSIONS
-; ==========================================================================
-; Runs during main Game
-; 
-; For Each player check if the Laser hit the mothership.
-;
-; 2) Is Bang set (Player to Mothership collision)? (both players)
-;    a) Set laser to remove it from screen
-;    b) Add points to player
-;    c) Explosion on, X, y == Current Mothership X, Y
-;
-; If any bang occurred, then 
-; - adjust new mothership position 
-; - update hit counter/mothership speed
-;
-; --------------------------------------------------------------------------
-
-CheckNewExplosions
-
-	ldx #0
-	jsr CheckNewExplosion
-
-	ldx #1
-	jsr CheckNewExplosion
-
-	rts
-
-
-; ==========================================================================
-; SUPPORT - CHECK LASERS IN PROGRESS
-; ==========================================================================
-; Runs during main Game
-; 
-; 3) If laser is running, update Y =  Y - 4.
-;    a) if Y reaches min Y, set laser to remove it from screen
-;
-; --------------------------------------------------------------------------
-
-CheckLasersInProgress
-
-	ldx #0
-	jsr CheckLaserInProgress
-
-	ldx #1
-	jsr CheckLaserInProgress
-
-	rts
-
-
-; ==========================================================================
-; SUPPORT - CHECK PLAYERS SHOOTING
-; ==========================================================================
-; Runs during main Game
-; 
-; 4) Trigger pressed?
-;    a) if gun is Off, skip shooting
-;    b) if gun is crashed [alien is pushing], skip shooting
-;    c) If lazer Y, in bottom half of screen, skip shooting
-;       i) set lazer on, 
-;       ii) Laser Y = gun new Y - 4, Laser X = gun new X + 4
-;       iii) If no bounce this turn, then negate direction/set bounce.
-;
-; --------------------------------------------------------------------------
-
-CheckPlayersShooting
-
-	ldx #0
-	jsr CheckPlayerShooting
-
-	ldx #1
-	jsr CheckPlayerShooting
-
-	rts
-
-
-
-; ==========================================================================
 ; SUPPORT - MOVE PLAYER LEFT                                      X
 ; ==========================================================================
 ; Runs during main Game
@@ -583,9 +660,38 @@ b_gmprtb_Exit
 
 
 ; ==========================================================================
+; SUPPORT - CHECK NEW EXPLOSIONS
+; ==========================================================================
+; Runs during VBI
+; 
+; For Each player check if the Laser hit the mothership.
+;
+; 2) Is Bang set (Player to Mothership collision)? (both players)
+;    a) Set laser to remove it from screen
+;    b) Add points to player
+;    c) Explosion on, X, y == Current Mothership X, Y
+;
+; If any bang occurred, then 
+; - adjust new mothership position 
+; - update hit counter/mothership speed
+;
+; --------------------------------------------------------------------------
+
+CheckNewExplosions
+
+	ldx #0
+	jsr CheckNewExplosion
+
+	ldx #1
+	jsr CheckNewExplosion
+
+	rts
+
+
+; ==========================================================================
 ; SUPPORT - CHECK NEW EXPLOSION
 ; ==========================================================================
-; Runs during main Game
+; Runs during VBI
 ; 
 ; 2) Is Bang set (Player to Mothership collision)? (both players)
 ;    a) Set laser to remove it from screen
@@ -616,6 +722,27 @@ CheckNewExplosion
 	sta zEXPLOSION_COUNT          ; jiffy count for explosion graphic
 
 b_cne_Exit
+	rts
+
+
+; ==========================================================================
+; SUPPORT - CHECK LASERS IN PROGRESS
+; ==========================================================================
+; Runs during main Game
+; 
+; 3) If laser is running, update Y =  Y - 4.
+;    a) if Y reaches min Y, set laser to remove it from screen
+;
+; --------------------------------------------------------------------------
+
+CheckLasersInProgress
+
+	ldx #0
+	jsr CheckLaserInProgress
+
+	ldx #1
+	jsr CheckLaserInProgress
+
 	rts
 
 
@@ -654,6 +781,32 @@ b_clip_UpdateY
 	sta zLASER_NEW_Y,X  ; New Y is set.
 
 b_clip_Exit
+	rts
+
+
+; ==========================================================================
+; SUPPORT - CHECK PLAYERS SHOOTING
+; ==========================================================================
+; Runs during main Game
+; 
+; 4) Trigger pressed?
+;    a) if gun is Off, skip shooting
+;    b) if gun is crashed [alien is pushing], skip shooting
+;    c) If lazer Y, in bottom half of screen, skip shooting
+;       i) set lazer on, 
+;       ii) Laser Y = gun new Y - 4, Laser X = gun new X + 4
+;       iii) If no bounce this turn, then negate direction/set bounce.
+;
+; --------------------------------------------------------------------------
+
+CheckPlayersShooting
+
+	ldx #0
+	jsr CheckPlayerShooting
+
+	ldx #1
+	jsr CheckPlayerShooting
+
 	rts
 
 
@@ -704,6 +857,174 @@ b_cps_TestDebounce          ; The button must have been released before shooting
 	jsr StartShot           ; Yippie-Ki-Yay Bang Bang Shoot Shoot.
 
 b_cps_Exit
+	rts
+
+
+; ==========================================================================
+; SUPPORT - MOVE GAME MOTHERSHIP
+; ==========================================================================
+; Runs during main Game
+; 
+; Horizontally moves the mothership.
+; When the end of the line is reached, flip the direction, and move 
+; to the next row.   (This triggers the vertical move down which will 
+; be animated by the VBI.)
+;
+; Note that when the mothership is on line 22 it will go all the way 
+; to the end of the byte value for HPOS (0 or 255)
+;
+; ==========================================================================
+; F Y I -- MOTHERSHIP SPEED CONTROL
+; ==========================================================================
+; The original game had a series of variables and triggered
+; speed change by maintaining a separate counter for every 10 hits.
+; SPEEDUP THRESHOLD, SPEEDUP COUNTER, MOVE SPEED and MOVE COUNTER.
+; The logic around these is mostly separate from the hit counter, but 
+; would synchronize to the mothership hit counter reset.
+;
+; SPEEDUP THRESHOLD statically holds "10." 
+; SPEEDUP COUNTER starts at the SPEEDUP THRESHOLD value and it 
+; decrements with each mothership hit.
+; When SPEEDUP COUNTER reaches 0, reset it to the SPEEDUP THRESHOLD and 
+; then increment the MOVE SPEED.  
+; MOVE SPEED starts at "2".  This indicates the number of times the 
+; mothership should move a pixel (C64's half-color clock pixels.)
+; (And so, 2 "pixels" is one Atari color clock.)
+; MOVE COUNTER is set to the value of MOVE SPEED.  It is used as a
+; loop counter to move the mothership horizontally one pixel per 
+; each loop.
+;
+; Thus every 10 motherhip hits increments the MOVE SPEED and the 
+; MOVE SPEED is limited to count from 2 to 9, or 8 values.  This 
+; matches the 80 mothership hits.  And then all values return to 
+; the original "2" speed.
+;
+; For the Atari version looping to move the mothership will not 
+; be required.  The mothership can be moved in one step with 
+; addition instead of incrementing by 1.  Instead of checking for 
+; equality when reaching the left or right side of the screen the
+; comparisons simply need to change to "greater than or equal to", 
+; or "less than or equal to".  Also, counting hits indirectly is 
+; not needed.  The Atari code increments the speed counter when 
+; the ones digit for the hit counter decrements to become "0". 
+; Also, the code resets the speed controls when it resets the 
+; overall hit counter.
+;
+; Furthermore, the C64 increments movement by half-color clock pixels
+; where Atari Player/missile graphics are based on color-clocks.   
+; When the C64 is moving an even number of pixels, this corresponds 
+; to half the number of Atari pixels, so this has a direct parallel.
+;
+; However, where there are an odd number of pixels for the C64 the 
+; Atari can't directly use the same amount of horizontal movement.  
+; The Atari uses a two frame average where each frame moves a 
+; different number of color clocks, so that the average of two 
+; frames works out to the same effective distance used for the C64 
+; version.
+; 
+; This chart explains how the pixel distance is equal over two 
+; sequential frames.   The Atari color clocks are one-half the
+; number of C64 half-color clock pixels.
+:
+; MOVE   C64              ATARI       HIT COUNTER
+; SPEED  PIXELS           PIXELS      VALUE RANGE
+;  2 ==   2   2  (4)  ==  1  1 (2)  ; 80 to 71 hit counter
+;  3 ==  2+1 2+1 (6)  ==  1  2 (3)  ; 70 to 61 hit counter
+;  4 ==   4   4  (8)  ==  2  2 (4)  ; 60 to 51 hit counter
+;  5 ==  4+1 4+1 (10) ==  2  3 (5)  ; 50 to 41 hit counter
+;  6 ==   6   6  (12) ==  3  3 (6)  ; 40 to 31 hit counter
+;  7 ==  6+1 6+1 (14) ==  3  4 (7)  ; 30 to 21 hit counter
+;  8 ==   8   8  (16) ==  4  4 (8)  ; 20 to 11 hit counter.
+;  9 ==  8+1 8+1 (18) ==  4  5 (9)  ; 10 to 1  hit counter.
+; 
+; Then the Atari version uses a lookup table based on the current 
+; speed index.  Since "Speed" is now an index, not a direct count of 
+; pixels, the Atari code can iterate from 0 to 7 instead of 2 to 9.
+; Also, each call to draw the mothership toggles an index offset 
+; from +0 to +1 used to chose between the two frame increment values.
+; --------------------------------------------------------------------------
+
+GameMothershipMovement
+
+	lda zMOTHERSHIP_Y
+	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
+	bne b_gmm_Exit_MS_Move ; No.  Skip this until vertical positions match. (VBI does this).
+
+; Determine speed (distance to move) here.
+; See discussion above.   There are two possible entries 
+; from the table (indexed by Move speed + 0, and Move speed + 1)
+; Toggle the counter value to create the +0/+1 offset each frame.
+
+	ldy zMOTHERSHIP_MOVE_SPEED      ; index into speed table.
+	dec zMOTHERSHIP_SPEEDUP_COUNTER ; toggle the offsetter, 1,0,-1 (1).
+	bpl b_gmm_ContinueSpeedSetup    ; If still positive, then collect speed value 
+	lda #1                          ; Offsetter Went negative.  
+	sta zMOTHERSHIP_SPEEDUP_COUNTER ; Reset the offsetter to 1.
+	iny                             ; increment the index into the speed table.
+
+b_gmm_ContinueSpeedSetup
+	lda TABLE_SPEED_CONTROL,y       ; A == value from speed table to add/subtract 
+	sta zMOTHERSHIP_MOVEMENT        ; Save new value to add/subtract  
+
+	lda zMOTHERSHIP_X               ; A == Get current X position
+
+
+	ldy zMOTHERSHIP_DIR      ; Test direction. ; 0 == left to right. 1 == right to left.
+	bne b_gmm_Mothership_R2L ; 1 = Right to Left
+
+; Moving Left to Right
+
+	clc                      ; Doing left to right. 
+	adc zMOTHERSHIP_MOVEMENT ; A already contains the X position.  Add the movement.
+	cmp #MOTHERSHIP_MAX_X    ; Is the new value at the max?
+	bcc b_gmm_Save_MSX_L2R   ; A  less than max, so just save it.
+	lda #MOTHERSHIP_MAX_X    ; reset to max.
+
+b_gmm_Save_MSX_L2R
+	sta zMOTHERSHIP_NEW_X    ; Save new Mothership X
+	cmp #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
+	bne b_gmm_Exit_MS_Move   
+	beq b_gmm_MS_ReverseDirection 
+
+; Moving Right to Left
+
+b_gmm_Mothership_R2L 
+	sec                      ; Doing right to left. 
+	sbc zMOTHERSHIP_MOVEMENT ; A already contains the increment value, Add X
+	cmp #MOTHERSHIP_MIN_X    ; Is the new value at the min?
+	bcs b_gmm_Save_MSX_R2L   ; A >= min, so just save the new value. 
+	lda #MOTHERSHIP_MIN_X    ; reset to min.
+	
+b_gmm_Save_MSX_R2L
+	sta zMOTHERSHIP_NEW_X    ; Save new Mothership X
+	cmp #MOTHERSHIP_MIN_X    ; Reached min means time to inc Y and reverse direction.
+	bne b_gmm_Exit_MS_Move   ; Not at min.  Exit.
+
+; Flip direction is Mothership reaches Min or Max position.
+; Also setup Mothership to move to the next row.
+
+b_gmm_MS_ReverseDirection
+	lda zMOTHERSHIP_DIR      ; Toggle X direction.
+	beq b_gmm_Set_R2L        ; is 0, set 1 = Right to Left
+	lda #0
+	beq b_gmm_UpdateDirection
+b_gmm_Set_R2L
+	lda #1
+b_gmm_UpdateDirection
+	sta zMOTHERSHIP_DIR
+
+b_gmm_CheckLastRow
+	ldx zMOTHERSHIP_ROW      ; Get current row.
+	; HACK HACK HACK HACK -- testing scoring algorithms and counts.
+	; HACK HACK HACK HACK -- keeping mothership to row 21, so game doesn't end.
+;	cpx #21                  ; If on last row, then it has
+	cpx #22                  ; If on last row, then it has
+	beq b_gmm_Exit_MS_Move   ; reached the end of incrementing rows.
+
+	inx                      ; Next row.
+	jsr GameSetMotherShipRow ; Given Mothership row (X), update the mother ship wow and set new, target Y position. 
+
+b_gmm_Exit_MS_Move
 	rts
 
 
@@ -923,177 +1244,14 @@ b_gsc_Exit
 	rts
 
 
-; ==========================================================================
-; SUPPORT - MOVE GAME MOTHERSHIP
-; ==========================================================================
-; Runs during main Game
-; 
-; Horizontally moves the mothership.
-; When the end of the line is reached, flip the direction, and move 
-; to the next row.   (This triggers the vertical move down which will 
-; be animated by the VBI.)
-;
-; ==========================================================================
-; F Y I -- MOTHERSHIP SPEED CONTROL
-; ==========================================================================
-; The original game had a series of variables and triggered
-; speed change by maintaining a separate counter for every 10 hits.
-; SPEEDUP THRESHOLD, SPEEDUP COUNTER, MOVE SPEED and MOVE COUNTER.
-; The logic around these is mostly separate from the hit counter, but 
-; would synchronize to the mothership hit counter reset.
-;
-; SPEEDUP THRESHOLD statically holds "10." 
-; SPEEDUP COUNTER starts at the SPEEDUP THRESHOLD value and it 
-; decrements with each mothership hit.
-; When SPEEDUP COUNTER reaches 0, reset it to the SPEEDUP THRESHOLD and 
-; then increment the MOVE SPEED.  
-; MOVE SPEED starts at "2".  This indicates the number of times the 
-; mothership should move a pixel (C64's half-color clock pixels.)
-; (And so, 2 "pixels" is one Atari color clock.)
-; MOVE COUNTER is set to the value of MOVE SPEED.  It is used as a
-; loop counter to move the mothership horizontally one pixel per 
-; each loop.
-;
-; Thus every 10 motherhip hits increments the MOVE SPEED and the 
-; MOVE SPEED is limited to count from 2 to 9, or 8 values.  This 
-; matches the 80 mothership hits.  And then all values return to 
-; the original "2" speed.
-;
-; For the Atari version looping to move the mothership will not 
-; be required.  The mothership can be moved in one step with 
-; addition instead of incrementing by 1.  Instead of checking for 
-; equality when reaching the left or right side of the screen the
-; comparisons simply need to change to "greater than or equal to", 
-; or "less than or equal to".  Also, counting hits indirectly is 
-; not needed.  The Atari code increments the speed counter when 
-; the ones digit for the hit counter decrements to become "0". 
-; Also, the code resets the speed controls when it resets the 
-; overall hit counter.
-;
-; Furthermore, the C64 increments movement by half-color clock pixels
-; where Atari Player/missile graphics are based on color-clocks.   
-; When the C64 is moving an even number of pixels, this corresponds 
-; to half the number of Atari pixels, so this has a direct parallel.
-;
-; However, where there are an odd number of pixels for the C64 the 
-; Atari can't directly use the same amount of horizontal movement.  
-; The Atari uses a two frame average where each frame moves a 
-; different number of color clocks, so that the average of two 
-; frames works out to the same effective distance used for the C64 
-; version.
-; 
-; This chart explains how the pixel distance is equal over two 
-; sequential frames.   The Atari color clocks are one-half the
-; number of C64 half-color clock pixels.
-:
-; MOVE   C64              ATARI       HIT COUNTER
-; SPEED  PIXELS           PIXELS      VALUE RANGE
-;  2 ==   2   2  (4)  ==  1  1 (2)  ; 80 to 71 hit counter
-;  3 ==  2+1 2+1 (6)  ==  1  2 (3)  ; 70 to 61 hit counter
-;  4 ==   4   4  (8)  ==  2  2 (4)  ; 60 to 51 hit counter
-;  5 ==  4+1 4+1 (10) ==  2  3 (5)  ; 50 to 41 hit counter
-;  6 ==   6   6  (12) ==  3  3 (6)  ; 40 to 31 hit counter
-;  7 ==  6+1 6+1 (14) ==  3  4 (7)  ; 30 to 21 hit counter
-;  8 ==   8   8  (16) ==  4  4 (8)  ; 20 to 11 hit counter.
-;  9 ==  8+1 8+1 (18) ==  4  5 (9)  ; 10 to 1  hit counter.
-; 
-; Then the Atari version uses a lookup table based on the current 
-; speed index.  Since "Speed" is now an index, not a direct count of 
-; pixels, the Atari code can iterate from 0 to 7 instead of 2 to 9.
-; Also, each call to draw the mothership toggles an index offset 
-; from +0 to +1 used to chose between the two frame increment values.
-; --------------------------------------------------------------------------
-
-GameMothershipMovement
-
-	lda zMOTHERSHIP_Y
-	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
-	bne b_gmm_Exit_MS_Move ; No.  Skip this until vertical positions match. (VBI does this).
-
-; Determine speed (distance to move) here.
-; See discussion above.   There are two possible entries 
-; from the table (indexed by Move speed + 0, and Move speed + 1)
-; Toggle the counter value to create the +0/+1 offset each frame.
-
-	ldy zMOTHERSHIP_MOVE_SPEED      ; index into speed table.
-	dec zMOTHERSHIP_SPEEDUP_COUNTER ; toggle the offsetter, 1,0,-1 (1).
-	bpl b_gmm_ContinueSpeedSetup    ; If still positive, then collect speed value 
-	lda #1                          ; Offsetter Went negative.  
-	sta zMOTHERSHIP_SPEEDUP_COUNTER ; Reset the offsetter to 1.
-	iny                             ; increment the index into the speed table.
-
-b_gmm_ContinueSpeedSetup
-	lda TABLE_SPEED_CONTROL,y       ; A == value from speed table to add/subtract 
-	sta zMOTHERSHIP_MOVEMENT        ; Save new value to add/subtract  
-
-	lda zMOTHERSHIP_X               ; A == Get current X position
-
-
-	ldy zMOTHERSHIP_DIR      ; Test direction. ; 0 == left to right. 1 == right to left.
-	bne b_gmm_Mothership_R2L ; 1 = Right to Left
-
-; Moving Left to Right
-
-	clc                      ; Doing left to right. 
-	adc zMOTHERSHIP_MOVEMENT ; A already contains the X position.  Add the movement.
-	cmp #MOTHERSHIP_MAX_X    ; Is the new value at the max?
-	bcc b_gmm_Save_MSX_L2R   ; A  less than max, so just save it.
-	lda #MOTHERSHIP_MAX_X    ; reset to max.
-
-b_gmm_Save_MSX_L2R
-	sta zMOTHERSHIP_NEW_X    ; Save new Mothership X
-	cmp #MOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
-	bne b_gmm_Exit_MS_Move   
-	beq b_gmm_MS_ReverseDirection 
-
-; Moving Right to Left
-
-b_gmm_Mothership_R2L 
-	sec                      ; Doing right to left. 
-	sbc zMOTHERSHIP_MOVEMENT ; A already contains the increment value, Add X
-	cmp #MOTHERSHIP_MIN_X    ; Is the new value at the min?
-	bcs b_gmm_Save_MSX_R2L   ; A >= min, so just save the new value. 
-	lda #MOTHERSHIP_MIN_X    ; reset to min.
-	
-b_gmm_Save_MSX_R2L
-	sta zMOTHERSHIP_NEW_X    ; Save new Mothership X
-	cmp #MOTHERSHIP_MIN_X    ; Reached min means time to inc Y and reverse direction.
-	bne b_gmm_Exit_MS_Move   ; Not at min.  Exit.
-
-; Flip direction is Mothership reaches Min or Max position.
-; Also setup Mothership to move to the next row.
-
-b_gmm_MS_ReverseDirection
-	lda zMOTHERSHIP_DIR      ; Toggle X direction.
-	beq b_gmm_Set_R2L        ; is 0, set 1 = Right to Left
-	lda #0
-	beq b_gmm_UpdateDirection
-b_gmm_Set_R2L
-	lda #1
-b_gmm_UpdateDirection
-	sta zMOTHERSHIP_DIR
-
-b_gmm_CheckLastRow
-	ldx zMOTHERSHIP_ROW      ; Get current row.
-	; HACK HACK HACK HACK -- testing scoring algorithms and counts.
-	; HACK HACK HACK HACK -- keeping mothership to row 21, so game doesn't end.
-;	cpx #21                  ; If on last row, then it has
-	cpx #22                  ; If on last row, then it has
-	beq b_gmm_Exit_MS_Move   ; reached the end of incrementing rows.
-
-	inx                      ; Next row.
-	jsr GameSetMotherShipRow ; Given Mothership row (X), update the mother ship wow and set new, target Y position. 
-
-b_gmm_Exit_MS_Move
-	rts
-
-
 ;==============================================================================
 ;												SetMotherShip  X
 ;==============================================================================
-; Given Mothership row (X), save the row, 
-; update the mother ship points value
-; 
+; Given Mothership row (X), save the row, update the mother ship points value.
+;
+; If this is the last row, do not manage digits.  Instead, zero the stats
+; text color which  will trigger the gfx routine to write the space with 
+; blanks.
 ;
 ; X == row number.
 ; -----------------------------------------------------------------------------
@@ -1104,10 +1262,18 @@ GameSetMotherShipRow
 	lda TABLE_ROW_TO_Y,X             ; Get new target Y position.
 	sta zMOTHERSHIP_NEW_Y            ; Save for VBI to redraw mothership.
 
+	cpx #22                          ; Is this the last row?
+	bne b_gsmsr_SetStats             ; No, setup the row text and points for screen.
+	lda #$00                         ; Turn off statistics line
+	sta zSTATS_TEXT_COLOR            ; Zero color will make gfx write blanks.
+	rts
+
+b_gsmsr_SetStats
 	jsr GameRowNumberToDigits        ; Setup value converted to copy to screen.
 
 	jsr GameMothershipPointsToDigits ; Copy point value to screen display version.
 
+b_gsmsr_Exit
 	rts
 
 
@@ -1282,159 +1448,5 @@ b_gdhc_CheckSpeedControl        ; Need to add +2 for 2 entries for hpos+ entries
 	inc  zMOTHERSHIP_MOVE_SPEED ; Speedup++
 
 b_gdhc_Exit
-	rts
-
-
-; ==========================================================================
-; ADD SCORE TO PLAYER
-; ==========================================================================
-; Add the Mothership points to the player credited with the hit.
-; --------------------------------------------------------------------------
-
-GameAddScoreToPlayer
-
-	ldx #0
-	jsr GameAddScore
-
-	ldx #1
-	jsr GameAddScore
-
-	rts
-
-
-; ==========================================================================
-; ADD SCORE
-; ==========================================================================
-; If this player shot the mothership, then:
-; - Count the hit againt the mothership's hit counter.
-; - Add the Mothership points to the player credited with the hit.
-;
-; Working with individual bytes per digit means the carry flag will 
-; not occur in CPU.   The carry state is determined by logic, then
-; the A register is started with 0 or 1 per carry for the math
-; on the next digit.
-;
-; I'm sure this is highly-awful, sub-optimal, low-quality hackage.
-;
-; X == Player to award points (if the player shot the sheriff).
-; --------------------------------------------------------------------------
-
-GameAddScore
-
-	lda zPLAYER_SHOT_THE_SHERIFF,X     ; Did this player get the hit?
-	beq b_gas_Exit                     ; No.  Nothing to do here.
-
-	jsr GameDecrementtHitCounter       ; Player award means minus 1 hit.
-
-	lda #0                             ; Clear the artificial carry.
-	ldy #5                             ; Index into mothership points.
-
-	cpx #0                             ; If this is not zero, then
-	bne b_gas_OtherPlayer              ; set index into score for player 2
-
-	ldx #5                             ; Index into Player score. (For player 1)
-	bne b_gas_AddLoop                  ; Go add.
-
-b_gas_OtherPlayer
-	ldx #11                            ; Index into Player score. (For player 2)                 
-
-b_gas_AddLoop                          ; on first entry A for carry == 0
-	clc                                ; Clear CPU carry.
-	adc zPLAYERPOINTS_TO_ADD,Y         ; Add mothership points (+ A as carry)
-	adc zPLAYER_SCORE,X                ; Add to player score
-
-	cmp #10                            ; Did Adding go over 9? (>= 10? )
-	bcc b_gas_NoCarry                  ; No.  Do not carry.
-
-b_gas_Carried                          ; Player score carried over 9.
-	sec
-	sbc #10                            ; Subtract 10 from score
-	sta zPLAYER_SCORE,X                ; Save the adjusted score.
-	lda #1                             ; Setup 1 for artificial carry.
-	bne b_gas_LoopControl              ; Go to end of loop
-
-b_gas_NoCarry                          ; Player score carried over 9.
-	sta zPLAYER_SCORE,X                ; Save the added score.
-	lda #0                             ; Setup 0 for artificial carry.
-
-b_gas_LoopControl    
-	dex                                ; Move left to next digit
-	dey                                ; Move left to next digit
-	bpl b_gas_AddLoop                  ; Loop until index goes to -1
-
-b_gas_Exit
-	rts
-
-
-; ==========================================================================
-; CHECK HIGH SCORE
-; ==========================================================================
-; Test Player score v High score, and copy player score to high 
-; score if greater than the high score.
-; 
-; X == player to test
-; --------------------------------------------------------------------------
-
-GameCheckHighScores
-
-	ldx #0
-	jsr GameCheckHighScore
-
-	ldx #1
-	jsr GameCheckHighScore
-
-	rts
-
-
-; ==========================================================================
-; CHECK HIGH SCORE
-; ==========================================================================
-; Test Player score v High score, and copy player score to high 
-; score if greater than the high score.
-; 
-; X == player to test
-; --------------------------------------------------------------------------
-
-GameCheckHighScore
-
-	lda zPLAYER_ON,X
-	beq b_gchs_Exit
-
-	ldy #0                         ; Index into high score points.
-
-	cpx #0                         ; If this is first player, then X is 
-	beq b_ghcs_SaveX               ; already 0 for score index.  Just go.
-
-	ldx #6                         ; Index into score for player 1 
-
-b_ghcs_SaveX
-	stx SAVEX                      ; Need to get this X value back again later.
-
-b_gchs_CheckLoop                   ; Check while digits are equal.
-	lda zPLAYER_SCORE,X
-	cmp zHIGH_SCORE,Y              
-	beq b_gchs_LoopControl         ; If it is the same continue looping.
-	bcc b_gchs_Exit                ; If it is less than, then exit.  No hi score.
-
-	; A digit is greater than hi score, so copy!
-	ldx SAVEX                      ; Restore index value determined earlier.
-	ldy #0                         ; Index into high score points.
-
-b_gchs_CopyHiScoreLoop
-	lda zPLAYER_SCORE,X            ; Copy the six 
-	sta zHIGH_SCORE,Y              ; bytes of the 
-	inx                            ; player score
-	iny                            ; to the 
-	cpy #6                         ; high score.
-	bne b_gchs_CopyHiScoreLoop
-	rts
-
-b_gchs_LoopControl                 
-	inx                            ; next index in player score.
-	iny                            ; Next index in high score
-	cpy #6
-	bne b_gchs_CheckLoop
-
-b_gchs_Exit
 	rts
 
