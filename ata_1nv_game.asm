@@ -168,13 +168,13 @@ GameLoop
 GameInit
 	; Atari initialization stuff...
 
-	lda #AUDCTL_CLOCK_64KHZ    ; Set only this one bit for clock.
-	sta AUDCTL                 ; Global POKEY Audio Control.
-	lda #3                     ; Set SKCTL to 3 to stop possible cassette noise, 
-	sta SKCTL                  ; so say Mapping The Atari and De Re Atari.
-	jsr StopAllSound           ; Zero all AUDC and AUDF
+	lda #AUDCTL_CLOCK_64KHZ ; Set only this one bit for clock.
+	sta AUDCTL              ; Global POKEY Audio Control.
+	lda #3                  ; Set SKCTL to 3 to stop possible cassette noise, 
+	sta SKCTL               ; so say Mapping The Atari and De Re Atari.
+	jsr StopAllSound        ; Zero all AUDC and AUDF
 
-	lda #>CHARACTER_SET        ; Set custom character set.  Global to game, forever.
+	lda #>CHARACTER_SET     ; Set custom character set.  Global to game, forever.
 	sta CHBAS
 
 	; Zero all the colors.  (Except text will be turned back on to white.)
@@ -184,18 +184,18 @@ GameInit
 	ldx #7
 	lda #0
 b_gi_LoopFillZero
-	sta PCOLOR0,x ; Init - Zero color registers.
-	sta SHPOSP0,x ; Init - Zero PM HPOS Values
+	sta PCOLOR0,x           ; Init - Zero color registers.
+	sta SHPOSP0,x           ; Init - Zero PM HPOS Values
 	dex
 	bpl b_gi_LoopFillZero
 
 	sta COLOR4 ; COLBK  - Playfield Background color (Border for modes 2, 3, and F) 
 
-	lda #COLOR_WHITE|$0C ; Light white
-	sta COLOR1           ; COLPF1 - Playfield 1 color (mode 2 text)
+	lda #COLOR_WHITE|$0C    ; Light white
+	sta COLOR1              ; COLPF1 - Playfield 1 color (mode 2 text)
 
 	lda #0
-	sta zThisDLI         ; Init the DLI index.
+	sta zThisDLI            ; Init the DLI index.
 
 	; Set up the DLI.   This should be safe here without knowing what the screen
 	; is doing, because the default OS display does not have DLI options on any 
@@ -203,23 +203,23 @@ b_gi_LoopFillZero
 	; of the frame AND due to the frame sync of the main loop we know that this 
 	; code here  is executing very close to the top of the screen.
 
-	lda #NMI_VBI           ; Turn Off DLI
+	lda #NMI_VBI            ; Turn Off DLI
 	sta NMIEN
 
-	lda #<DoNothing_DLI    ; TITLE_DLI ; Set DLI vector. (will be reset by VBI on screen setup)
+	lda #<DoNothing_DLI     ; TITLE_DLI ; Set DLI vector. (will be reset by VBI on screen setup)
 	sta VDSLST
-	lda #>DoNothing_DLI    ; TITLE_DLI
+	lda #>DoNothing_DLI     ; TITLE_DLI
 	sta VDSLST+1
 
-	lda #[NMI_DLI|NMI_VBI] ; Turn On DLIs
+	lda #[NMI_DLI|NMI_VBI]  ; Turn On DLIs
 	sta NMIEN
 
 	; Clear PM graphics memory and zero positions.
 
-	jsr Pmg_Init               ; Will also reset GRACTL and SDMACTL settings for P/M DMA
+	jsr Pmg_Init            ; Will also reset GRACTL and SDMACTL settings for P/M DMA
 
-	lda #%01010101 ; PM_SIZE_DOUBLE all missiles ; Title screen uses double Width Missiles.
-	sta SIZEM
+	lda #%01010101          ; PM_SIZE_DOUBLE all missiles ; Title screen uses double Width Missiles.
+	sta SIZEM               ; Misslies are not used elsewhere, so this is global/constant.
 
 ; Scrolling Terrain Values ==================================================
 ; The mountains are a constant component on the Title and Game screens.
@@ -231,17 +231,17 @@ b_gi_LoopFillZero
 ; NOT NEEDED, BECAUSE THESE ARE INITIALIZED BY THE DISK LOAD INTO PAGE 0
 
 ;	lda #LAND_MAX_PAUSE
-;	sta zLandTimer            ; Number of jiffies to Pause.  When 0, run scroll.
+;	sta zLandTimer          ; Number of jiffies to Pause.  When 0, run scroll.
 
 ;	lda #LAND_STEP_TIMER
-;	sta zLandScrollTimer      ; How many frames to wait for each fine scroll.
+;	sta zLandScrollTimer    ; How many frames to wait for each fine scroll.
 
 ;	lda #0
-;	sta zLandHS               ; fine horizontal scroll value start.
-;	sta zLandColor            ; index for repeat DLIs on the scrolling land  
+;	sta zLandHS             ; fine horizontal scroll value start.
+;	sta zLandColor          ; index for repeat DLIs on the scrolling land  
 
-;	sta zLandPhase            ; 0 == waiting  1 == scrolling.
-;	sta zLandMotion           ; 0 == left/right !0 == right/left
+;	sta zLandPhase          ; 0 == waiting  1 == scrolling.
+;	sta zLandMotion         ; 0 == left/right !0 == right/left
 
 
 	; Changing the Display List is potentially tricky.  If the update is
@@ -257,21 +257,16 @@ b_gi_LoopFillZero
 	lda #EVENT_SETUP_TITLE
 	sta zCurrentEvent
 
-	ldy #<MyImmediateVBI       ; Add the VBI to the system (Display List dictatorship)
+	ldy #<MyImmediateVBI    ; Add the VBI to the system (Display List dictatorship)
 	ldx #>MyImmediateVBI
-	lda #6                     ; 6 = Immediate VBI
-	jsr SETVBV                 ; Tell OS to set it
+	lda #6                  ; 6 = Immediate VBI
+	jsr SETVBV              ; Tell OS to set it
 
-	ldy #<MyDeferredVBI        ; Add the VBI to the system (Lazy hippie timers, colors, sound.)
+	ldy #<MyDeferredVBI     ; Add the VBI to the system (Lazy hippie timers, colors, sound.)
 	ldx #>MyDeferredVBI
-	lda #7                     ; 7 = Deferred VBI
-	jsr SETVBV                 ; Tell OS to set it
+	lda #7                  ; 7 = Deferred VBI
+	jsr SETVBV              ; Tell OS to set it
 
-	lda #0
-;	sta FlaggedHiScore
-;	sta InputStick             ; no input from joystick
-
-;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
 	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
 	sta SDMCTL
@@ -279,7 +274,7 @@ b_gi_LoopFillZero
 	lda #[FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01] 
 	sta GPRIOR
 
-	rts                         ; And now ready to go back to main game loop . . . .
+	rts                     ; And now ready to go back to main game loop . . . .
 
 
 ; ==========================================================================
@@ -301,6 +296,7 @@ GameSetupTitle
 
 	jsr Gfx_ShowScreen
 
+
 	; ===== The Big Logo =====
 
 	lda #TITLE_LOGO_X_START
@@ -315,8 +311,6 @@ GameSetupTitle
 	lda #COLOR_ORANGE1           ; Reset to first color.
 	sta ZTitleLogoBaseColor      ; Resave the new update
 	sta ZTitleLogoColor          ; Save it for the DLI use
-;	sta COLOR3                   ; Make sure it starts in the OS shadow and 
-;	sta COLPF3                   ; the hardware registers.
 
 
 	; ===== The scrolling credits =====
@@ -392,7 +386,7 @@ GameSetupTitle
 
 ; Scrolling Terrain Values ==================================================
 ; F Y I -- Note the scrolling land is setup once by declaring the Display 
-; List and then maintained forever by the VBI.
+; List and then maintained forever by the VBI.  Nothing to do here.
 
 
 ; ===== Setup Player postions.  Etc. =====
@@ -429,7 +423,6 @@ GameSetupTitle
 	lda #0 
 	sta zEventStage
 
-;	jsr Pmg_IndexMarks ;diagnostics for screen problems
 
 	rts
 
@@ -684,12 +677,7 @@ GameSetupMain
 	sta SHPOSM1
 	sta SHPOSM0
 
-	ldy #5
-b_gsm_Loop_ZeroPlayerScores
-	sta zPLAYER_ONE_SCORE,y ; maybe something more here... like points add, or mothership value, too.
-	sta zPLAYER_TWO_SCORE,y
-	dey
-	bpl b_gsm_Loop_ZeroPlayerScores
+	jsr GameZeroScores
 
 	; Zero all of this stuff...
 	sta zPLAYER_ONE_BUMP
@@ -811,7 +799,7 @@ GameMain
 
 	jsr GameMothershipMovement     ; 5
 
-;	jsr Supervise Last Row motion. ; 6
+	jsr GameAnalyzeAlienVictory    ; 6
 
 	rts
 

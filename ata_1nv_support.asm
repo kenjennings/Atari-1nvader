@@ -831,6 +831,12 @@ CheckPlayersShooting
 
 CheckPlayerShooting
 
+	lda zPLAYER_ON,X        ; Is this player even playing?
+	beq b_cps_Exit          ; Nope.  Done here.
+
+	lda zPLAYER_CRASH,X     ; Is the gun crashed by alien?
+	bne b_cps_Exit          ; Yes.  Done here.
+
 	lda STRIG0,X            ; (Read) TRIG0 - Joystick trigger (0 is pressed. 1 is not pressed)
 	beq b_cps_TryLaserShot  ; Fire button pressed.
 	lda #0
@@ -838,12 +844,6 @@ CheckPlayerShooting
 	beq b_cps_Exit          ; Done here.
 
 b_cps_TryLaserShot
-	lda zPLAYER_ON,X        ; Is this player even playing?
-	beq b_cps_Exit          ; Nope.  Done here.
-
-	lda zPLAYER_CRASH,X     ; Is the gun crashed by alien?
-	bne b_cps_Exit          ; Yes.  Done here.
-
 	lda zLASER_ON,X         ; Is Laser on?
 	beq b_cps_TestDebounce  ; No.  Ok to shoot.
 
@@ -950,20 +950,20 @@ GameMothershipMovement
 	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
 	bne b_gmm_Exit_MS_Move ; No.  Skip this until vertical positions match. (VBI does this).
 
-; Determine min/max for this row.   Row 22 allows mothership to 
-; move off the screen completely.   When the Stats Text Color 
-; is zero, then we're on row 22.
+; Determine min/max for this row.   Row 22 allows mothership to move 
+; off the screen completely.   When the Stats Text Color is zero, then 
+; we're on row 22.
 
 	lda zSTATS_TEXT_COLOR      ; If this is zero, mothership is on row 22.
 	bne b_gmm_SetRegularMinMax ; Set Min/Max to normal values.
 
-	lda #10                    ; Here set Min/Max off screen
+	lda #15                    ; Here set Min/Max off screen
 	sta zMOTHERSHIP_MIN_X
-	lda #245
+	lda #232
 	sta zMOTHERSHIP_MAX_X
 	bne b_gmm_ContinueSetSpeed
 
-b_gmm_SetRegularMinMax
+b_gmm_SetRegularMinMax         ; Here use the normal values for screen width.
 	lda #MOTHERSHIP_MIN_X
 	sta zMOTHERSHIP_MIN_X
 	lda #MOTHERSHIP_MAX_X
@@ -978,7 +978,7 @@ b_gmm_ContinueSetSpeed
 	ldy zMOTHERSHIP_MOVE_SPEED      ; index into speed table.
 	dec zMOTHERSHIP_SPEEDUP_COUNTER ; toggle the offsetter, 1,0,-1 (1).
 	bpl b_gmm_ContinueSpeedSetup    ; If still positive, then collect speed value 
-	lda #1                          ; Offsetter Went negative.  
+	lda #1                          ; Offsetter went negative.  
 	sta zMOTHERSHIP_SPEEDUP_COUNTER ; Reset the offsetter to 1.
 	iny                             ; increment the index into the speed table.
 
@@ -987,7 +987,6 @@ b_gmm_ContinueSpeedSetup
 	sta zMOTHERSHIP_MOVEMENT        ; Save new value to add/subtract  
 
 	lda zMOTHERSHIP_X               ; A == Get current X position
-
 
 	ldy zMOTHERSHIP_DIR      ; Test direction. ; 0 == left to right. 1 == right to left.
 	bne b_gmm_Mothership_R2L ; 1 = Right to Left
@@ -1004,7 +1003,7 @@ b_gmm_Save_MSX_L2R
 	sta zMOTHERSHIP_NEW_X    ; Save new Mothership X
 	cmp zMOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
 	bne b_gmm_Exit_MS_Move   
-	beq b_gmm_MS_ReverseDirection 
+	beq b_gmm_MS_EndOfLife   ; Check if mothership reached the bottom row/end of movement 
 
 ; Moving Right to Left
 
@@ -1020,11 +1019,19 @@ b_gmm_Save_MSX_R2L
 	cmp zMOTHERSHIP_MIN_X    ; Reached min means time to inc Y and reverse direction.
 	bne b_gmm_Exit_MS_Move   ; Not at min.  Exit.
 
-; Flip direction is Mothership reaches Min or Max position.
+; Mothership has reached the end of a row.  
+; Check if this is on the last row.  If so, then the game is over.
+
+b_gmm_MS_EndOfLife
+	lda zSTATS_TEXT_COLOR         ; If this is zero, mothership is on row 22.
+	bne b_gmm_MS_ReverseDirection ; Not Zero, so do the Set Min/Max to normal values.
+
+; HERE set end of game flags to go to next screen.
+
+; Flip direction when Mothership reaches Min or Max position.
 ; Also setup Mothership to move to the next row.
 
 b_gmm_MS_ReverseDirection
-; here if row is 22, all movememnt is done.   end game screen is next
 	lda zMOTHERSHIP_DIR      ; Toggle X direction.
 	beq b_gmm_Set_R2L        ; is 0, set 1 = Right to Left
 	lda #0
@@ -1470,4 +1477,162 @@ b_gdhc_CheckSpeedControl        ; Need to add +2 for 2 entries for hpos+ entries
 
 b_gdhc_Exit
 	rts
+
+
+; ==========================================================================
+; ZERO SCORES
+; ==========================================================================
+; Zero all the digits of player 1 and player 2 scores.
+;
+; Called on Init.   Called on Game Start. 
+; It is NOT called for the title screen/at end of game, so that the 
+; title screen can support displaying the scores from the prior game.
+; --------------------------------------------------------------------------
+
+GameZeroScores
+
+	ldy #5
+b_gzs_Loop_ZeroPlayerScores
+	sta zPLAYER_ONE_SCORE,y ; maybe something more here... like points add, or mothership value, too.
+	sta zPLAYER_TWO_SCORE,y
+	dey
+	bpl b_gzs_Loop_ZeroPlayerScores
+	
+	rts
+
+; ==========================================================================
+; ANALYZE ALIEN VICTORY
+; ==========================================================================
+; Process mothership on row 22 which wwill end the game.
+;
+; The motion management for the mothership and the guns went off 
+; pretty much as normal.  A limited number of logic options changed
+; due to the being on the last line.
+; Called on Init.   Called on Game Start. 
+; It is NOT called for the title screen/at end of game, so that the 
+; title screen can support displaying the scores from the prior game.
+;
+; Bulky, Work-In-Progress, Stream-of-consciousness code...  
+; I can see already there are patterns to optimize.
+; --------------------------------------------------------------------------
+
+gCrashPoint .byte $00       ; X coordination to decide object is crashed or not.
+
+GameAnalyzeAlienVictory
+
+	ldy zSTATS_TEXT_COLOR   ; Easy trick to know mothership is on row 22
+	bne b_gaav_Exit
+
+	lda zMOTHERSHIP_NEW_X   ; Get new display position of mothership
+	
+	ldy zMOTHERSHIP_DIR     ; 0 = left to right.   1 = Right to Left
+	bne b_gaav_Test_R2L
+
+	; Tests running Left to Right - evaluate player 1, then 2
+
+	clc
+	adc #8                  ; Width of mothership.
+	sta gCrashPoint         ; Keep track of left edge.
+
+	ldy zPLAYER_ONE_ON      ; Player 1 on?
+	beq b_gaav_DoTwo_L2R    ; No.   So do player 2.
+
+	ldy zPLAYER_ONE_CRASH   ; Is the player already crashed?
+	bne b_gaav_SetOne_X     ; Yes, directly set Player's X position.
+
+	cmp zPLAYER_ONE_NEW_X   ; Is CrashPoint >= Player X
+	bcs b_gaa_CrashOne      ; greater than or equal to.
+	bcc b_gaav_Exit         ; Nah.  Player 2 can't be crashed if 1 is not crashed. 
+
+b_gaa_CrashOne              ; Set Player One crashed
+	inc zPLAYER_ONE_CRASH
+	; in here maybe change the player image.
+
+b_gaav_SetOne_X             ; Force Player 1 locked to Mothership.
+	sta zPLAYER_ONE_NEW_X   ; Player X == A == gCrashPoint.
+
+	; Part II Evaluate second player.
+
+	clc                     ; If Player 2 is being tested, the crashpoint is the edge of Player 1.
+	adc #7                  ; Width of Player 1. 
+	sta gCrashPoint         ; Keep track of left edge.
+
+b_gaav_DoTwo_L2R            ; Player 1 is crashed.  Test when Player 2 crashes.
+	ldy zPLAYER_TWO_ON      ; Player 2 on?
+	beq b_gaav_Exit         ; No.   Exit
+
+	ldy zPLAYER_TWO_CRASH   ; Is the player already crashed? 
+	bne b_gaav_SetTwo_X     ; Yes, directly set Player's X position.
+
+	cmp zPLAYER_TWO_NEW_X   ; Is CrashPoint >= Player X
+	bcs b_gaa_CrashTwo      ; Greater than or equal to.
+	bcc b_gaav_Exit         ; Nah.   Done here.
+
+b_gaa_CrashTWO              ; Set Player Two crashed
+	inc zPLAYER_TWO_CRASH
+	; in here maybe change the player image.
+
+b_gaav_SetTwo_X
+	sta zPLAYER_TWO_NEW_X   ; Player X == A == gCrashPoint.
+	bne b_gaav_Exit         ; No.   Exit
+
+
+	; Tests running Right to Left - evaluate player 2, then 1
+
+b_gaav_Test_R2L
+
+	sec
+	sbc #7                  ; Width of player.
+	sta gCrashPoint         ; Keep track of left edge.
+
+	ldy zPLAYER_TWO_ON      ; Player 2 on?
+	beq b_gaav_DoOne_R2L    ; No.   So do player 1.
+
+	ldy zPLAYER_TWO_CRASH   ; Is the player already crashed?
+	bne b_gaav_SetTwo_XR2L  ; Yes, directly set Player's X position.
+
+	cmp zPLAYER_TWO_NEW_X   ; Is CrashPoint <= Player X
+	bcc b_gaa_CrashTwoR2L   ; greater than or
+	beq b_gaa_CrashTwoR2L   ; or equal to.
+	bne b_gaav_Exit         ; Nah.  Player 1 can't be crashed if 2 is not crashed. 
+
+b_gaa_CrashTwoR2L           ; Set Player Two crashed
+	inc zPLAYER_TWO_CRASH
+	; in here maybe change the player image.
+
+b_gaav_SetTwo_XR2L          ; Force Player 2 locked to Mothership.
+	sta zPLAYER_TWO_NEW_X   ; Player X == A == gCrashPoint.
+
+	; Part II Evaluate first player.
+
+	sec                     ; If Player 1 is being tested, the crashpoint is the edge of Player 2.
+	sbc #7                  ; Width of Player 2. 
+	sta gCrashPoint         ; Keep track of left edge.
+
+b_gaav_DoOne_R2L            ; Player 2 is crashed.  Test when Player 1 crashes.
+	ldy zPLAYER_ONE_ON      ; Player 1 on?
+	beq b_gaav_Exit         ; No.   Exit
+
+	ldy zPLAYER_ONE_CRASH   ; Is the player already crashed? 
+	bne b_gaav_SetOne_XR2L  ; Yes, directly set Player's X position.
+
+	cmp zPLAYER_ONE_NEW_X   ; Is CrashPoint >= Player X
+	bcc b_gaa_CrashOneR2L   ; Greater than
+	beq b_gaa_CrashOneR2L   ; or equal to.
+	bne b_gaav_Exit         ; Nah.   Done here.
+
+b_gaa_CrashOneR2L           ; Set Player One crashed
+	inc zPLAYER_ONE_CRASH
+	; in here maybe change the player image.
+
+b_gaav_SetOne_XR2L
+	sta zPLAYER_ONE_NEW_X   ; Player X == A == gCrashPoint.
+	bne b_gaav_Exit         ; No.   Exit
+
+
+
+
+b_gaav_Exit
+	rts
+
 
