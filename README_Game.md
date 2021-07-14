@@ -107,9 +107,21 @@ Remaining TO-DOs -- mothership speed up behaviors, game over logic.
 
 ---
 
+**14 July 2021 -- Motherhip Pushes Guns**
+
+[![V16_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/16-WIP-GameMothershipPushesGuns.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+The bottom row mechanics are working.  When the mothership enters the bottom line and hits the player it pushes them along off the screen.   Either direction, to the left or the right, works.   There is obvious redundancy in the crash mechanics, so this code will endure some optimization.  (and I'll probably break it a couple times in the progress of that.)
+
+This completes almost all the required operating parts of the Game screen.
+
+The remaining work is triggering the end screen, and then showing the end screen/end of game text.
+
+--- 
+
 **DD MMM 2021 -- TO-DO**
 
-[![V16_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/16-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V17_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/17-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 WIP
 
