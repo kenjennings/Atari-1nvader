@@ -111,6 +111,8 @@ Remaining TO-DOs -- mothership speed up behaviors, game over logic.
 
 [![V16_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/16-WIP-GameMothershipPushesGuns.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
+The mothership speedup every 10 hits seems to be working.
+
 The bottom row mechanics are working.  When the mothership enters the bottom line and hits the player it pushes them along off the screen.   Either direction, to the left or the right, works.   There is obvious redundancy in the crash mechanics, so this code will endure some optimization.  (and I'll probably break it a couple times in the progress of that.)
 
 This completes almost all the required operating parts of the Game screen.
