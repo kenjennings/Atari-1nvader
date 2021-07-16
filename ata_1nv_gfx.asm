@@ -320,12 +320,10 @@ DL_LMS_SCROLL_LAND4 = [ * + 1 ]
 ; 63 bytes 
 
 DISPLAY_LIST_GAME                                           ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
-DISPLAY_LIST_GAMEOVER                                       ; Main Game and Game over are 95% the same.
 
 	mDL_BLANK DL_BLANK_8                                    ;    (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
-	mDL_BLANK DL_BLANK_4   
-;	mDL_LMS   DL_TEXT_2|DL_DLI,GFX_SCORE_LINE               ; 00 (020 - 027) (2) P1 score, High score, P2 score
+	mDL_BLANK DL_BLANK_4
 
 ; Having problems with DLI running too long... Altirra says that 
 ; recursive DLI are being triggered.  Not sure why.  There should be 
@@ -338,8 +336,8 @@ DISPLAY_LIST_GAMEOVER                                       ; Main Game and Game
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE               ; 00 (020 - 027) (2) P1 score, High score, P2 score
 	mDL_BLANK [DL_BLANK_1|DL_DLI] 
 DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first star's LMS address
-	.rept 6
-		mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_STARS_LINE+3     ; 01 (028 - 035) (171) (6) Stars
+	.rept 14
+		mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+3     ; 01 (028 - 035) (171) (6) Stars
 		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 01 (036 - 036) 
 	.endr
 															; 02 (037 - 037) 
@@ -352,18 +350,8 @@ DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first
 															; 05 (065 - 072) (171) (6) Stars
 															; 06 (073 - 073) 
 															; 06 (074 - 081) (171) (6) Stars
-
-; This break is introduced to declare a label for the 
-; game over text line.  Otherwise it could have 
-; simply looped once for all the lines with stars.
-
-DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over Text
-
-	.rept 8
-		mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+4   ; 07 (083 - 090) (171) (6) Stars
-		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 07 (082 - 082) 
-
-	.endr
+															; 07 (082 - 082) 
+															; 07 (083 - 090) (171) (6) Stars
 															; 08 (091 - 091) 
 															; 08 (092 - 099) (171) (6) Stars
 															; 09 (100 - 100) 
@@ -380,8 +368,8 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over
 															; 14 (146 - 153) (171) (6) Stars
 															; 15 (154 - 154) 
 															; 15 (155 - 162) (171) (6) Stars   
-	mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5     
-	
+	mDL_LMS [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5     
+
 
 	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
 
@@ -402,8 +390,8 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over
 ; 04 |                                        | (052 - 059) Blank 8
 ; 05 |                                        | (060 - 067) Blank 8
 ; 06 |                                        | (068 - 075) Blank 8
-; 07 |               GAME  OVER               | (076 - 083) (6) Animated? Gfx
-; 08 |                                        | (084 - 091) Blank 8
+; 07 |               GAME  OVER               | (076 - 083) (7) Animated? Gfx
+; 08 |               GAME  OVER               | (084 - 091) (7) 
 ; 09 |                                        | (092 - 099) Blank 8
 ; 10 |                                        | (100 - 107) Blank 8
 ; 11 |                                        | (108 - 115) Blank 8
@@ -431,23 +419,58 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Stars or Game Over
 ; routine that sets HSCROL and runs a color gradient appropriate for 
 ; thie mode line.
 
-;DISPLAY_LIST_GAMEOVER                                       ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
-;	mDL_BLANK DL_BLANK_8                                    ;         (000 - 019) Blank scan lines. 8 + 8 + 4 
-;	mDL_BLANK DL_BLANK_8
-;	mDL_BLANK DL_BLANK_4   
-;	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
-;	.rept 6
-;		mDL_BLANK DL_BLANK_8                                ; 01 - 06 (028 - 075) Blank 8 * 6
-;	.endr
-;	mDL_LMS   DL_TEXT_2,GFX_GAME_OVER_LINE                  ; 07      (076 - 083) (6) End of Game Text 
-;	.rept 6
-;		mDL_BLANK DL_BLANK_8                                ; 08 - 18 (084 - 171) Blank 8 * 6
-;	.endr
+DISPLAY_LIST_GAMEOVER                                       ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
+
+	mDL_BLANK DL_BLANK_8                                    ;    (000 - 019) Blank scan lines. 8 + 8 + 4 
+	mDL_BLANK DL_BLANK_8
+	mDL_BLANK DL_BLANK_4
+
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00 (020 - 027) (2) P1 score, High score, P2 score
+	mDL_BLANK [DL_BLANK_1|DL_DLI] 
+
+	.rept 6
+		mDL_BLANK   DL_BLANK_8                                ; -- (028 - 075) Blank Lines  (-) 6 * 8 == 48 blanks.
+	.endr
+	mDL_BLANK [DL_BLANK_6|DL_DLI]                              ; -- (076 - 081) 
+
+
+; This break is introduced to declare a label for the 
+; game over text line.  Otherwise it could have 
+; simply looped once for all the lines with stars.
+
+DL_LMS_GAME_OVER = [ * + 1 ]                                ; Game Over Text
+	mDL_LMS   [DL_TEXT_7],GFX_GAME_OVER_LINE                ; 07 (083 - 090) (172) 
+	mDL_BLANK [DL_BLANK_2|DL_DLI]                              ; -- (076 - 081) 
+
+	.rept 6
+		mDL_BLANK   DL_BLANK_8                                ; -- (028 - 075) Blank Lines  (-) 6 * 8 == 48 blanks.
+	.endr
+	mDL_BLANK [DL_BLANK_6|DL_DLI]                              ; -- (076 - 081) 
+
+															; 08 (091 - 091) 
+															; 08 (092 - 099) (171) (6) Stars
+															; 09 (100 - 100) 
+															; 09 (101 - 108) (171) (6) Stars
+															; 10 (109 - 109) 
+															; 10 (110 - 117) (171) (6) Stars
+															; 11 (118 - 118) 
+															; 11 (119 - 126) (171) (6) Stars
+															; 12 (127 - 127) 
+															; 12 (128 - 135) (171) (6) Stars
+															; 13 (136 - 136) 
+															; 13 (137 - 144) (171) (6) Stars
+															; 14 (145 - 145) 
+															; 14 (146 - 153) (171) (6) Stars
+															; 15 (154 - 154) 
+															; 15 (155 - 162) (171) (6) Stars   
+	mDL_BLANK DL_BLANK_8                                  ; -- (076 - 081) 
+   
 	
 ; Note that as long as the system VBI is functioning the address 
 ; provided for JVB does not matter at all.  The system VBI will update
 ; ANTIC after this using the address in the shadow registers (SDLST)
-;	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
+
+	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
 
 
 
