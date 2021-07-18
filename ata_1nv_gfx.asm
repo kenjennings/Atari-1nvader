@@ -200,11 +200,11 @@ DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS
 
 DL_LMS_SCROLL_CREDIT1 = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT1       ; 10 (091 - 098) (6) Author(s) Credit line
-	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ;    (099 - 099  Blank1  (DLI 3.2) (Hscroll authors, run colors)
+	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ;    (099 - 099)  Blank1  (DLI 3.2) (Hscroll authors, run colors)
 DL_LMS_SCROLL_CREDIT2 = [ * + 1 ]
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT2       ; 10 (100 - 107) (6) Author(s) Credit line
 
-	mDL_BLANK DL_BLANK_8                                    ; 12 (108 - 115) Blank 8 Mothership graphic (PMG)
+	mDL_BLANK DL_BLANK_8                                    ; 11 (108 - 115) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8                                    ; 12 (116 - 123) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8                                    ; 13 (124 - 131) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 14 (132 - 139) (DLI 4) Blank 8 (Hscroll docs, run colors).
@@ -215,24 +215,25 @@ DL_LMS_SCROLL_DOCS = [ * + 1 ]
 	mDL_BLANK DL_BLANK_8                                    ; 17 (156 - 163) Blank 8
 
 
-BOTTOM_OF_DISPLAY 
+BOTTOM_OF_DISPLAY  ; (164 - 219)
 
 	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 18 (164 - 171) (DLI 5) Blank 8
 
 DL_LMS_SCROLL_LAND1 = [ * + 1 ]                                  
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; 19 (172 - 179) (6) (DLI 5) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; 19 (172 - 179) (6) (DLI 5) Fine scrolling mountains
 DL_LMS_SCROLL_LAND2 = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; 20 (180 - 187) (6) (DLI 5) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS2    ; 20 (180 - 187) (6) (DLI 5) Fine scrolling mountains 
 DL_LMS_SCROLL_LAND3 = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; 21 (188 - 195) (6) (DLI 5) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS3    ; 21 (188 - 195) (6) (DLI 5) Fine scrolling mountains 
 DL_LMS_SCROLL_LAND4 = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; 22 (196 - 203) (6) (DLI 6) Fine scrolling mountains to random position.
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS4    ; 22 (196 - 203) (6) (DLI 6) Fine scrolling mountains
 	mDL_LMS   DL_TEXT_6,GFX_BUMPERLINE                      ; 23 (204 - 211) (6) (DLI 7) ground and bumpers
 	mDL_LMS   DL_TEXT_2,GFX_STATSLINE                       ; 24 (212 - 219) (6) Stats line follows bumper line in memory.
 
 ; Note that as long as the system VBI is functioning the address 
 ; provided for JVB does not matter at all.  The system VBI will update
 ; ANTIC after this using the address in the shadow registers (SDLST)
+
 	mDL_JVB DISPLAY_LIST_TITLE        ; Restart display.
 
 
@@ -333,49 +334,20 @@ DISPLAY_LIST_GAME                                           ; System VBI sets co
 ; on text mode line 2, and the DLI to begin the scrolling mountains 
 ; does not begin on the moded 6 line for stars.
 
-	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE               ; 00 (020 - 027) (2) P1 score, High score, P2 score
-	mDL_BLANK [DL_BLANK_1|DL_DLI] 
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00 (020 - 027) (2) P1 score, High score, P2 score
+
+	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ; 00 (028 - 028) 
+	
 DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first star's LMS address
 	.rept 14
-		mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+3     ; 01 (028 - 035) (171) (6) Stars
-		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 01 (036 - 036) 
+		mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+3   ; 01 - 14 (029 - 140) (171) (6) Stars   14 * 8 = 112
+		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 01 - 14 (141 - 154)                   14 * 1 =  14
 	.endr
-															; 02 (037 - 037) 
-															; 02 (038 - 045) (171) (6) Stars
-															; 03 (046 - 046) 
-															; 03 (047 - 054) (171) (6) Stars
-															; 04 (055 - 055) 
-															; 04 (056 - 063) (171) (6) Stars
-															; 05 (064 - 064) 
-															; 05 (065 - 072) (171) (6) Stars
-															; 06 (073 - 073) 
-															; 06 (074 - 081) (171) (6) Stars
-															; 07 (082 - 082) 
-															; 07 (083 - 090) (171) (6) Stars
-															; 08 (091 - 091) 
-															; 08 (092 - 099) (171) (6) Stars
-															; 09 (100 - 100) 
-															; 09 (101 - 108) (171) (6) Stars
-															; 10 (109 - 109) 
-															; 10 (110 - 117) (171) (6) Stars
-															; 11 (118 - 118) 
-															; 11 (119 - 126) (171) (6) Stars
-															; 12 (127 - 127) 
-															; 12 (128 - 135) (171) (6) Stars
-															; 13 (136 - 136) 
-															; 13 (137 - 144) (171) (6) Stars
-															; 14 (145 - 145) 
-															; 14 (146 - 153) (171) (6) Stars
-															; 15 (154 - 154) 
-															; 15 (155 - 162) (171) (6) Stars   
-	mDL_LMS [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5     
 
+	mDL_LMS [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5         ; 15 (155 - 162) (171) (6) Stars   
 
-	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
+	mDL_JMP BOTTOM_OF_DISPLAY                               ; -- - 24  (164 - 219) End of screen. 
 
-; Note that as long as the system VBI is functioning the address 
-; provided for JVB does not matter at all.  The system VBI will update
-; ANTIC after this using the address in the shadow registers (SDLST)
 
 
 ; ==========================================================================
@@ -429,46 +401,25 @@ DISPLAY_LIST_GAMEOVER                                       ; System VBI sets co
 	mDL_BLANK [DL_BLANK_1|DL_DLI] 
 
 	.rept 6
-		mDL_BLANK   DL_BLANK_8                                ; -- (028 - 075) Blank Lines  (-) 6 * 8 == 48 blanks.
+		mDL_BLANK DL_BLANK_8                                ; -- (028 - 075) Blank Lines  (-) 6 * 8 == 48 blanks.
 	.endr
-	mDL_BLANK [DL_BLANK_6|DL_DLI]                              ; -- (076 - 081) 
-
+	mDL_BLANK [DL_BLANK_6|DL_DLI]                           ; -- (076 - 081) 
 
 ; This break is introduced to declare a label for the 
 ; game over text line.  Otherwise it could have 
 ; simply looped once for all the lines with stars.
 
 DL_LMS_GAME_OVER = [ * + 1 ]                                ; Game Over Text
-	mDL_LMS   [DL_TEXT_7],GFX_GAME_OVER_LINE                ; 07 (083 - 090) (172) 
-	mDL_BLANK [DL_BLANK_2|DL_DLI]                              ; -- (076 - 081) 
+	mDL_LMS   DL_TEXT_7,GFX_GAME_OVER_LINE                  ; 07 (082 - 089) (172) 
+	mDL_BLANK DL_BLANK_2                                    ; -- (090 - 091) 
 
 	.rept 6
-		mDL_BLANK   DL_BLANK_8                                ; -- (028 - 075) Blank Lines  (-) 6 * 8 == 48 blanks.
+		mDL_BLANK DL_BLANK_8                                ; -- (092 - 139) Blank Lines  (-) 6 * 8 == 48 blanks.
 	.endr
-	mDL_BLANK [DL_BLANK_6|DL_DLI]                              ; -- (076 - 081) 
+	mDL_BLANK DL_BLANK_6                                    ; -- (140 - 145) 
 
-															; 08 (091 - 091) 
-															; 08 (092 - 099) (171) (6) Stars
-															; 09 (100 - 100) 
-															; 09 (101 - 108) (171) (6) Stars
-															; 10 (109 - 109) 
-															; 10 (110 - 117) (171) (6) Stars
-															; 11 (118 - 118) 
-															; 11 (119 - 126) (171) (6) Stars
-															; 12 (127 - 127) 
-															; 12 (128 - 135) (171) (6) Stars
-															; 13 (136 - 136) 
-															; 13 (137 - 144) (171) (6) Stars
-															; 14 (145 - 145) 
-															; 14 (146 - 153) (171) (6) Stars
-															; 15 (154 - 154) 
-															; 15 (155 - 162) (171) (6) Stars   
-	mDL_BLANK DL_BLANK_8                                  ; -- (076 - 081) 
-   
-	
-; Note that as long as the system VBI is functioning the address 
-; provided for JVB does not matter at all.  The system VBI will update
-; ANTIC after this using the address in the shadow registers (SDLST)
+  
+	mDL_BLANK DL_BLANK_8                                    ; -- (163 - 170) 
 
 	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
 
