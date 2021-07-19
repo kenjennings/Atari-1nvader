@@ -1508,6 +1508,7 @@ b_gzs_Loop_ZeroPlayerScores
 ; The motion management for the mothership and the guns went off 
 ; pretty much as normal.  A limited number of logic options changed
 ; due to the being on the last line.
+;
 ; Called on Init.   Called on Game Start. 
 ; It is NOT called for the title screen/at end of game, so that the 
 ; title screen can support displaying the scores from the prior game.
@@ -1634,5 +1635,58 @@ b_gaav_SetOne_XR2L
 
 b_gaav_Exit
 	rts
+
+
+; ==========================================================================
+; SUPPPORT - GAME OVER TRANSITION 
+; ==========================================================================
+; Per Frame Process - Animate display for Game Over screen.
+;
+; Called By VBI.   
+;
+; Presenting the Game Over text on the screen occurs in a transition 
+; character by character.  There are two transitions running -- one from 
+; the left edge of the screen toward the center, and one from the right 
+; edge of the screen toward the center.
+; Each transition action occurs at the same time in sync with each 
+; other.   When state one is done on a character it moves to the next 
+; character and state two begins on that old character positions, and so
+; forth for the following states.   This produces an animation that 
+; changes shape and color, character by character making it seem 
+; ambiguous what graphics mode is used for this activity. 
+;
+; One activity occurs per each transition stage. 
+; States 1 to 3 take six frames.  State 4 is the final state.
+; 
+; 1) COLPF0 - grow text by masking character image into a temporary work
+;    character.  (two characters needed, one for left, and one right.)
+;    color changes from white to very light green/blue like mothership 
+;    explosion.  On the last frame the temporary work character has the 
+;    same image map as the real character. 
+;    Stand-n characters' $1C for left sequence, $1D for right sequence.
+; 2) COLPF1 - Set character as real character with correct bits for the 
+;    current color register.  Transition color from light to med/dk grey.
+; 3) COLPF2 - subject to DLI that slides the colors from flat grey to 
+;    match the final colors of the "normal" color state.
+; 4) COLPF3 - the "normal" end state for constand display of the text.
+;    DLI has a green grdient at the top and grey at the bottom.
+;
+; Side bar -- Since the blank space is character value 0, and nothing
+; is displayed, then it does not matter if the State engine runs on 
+; that character or not, since nothing is visible.
+;
+; Init code has done setup:
+; Cleared the Game Over message. 
+; Created pointer to target text.
+; Establish pointer to "currrent" character.
+; 
+; --------------------------------------------------------------------------
+
+GameOverTransition
+
+	; State 1.
+	; Check counter.
+	; If 0 then increment (or decrement) index to next position and start
+	; If new position is 0, do not start State 2.
 
 
