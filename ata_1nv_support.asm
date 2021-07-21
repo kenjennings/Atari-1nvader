@@ -1676,9 +1676,11 @@ b_gaav_Exit
 ; that character or not, since nothing is visible.
 ;
 ; Init code has done setup:
-; Cleared the Game Over message. 
-; Created pointer to target text.
-; Establish pointer to "currrent" character.
+; Cleared the Game Over message memory.
+; Set left index 0 (0 - 9), set right Index 19 (19 - 10)
+; Created pointer to target text to display.
+; Establish pointer to "currrent" left/right characters in character set.
+; Set Phase 2, 3, 4 off.
 ; 
 ; --------------------------------------------------------------------------
 

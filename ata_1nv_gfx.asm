@@ -742,4 +742,80 @@ GFX_GAME_OVER_LINE
 	.ds 20
 	
 
+TABLE_GAME_OVER_PF0 ; colors for initial blast-in frames in reverse
+	.byte $9c,$9c,$9e,$9e,$0e,$0e
+
+TABLE_GAME_OVER_PF1 ; colors for next phase in reverse
+	.byte $08,$0a,$0a,$9a,$9a,$9a,
+
+TABLE_GAME_OVER_PF2 ; Colors for DLI transition - 16 scan lines for Mode 7 text
+	.byte $08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$96
+	.byte $06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$96,$98
+	.byte $04,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$96,$98,$9a
+	.byte $04,$04,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$96,$98,$9a,$9C
+	.byte $04,$04,$04,$04,$06,$06,$06,$08,$08,$08,$08,$96,$98,$9a,$9c,$9C
+	.byte $02,$02,$02,$04,$04,$04,$06,$06,$08,$08,$96,$98,$9a,$9c,$9c,$9C
+
+TABLE_GAME_OVER_PF3 ; Colors for DLI on static text - 16 scan lines for Mode 7 text
+	.byte $02,$02,$02,$02,$04,$04,$06,$06,$08,$08,$96,$98,$9a,$9c,$9c,$9C
+
+TABLE_GAME_OVER_MASK_FRAMES ; TEMP CHAR IMAGE == CHARSET IMAGE AND MASK
+	.byte $00 ; ........  frame 1
+	.byte $00 ; ........
+	.byte $00 ; ........
+	.byte $00 ; ........
+	.byte $00 ; ........
+	.byte $70 ; .111....
+	.byte $70 ; .111....
+	.byte $70 ; .111....
+
+	.byte $00 ; ........  frame 2
+	.byte $00 ; ........
+	.byte $00 ; ........
+	.byte $00 ; ........
+	.byte $f8 ; 11111...
+	.byte $f8 ; 11111...
+	.byte $f8 ; 11111...
+	.byte $f8 ; 11111...
+
+
+	.byte $00 ; ........  frame 3
+	.byte $00 ; ........
+	.byte $00 ; ........
+	.byte $f8 ; 11111...
+	.byte $f8 ; 11111...
+	.byte $f8 ; 11111...
+	.byte $f8 ; 11111...
+	.byte $f8 ; 11111...
+
+
+	.byte $00 ; ........  frame 4
+	.byte $00 ; ........
+	.byte $fc ; 111111..
+	.byte $fc ; 111111..
+	.byte $fc ; 111111..
+	.byte $fc ; 111111..
+	.byte $fc ; 111111..
+	.byte $fc ; 111111..
+
+
+	.byte $00 ; ........  frame 5
+	.byte $fe ; 1111111.
+	.byte $fe ; 1111111.
+	.byte $fe ; 1111111.
+	.byte $fe ; 1111111.
+	.byte $fe ; 1111111.
+	.byte $fe ; 1111111.
+	.byte $fe ; 1111111.
+
+
+	.byte $ff ; 11111111  frame 6
+	.byte $ff ; 11111111 
+	.byte $ff ; 11111111 
+	.byte $ff ; 11111111 
+	.byte $ff ; 11111111 
+	.byte $ff ; 11111111 
+	.byte $ff ; 11111111 
+	.byte $ff ; 11111111 
+
 
