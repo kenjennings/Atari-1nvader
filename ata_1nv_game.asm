@@ -87,9 +87,8 @@ EVENT_TITLE            = 2  ; Credits and Instructions.
 EVENT_COUNTDOWN        = 3  ; Transition animation from Title to Game.
 EVENT_SETUP_GAME       = 4  ; Entry Point for New Game setup.
 EVENT_GAME             = 5  ; GamePlay
-EVENT_LAST_ROW         = 6  ; Ship/guns animation from Game to GameOver.
-EVENT_SETUP_GAMEOVER   = 7  ; Setup screen for Game over text.
-EVENT_GAMEOVER         = 8  ; Game Over. Animated words, go to title.
+EVENT_SETUP_GAMEOVER   = 6  ; Setup screen for Game over text.
+EVENT_GAMEOVER         = 7  ; Game Over. Animated words, go to title.
 
 ; The Immediate Vertical Blank Interrupt will update the Display List 
 ; OS shadow register, and the Display List Interrupt vector based 
@@ -105,9 +104,8 @@ TABLE_GAME_FUNCTION
 	.word GameCountdown-1  ; 3  = EVENT_COUNTDOWN       then move mothership
 	.word GameSetupMain-1  ; 4  = EVENT_SETUP_GAME
 	.word GameMain-1       ; 5  = EVENT_GAME            regular game play.  boom boom boom
-	.word GameLastRow-1    ; 6  = EVENT_LAST_ROW        forced player shove off screen
-	.word GameSetupOver-1  ; 7  = EVENT_SETUP_GAMEOVER
-	.word GameOver-1       ; 8  = EVENT_GAMEOVER        display text, then go to title
+	.word GameSetupOver-1  ; 6  = EVENT_SETUP_GAMEOVER
+	.word GameOver-1       ; 7  = EVENT_GAMEOVER        display text, then go to title
 
 ; ==========================================================================
 ; GAME LOOP
@@ -805,23 +803,29 @@ GameMain
 
 
 ; ==========================================================================
-; GAME LAST ROW
-; ==========================================================================
-;
-; --------------------------------------------------------------------------
-
-GameLastRow
-
-	rts
-
-
-; ==========================================================================
 ; GAME SETUP OVER
 ; ==========================================================================
 ;
 ; --------------------------------------------------------------------------
 
 GameSetupOver
+
+	jsr Gfx_Choose_Game_Over_Text
+	
+	lda #6
+	sta zGO_FRAME
+
+;	erase text on screen. 
+
+;zGO_LEFT_CHAR    .word $0000  ; Pointer to the source image for the left char.
+;zGO_RIGHT_CHAR   .word $0000  ; Pointer to the source image for the right character.
+;zGO_FRAME        .byte $ff    ; Frame counter, 6 to 0.
+;zGO_COLPF0       .byte $00    ; Color value for PF0
+;zGO_COLPF1       .byte $00    ; Color value for PF1
+;zGO_COLPF2_INDEX .byte $00    ; Index into Colpf2 values.
+
+	lda #EVENT_GAME                 ; Fire up the game screen.
+	sta zCurrentEvent
 
 	rts
 
@@ -833,6 +837,9 @@ GameSetupOver
 ; --------------------------------------------------------------------------
 
 GameOver
+
+	lda #EVENT_SETUP_TITLE
+	sta zCurrentEvent
 
 	rts
 

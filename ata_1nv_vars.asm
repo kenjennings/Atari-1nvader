@@ -121,5 +121,10 @@ TABLE_SPEED_CONTROL ; How many pixels to move each frame ( two values - frame +0
 	.byte 1,1,1,2,2,2,2,3 ; speed option 1, 2, 3, 4, two values each.
 	.byte 3,3,3,4,4,4,4,5 
 
+; Game Over Text Values =====================================================
+
+;zGO_FRAME       .byte $ff    ; Frame counter, 6 to 0.
+;zGO_COLPF0      .byte $00    ; Color value for PF0
+;zGO_COLPF1      .byte $00    ; Color value for PF1
 
 ; ======== E N D   O F   V A R I A B L E S ======== 

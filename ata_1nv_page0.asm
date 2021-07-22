@@ -164,7 +164,15 @@ zSTAR_COUNT        .byte 0 ; starcnt original code.
 
 ; Game Over Text Values =====================================================
 
-zGAME_OVER_TEXT .word 0
+zGAME_OVER_TEXT  .word $0000  ; Pointer to the game over string to print.
+zGO_LEFT_CHAR    .word $0000  ; Pointer to the source image for the left char.
+zGO_RIGHT_CHAR   .word $0000  ; Pointer to the source image for the right character.
+zGO_FRAME        .byte $ff    ; Frame counter, 6 to 0.
+zGO_CHAR_INDEX   .byte $00    ; index into game over text, 0 to 9
+zGO_COLPF0       .byte $00    ; Color value for PF0
+zGO_COLPF1       .byte $00    ; Color value for PF1
+zGO_COLPF2_INDEX .byte $00    ; Index into Colpf2 values.
+
 
 
 ; Misc Control Values  =====================================================
