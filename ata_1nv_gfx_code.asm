@@ -53,99 +53,6 @@ b_gatl_SkipReset
 
 
 ; ==========================================================================
-; CHOOSE GAME OVER TEXT
-; ==========================================================================
-; Choose the Game Over message and set zGAME_OVER_TEXT 
-;
-; I want Game Over to be the "normal" end game response.  
-; A fraction of the time a different value should appear.
-; Easter-eggly-like.  
-;
-; How to do the text randomization:
-;
-; Get a random number.
-;
-; Values 0 to 7 count for the easter egg treatment.
-;
-; All others ( >= 8) will be reduced to 0 for the default text.
-;
-; For the Easter Egg Game End, use the random number
-; chosen then add 2.
-;
-; If the result is 2, and the game is for 1 player, then 
-; decrement.  This will result in choosing the 
-; grammatically correct insult for the number of players.
-;
-; This works out to a 8 in 256 chance to trigger the 
-; alternate end game text.  Or 1 in 32 chance.  
-; Rare enough to be surprising when it occurs.
-; --------------------------------------------------------------------------
-
-GFX_GAME_OVER_TEXT0
-	.sb "  G A M E  O V E R  "   ; Do this about 96% of the time.
-GFX_GAME_OVER_TEXT1
-	.sb "     LOOOOOSER!     "
-GFX_GAME_OVER_TEXT2
-	.sb "    LOOOOOOSERS!    "
-GFX_GAME_OVER_TEXT3
-	.sb "KLAATU BARADA NIKTO "
-GFX_GAME_OVER_TEXT4
-	.sb "  IT'S A COOKBOOK!  "
-GFX_GAME_OVER_TEXT5
-	.sb "RESISTANCE IS FUTILE"
-GFX_GAME_OVER_TEXT6
-	.sb "U BASE R BELONG 2 US"
-GFX_GAME_OVER_TEXT7
-	.sb "  PWNED EARTHLING!  "
-GFX_GAME_OVER_TEXT8
-	.sb " GRANDMA DID BETTER!"
-GFX_GAME_OVER_TEXT9
-	.sb " ARE YOU GONNA CRY? "
-
-TABLE_HI_GFX_GAMEOVER
-		.by >GFX_GAME_OVER_TEXT0,>GFX_GAME_OVER_TEXT1
-		.by >GFX_GAME_OVER_TEXT2,>GFX_GAME_OVER_TEXT3
-		.by >GFX_GAME_OVER_TEXT4,>GFX_GAME_OVER_TEXT5
-		.by >GFX_GAME_OVER_TEXT6,>GFX_GAME_OVER_TEXT7
-		.by >GFX_GAME_OVER_TEXT8,>GFX_GAME_OVER_TEXT9
-		
-TABLE_LO_GFX_GAMEOVER
-		.by <GFX_GAME_OVER_TEXT0,<GFX_GAME_OVER_TEXT1
-		.by <GFX_GAME_OVER_TEXT2,<GFX_GAME_OVER_TEXT3
-		.by <GFX_GAME_OVER_TEXT4,<GFX_GAME_OVER_TEXT5
-		.by <GFX_GAME_OVER_TEXT6,<GFX_GAME_OVER_TEXT7
-		.by <GFX_GAME_OVER_TEXT8,<GFX_GAME_OVER_TEXT9
-
-
-Gfx_Choose_Game_Over_Text
-	ldx RANDOM                   ; Get a random value
-	cpx #8                       ; Is it 0 to 7?
-	bcs b_gcgot_UseDefault       ; Nope.  Then use default.
-	
-	inx
-	inx                          ; Turn 0 to 7 into 2 to 9.
-
-	lda zPLAYER_ONE_ON
-	and zPLAYER_TWO_ON
-	bne b_gcgot_Continue         ; Two Players.   We're done with index.
-
-	dex                          ; Remove 1 from index to use single loser message.
-	bne b_gcgot_Continue         ; Skip over forced default.
-
-b_gcgot_UseDefault
-	ldx #0                       ; Force default message
-	
-b_gcgot_Continue
-	lda TABLE_LO_GFX_GAMEOVER,X  ; Save address of the chosen text.
-	sta zGAME_OVER_TEXT
-	lda TABLE_HI_GFX_GAMEOVER,X
-	sta zGAME_OVER_TEXT+1
-	
-	rts	
-
-
-
-; ==========================================================================
 ; CLEAR STATS
 ; ==========================================================================
 ; Fill the stats line values with 0 byte/empty space.
@@ -859,4 +766,164 @@ b_gss_WriteP2Score
 	bpl b_gss_LoopCopyScores
    
 	rts
+
+
+; ==========================================================================
+; Zero Game Over Text
+; ==========================================================================
+; Erase the memory used to display the Game Over Text.
+; --------------------------------------------------------------------------
+
+Gfx_Zero_Game_Over_Text
+
+	lda #0   ; Corresponds to blank space charactrer
+	ldy #19  ; Text line is 20 characters.
+
+b_gzgot_ZeroLoop
+	sta GFX_GAME_OVER_LINE,y
+	dey
+	bpl b_gzgot_ZeroLoop
+
+	rts
+
+
+; ==========================================================================
+; CHOOSE GAME OVER TEXT
+; ==========================================================================
+; Choose the Game Over message and set zGAME_OVER_TEXT 
+;
+; I want Game Over to be the "normal" end game response.  
+; A fraction of the time a different value should appear.
+; Easter-eggly-like.  
+;
+; How to do the text randomization:
+;
+; Get a random number.
+;
+; Values 0 to 7 count for the easter egg treatment.
+;
+; All others ( >= 8) will be reduced to 0 for the default text.
+;
+; For the Easter Egg Game End, use the random number
+; chosen then add 2.
+;
+; If the result is 2, and the game is for 1 player, then 
+; decrement.  This will result in choosing the 
+; grammatically correct insult for the number of players.
+;
+; This works out to a 8 in 256 chance to trigger the 
+; alternate end game text.  Or 1 in 32 chance.  
+; Rare enough to be surprising when it occurs.
+; --------------------------------------------------------------------------
+
+GFX_GAME_OVER_TEXT0
+	.sb "  G A M E  O V E R  "   ; Do this about 96% of the time.
+GFX_GAME_OVER_TEXT1
+	.sb "     LOOOOOSER!     "
+GFX_GAME_OVER_TEXT2
+	.sb "    LOOOOOOSERS!    "
+GFX_GAME_OVER_TEXT3
+	.sb "KLAATU BARADA NIKTO "
+GFX_GAME_OVER_TEXT4
+	.sb "  IT'S A COOKBOOK!  "
+GFX_GAME_OVER_TEXT5
+	.sb "RESISTANCE IS FUTILE"
+GFX_GAME_OVER_TEXT6
+	.sb "U BASE R BELONG 2 US"
+GFX_GAME_OVER_TEXT7
+	.sb "  PWNED EARTHLING!  "
+GFX_GAME_OVER_TEXT8
+	.sb " GRANDMA DID BETTER!"
+GFX_GAME_OVER_TEXT9
+	.sb " ARE YOU GONNA CRY? "
+
+TABLE_HI_GFX_GAMEOVER
+		.by >GFX_GAME_OVER_TEXT0,>GFX_GAME_OVER_TEXT1
+		.by >GFX_GAME_OVER_TEXT2,>GFX_GAME_OVER_TEXT3
+		.by >GFX_GAME_OVER_TEXT4,>GFX_GAME_OVER_TEXT5
+		.by >GFX_GAME_OVER_TEXT6,>GFX_GAME_OVER_TEXT7
+		.by >GFX_GAME_OVER_TEXT8,>GFX_GAME_OVER_TEXT9
+		
+TABLE_LO_GFX_GAMEOVER
+		.by <GFX_GAME_OVER_TEXT0,<GFX_GAME_OVER_TEXT1
+		.by <GFX_GAME_OVER_TEXT2,<GFX_GAME_OVER_TEXT3
+		.by <GFX_GAME_OVER_TEXT4,<GFX_GAME_OVER_TEXT5
+		.by <GFX_GAME_OVER_TEXT6,<GFX_GAME_OVER_TEXT7
+		.by <GFX_GAME_OVER_TEXT8,<GFX_GAME_OVER_TEXT9
+
+
+Gfx_Choose_Game_Over_Text
+	ldx RANDOM                   ; Get a random value
+	cpx #8                       ; Is it 0 to 7?
+	bcs b_gcgot_UseDefault       ; Nope.  Then use default.
+	
+	inx
+	inx                          ; Turn 0 to 7 into 2 to 9.
+
+	lda zPLAYER_ONE_ON
+	and zPLAYER_TWO_ON
+	bne b_gcgot_Continue         ; Two Players.   We're done with index.
+
+	dex                          ; Remove 1 from index to use single loser message.
+	bne b_gcgot_Continue         ; Skip over forced default.
+
+b_gcgot_UseDefault
+	ldx #0                       ; Force default message
+	
+b_gcgot_Continue
+	lda TABLE_LO_GFX_GAMEOVER,X  ; Save address of the chosen text.
+	sta zGAME_OVER_TEXT
+	lda TABLE_HI_GFX_GAMEOVER,X
+	sta zGAME_OVER_TEXT+1
+
+	rts
+
+
+; ==========================================================================
+; MASK AND COPY CHAR IMAGE LEFT
+; ==========================================================================
+; Copy the 8 bytes of a character to the placeholder character that 
+; appears on screen.  Each byte is masked through the current 
+; animation frame mask. 
+;
+; Other code must set up the pointers.
+; --------------------------------------------------------------------------
+
+Gfx_MaskAndCopyCharImageLeft
+
+	ldy #7
+
+b_gmaccil_CopyLoop
+	lda (zGO_CSET_C_ADDR),Y    ; Pointer to the source image for the char.
+	and (zGO_MASK_ADDR),Y      ; Pointer to mask per current frame.
+	sta GAME_OVER_LEFT_ADDR,y  ; Standin char for right side animation
+	dey
+	bpl b_gmaccil_CopyLoop     ; Copy 8 bytes.
+
+	rts
+
+
+; ==========================================================================
+; MASK AND COPY CHAR IMAGE RIGHT
+; ==========================================================================
+; Copy the 8 bytes of a character to the placeholder character that 
+; appears on screen.  Each byte is masked through the current 
+; animation frame mask. 
+;
+; Other code must set up the pointers.
+; --------------------------------------------------------------------------
+
+Gfx_MaskAndCopyCharImageRight
+
+	ldy #7
+
+b_gmaccir_CopyLoop
+	lda (zGO_CSET_C_ADDR),Y    ; Pointer to the source image for the char.
+	and (zGO_MASK_ADDR),Y      ; Pointer to mask per current frame.
+	sta GAME_OVER_RIGHT_ADDR,y ; Standin char for right side animation
+	dey
+	bpl b_gmaccir_CopyLoop     ; Copy 8 bytes.
+
+	rts
+
 

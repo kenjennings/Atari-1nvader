@@ -1691,4 +1691,127 @@ GameOverTransition
 	; If 0 then increment (or decrement) index to next position and start
 	; If new position is 0, do not start State 2.
 
+	rts
+
+
+
+; ==========================================================================
+; GET LEFT CHAR
+; ==========================================================================
+; Given the current character index, get the character on the left 
+; side of the display string.
+;
+; Other code must set up the pointers.
+; --------------------------------------------------------------------------
+
+GameGetLeftChar
+
+	lda #0                    ; Corresponds to blank space.
+
+	ldy zGO_CHAR_INDEX        ; Current index for animation.
+	bmi b_gglc_Exit           ; If index is not set, just return 0.
+
+	lda (zGAME_OVER_TEXT),Y   ; Get character at index
+
+b_gglc_Exit
+	rts
+
+
+; ==========================================================================
+; GET RIGHT CHAR
+; ==========================================================================
+; Given the current character index, get the character on the right 
+; side of the display string.
+; 
+; This is more complicated than left.   The index counts 0 to 9.  The
+; character on the right are addressed at positions 19 to 10.
+; a little math is involved.
+;
+; Other code must set up the pointers.
+; --------------------------------------------------------------------------
+
+GameGetRightChar
+
+	lda #0                    ; Corresponds to blank space.
+
+	ldy zGO_CHAR_INDEX        ; Current index for animation.
+	bmi b_ggrc_Exit           ; If index is not set, just return 0.
+
+	sec                       ; set carry
+	lda #19                   ; last position on text line
+	sbc zGO_CHAR_INDEX        ; minus index
+	tay                       ; use index in Y
+	lda (zGAME_OVER_TEXT),Y   ; Get character at index 
+
+b_ggrc_Exit
+	rts
+
+
+; ==========================================================================
+; SUPPPORT - SETUP CSET ADDR 
+; ==========================================================================
+; setup the address for the source character in the character set.
+;
+; Multiply character by 8.  Add to base address of custom character set.
+;
+; A == the character value.
+; --------------------------------------------------------------------------
+
+GameSetupCsetAddresss
+
+	ldx #0
+	stx zGO_CSET_C_ADDR
+	stx zGO_CSET_C_ADDR+1
+
+	clc
+
+	asl
+	rol zGO_CSET_C_ADDR+1 ; times 2
+	asl
+	rol zGO_CSET_C_ADDR+1 ; times 4
+	asl
+	rol zGO_CSET_C_ADDR+1 ; times 8
+
+	sta zGO_CSET_C_ADDR
+
+	clc
+	lda #>CHARACTER_SET
+	adc zGO_CSET_C_ADDR+1
+	
+	rts
+
+
+; ==========================================================================
+; SUPPPORT - SETUP MASK ADDR 
+; ==========================================================================
+; setup the address for the mask table based on the frame number.
+;
+; Multiply frame number by 8.  Add to base address of mask image array.
+;
+; A == the current frame number.
+; --------------------------------------------------------------------------
+
+GameSetupMaskAddresss
+
+	ldx #0
+	stx zGO_MASK_ADDR
+	stx zGO_MASK_ADDR+1
+
+	clc
+
+	asl
+	rol zGO_MASK_ADDR+1 ; times 2
+	asl
+	rol zGO_MASK_ADDR+1 ; times 4
+	asl
+	rol zGO_MASK_ADDR+1 ; times 8
+
+	clc
+	adc #<TABLE_GAME_OVER_MASK_FRAMES
+	sta zGO_MASK_ADDR
+	lda #>TABLE_GAME_OVER_MASK_FRAMES
+	adc zGO_MASK_ADDR+1
+
+	rts
+
 
