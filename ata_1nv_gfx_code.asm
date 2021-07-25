@@ -768,6 +768,27 @@ b_gss_WriteP2Score
 	rts
 
 
+
+; ==========================================================================
+; Zero Game Over Placeholders
+; ==========================================================================
+; Erase the custom character images used for the Game Over animation.
+; --------------------------------------------------------------------------
+
+Gfx_Zero_Game_Over_PlaceHolders
+
+	lda #0   ; Self explanatory
+	ldy #7   ; 8 bytes.
+
+b_gzgoph_ZeroLoop
+	sta GAME_OVER_RIGHT_ADDR,y
+	sta GAME_OVER_LEFT_ADDR,y
+	dey
+	bpl b_gzgoph_ZeroLoop
+
+	rts
+
+
 ; ==========================================================================
 ; Zero Game Over Text
 ; ==========================================================================
@@ -776,7 +797,7 @@ b_gss_WriteP2Score
 
 Gfx_Zero_Game_Over_Text
 
-	lda #0   ; Corresponds to blank space charactrer
+	lda #0   ; Corresponds to blank space character
 	ldy #19  ; Text line is 20 characters.
 
 b_gzgot_ZeroLoop
@@ -853,16 +874,16 @@ TABLE_LO_GFX_GAMEOVER
 
 
 Gfx_Choose_Game_Over_Text
-	ldx RANDOM                   ; Get a random value
+	ldx RANDOM                   ; Get a random value (0 to 255) 
 	cpx #8                       ; Is it 0 to 7?
-	bcs b_gcgot_UseDefault       ; Nope.  Then use default.
+	bcs b_gcgot_UseDefault       ; Nope.  Then use default (0).
 	
 	inx
 	inx                          ; Turn 0 to 7 into 2 to 9.
 
 	lda zPLAYER_ONE_ON
 	and zPLAYER_TWO_ON
-	bne b_gcgot_Continue         ; Two Players.   We're done with index.
+	bne b_gcgot_Continue         ; Two Players are playing.   We're done with index.
 
 	dex                          ; Remove 1 from index to use single loser message.
 	bne b_gcgot_Continue         ; Skip over forced default.

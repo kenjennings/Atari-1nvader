@@ -1043,12 +1043,14 @@ b_gmm_UpdateDirection
 
 b_gmm_CheckLastRow
 	ldx zMOTHERSHIP_ROW      ; Get current row.
-	; HACK HACK HACK HACK -- testing scoring algorithms and counts.
-	; HACK HACK HACK HACK -- keeping mothership to row 21, so game doesn't end.
-;	cpx #21                  ; If on last row, then it has
 	cpx #22                  ; If on last row, then it has
-	beq b_gmm_Exit_MS_Move   ; reached the end of incrementing rows.
+	beq b_gmm_GoToNextRow    ; reached the end of incrementing rows.
 
+	; Game Over
+	inc zGAME_OVER_FLAG
+	rts
+
+b_gmm_GoToNextRow
 	inx                      ; Next row.
 	jsr GameSetMotherShipRow ; Given Mothership row (X), update the mother ship wow and set new, target Y position. 
 
@@ -1500,6 +1502,7 @@ b_gzs_Loop_ZeroPlayerScores
 	
 	rts
 
+
 ; ==========================================================================
 ; ANALYZE ALIEN VICTORY
 ; ==========================================================================
@@ -1508,10 +1511,6 @@ b_gzs_Loop_ZeroPlayerScores
 ; The motion management for the mothership and the guns went off 
 ; pretty much as normal.  A limited number of logic options changed
 ; due to the being on the last line.
-;
-; Called on Init.   Called on Game Start. 
-; It is NOT called for the title screen/at end of game, so that the 
-; title screen can support displaying the scores from the prior game.
 ;
 ; Bulky, Work-In-Progress, Stream-of-consciousness code...  
 ; I can see already there are patterns to optimize.

@@ -678,6 +678,7 @@ GameSetupMain
 	jsr GameZeroScores
 
 	; Zero all of this stuff...
+	sta zGAME_OVER_FLAG
 	sta zPLAYER_ONE_BUMP
 	sta zPLAYER_TWO_BUMP
 	sta zPLAYER_ONE_CRASH
@@ -799,32 +800,38 @@ GameMain
 
 	jsr GameAnalyzeAlienVictory    ; 6
 
+	lda zGAME_OVER_FLAG            ; Did mothership/player motion reach end game?
+	beq b_gm_EndGameLoop           ; No.   Continue game
+
+	lda #EVENT_SETUP_GAMEOVER      ; Next game loop event is setup for end game.
+	sta zCurrentEvent
+
+b_gm_EndGameLoop
 	rts
 
 
 ; ==========================================================================
 ; GAME SETUP OVER
 ; ==========================================================================
-;
+; Initialize variables to start the Game Over animation on the 
+; Game Over screen.
 ; --------------------------------------------------------------------------
 
 GameSetupOver
 
-	jsr Gfx_Choose_Game_Over_Text
-	
-	lda #6
-	sta zGO_FRAME
+	; statistics line color will already be zero to get here.  no need to change.
 
-;	erase text on screen. 
+	jsr Gfx_Zero_Game_Over_PlaceHolders ; Erase animation character images.
 
-;zGO_LEFT_CHAR    .word $0000  ; Pointer to the source image for the left char.
-;zGO_RIGHT_CHAR   .word $0000  ; Pointer to the source image for the right character.
-;zGO_FRAME        .byte $ff    ; Frame counter, 6 to 0.
-;zGO_COLPF0       .byte $00    ; Color value for PF0
-;zGO_COLPF1       .byte $00    ; Color value for PF1
-;zGO_COLPF2_INDEX .byte $00    ; Index into Colpf2 values.
+	jsr Gfx_Zero_Game_Over_Text         ; Erase game over message on screen. 
 
-	lda #EVENT_GAME                 ; Fire up the game screen.
+	jsr Gfx_Choose_Game_Over_Text       ; Choose text for message
+
+	lda #$FF                            ; -1 (out of range)
+	sta zGO_CHAR_INDEX                  ; Loops 0 to 9 [12]
+	sta zGO_FRAME                       ; Loops 6 to 0 for each CHAR_INDEX
+
+	lda #EVENT_GAMEOVER                 ; Next game loop event is game over screen
 	sta zCurrentEvent
 
 	rts

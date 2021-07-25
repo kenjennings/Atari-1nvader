@@ -19,6 +19,8 @@
 	.by "** Ken Jennings  2021 **"
 
 
+zGAME_OVER_FLAG              .byte $00
+
 MOTHERSHIP_MIN_X = 40  ; Farthest Left off the normal width screen.
 MOTHERSHIP_MAX_X = 208 ; Farthest right off the normal width screen.
 MOTHERSHIP_MIN_Y = 36  ; starting position of mothership, last position for laser.
@@ -66,7 +68,6 @@ zPLAYER_ONE_SCORE            .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 d
 zPLAYER_TWO_SCORE            .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
 
 zHIGH_SCORE                  .byte $00,$00,$00,$00,$00,$00 ; 6 digits
-
 
 ; ==========================================================================
 ; STATISTICS . . .
