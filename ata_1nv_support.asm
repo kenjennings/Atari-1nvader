@@ -1506,7 +1506,7 @@ b_gzs_Loop_ZeroPlayerScores
 ; ==========================================================================
 ; ANALYZE ALIEN VICTORY
 ; ==========================================================================
-; Process mothership on row 22 which wwill end the game.
+; Process mothership on row 22 which will end the game.
 ;
 ; The motion management for the mothership and the guns went off 
 ; pretty much as normal.  A limited number of logic options changed
@@ -1693,6 +1693,41 @@ GameOverTransition
 	rts
 
 
+; ==========================================================================
+; FILTER CHAR INDEX
+; ==========================================================================
+; Given the current character index establish if it is out of bounds 
+; and provide a replacement.  And Value over 9 is limited to 9. 
+;
+; This may nee do tbe called repeatedly. 
+; 
+; Y is the character index value to filter.
+; --------------------------------------------------------------------------
+
+TempCharIndex .byte 0
+TempCharValue .byte 0
+
+GameFilterCharIndex
+
+	sty TempCharIndex
+
+;	lda #0                    ; Corresponds to blank space.
+
+; ldy zGO_CHAR_INDEX  
+	cpy #$FF                  ; Current index for character.
+	beq b_gfci_Exit           ; If index is not set, just return.
+
+	cpy #10                   ; If this is less than 10, 
+	bcc b_gfci_UseIndex       ; just use it.
+
+	ldy #9                    ; Otherwise, this is the last position.
+
+b_gfci_UseIndex
+	sty TempCharIndex        ; Save for math later.
+
+b_gfci_Exit
+	rts
+
 
 ; ==========================================================================
 ; GET LEFT CHAR
@@ -1700,20 +1735,27 @@ GameOverTransition
 ; Given the current character index, get the character on the left 
 ; side of the display string.
 ;
+; The index counts 0 to 12.  
+; If the value is 10, 11, 12, then force to retrieve from position 
+; 9 in the text string. 
+;
 ; Other code must set up the pointers.
+;
+; Y is index position.
+;
+; RETURN  A = character
 ; --------------------------------------------------------------------------
 
 GameGetLeftChar
 
+	jsr GameFilterCharIndex ; Filter Y, set TempCharIndex
+
 	lda #0                    ; Corresponds to blank space.
 
-	ldy zGO_CHAR_INDEX        ; Current index for animation.
-	bmi b_gglc_Exit           ; If index is not set, just return 0.
+	cpy #$FF                  ; Current index for character.
+	beq b_ggrc_Exit           ; If index is not set, just return 0.
 
-	lda (zGAME_OVER_TEXT),Y   ; Get character at index
-
-b_gglc_Exit
-	rts
+	bne b_ggrc_GetChar        ; Go get value and save temp
 
 
 ; ==========================================================================
@@ -1722,25 +1764,39 @@ b_gglc_Exit
 ; Given the current character index, get the character on the right 
 ; side of the display string.
 ; 
-; This is more complicated than left.   The index counts 0 to 9.  The
-; character on the right are addressed at positions 19 to 10.
+; This is more complicated than left.   The index counts 0 to 12.  
+; If the value is 10, 11, 12, then force to retrieve from position 
+; 9 in the text string. 
+; The character on the right are addressed at positions 19 to 10.
 ; a little math is involved.
 ;
 ; Other code must set up the pointers.
+; 
+; Y is index position.
+;
+; RETURN  A = character
 ; --------------------------------------------------------------------------
 
 GameGetRightChar
 
+	jsr GameFilterCharIndex ; Filter Y, set TempCharIndex
+
 	lda #0                    ; Corresponds to blank space.
 
-	ldy zGO_CHAR_INDEX        ; Current index for animation.
-	bmi b_ggrc_Exit           ; If index is not set, just return 0.
+; ldy zGO_CHAR_INDEX  
+	cpy #$FF                  ; Current index for character.
+	beq b_ggrc_Exit           ; If index is not set, just return 0.
 
 	sec                       ; set carry
 	lda #19                   ; last position on text line
-	sbc zGO_CHAR_INDEX        ; minus index
+	sbc TempCharIndex        ; minus index
+	sta TempCharIndex        ; Change CharIndex result for caller.
 	tay                       ; use index in Y
+
+
+b_ggrc_GetChar
 	lda (zGAME_OVER_TEXT),Y   ; Get character at index 
+	sta TempCharValue         ; Save in temp buffer in case of using A again
 
 b_ggrc_Exit
 	rts
@@ -1749,6 +1805,8 @@ b_ggrc_Exit
 ; ==========================================================================
 ; SUPPPORT - SETUP CSET ADDR 
 ; ==========================================================================
+; Called by VBI.
+;
 ; setup the address for the source character in the character set.
 ;
 ; Multiply character by 8.  Add to base address of custom character set.
@@ -1783,7 +1841,9 @@ GameSetupCsetAddresss
 ; ==========================================================================
 ; SUPPPORT - SETUP MASK ADDR 
 ; ==========================================================================
-; setup the address for the mask table based on the frame number.
+; Called by VBI.
+;
+; Setup the address for the mask table based on the frame number.
 ;
 ; Multiply frame number by 8.  Add to base address of mask image array.
 ;

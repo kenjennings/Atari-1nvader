@@ -827,8 +827,8 @@ GameSetupOver
 
 	jsr Gfx_Choose_Game_Over_Text       ; Choose text for message
 
-	lda #$FF                            ; -1 (out of range)
-	sta zGO_CHAR_INDEX                  ; Loops 0 to 9 [12]
+	lda #$ff                            ; -1 (out of range)
+	sta zGO_CHAR_INDEX                  ; Loops 0 to 9 [12] ends at 13
 	sta zGO_FRAME                       ; Loops 6 to 0 for each CHAR_INDEX
 
 	lda #EVENT_GAMEOVER                 ; Next game loop event is game over screen
@@ -844,6 +844,10 @@ GameSetupOver
 ; --------------------------------------------------------------------------
 
 GameOver
+
+
+
+
 
 	lda #EVENT_SETUP_TITLE
 	sta zCurrentEvent

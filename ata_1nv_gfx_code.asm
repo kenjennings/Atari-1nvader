@@ -948,3 +948,138 @@ b_gmaccir_CopyLoop
 	rts
 
 
+
+; ==========================================================================
+; UPDATE GAME OVER CHARS
+; ==========================================================================
+; Given the current character index, get the character from the string
+; write it to the screen display memory.
+;
+; The first  is the placeholder char in COLPF0.  ( X | %00 000000 )
+;
+; Next is the actual character in COLPF1 ( X | %01 000000 )
+;
+; Next is the actual character in COLPF2 ( X | %10 000000 )
+;
+; Last is the actual character in COLPF3 ( X | %11 000000 )
+;
+; --------------------------------------------------------------------------
+
+OriginalLeftIndex .byte 0
+
+Gfx_UpdateGameOverChars
+
+	ldy zGO_CHAR_INDEX
+	bmi b_gugoc_Exit     ; Negative means not set.
+
+	cpy #13
+	bcs b_gugoc_Exit     ; 13 is the end.
+
+; 	left side
+
+	jsr GameGetLeftChar  ; Now TempCharValue=byte and TempCharIndex=new index
+
+	ldy TempCharIndex
+	sty OriginalLeftIndex ; Need to save this when evaluating right side.
+	cpy zGO_CHAR_INDEX
+	beq b_gugoc_DoStage1L ; If adjusted index is the same as plain index, then do all.
+
+	lda zGO_CHAR_INDEX
+	cmp #10
+	beq b_gugoc_DoStage2L
+
+	cmp #11
+	beq b_gugoc_DoStage3L
+
+	cmp #12
+	beq b_gugoc_DoStage4L
+	bne b_gugoc_Exit
+
+b_gugoc_DoStage1L
+	lda #GAME_OVER_LEFT_CHAR
+	sta GFX_GAME_OVER_LINE,Y
+	dey
+	bmi b_gugoc_DoRightSide
+
+b_gugoc_DoStage2L
+	jsr Gfx_WriteCharX01
+	dey
+	bmi b_gugoc_DoRightSide
+
+b_gugoc_DoStage3L
+	jsr Gfx_WriteCharX10
+	dey
+	bmi b_gugoc_DoRightSide
+
+b_gugoc_DoStage4L
+	jsr Gfx_WriteCharX11
+
+; 	right side
+
+b_gugoc_DoRightSide
+	jsr GameGetLeftChar  ; Now TempCharValue=byte and TempCharIndex=new index
+
+	ldy TempCharIndex
+
+	lda OriginalLeftIndex
+	cmp zGO_CHAR_INDEX
+	beq b_gugoc_DoStage1R ; If adjusted index is the same as plain index, then do all.
+
+	lda zGO_CHAR_INDEX
+	cmp #10
+	beq b_gugoc_DoStage2R
+
+	cmp #11
+	beq b_gugoc_DoStage3R
+
+	cmp #12
+	beq b_gugoc_DoStage4R
+
+b_gugoc_DoStage1R
+	lda #GAME_OVER_RIGHT_CHAR
+	sta GFX_GAME_OVER_LINE,Y
+	iny
+	cpy #20
+	beq b_gugoc_Exit
+
+b_gugoc_DoStage2R
+	jsr Gfx_WriteCharX01
+	iny
+	cpy #20
+	beq b_gugoc_Exit
+	
+b_gugoc_DoStage3R
+	jsr Gfx_WriteCharX10
+	iny
+	cpy #20
+	beq b_gugoc_Exit
+
+b_gugoc_DoStage4R
+	jsr Gfx_WriteCharX11
+
+b_gugoc_Exit
+	rts
+
+
+
+Gfx_WriteCharX01
+	lda TempCharValue
+	and #%00111111 ; clean it. 
+	ora #%01000000 ; OR %01
+	sta GFX_GAME_OVER_LINE,Y
+	rts
+
+Gfx_WriteCharX10
+	lda TempCharValue
+	and #%00111111 ; clean it. 
+	ora #%10000000 ; OR %10
+	sta GFX_GAME_OVER_LINE,Y
+	rts
+
+Gfx_WriteCharX11
+	lda TempCharValue
+	and #%00111111 ; clean it. 
+	ora #%11000000 ; OR %11
+	sta GFX_GAME_OVER_LINE,Y
+	rts
+

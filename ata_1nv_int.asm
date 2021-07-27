@@ -533,20 +533,46 @@ b_mdv_DoTheGame
 
 ; =====================  GAME OVER  ====================
 ; ======================================================
-
+; Use the index as found in the variables. 
+; Increment at the end.  On entry, -1 means increment.
 
 b_mdv_DoGameOver
 
-; animate text being dsiplayed.
+	lda zCurrentEvent              ; Get current state
+	cmp  #EVENT_GAMEOVER           ; Are we doing Game Over
+	beq b_mdv_DoGameOverTransition ; Yes. Do the Game Over animation
+	jmp ExitMyDeferredVBI          ; No. done doing things here.
 
-; check for input to go to title.
+b_mdv_DoGameOverTransition         ; Let's animate text being displayed.
 
-	jsr Gfx_RunGameStars ; Animate the flashing stars
+	lda zGO_CHAR_INDEX             ; 0 to 9 [12] (-1 is starting state) 13 is end.
+	cmp #13 
+	beq b_mdv_EndGameOver          ; Animation is over.
+
+	lda zGO_FRAME                  ; 5 to 0. -1 is reset and increment char index.
+	bpl b_mdv_DoGameOverAnimation  ; Frame does not need reset.
+
+
+
+
+b_mdv_DoGameOverAnimation    ; Increment pointers and go
+
+	bpl 
+
+
+
+
+
+	jsr GameOverTransition
+
+;	jsr Gfx_RunGameStars ; Animate the flashing stars
 
 
 ; ======================================================
 ; Something else, etc.  maybe.
 
+
+b_mdv_EndGameOver
 
 ; ========  END OF GAME OVER SCREEN  ========
 
