@@ -68,7 +68,7 @@ TABLE_GAME_DISPLAY_LIST
 	.word DISPLAY_LIST_TITLE      ; 3  = EVENT_COUNTDOWN       then move mothership
 	.word DISPLAY_LIST_TITLE      ; 4  = EVENT_SETUP_GAME
 	.word DISPLAY_LIST_GAME       ; 5  = EVENT_GAME            regular game play.  boom boom boom
-	.word DISPLAY_LIST_GAME       ; 6  = EVENT_SETUP_GAMEOVER
+	.word DISPLAY_LIST_GAMEOVER   ; 6  = EVENT_SETUP_GAMEOVER
 	.word DISPLAY_LIST_GAMEOVER   ; 7  = EVENT_GAMEOVER        display text, then go to title
 
 TABLE_GAME_DISPLAY_LIST_INTERRUPT
@@ -78,7 +78,7 @@ TABLE_GAME_DISPLAY_LIST_INTERRUPT
 	.word TITLE_DLI      ; 3  = EVENT_COUNTDOWN       then move mothership
 	.word TITLE_DLI      ; 4  = EVENT_SETUP_GAME
 	.word GAME_DLI       ; 5  = EVENT_GAME            regular game play.  boom boom boom
-	.word GAME_DLI       ; 6  = EVENT_SETUP_GAMEOVER
+	.word GAME_OVER_DLI  ; 6  = EVENT_SETUP_GAMEOVER
 	.word GAME_OVER_DLI  ; 7  = EVENT_GAMEOVER        display text, then go to title
 
 
