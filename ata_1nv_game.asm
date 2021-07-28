@@ -226,22 +226,6 @@ b_gi_LoopFillZero
 ; Display List LMS initialization for the mountains happens in the Display 
 ; List declaration. 
 
-; NOT NEEDED, BECAUSE THESE ARE INITIALIZED BY THE DISK LOAD INTO PAGE 0
-
-;	lda #LAND_MAX_PAUSE
-;	sta zLandTimer          ; Number of jiffies to Pause.  When 0, run scroll.
-
-;	lda #LAND_STEP_TIMER
-;	sta zLandScrollTimer    ; How many frames to wait for each fine scroll.
-
-;	lda #0
-;	sta zLandHS             ; fine horizontal scroll value start.
-;	sta zLandColor          ; index for repeat DLIs on the scrolling land  
-
-;	sta zLandPhase          ; 0 == waiting  1 == scrolling.
-;	sta zLandMotion         ; 0 == left/right !0 == right/left
-
-
 	; Changing the Display List is potentially tricky.  If the update is
 	; interrupted by the Vertical blank, then it could mess up the display
 	; list address and crash the Atari.
@@ -694,7 +678,8 @@ GameSetupMain
                                     
 	jsr GameRandomizeMothership     ; Set random direction , and starting X position.
 
-	ldx #0
+;	ldx #0
+	ldx #20
 	jsr GameSetMotherShipRow        ; Convert Row 0 to Y position on screen.
 	lda #24
 	sta zMOTHERSHIP_Y               ; Force "old" position above the row 0 position. 
@@ -805,6 +790,7 @@ GameMain
 
 	lda #EVENT_SETUP_GAMEOVER      ; Next game loop event is setup for end game.
 	sta zCurrentEvent
+	jsr Gfx_Zero_Game_Over_Text  
 
 b_gm_EndGameLoop
 	rts
@@ -827,9 +813,15 @@ GameSetupOver
 
 	jsr Gfx_Choose_Game_Over_Text       ; Choose text for message
 
-	lda #$ff                            ; -1 (out of range)
+;	lda #$ff                            ; -1 (out of range)
+	lda #0
 	sta zGO_CHAR_INDEX                  ; Loops 0 to 9 [12] ends at 13
+
+	lda #05
 	sta zGO_FRAME                       ; Loops 6 to 0 for each CHAR_INDEX
+
+	lda #64
+	sta zGO_COLPF2_INDEX
 
 	lda #EVENT_GAMEOVER                 ; Next game loop event is game over screen
 	sta zCurrentEvent
@@ -846,7 +838,7 @@ GameSetupOver
 GameOver
 
 
-
+	rts
 
 
 	lda #EVENT_SETUP_TITLE

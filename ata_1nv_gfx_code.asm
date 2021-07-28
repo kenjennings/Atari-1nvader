@@ -805,6 +805,15 @@ b_gzgot_ZeroLoop
 	dey
 	bpl b_gzgot_ZeroLoop
 
+	lda #%11100001
+	sta GFX_GAME_OVER_LINE
+	lda #%10100001
+	sta GFX_GAME_OVER_LINE+1
+	lda #%01100001
+	sta GFX_GAME_OVER_LINE+2
+	lda #%00100001
+	sta GFX_GAME_OVER_LINE+3
+
 	rts
 
 
@@ -1083,3 +1092,39 @@ Gfx_WriteCharX11
 	sta GFX_GAME_OVER_LINE,Y
 	rts
 
+
+
+; ==========================================================================
+; SETUP COLPF2 INDEX
+; ==========================================================================
+; Given the current frame number set the correct index offset for the 
+; COLPF2 index used by the DLI on this frame.
+; Since the index use counts down 16 times, the starting value for the 
+; index is:
+;
+; (((frame index + 1) * 16) - 1)  OR
+;
+; frame   index
+; 0        15
+; 1        31
+; 2        47
+; 3        63
+; 4        79
+; 5        95
+;
+; It is 12 bytes of instructions to do the formula and store the result.
+; So, just use a table lookup.  Duh.
+; --------------------------------------------------------------------------
+
+TABLE_FRAME_TO_COLPF2INDEX
+	.byte 15,31,47,63,79,95
+
+
+Gfx_SetupCOLPF2Index
+
+	ldx zGO_FRAME                    ; Current frame number
+	lda TABLE_FRAME_TO_COLPF2INDEX,x
+
+	sta zGO_COLPF2_INDEX
+
+	rts

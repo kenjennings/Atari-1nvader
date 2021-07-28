@@ -234,6 +234,7 @@ DL_LMS_SCROLL_LAND4 = [ * + 1 ]
 ; provided for JVB does not matter at all.  The system VBI will update
 ; ANTIC after this using the address in the shadow registers (SDLST)
 
+DISPLAY_LIST_DO_NOTHING
 	mDL_JVB DISPLAY_LIST_TITLE        ; Restart display.
 
 
@@ -398,18 +399,14 @@ DISPLAY_LIST_GAMEOVER                                       ; System VBI sets co
 	mDL_BLANK DL_BLANK_4
 
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00 (020 - 027) (2) P1 score, High score, P2 score
-	mDL_BLANK [DL_BLANK_1|DL_DLI] 
+	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ; DLI to set COLPF0, COLPF1
 
 	.rept 6
 		mDL_BLANK DL_BLANK_8                                ; -- (028 - 075) Blank Lines  (-) 6 * 8 == 48 blanks.
 	.endr
-	mDL_BLANK [DL_BLANK_6|DL_DLI]                           ; -- (076 - 081) 
+	mDL_BLANK [DL_BLANK_6|DL_DLI]                           ; -- (076 - 081)  - DLI loops 16 scan lines for COLPF2, COLPF3
 
-; This break is introduced to declare a label for the 
-; game over text line.  Otherwise it could have 
-; simply looped once for all the lines with stars.
-
-DL_LMS_GAME_OVER = [ * + 1 ]                                ; Game Over Text
+DL_LMS_GAME_OVER = [ * + 1 ]                                ; Game Over Text line
 	mDL_LMS   DL_TEXT_7,GFX_GAME_OVER_LINE                  ; 07 (082 - 089) (172) 
 	mDL_BLANK DL_BLANK_2                                    ; -- (090 - 091) 
 
@@ -726,8 +723,11 @@ GFX_STAT_HITS
 
 GFX_STARS_LINE
 	;    0123456789 123456789 123456789
-	.sb "                    *                        "
 	;     ^^==================^^
+	.sb "                    *    "
+GFX_THIS_IS_BLANK ; we need 20 blanks for a moment for the Game Over screen
+	.sb "                    "
+
 
 
 
@@ -738,7 +738,7 @@ GFX_STARS_LINE
 ; source lines of text that are copied over the line when 
 ; the game is over.  
 
-GFX_GAME_OVER_LINE		
+GFX_GAME_OVER_LINE
 	.ds 20
 	
 
@@ -750,14 +750,14 @@ TABLE_GAME_OVER_PF1 ; colors for next phase in reverse
 
 TABLE_GAME_OVER_PF2 ; Colors for DLI transition - 16 scan lines for Mode 7 text
 	.byte $08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08
-	.byte $06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$96
-	.byte $06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$96,$98
-	.byte $04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$96,$98,$9a
-	.byte $04,$04,$04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$96,$98,$9a,$9C
-	.byte $02,$02,$04,$04,$04,$06,$06,$06,$06,$08,$08,$96,$98,$9a,$9c,$9C
+	.byte $06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$b6
+	.byte $06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$b6,$b8
+	.byte $04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$b6,$b8,$ba
+	.byte $04,$04,$04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$b6,$b8,$ba,$bC
+	.byte $02,$02,$02,$04,$04,$06,$06,$08,$08,$b6,$b8,$ba,$bc,$bc,$bc,$be
 
 TABLE_GAME_OVER_PF3 ; Colors for DLI on static text - 16 scan lines for Mode 7 text
-	.byte $02,$02,$02,$02,$04,$04,$06,$06,$08,$08,$96,$98,$9a,$9c,$9c,$9C
+	.byte $02,$02,$02,$04,$04,$06,$06,$08,$08,$b6,$b8,$ba,$bc,$bc,$bc,$be
 
 TABLE_GAME_OVER_MASK_FRAMES ; TEMP CHAR IMAGE == CHARSET IMAGE AND MASK
 	.byte $ff ; 11111111  frame 6  (0) X * 8 == 0

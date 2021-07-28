@@ -445,7 +445,7 @@ GAME_OVER_LEFT_ADDR
 	; $00 ........
 	; $00 ........
 
-GAME_OVER_LEFT_CHAR=$1D
+GAME_OVER_RIGHT_CHAR=$1D
 GAME_OVER_RIGHT_ADDR
 ; $1D
 	.byte $00,$00,$00,$00 ; =    ;  STAND-IN for Game Over Text during transition (RIGHT)

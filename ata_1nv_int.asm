@@ -13,32 +13,8 @@
 ; Tick Tock values,
 ; Count downs,
 ; DLI and VBI routines.
-; Prompt for Button press.
 ;
 ; --------------------------------------------------------------------------
-
-; ==========================================================================
-; Animation speeds of various displayed items.   Number of frames to wait...
-; --------------------------------------------------------------------------
-BLINK_SPEED       = 3    ; Speed of updates to Press A Button prompt.
-
-TITLE_SPEED       = 2    ; Scrolling speed for title. 
-TITLE_DOWN_SPEED  = 3    ; Shift title down before scroll.
-TITLE_RETURN_WAIT = 180  ; Time to wait to return to Stage 0.
-TITLE_WIPE_SPEED  = 0    ; Title screen to game screen fade speed.
-
-WOBBLEX_SPEED     = 2    ; Speed of flying objects on Title and Game Over.
-WOBBLEY_SPEED     = 3    ; Speed of flying objects on Title and Game Over.
-
-FROG_WAKE_SPEED   = 120  ; Initial delay about 2 sec for frog corpse viewing/mourning
-DEAD_FADE_SPEED   = 4    ; Fade the game screen to black for Dead Frog
-DEAD_CYCLE_SPEED  = 5    ; Speed of color animation on Dead screen
-
-WIN_FADE_SPEED    = 4    ; Fade the game screen to black to show Win
-WIN_CYCLE_SPEED   = 5    ; Speed of color animation on Win screen 
-
-GAME_OVER_SPEED   = 4    ; Speed of Game over background animation
-
 
 
 ;==============================================================================
@@ -86,26 +62,24 @@ bLoopWaitFrame
 ;==============================================================================
 
 TABLE_GAME_DISPLAY_LIST
-	.word $0000              ; 0  = EVENT_INIT            one time globals setup
-	.word DISPLAY_LIST_TITLE ; 1  = EVENT_SETUP_TITLE
-	.word DISPLAY_LIST_TITLE ; 2  = EVENT_TITLE           run title and get player start button
-	.word DISPLAY_LIST_TITLE ; 3  = EVENT_COUNTDOWN       then move mothership
-	.word DISPLAY_LIST_TITLE ; 4  = EVENT_SETUP_GAME
-	.word DISPLAY_LIST_GAME  ; 5  = EVENT_GAME            regular game play.  boom boom boom
-	.word DISPLAY_LIST_GAME  ; 6  = EVENT_LAST_ROW        forced player shove off screen
-	.word DISPLAY_LIST_GAME  ; 7  = EVENT_SETUP_GAMEOVER
-	.word DISPLAY_LIST_GAME  ; 8  = EVENT_GAMEOVER        display text, then go to title
+	.word $0000                   ; 0  = EVENT_INIT            one time globals setup
+	.word DISPLAY_LIST_DO_NOTHING ; 1  = EVENT_SETUP_TITLE
+	.word DISPLAY_LIST_TITLE      ; 2  = EVENT_TITLE           run title and get player start button
+	.word DISPLAY_LIST_TITLE      ; 3  = EVENT_COUNTDOWN       then move mothership
+	.word DISPLAY_LIST_TITLE      ; 4  = EVENT_SETUP_GAME
+	.word DISPLAY_LIST_GAME       ; 5  = EVENT_GAME            regular game play.  boom boom boom
+	.word DISPLAY_LIST_GAME       ; 6  = EVENT_SETUP_GAMEOVER
+	.word DISPLAY_LIST_GAMEOVER   ; 7  = EVENT_GAMEOVER        display text, then go to title
 
 TABLE_GAME_DISPLAY_LIST_INTERRUPT
-	.word DoNothing_DLI ; 0  = EVENT_INIT            one time globals setup
-	.word DoNothing_DLI ; 1  = EVENT_SETUP_TITLE
-	.word TITLE_DLI     ; 2  = EVENT_TITLE           run title and get player start button
-	.word TITLE_DLI     ; 3  = EVENT_COUNTDOWN       then move mothership
-	.word TITLE_DLI     ; 4  = EVENT_SETUP_GAME
-	.word GAME_DLI      ; 5  = EVENT_GAME            regular game play.  boom boom boom
-	.word DoNothing_DLI ; 6  = EVENT_LAST_ROW        forced player shove off screen
-	.word DoNothing_DLI ; 7  = EVENT_SETUP_GAMEOVER
-	.word DoNothing_DLI ; 8  = EVENT_GAMEOVER        display text, then go to title
+	.word DoNothing_DLI  ; 0  = EVENT_INIT            one time globals setup
+	.word DoNothing_DLI  ; 1  = EVENT_SETUP_TITLE
+	.word TITLE_DLI      ; 2  = EVENT_TITLE           run title and get player start button
+	.word TITLE_DLI      ; 3  = EVENT_COUNTDOWN       then move mothership
+	.word TITLE_DLI      ; 4  = EVENT_SETUP_GAME
+	.word GAME_DLI       ; 5  = EVENT_GAME            regular game play.  boom boom boom
+	.word GAME_DLI       ; 6  = EVENT_SETUP_GAMEOVER
+	.word GAME_OVER_DLI  ; 7  = EVENT_GAMEOVER        display text, then go to title
 
 
 MyImmediateVBI
@@ -525,7 +499,6 @@ b_mdv_DoTheGame
 
 	jsr Pmg_ManagePlayersMovement  ; Handles guns for Title and Game displays.
 
-
 ; ========  END OF GAME SCREEN  ========
 
 	jmp ExitMyDeferredVBI
@@ -533,6 +506,8 @@ b_mdv_DoTheGame
 
 ; =====================  GAME OVER  ====================
 ; ======================================================
+
+
 ; Use the index as found in the variables. 
 ; Increment at the end.  On entry, -1 means increment.
 
@@ -557,15 +532,9 @@ b_mdv_DoGameOverTransition         ; Let's animate text being displayed.
 
 b_mdv_DoGameOverAnimation    ; Increment pointers and go
 
-	bpl 
+;	jsr GameOverTransition
 
 
-
-
-
-	jsr GameOverTransition
-
-;	jsr Gfx_RunGameStars ; Animate the flashing stars
 
 
 ; ======================================================
@@ -590,8 +559,6 @@ ExitMyDeferredVBI
 ; to starting Horizontal position (these fake Shadow regs).
 ; The game relies on the DLIs to cut up Players/Missiles to their proper 
 ; horizontal positions.
-; We could loop to copy these, but I don't want to burn through eight 
-; more inc or dec, and branches.  So, do this as fast as possible.
 
 ;b_mdv_ReloadFromShadow
 
@@ -612,11 +579,7 @@ ExitMyDeferredVBI
 	lda SHPOSM3
 	sta HPOSM3
 
-;	lda #$00
-;	sta COLBK
-
-	jsr Gfx_RunScrollingLand
-
+	jsr Gfx_RunScrollingLand      ; Animated 24/7 on all screens
 
 DoCheesySoundService              ; World's most inept sound sequencer.
 	jsr SoundService
@@ -1109,7 +1072,7 @@ DLI_PF0_DEC
 	.align $0100
 
 ;==============================================================================
-;                                              DLI_SYNC_PF0_DEC
+;                                              GAME_DLI_0
 ;==============================================================================
 ; Set HSCROL for stars.  Sync down and deal out the  colors.
 ;
@@ -1157,8 +1120,6 @@ GAME_DLI_0
 	sta HSCROL
 
 	inc zDLIStarLinecounter        ; (Note, VBI will zero this). 
-
-;	sta WSYNC
 
 ;; The things above are time critical, because they may start on 
 ;; a mode 2 line with high DMA, so the working star rows evaluation 
@@ -1212,6 +1173,71 @@ b_GDLI0_NormalExit                ; Exit without changing the DLI vector.
 
 	rti
 
+;==============================================================================
+
+
+;==============================================================================
+;                                              GAME_OVER_DLI_0
+;==============================================================================
+; Set COLPF0 and COLPF1 per current frame index.
+; Chain to next DLI that works COLPF2 and COLPF3.
+; -----------------------------------------------------------------------------
+
+GAME_OVER_DLI  ; Placeholder for VBI to restore starting address for DLI chain.
+
+GAME_OVER_DLI_0
+
+	mStart_DLI ; Saves A and Y
+
+	ldy zGO_FRAME ; Get current frame
+
+	lda TABLE_GAME_OVER_PF0,Y ; colors for initial blast-in frames in reverse
+	sta COLPF0
+	lda TABLE_GAME_OVER_PF1,Y ; colors for next phase in reverse
+	sta COLPF1
+
+	pla                            ; Done executing this series of DLIs.   
+	tay
+
+	mChainDLI GAME_OVER_DLI_0,GAME_OVER_DLI_1 ; next DLI is multi-scan-lines
+
+	rti
+
+
+;==============================================================================
+;                                              GAME_OVER_DLI_1
+;==============================================================================
+; Set COLPF2 and COLPF3 per tables for 16 scan lines.
+; Chain to next DLI that does the land scrolling. 
+; -----------------------------------------------------------------------------
+
+GAME_OVER_DLI_1
+
+	mStart_DLI ; Saves A and Y
+
+	txa                       ; Need to save more 
+	pha
+
+	ldy zGO_COLPF2_INDEX
+	ldx #15                   ; 16 scan lines, 15 to 0.
+
+b_GODLI1_CopyLoop
+	lda TABLE_GAME_OVER_PF2,y ; Get from table based on COLPF2 index.
+	sta WSYNC                 ; sync scan line
+	sta COLPF2                ; COLPF2 is transitioning from flat grey to gradients
+	lda TABLE_GAME_OVER_PF3,x ; get from table based on scan line
+	sta COLPF3                ; Final, non-animated version.
+
+	dey
+	dex
+	bpl b_GODLI1_CopyLoop     ; Do until X == -1
+
+	pla
+	tax
+	pla                              
+	tay
+
+	mChainDLI GAME_OVER_DLI_1,TITLE_DLI_5 ; Do the land colors next.
 
 ;==============================================================================
 

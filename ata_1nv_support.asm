@@ -947,9 +947,11 @@ b_cps_Exit
 GameMothershipMovement
 
 	lda zMOTHERSHIP_Y
-	cmp zMOTHERSHIP_NEW_Y  ; Is Y the same as NEW_Y?
-	bne b_gmm_Exit_MS_Move ; No.  Skip this until vertical positions match. (VBI does this).
+	cmp zMOTHERSHIP_NEW_Y      ; Is Y the same as NEW_Y?
+	beq b_gmm_RunTheMothership ; Yes.   Ok to run the mothership movement.
+	rts                        ; No.  Skip this until vertical positions match. (VBI does this).
 
+b_gmm_RunTheMothership
 ; Determine min/max for this row.   Row 22 allows mothership to move 
 ; off the screen completely.   When the Stats Text Color is zero, then 
 ; we're on row 22.
@@ -968,7 +970,7 @@ b_gmm_SetRegularMinMax         ; Here use the normal values for screen width.
 	sta zMOTHERSHIP_MIN_X
 	lda #MOTHERSHIP_MAX_X
 	sta zMOTHERSHIP_MAX_X
-	
+
 ; Determine speed (distance to move) here.
 ; See discussion above.   There are two possible entries 
 ; from the table (indexed by Move speed + 0, and Move speed + 1)
@@ -1044,7 +1046,7 @@ b_gmm_UpdateDirection
 b_gmm_CheckLastRow
 	ldx zMOTHERSHIP_ROW      ; Get current row.
 	cpx #22                  ; If on last row, then it has
-	beq b_gmm_GoToNextRow    ; reached the end of incrementing rows.
+	bne b_gmm_GoToNextRow    ; reached the end of incrementing rows.
 
 	; Game Over
 	inc zGAME_OVER_FLAG
@@ -1685,10 +1687,7 @@ b_gaav_Exit
 
 GameOverTransition
 
-	; State 1.
-	; Check counter.
-	; If 0 then increment (or decrement) index to next position and start
-	; If new position is 0, do not start State 2.
+	; jsr Gfx_UpdateGameOverChars
 
 	rts
 
@@ -1753,10 +1752,10 @@ GameGetLeftChar
 	lda #0                    ; Corresponds to blank space.
 
 	cpy #$FF                  ; Current index for character.
-	beq b_ggrc_Exit           ; If index is not set, just return 0.
-
 	bne b_ggrc_GetChar        ; Go get value and save temp
+	rts                       ; (BEQ) If index is not set, just return 0.
 
+	; Yes, the branch above goes into the routine below.
 
 ; ==========================================================================
 ; GET RIGHT CHAR
@@ -1779,7 +1778,7 @@ GameGetLeftChar
 
 GameGetRightChar
 
-	jsr GameFilterCharIndex ; Filter Y, set TempCharIndex
+	jsr GameFilterCharIndex   ; Filter Y, set TempCharIndex
 
 	lda #0                    ; Corresponds to blank space.
 
@@ -1789,8 +1788,8 @@ GameGetRightChar
 
 	sec                       ; set carry
 	lda #19                   ; last position on text line
-	sbc TempCharIndex        ; minus index
-	sta TempCharIndex        ; Change CharIndex result for caller.
+	sbc TempCharIndex         ; minus index
+	sta TempCharIndex         ; Change CharIndex result for caller.
 	tay                       ; use index in Y
 
 
