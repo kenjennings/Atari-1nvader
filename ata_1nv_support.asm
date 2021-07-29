@@ -1687,7 +1687,13 @@ b_gaav_Exit
 
 GameOverTransition
 
-	; jsr Gfx_UpdateGameOverChars
+	jsr Gfx_SetupCOLPF2Index
+	
+	jsr Gfx_UpdateGameOverChars
+
+	jsr Gfx_MaskAndCopyCharImageLeft
+
+	jsr Gfx_MaskAndCopyCharImageRight
 
 	rts
 
@@ -1710,9 +1716,6 @@ GameFilterCharIndex
 
 	sty TempCharIndex
 
-;	lda #0                    ; Corresponds to blank space.
-
-; ldy zGO_CHAR_INDEX  
 	cpy #$FF                  ; Current index for character.
 	beq b_gfci_Exit           ; If index is not set, just return.
 
@@ -1753,6 +1756,7 @@ GameGetLeftChar
 
 	cpy #$FF                  ; Current index for character.
 	bne b_ggrc_GetChar        ; Go get value and save temp
+
 	rts                       ; (BEQ) If index is not set, just return 0.
 
 	; Yes, the branch above goes into the routine below.

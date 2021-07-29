@@ -805,14 +805,16 @@ b_gzgot_ZeroLoop
 	dey
 	bpl b_gzgot_ZeroLoop
 
-	lda #%11100001
-	sta GFX_GAME_OVER_LINE
-	lda #%10100001
-	sta GFX_GAME_OVER_LINE+1
-	lda #%01100001
-	sta GFX_GAME_OVER_LINE+2
-	lda #%00100001
-	sta GFX_GAME_OVER_LINE+3
+;	lda #%11100001
+;	sta GFX_GAME_OVER_LINE
+;	lda #%10100001
+;	sta GFX_GAME_OVER_LINE+1
+;	lda #%01100001
+;	sta GFX_GAME_OVER_LINE+2
+;	lda #%00100001
+;	sta GFX_GAME_OVER_LINE+3
+
+	jsr Gfx_Zero_Game_Over_PlaceHolders
 
 	rts
 
@@ -991,7 +993,7 @@ Gfx_UpdateGameOverChars
 	ldy TempCharIndex
 	sty OriginalLeftIndex ; Need to save this when evaluating right side.
 	cpy zGO_CHAR_INDEX
-	beq b_gugoc_DoStage1L ; If adjusted index is the same as plain index, then do all.
+	beq b_gugoc_DoStage1L ; If adjusted index is the same as index, then do all.
 
 	lda zGO_CHAR_INDEX
 	cmp #10

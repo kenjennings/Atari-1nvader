@@ -516,32 +516,35 @@ b_mdv_DoGameOver
 	lda zCurrentEvent              ; Get current state
 	cmp  #EVENT_GAMEOVER           ; Are we doing Game Over
 	beq b_mdv_DoGameOverTransition ; Yes. Do the Game Over animation
-	jmp ExitMyDeferredVBI          ; No. done doing things here.
+	jmp ExitMyDeferredVBI          ; No. Done here.
 
 b_mdv_DoGameOverTransition         ; Let's animate text being displayed.
 
 	lda zGO_CHAR_INDEX             ; 0 to 9 [12] (-1 is starting state) 13 is end.
 	cmp #13 
-	beq b_mdv_EndGameOver          ; Animation is over.
+	beq b_mdv_EndGameOver          ; Animation is over when char index reaches 13.
 
-	lda zGO_FRAME                  ; 5 to 0. -1 is reset and increment char index.
+	dec zGO_FRAME                  ; 5 to 0. -1 is reset and increment char index.
 	bpl b_mdv_DoGameOverAnimation  ; Frame does not need reset.
 
+	lda #5
+	sta zGO_FRAME                  ; Restart frame counter
+	inc zGO_CHAR_INDEX             ; Go to next character.
+	lda zGO_CHAR_INDEX
+	cmp #13 
+	beq b_mdv_EndGameOver          ; Animation is over when char index reaches 13.
 
+b_mdv_DoGameOverAnimation          ; Increment pointers and go
 
-
-b_mdv_DoGameOverAnimation    ; Increment pointers and go
-
-;	jsr GameOverTransition
-
-
+	jsr GameOverTransition
 
 
 ; ======================================================
 ; Something else, etc.  maybe.
 
-
 b_mdv_EndGameOver
+
+	; get joystick and debounce it.
 
 ; ========  END OF GAME OVER SCREEN  ========
 
