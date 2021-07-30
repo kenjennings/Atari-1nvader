@@ -1028,7 +1028,7 @@ b_gugoc_DoStage4L
 ; 	right side
 
 b_gugoc_DoRightSide
-	jsr GameGetLeftChar  ; Now TempCharValue=byte and TempCharIndex=new index
+	jsr GameGetRightChar  ; Now TempCharValue=byte and TempCharIndex=new index
 
 	ldy TempCharIndex
 
@@ -1074,23 +1074,23 @@ b_gugoc_Exit
 
 
 Gfx_WriteCharX01
-	lda TempCharValue
-	and #%00111111 ; clean it. 
-	ora #%01000000 ; OR %01
+	lda (zGAME_OVER_TEXT),y ; TempCharValue
+	and #%00111111          ; clean it. 
+	ora #%01000000          ; OR %01
 	sta GFX_GAME_OVER_LINE,Y
 	rts
 
 Gfx_WriteCharX10
-	lda TempCharValue
-	and #%00111111 ; clean it. 
-	ora #%10000000 ; OR %10
+	lda (zGAME_OVER_TEXT),y ; TempCharValue
+	and #%00111111          ; clean it. 
+	ora #%10000000          ; OR %10
 	sta GFX_GAME_OVER_LINE,Y
 	rts
 
 Gfx_WriteCharX11
-	lda TempCharValue
-	and #%00111111 ; clean it. 
-	ora #%11000000 ; OR %11
+	lda (zGAME_OVER_TEXT),y ; TempCharValue
+	and #%00111111          ; clean it. 
+	ora #%11000000          ; OR %11
 	sta GFX_GAME_OVER_LINE,Y
 	rts
 

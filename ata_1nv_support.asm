@@ -1687,13 +1687,20 @@ b_gaav_Exit
 
 GameOverTransition
 
-	jsr Gfx_SetupCOLPF2Index
-	
+	jsr Gfx_SetupCOLPF2Index          ; Setup base index used for DLI for COLPF2
+
+	lda zGO_FRAME
+	jsr GameSetupMaskAddresss         ; Set pointer to mask based on frame number.
+
 	jsr Gfx_UpdateGameOverChars
 
-	jsr Gfx_MaskAndCopyCharImageLeft
+	jsr GameGetLeftChar               ; A = char on left
+	jsr GameSetupCsetAddresss         ; Setup pointer to source character
+	jsr Gfx_MaskAndCopyCharImageLeft  ; Mask it into the stand-in char's bitmap.
 
-	jsr Gfx_MaskAndCopyCharImageRight
+	jsr GameGetRightChar              ; A = char on left
+	jsr GameSetupCsetAddresss         ; Setup pointer to source character
+	jsr Gfx_MaskAndCopyCharImageRight ; Mask it into the stand-in char's bitmap.
 
 	rts
 
@@ -1837,6 +1844,7 @@ GameSetupCsetAddresss
 	clc
 	lda #>CHARACTER_SET
 	adc zGO_CSET_C_ADDR+1
+	sta zGO_CSET_C_ADDR+1
 	
 	rts
 
@@ -1873,6 +1881,7 @@ GameSetupMaskAddresss
 	sta zGO_MASK_ADDR
 	lda #>TABLE_GAME_OVER_MASK_FRAMES
 	adc zGO_MASK_ADDR+1
+	sta zGO_MASK_ADDR+1
 
 	rts
 
