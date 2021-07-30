@@ -12,7 +12,7 @@ WORK IN PROGRESS - Atari port (parody) of C64 1nvader
 
 [![V17 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/17-WIP-GameOverFirstLight.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
-The Game Over Screen fires up after the mothership pushes the players' guns off the screen.  This is the first iteration where all the characters of the Game Over message are displayed.
+The Game Over Screen fires up after the mothership pushes the players' guns off the screen.  After about a week of munging about this is the first iteration of the Game Over animation where all the characters of the Game Over message end up displayed when the animation completes. 
 
 The animation to put the characters on the screen is trying to run, but things are not going correctly.  Several characters on the right side of the screen do not end in the correct state/color version of the character.   (Odd that they are the correct characters, though.)
 
