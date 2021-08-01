@@ -594,6 +594,8 @@ b_gc_MoveMothership
 	lda zBIG_MOTHERSHIP_Y      ; Mothership Y position...
 	bpl b_gc_End               ; If Y is not negative, then nothing else going on. End.
 
+	jsr Pmg_Draw_Big_Mothership ; Insure this is erased.
+	
 ; Here the Mothership has reached the negative  Y position.
 ; This means the Mothership has traveled up, off the screen.  
 ; Therefore, the Countdown is done. 
