@@ -530,7 +530,7 @@ GFX_COUNTDOWN_TEXT  ; 4, 3, 2, 1, 0 (multiply times 4, copy 4.
 	.sb +$C0 "!OG!...1...2...3    "
 
 GFX_COUNTDOWN_TICK ; Jiffy ticks to wait for this text
-	.byte 20,20,20,20,1
+	.byte 99,70,70,70,1
 ;	.byte 90,90,90,90,1
 
 
