@@ -1,6 +1,6 @@
 
 # Atari-1nvader
-WORK IN PROGRESS - Atari port (parody) of C64 1nvader
+BETA TEST - Atari port (parody) of C64 1nvader
 
 ---
 
@@ -18,11 +18,15 @@ The animation to put the characters on the screen is trying to run, but things a
 
 --- 
 
-**DD MMM 2021 -- TO-DO**
+**31 July 2021 -- Game Over**
 
-[![V17_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/18-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+[![V18](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/18-BASELINE-GameOver.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
-WIP
+Gave up on clever animation for the characters on the Game Over screen as this was just taking too much time.    For now making myslef be happy with the color transistions.
+
+The complete game cycle appears to be functioning stably.
+
+BASELINE HERE FOR BETA TESTERS
 
 ---
 
