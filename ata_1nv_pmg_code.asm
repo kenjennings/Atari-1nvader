@@ -215,14 +215,16 @@ b_pdbm_LoopDraw
 
 	; Useless trivia -- The P/M DMA does not read the first 8 bytes of the
 	; memory map, so we really only need to zero the second 8 bytes.
+	; HOWEVER, some emulators may not get this right and display these 
+	; undisplayable bytes anyway.
 	
 b_pdbm_Zero                ; Zero 8 bytes from position 8 to 15 
 
-	ldx #7                 ; 7, 6, 5 . . . 0
+	ldx #15                 ; 15, 14, 13, ... 7, 6, 5 . . . 0
 
 b_pdbm_LoopZero
-	sta PLAYERADR2+8,X       ; Zero Player memory
-	sta PLAYERADR3+8,X       ; Zero Player memory
+	sta PLAYERADR2,X       ; Zero Player memory
+	sta PLAYERADR3,X       ; Zero Player memory
 	dex
 	bpl b_pdbm_LoopZero    ; Loop until X is -1
 

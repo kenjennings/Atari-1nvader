@@ -550,7 +550,7 @@ Gfx_DrawCountdown
 	tya                      ; A = index
 	asl                      ; index * 2
 	asl                      ; index * 4
-	tay	                     ; Y = index * 4 for copying.
+	tay                      ; Y = index * 4 for copying.
 	ldx #3                   ; index into Gfx memeory.
 
 b_gcd_CopyText

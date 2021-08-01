@@ -349,6 +349,8 @@ GameSetupTitle
 
 	; ===== The giant mothership  =====
 
+	jsr Pmg_Zero_PM_Memory ; Clear the guns... and everything else.  Because I'm lazy.
+
 	lda #0                    ;  0 = standing still  !0 = Moving up.
 	sta zBigMothershipPhase
 
@@ -407,7 +409,6 @@ GameSetupTitle
 	sta zPLAYER_ONE_REDRAW
 	sta zPLAYER_TWO_REDRAW
 
-	jsr Pmg_Zero_PM_Memory ; Clear the guns... and everything else.  Because I'm lazy.
 
 	; ===== Start the Title running on the next frame =====
 
