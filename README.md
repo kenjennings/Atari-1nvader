@@ -9,11 +9,11 @@ Darren Foulds: https://github.com/darrenfoulds
 
 **Development Progress**
 
-BETA TEST BASELINE
+BETA TEST BASELINE - - NO AUDIO YET.  
 
-NO AUDIO YET.  
+The game appears to run properly and stably through multiple iterations of its Title-Game-Game Over cycle.
 
-The game appears to run properlt and stably through multiple iterations of its Title-Game-Game Over cycle.
+Tested in Atari800 and Altirra emulators. Development/Test configuration is NTSC, Atari 800, 48K.  So, nothing special should be required and it should run on anything.
 
 | **Title** |
 | ------- |
