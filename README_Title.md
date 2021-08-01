@@ -142,4 +142,16 @@ If the idle player did not press their button during the countdown, then the pla
 
 ---
 
+**1 Aug 2021 -- Playtesters **
+
+[![V08 WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/20-BASELINE-TitleTesters.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+Playtester Philsan reported some garbage floating around on PAL.   Redisual parts of the mothership were not erased completely after the title screen.  Modified the mothership erase code.
+
+Also, other recent changes resulted in removing the mothership entirely from the title screen until it started moving.  Fixed that.
+
+Added Playtesters text to the scrolling documentation.
+
+---
+
 [ Go Back To MAIN Page ](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
