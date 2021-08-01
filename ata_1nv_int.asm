@@ -18,6 +18,39 @@
 
 
 ;==============================================================================
+;                                                           ANY BUTTON  A
+;==============================================================================
+; Subroutine to verify no player is pressing the joystick button,
+; and then  for any player to press a button.
+;
+; Return A == debounce 
+;            1 waiting for debounce, 
+;            0 debounce occurred,
+;           -1 button pressed after debounce cleared.
+;==============================================================================
+
+libAnyButton                 ; get joystick button and debounce it.
+
+	lda STRIG0
+	and STRIG1            ; 0 means one or both buttons are pressed.
+	bne b_ClearDebounce   ; 1 means both buttons are not pressed.
+	
+	; A button is pressed 
+	lda gDEBOUNCE          ; If debounce flag is on 
+	bne b_AnyButton_Exit   ; then ignore the button. 
+
+	lda #$ff               ; A button is pressed when debounce is off.
+	rts
+
+b_ClearDebounce              ; Nobody is pressing a button.
+	lda #0                   ; Since the buttons are released
+	sta gDEBOUNCE            ; then remove the debounce flag 
+
+b_AnyButton_Exit
+	rts
+	
+	
+;==============================================================================
 ;                                                           SCREENWAITFRAME  A
 ;==============================================================================
 ; Subroutine to wait for the current frame to finish display.
@@ -507,7 +540,6 @@ b_mdv_DoTheGame
 ; =====================  GAME OVER  ====================
 ; ======================================================
 
-
 ; Use the index as found in the variables. 
 ; Increment at the end.  On entry, -1 means increment.
 
@@ -519,32 +551,39 @@ b_mdv_DoGameOver
 	jmp ExitMyDeferredVBI          ; No. Done here.
 
 b_mdv_DoGameOverTransition         ; Let's animate text being displayed.
-
 	lda zGO_CHAR_INDEX             ; 0 to 9 [12] (-1 is starting state) 13 is end.
 	cmp #13 
-	beq b_mdv_EndGameOver          ; Animation is over when char index reaches 13.
+	beq b_mdv_ButtonToContinue     ; Animation is over when char index reaches 13.
 
 	dec zGO_FRAME                  ; 5 to 0. -1 is reset and increment char index.
-	bpl b_mdv_DoGameOverAnimation  ; Frame does not need reset.
+	bpl b_mdv_DoGameOverAnimation  ; 0 or more.  So, Frame does not need reset.
 
 	lda #5
 	sta zGO_FRAME                  ; Restart frame counter
 	inc zGO_CHAR_INDEX             ; Go to next character.
 	lda zGO_CHAR_INDEX
 	cmp #13 
-	beq b_mdv_EndGameOver          ; Animation is over when char index reaches 13.
+	beq b_mdv_ButtonToContinue     ; Animation is over when char index reaches 13.
 
-b_mdv_DoGameOverAnimation          ; Increment pointers and go
+	jsr Gfx_UpdateGameOverChars    ; Update chars on screen with color bits set.
 
-	jsr GameOverTransition
-
+b_mdv_DoGameOverAnimation
+	jsr Gfx_SetupCOLPF2Index       ; Setup base index used for DLI for COLPF2
+	jmp b_EndofEndofGameOver
 
 ; ======================================================
 ; Something else, etc.  maybe.
 
-b_mdv_EndGameOver
+b_mdv_ButtonToContinue  ; get joystick and debounce it.
 
-	; get joystick and debounce it.
+	jsr libAnyButton         ; Insure debounce from button trigger.
+	bpl b_EndofEndofGameOver ; 0 or 1 means no input yet 
+
+	; -1 means a button a pressed after debounce
+	lda EVENT_SETUP_TITLE     ; Recycle back to the title.
+	sta zCurrentEvent          
+
+b_EndofEndofGameOver
 
 ; ========  END OF GAME OVER SCREEN  ========
 

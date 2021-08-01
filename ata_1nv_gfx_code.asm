@@ -768,27 +768,6 @@ b_gss_WriteP2Score
 	rts
 
 
-
-; ==========================================================================
-; Zero Game Over Placeholders
-; ==========================================================================
-; Erase the custom character images used for the Game Over animation.
-; --------------------------------------------------------------------------
-
-Gfx_Zero_Game_Over_PlaceHolders
-
-	lda #0   ; Self explanatory
-	ldy #7   ; 8 bytes.
-
-b_gzgoph_ZeroLoop
-	sta GAME_OVER_RIGHT_ADDR,y
-	sta GAME_OVER_LEFT_ADDR,y
-	dey
-	bpl b_gzgoph_ZeroLoop
-
-	rts
-
-
 ; ==========================================================================
 ; Zero Game Over Text
 ; ==========================================================================
@@ -804,17 +783,6 @@ b_gzgot_ZeroLoop
 	sta GFX_GAME_OVER_LINE,y
 	dey
 	bpl b_gzgot_ZeroLoop
-
-;	lda #%11100001
-;	sta GFX_GAME_OVER_LINE
-;	lda #%10100001
-;	sta GFX_GAME_OVER_LINE+1
-;	lda #%01100001
-;	sta GFX_GAME_OVER_LINE+2
-;	lda #%00100001
-;	sta GFX_GAME_OVER_LINE+3
-
-	jsr Gfx_Zero_Game_Over_PlaceHolders
 
 	rts
 
@@ -848,7 +816,10 @@ b_gzgot_ZeroLoop
 ; Rare enough to be surprising when it occurs.
 ; --------------------------------------------------------------------------
 
+;gfx_go_temp .byte 0
+
 GFX_GAME_OVER_TEXT0
+;	.sb "ABCDEFGHIJKLMNOPQRST"
 	.sb "  G A M E  O V E R  "   ; Do this about 96% of the time.
 GFX_GAME_OVER_TEXT1
 	.sb "     LOOOOOSER!     "
@@ -886,22 +857,30 @@ TABLE_LO_GFX_GAMEOVER
 
 Gfx_Choose_Game_Over_Text
 	ldx RANDOM                   ; Get a random value (0 to 255) 
-	cpx #8                       ; Is it 0 to 7?
-	bcs b_gcgot_UseDefault       ; Nope.  Then use default (0).
-	
-	inx
-	inx                          ; Turn 0 to 7 into 2 to 9.
 
+	cpx #1                       ; "Loser!" singular
+	bne b_cgot_Test2
 	lda zPLAYER_ONE_ON
 	and zPLAYER_TWO_ON
-	bne b_gcgot_Continue         ; Two Players are playing.   We're done with index.
+	beq b_gcgot_Continue         ; One Player. Go with it.
+	inx                          ; Two Players, so choose Plural. 
+	bne b_gcgot_Continue
 
-	dex                          ; Remove 1 from index to use single loser message.
-	bne b_gcgot_Continue         ; Skip over forced default.
+b_cgot_Test2
+	cpx #2                       ; "Losers!" plural
+	bne b_cgot_TestOthers
+	lda zPLAYER_ONE_ON
+	and zPLAYER_TWO_ON
+	bne b_gcgot_Continue         ; Two Players.  Go with it.
+	dex                          ; One Players, so choose Singular. 
+	bne b_gcgot_Continue
 
-b_gcgot_UseDefault
-	ldx #0                       ; Force default message
-	
+b_cgot_TestOthers
+	cpx #10                      ; Is it 0 to 9?
+	bcc b_gcgot_Continue         ; Yes.  Then use default (0).
+
+	ldx #0                       ; No.  Force default message
+
 b_gcgot_Continue
 	lda TABLE_LO_GFX_GAMEOVER,X  ; Save address of the chosen text.
 	sta zGAME_OVER_TEXT
@@ -912,71 +891,29 @@ b_gcgot_Continue
 
 
 ; ==========================================================================
-; MASK AND COPY CHAR IMAGE LEFT
-; ==========================================================================
-; Copy the 8 bytes of a character to the placeholder character that 
-; appears on screen.  Each byte is masked through the current 
-; animation frame mask. 
-;
-; Other code must set up the pointers.
-; --------------------------------------------------------------------------
-
-Gfx_MaskAndCopyCharImageLeft
-
-	ldy #7
-
-b_gmaccil_CopyLoop
-	lda (zGO_CSET_C_ADDR),Y    ; Pointer to the source image for the char.
-	and (zGO_MASK_ADDR),Y      ; Pointer to mask per current frame.
-	sta GAME_OVER_LEFT_ADDR,y  ; Standin char for right side animation
-	dey
-	bpl b_gmaccil_CopyLoop     ; Copy 8 bytes.
-
-	rts
-
-
-; ==========================================================================
-; MASK AND COPY CHAR IMAGE RIGHT
-; ==========================================================================
-; Copy the 8 bytes of a character to the placeholder character that 
-; appears on screen.  Each byte is masked through the current 
-; animation frame mask. 
-;
-; Other code must set up the pointers.
-; --------------------------------------------------------------------------
-
-Gfx_MaskAndCopyCharImageRight
-
-	ldy #7
-
-b_gmaccir_CopyLoop
-	lda (zGO_CSET_C_ADDR),Y    ; Pointer to the source image for the char.
-	and (zGO_MASK_ADDR),Y      ; Pointer to mask per current frame.
-	sta GAME_OVER_RIGHT_ADDR,y ; Standin char for right side animation
-	dey
-	bpl b_gmaccir_CopyLoop     ; Copy 8 bytes.
-
-	rts
-
-
-
-; ==========================================================================
 ; UPDATE GAME OVER CHARS
 ; ==========================================================================
 ; Given the current character index, get the character from the string
 ; write it to the screen display memory.
+; 
+; (Up to) four adjacent characters are being manipulated at a time. 
+; The first character at +/-0 is animated by masking an animation 
+; of the character into a second placeholder character image.
+; The next two character positions provide other animation phases with 
+; color transistions or DLI color movement.
+; The last character is the final character state.
 ;
-; The first  is the placeholder char in COLPF0.  ( X | %00 000000 )
+; (+/-) 0 = COLPF0 (Placeholder char) ( X | %00 000000 )
 ;
-; Next is the actual character in COLPF1 ( X | %01 000000 )
+; (+/-) 1 = character in COLPF1 ( X | %01 000000 )
 ;
-; Next is the actual character in COLPF2 ( X | %10 000000 )
+; (+/-) 2 =  character in COLPF2 ( X | %10 000000 )
 ;
-; Last is the actual character in COLPF3 ( X | %11 000000 )
+; (+/-) 3 =  character in COLPF3 ( X | %11 000000 )
 ;
+; Updates of characters only occurs when the index is within 0 to 9 on
+; the left side of the screen, and 10 to 19 on the right side.
 ; --------------------------------------------------------------------------
-
-OriginalLeftIndex .byte 0
 
 Gfx_UpdateGameOverChars
 
@@ -984,94 +921,91 @@ Gfx_UpdateGameOverChars
 	bmi b_gugoc_Exit     ; Negative means not set.
 
 	cpy #13
-	bcs b_gugoc_Exit     ; 13 is the end.
+	bcs b_gugoc_Exit     ; 13 is past the end.
 
-; 	left side
-
-	jsr GameGetLeftChar  ; Now TempCharValue=byte and TempCharIndex=new index
-
-	ldy TempCharIndex
-	sty OriginalLeftIndex ; Need to save this when evaluating right side.
-	cpy zGO_CHAR_INDEX
-	beq b_gugoc_DoStage1L ; If adjusted index is the same as index, then do all.
-
-	lda zGO_CHAR_INDEX
-	cmp #10
-	beq b_gugoc_DoStage2L
-
-	cmp #11
-	beq b_gugoc_DoStage3L
-
-	cmp #12
-	beq b_gugoc_DoStage4L
-	bne b_gugoc_Exit
-
-b_gugoc_DoStage1L
-	lda #GAME_OVER_LEFT_CHAR
-	sta GFX_GAME_OVER_LINE,Y
+; Stage 1 Left
+	cpy  #10
+	bcs b_gugoc_DecStage1L
+	jsr Gfx_WriteCharX00
+;	lda #GAME_OVER_LEFT_CHAR
+;	lda #GAME_OVER_RIGHT_CHAR+1
+;	sta GFX_GAME_OVER_LINE,Y
+b_gugoc_DecStage1L
 	dey
 	bmi b_gugoc_DoRightSide
 
-b_gugoc_DoStage2L
+; Stage 2 Left
+	cpy  #10
+	bcs b_gugoc_DecStage2L
 	jsr Gfx_WriteCharX01
+b_gugoc_DecStage2L
 	dey
 	bmi b_gugoc_DoRightSide
 
-b_gugoc_DoStage3L
+; Stage 3 Left
+	cpy  #10
+	bcs b_gugoc_DecStage3L
 	jsr Gfx_WriteCharX10
+b_gugoc_DecStage3L
 	dey
 	bmi b_gugoc_DoRightSide
 
-b_gugoc_DoStage4L
+; Stage 4 Left
+	cpy  #10               ; Is this even possible?
+	bcs b_gugoc_DoRightSide
 	jsr Gfx_WriteCharX11
 
 ; 	right side
 
 b_gugoc_DoRightSide
-	jsr GameGetRightChar  ; Now TempCharValue=byte and TempCharIndex=new index
-
-	ldy TempCharIndex
-
-	lda OriginalLeftIndex
-	cmp zGO_CHAR_INDEX
-	beq b_gugoc_DoStage1R ; If adjusted index is the same as plain index, then do all.
-
-	lda zGO_CHAR_INDEX
-	cmp #10
-	beq b_gugoc_DoStage2R
-
-	cmp #11
-	beq b_gugoc_DoStage3R
-
-	cmp #12
-	beq b_gugoc_DoStage4R
-
-b_gugoc_DoStage1R
-	lda #GAME_OVER_RIGHT_CHAR
-	sta GFX_GAME_OVER_LINE,Y
-	iny
-	cpy #20
-	beq b_gugoc_Exit
-
-b_gugoc_DoStage2R
-	jsr Gfx_WriteCharX01
-	iny
-	cpy #20
-	beq b_gugoc_Exit
+	sec
+	lda #19
+	sbc zGO_CHAR_INDEX
+	tay
 	
-b_gugoc_DoStage3R
-	jsr Gfx_WriteCharX10
+; Stage 1 Right
+	cpy #10
+	bcc b_gugoc_IncStage1R
+	jsr Gfx_WriteCharX00
+;	lda #GAME_OVER_RIGHT_CHAR
+;	sta GFX_GAME_OVER_LINE,Y
+b_gugoc_IncStage1R
 	iny
 	cpy #20
-	beq b_gugoc_Exit
+	bcs b_gugoc_Exit
 
-b_gugoc_DoStage4R
+; Stage 1 Right
+	cpy #10
+	bcc b_gugoc_IncStage2R
+	jsr Gfx_WriteCharX01
+b_gugoc_IncStage2R
+	iny
+	cpy #20
+	bcs b_gugoc_Exit
+	
+; Stage 1 Right
+	cpy #10
+	bcc b_gugoc_IncStage3R
+	jsr Gfx_WriteCharX10
+b_gugoc_IncStage3R
+	iny
+	cpy #20
+	bcs b_gugoc_Exit
+
+; Stage 1 Right
+	cpy #10
+	bcc b_gugoc_Exit
 	jsr Gfx_WriteCharX11
 
 b_gugoc_Exit
 	rts
 
 
+Gfx_WriteCharX00
+	lda (zGAME_OVER_TEXT),y ; TempCharValue
+	and #%00111111          ; clean it. 
+	sta GFX_GAME_OVER_LINE,Y
+	rts
 
 Gfx_WriteCharX01
 	lda (zGAME_OVER_TEXT),y ; TempCharValue

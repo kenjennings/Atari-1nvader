@@ -273,6 +273,14 @@ GameSetupTitle
 
 	; ===== Basics =====
 
+	lda #1
+	sta gDEBOUNCE  ; Make sure all joystick buttons are released before starting game.
+
+	lda #4                  ; Starting at 4 insures this is erased.
+	sta zCOUNTDOWN_FLAG 
+	jsr Gfx_DrawCountdown   ; Update the countdown text.  (Blank)
+
+
 	lda #$00
 	sta zSTATS_TEXT_COLOR
 
@@ -377,26 +385,29 @@ GameSetupTitle
 	sta zPLAYER_ONE_ON ; (0) not playing. (FF)=Title/Idle  (1) playing.
 	sta zPLAYER_TWO_ON ; (0) not playing. (FF)=Title/Idle  (1) playing.
 
-	ldy #PLAYER_IDLE_Y
-	sty zPLAYER_ONE_NEW_Y
-	sty zPLAYER_TWO_NEW_Y
+	lda #PLAYER_PLAY_Y  ; Old positions whether or not playing.
 	sty zPLAYER_ONE_Y
 	sty zPLAYER_TWO_Y
 
-	lda #$04
-	sta zPLAYER_ONE_COLOR
-	sta zPLAYER_TWO_COLOR
+	ldy #PLAYER_IDLE_Y    ; New positions in the isle spot for the title screen.
+	sty zPLAYER_ONE_NEW_Y
+	sty zPLAYER_TWO_NEW_Y
 
 	lda #[PLAYER_MIN_X+40]
-	sta zPLAYER_ONE_X
+	sta zPLAYER_ONE_NEW_X
 
 	lda #[PLAYER_MAX_X-40]
-	sta zPLAYER_TWO_X
+	sta zPLAYER_TWO_NEW_X
+
+	lda #$04               ; The color used for the idle guns.
+	sta zPLAYER_ONE_COLOR
+	sta zPLAYER_TWO_COLOR
 
 	lda #1
 	sta zPLAYER_ONE_REDRAW
 	sta zPLAYER_TWO_REDRAW
 
+	jsr Pmg_Zero_PM_Memory ; Clear the guns... and everything else.  Because I'm lazy.
 
 	; ===== Start the Title running on the next frame =====
 
@@ -404,7 +415,6 @@ GameSetupTitle
 	sta zCurrentEvent
 	lda #0 
 	sta zEventStage
-
 
 	rts
 
@@ -659,8 +669,6 @@ GameSetupMain
 	sta SHPOSM1
 	sta SHPOSM0
 
-	jsr GameZeroScores
-
 	; Zero all of this stuff...
 	sta zGAME_OVER_FLAG
 	sta zPLAYER_ONE_BUMP
@@ -676,10 +684,9 @@ GameSetupMain
 
 	jsr GameResetHitCounter         ; initilize hit counter and speed
                                     
-	jsr GameRandomizeMothership     ; Set random direction , and starting X position.
+	jsr GameRandomizeMothership     ; Set the starting X position and random direction.
 
-;	ldx #0
-	ldx #21 ; HACK HACK HCAK
+	ldx #0
 	jsr GameSetMotherShipRow        ; Convert Row 0 to Y position on screen.
 	lda #24
 	sta zMOTHERSHIP_Y               ; Force "old" position above the row 0 position. 
@@ -801,29 +808,30 @@ b_gm_EndGameLoop
 ; ==========================================================================
 ; Initialize variables to start the Game Over animation on the 
 ; Game Over screen.
+;
+; The statistics line color will already be zero to get here.  
+; (It went to zero when the mothership entereed row 22.)
 ; --------------------------------------------------------------------------
 
 GameSetupOver
 
-	; statistics line color will already be zero to get here.  no need to change.
+	jsr Gfx_Zero_Game_Over_Text   ; Erase game over message on screen. 
 
-	jsr Gfx_Zero_Game_Over_PlaceHolders ; Erase animation character images.
+	jsr Gfx_Choose_Game_Over_Text ; Choose text for message
 
-	jsr Gfx_Zero_Game_Over_Text         ; Erase game over message on screen. 
+	lda #1
+	sta gDEBOUNCE                 ; Players need to release button before pressing again
 
-	jsr Gfx_Choose_Game_Over_Text       ; Choose text for message
-
-;	lda #$ff                            ; -1 (out of range)
 	lda #0
-	sta zGO_CHAR_INDEX                  ; Loops 0 to 9 [12] ends at 13
+	sta zGO_CHAR_INDEX            ; Loops 0 to 9 [really 12] characters and ends at 13
 
 	lda #05
-	sta zGO_FRAME                       ; Loops 6 to 0 for each CHAR_INDEX
+	sta zGO_FRAME                 ; Loops 6 to 0 for animating color at each CHAR_INDEX
 
 	lda #64
-	sta zGO_COLPF2_INDEX
+	sta zGO_COLPF2_INDEX          ; Just a default....  probably unecessary.
 
-	lda #EVENT_GAMEOVER                 ; Next game loop event is game over screen
+	lda #EVENT_GAMEOVER           ; Next game loop event is game over screen
 	sta zCurrentEvent
 
 	rts
@@ -832,17 +840,13 @@ GameSetupOver
 ; ==========================================================================
 ; GAME OVER
 ; ==========================================================================
-;
+; When I wasn't paying attention everything for this 
+; ended up in the VBI section instead.  
+; If this is a problem then the VBI will be peeled apart to move 
+; other code here.
 ; --------------------------------------------------------------------------
 
 GameOver
-
-
-	rts
-
-
-	lda #EVENT_SETUP_TITLE
-	sta zCurrentEvent
 
 	rts
 

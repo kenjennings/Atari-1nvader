@@ -729,8 +729,6 @@ GFX_THIS_IS_BLANK ; we need 20 blanks for a moment for the Game Over screen
 	.sb "                    "
 
 
-
-
 	.align $0100 ; Align to page will keep all the Game over text in the same page.
 
 
@@ -743,74 +741,74 @@ GFX_GAME_OVER_LINE
 	
 
 TABLE_GAME_OVER_PF0 ; colors for initial blast-in frames in reverse
-	.byte $9c,$9c,$9e,$9e,$0e,$0e
+	.byte $ca,$cc,$ce,$ce,$0e,$0e
 
 TABLE_GAME_OVER_PF1 ; colors for next phase in reverse
-	.byte $08,$0a,$0a,$9a,$9a,$9a
+	.byte $06,$06,$06,$08,$08,$c8
 
 TABLE_GAME_OVER_PF2 ; Colors for DLI transition - 16 scan lines for Mode 7 text
-	.byte $08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08
-	.byte $06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$b6
-	.byte $06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$b6,$b8
-	.byte $04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$b6,$b8,$ba
-	.byte $04,$04,$04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$b6,$b8,$ba,$bC
-	.byte $02,$02,$02,$04,$04,$06,$06,$08,$08,$b6,$b8,$ba,$bc,$bc,$bc,$be
-
+	.byte $02,$02,$04,$04,$04,$06,$06,$08,$08,$c6,$c8,$ca,$cc,$cc,$cc,$ce ; 0
+	.byte $04,$04,$04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$c6,$c8,$ca,$cC ; 1
+	.byte $04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$c6,$c8,$ca ; 2
+	.byte $06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$c6,$c8 ; 3
+	.byte $06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$c6 ; 4
+	.byte $08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08 ; 5
+	
 TABLE_GAME_OVER_PF3 ; Colors for DLI on static text - 16 scan lines for Mode 7 text
-	.byte $02,$02,$02,$04,$04,$06,$06,$08,$08,$b6,$b8,$ba,$bc,$bc,$bc,$be
+	.byte $02,$02,$02,$04,$04,$06,$06,$08,$08,$c6,$c6,$c8,$ca,$ca,$ca,$cc
 
-TABLE_GAME_OVER_MASK_FRAMES ; TEMP CHAR IMAGE == CHARSET IMAGE AND MASK
-	.byte $ff ; 11111111  frame 6  (0) X * 8 == 0
-	.byte $ff ; 11111111 
-	.byte $ff ; 11111111 
-	.byte $ff ; 11111111 
-	.byte $ff ; 11111111 
-	.byte $ff ; 11111111 
-	.byte $ff ; 11111111 
-	.byte $ff ; 11111111 
+;TABLE_GAME_OVER_MASK_FRAMES ; TEMP CHAR IMAGE == CHARSET IMAGE AND MASK
+;	.byte $ff ; 11111111  frame 6  (0) X * 8 == 0
+;	.byte $ff ; 11111111 
+;	.byte $ff ; 11111111 
+;	.byte $ff ; 11111111 
+;	.byte $ff ; 11111111 
+;	.byte $ff ; 11111111 
+;	.byte $ff ; 11111111 
+;	.byte $ff ; 11111111 
 
-	.byte $7e ; .111111.  frame 5  (1) X * 8 == 8
-	.byte $7e ; .111111.
-	.byte $7e ; .111111.
-	.byte $7e ; .111111.
-	.byte $7e ; .111111.
-	.byte $ff ; 11111111 
-	.byte $ff ; 11111111 
-	.byte $ff ; 11111111 
+;	.byte $7e ; .111111.  frame 5  (1) X * 8 == 8
+;	.byte $7e ; .111111.
+;	.byte $7e ; .111111.
+;	.byte $7e ; .111111.
+;	.byte $7e ; .111111.
+;	.byte $ff ; 11111111 
+;	.byte $ff ; 11111111 
+;	.byte $ff ; 11111111 
 
-	.byte $3c ; ..1111.  frame 4   (2) X * 8 == 16
-	.byte $3c ; ..1111.
-	.byte $3c ; ..1111..
-	.byte $7e ; .111111.
-	.byte $7e ; .111111.
-	.byte $7e ; .111111.
-	.byte $7e ; .111111.
-	.byte $7e ; .111111.
+;	.byte $3c ; ..1111.  frame 4   (2) X * 8 == 16
+;	.byte $3c ; ..1111.
+;	.byte $3c ; ..1111..
+;	.byte $7e ; .111111.
+;	.byte $7e ; .111111.
+;	.byte $7e ; .111111.
+;	.byte $7e ; .111111.
+;	.byte $7e ; .111111.
 
-	.byte $18 ; ...11...  frame 3   (3) X * 8 == 24
-	.byte $18 ; ...11..
-	.byte $3c ; ..1111..
-	.byte $3c ; ..1111..
-	.byte $3c ; ..1111..
-	.byte $3c ; ..1111..
-	.byte $7e ; .111111.
-	.byte $7e ; .111111.
+;	.byte $18 ; ...11...  frame 3   (3) X * 8 == 24
+;	.byte $18 ; ...11..
+;	.byte $3c ; ..1111..
+;	.byte $3c ; ..1111..
+;	.byte $3c ; ..1111..
+;	.byte $3c ; ..1111..
+;	.byte $7e ; .111111.
+;	.byte $7e ; .111111.
 
-	.byte $00 ; ........  frame 2   (4) X * 8 == 32
-	.byte $00 ; ........
-	.byte $18 ; ...11...
-	.byte $18 ; ...11...
-	.byte $18 ; ...11...
-	.byte $3c ; ..1111..
-	.byte $3c ; ..1111..
-	.byte $3c ; ..1111..
+;	.byte $00 ; ........  frame 2   (4) X * 8 == 32
+;	.byte $00 ; ........
+;	.byte $18 ; ...11...
+;	.byte $18 ; ...11...
+;	.byte $18 ; ...11...
+;	.byte $3c ; ..1111..
+;	.byte $3c ; ..1111..
+;	.byte $3c ; ..1111..
 
-	.byte $00 ; ........  frame 1    (5) X * 8 == 40
-	.byte $00 ; ........
-	.byte $00 ; ........
-	.byte $00 ; ........
-	.byte $00 ; ........
-	.byte $18 ; ...11...
-	.byte $18 ; ...11...
-	.byte $18 ; ...11...
+;	.byte $00 ; ........  frame 1    (5) X * 8 == 40
+;	.byte $00 ; ........
+;	.byte $00 ; ........
+;	.byte $00 ; ........
+;	.byte $00 ; ........
+;	.byte $18 ; ...11...
+;	.byte $18 ; ...11...
+;	.byte $18 ; ...11...
 

@@ -246,6 +246,7 @@ b_pdbm_LoopZero
 ; --------------------------------------------------------------------------
 
 Pmg_CollectCollisions
+
 	lda #0
 	sta zPLAYER_ONE_SHOT_THE_SHERIFF  ; Flag that the players did not shoot the mothership.
 	sta zPLAYER_TWO_SHOT_THE_SHERIFF
@@ -607,6 +608,36 @@ Pmg_Draw_Players
 
 	rts
 
+
+; ==========================================================================
+; CLEAR GUNS
+; ==========================================================================
+; At this point I'm just too lazy to do this right. 
+; Gaming the Y positions didn't work. Copy the image bitmaps for the guns to the player Y positions.
+;
+; We're cheating a little here.   Usually for a general purpose 
+; routine the player should be erased at the old Y, and redrawn 
+; at the new Y.  However, in this simple game the player's gun image 
+; includes a 0 byte at the start and the end, so when moved one 
+; scan line at a time (the only possible movement it can do) a 
+; redraw will delete any old image.
+;
+; Zero the redraw flags.
+; Copy the Players' NEW_Y to Y.
+;
+; X == Player gun to update
+; --------------------------------------------------------------------------
+
+;Pmg_Draw_Players
+;
+;	ldx #0
+;	jsr Pmg_Draw_Player
+;
+;	ldx #1
+;	jsr Pmg_Draw_Player
+;
+;	rts
+;
 
 ; ==========================================================================
 ; DRAW PLAYER

@@ -19,7 +19,9 @@
 	.by "** Ken Jennings  2021 **"
 
 
-zGAME_OVER_FLAG              .byte $00
+zGAME_OVER_FLAG             .byte $00  ; The game is over?
+
+gDEBOUNCE                   .byte 0    ; Flag to make sure joystick buttons are released.
 
 MOTHERSHIP_MIN_X = 40  ; Farthest Left off the normal width screen.
 MOTHERSHIP_MAX_X = 208 ; Farthest right off the normal width screen.
@@ -52,7 +54,6 @@ zEXPLOSION_COUNT            .byte $00 ; Timer/index for Explosion.
 zEXPLOSION_X                .byte $00 
 zEXPLOSION_Y                .byte $00
 zEXPLOSION_NEW_Y            .byte $00
-
 
 ; ==========================================================================
 ; SCORING . . .
@@ -129,3 +130,5 @@ TABLE_SPEED_CONTROL ; How many pixels to move each frame ( two values - frame +0
 ;zGO_COLPF1      .byte $00    ; Color value for PF1
 
 ; ======== E N D   O F   V A R I A B L E S ======== 
+
+DELAYED .byte 60

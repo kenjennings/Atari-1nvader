@@ -37,6 +37,9 @@ PlayersSelectionInput
 	lda #0
 	sta PSI_Response
 
+	jsr libAnyButton         ; If debounce occurred then allow input.
+	bpl b_psi_Exit           ; 0 or 1 is No button press.  Waiting for debounce or debounce occurred.
+
 	ldx #0
 	jsr PlayerSelectionInput
 
@@ -78,6 +81,7 @@ b_ppsi_TryPlayerIdle           ; Player is idle.  ($FF  is idle)
 	lda #$1                    ; (1) playing.
 	sta zPLAYER_ON,X           ; Signal to all that this player is playing.
 	sta PSI_Response           ; +1 Signal that a player is in motion.
+	jsr GameZeroPlayerScore    ; And Zero the score on screen.
 
 b_ppsi_Exit
 	rts
@@ -1495,14 +1499,36 @@ b_gdhc_Exit
 
 GameZeroScores
 
+	ldx #0
+	jsr GameZeroPlayerScore
+
+	ldx #1
+	jsr GameZeroPlayerScore
+
+	rts
+
+
+; X == Player number 0 or 1
+
+GameZeroPlayerScore
+	lda #0
 	ldy #5
-b_gzs_Loop_ZeroPlayerScores
-	sta zPLAYER_ONE_SCORE,y ; maybe something more here... like points add, or mothership value, too.
-	sta zPLAYER_TWO_SCORE,y
+
+	cpx #0
+	beq b_gzs_ZeroPlayerScore
+	ldy #11
+
+b_gzs_ZeroPlayerScore
+	ldx #5
+
+b_gzs_Loop_ZeroPlayerScore
+	sta zPLAYER_SCORE,y 
 	dey
-	bpl b_gzs_Loop_ZeroPlayerScores
+	dex
+	bpl b_gzs_Loop_ZeroPlayerScore
 	
 	rts
+
 
 
 ; ==========================================================================
@@ -1631,9 +1657,6 @@ b_gaav_SetOne_XR2L
 	sta zPLAYER_ONE_NEW_X   ; Player X == A == gCrashPoint.
 	bne b_gaav_Exit         ; No.   Exit
 
-
-
-
 b_gaav_Exit
 	rts
 
@@ -1685,57 +1708,28 @@ b_gaav_Exit
 ; 
 ; --------------------------------------------------------------------------
 
-GameOverTransition
+;GameOverTransition
 
-	jsr Gfx_SetupCOLPF2Index          ; Setup base index used for DLI for COLPF2
+	; COLPF0 and COLPF1 are set by direct lookup into a table based on the
+	; current frame.   COLPF2 is multiple values (16) in a table with a 
+	; different set per frame.
+	
+;	jsr Gfx_SetupCOLPF2Index          ; Setup base index used for DLI for COLPF2
 
-	lda zGO_FRAME
-	jsr GameSetupMaskAddresss         ; Set pointer to mask based on frame number.
+;	jsr GameSetupMaskAddresss         ; Set pointer to mask based on frame number.
 
-	jsr Gfx_UpdateGameOverChars
+;	jsr GameGetLeftChar               ; A = char on left
+;	bmi b_got_Exit                    ; If negative, then no character to animate.
 
-	jsr GameGetLeftChar               ; A = char on left
-	jsr GameSetupCsetAddresss         ; Setup pointer to source character
-	jsr Gfx_MaskAndCopyCharImageLeft  ; Mask it into the stand-in char's bitmap.
+;	jsr GameSetupCsetAddresss         ; Setup pointer to source character
+;	jsr Gfx_MaskAndCopyCharImageLeft  ; Mask it into the stand-in char's bitmap.
 
-	jsr GameGetRightChar              ; A = char on left
-	jsr GameSetupCsetAddresss         ; Setup pointer to source character
-	jsr Gfx_MaskAndCopyCharImageRight ; Mask it into the stand-in char's bitmap.
+;	jsr GameGetRightChar              ; A = char on right
+;	jsr GameSetupCsetAddresss         ; Setup pointer to source character
+;	jsr Gfx_MaskAndCopyCharImageRight ; Mask it into the stand-in char's bitmap.
 
-	rts
-
-
-; ==========================================================================
-; FILTER CHAR INDEX
-; ==========================================================================
-; Given the current character index establish if it is out of bounds 
-; and provide a replacement.  And Value over 9 is limited to 9. 
-;
-; This may nee do tbe called repeatedly. 
-; 
-; Y is the character index value to filter.
-; --------------------------------------------------------------------------
-
-TempCharIndex .byte 0
-TempCharValue .byte 0
-
-GameFilterCharIndex
-
-	sty TempCharIndex
-
-	cpy #$FF                  ; Current index for character.
-	beq b_gfci_Exit           ; If index is not set, just return.
-
-	cpy #10                   ; If this is less than 10, 
-	bcc b_gfci_UseIndex       ; just use it.
-
-	ldy #9                    ; Otherwise, this is the last position.
-
-b_gfci_UseIndex
-	sty TempCharIndex        ; Save for math later.
-
-b_gfci_Exit
-	rts
+;b_got_Exit
+;	rts
 
 
 ; ==========================================================================
@@ -1750,23 +1744,17 @@ b_gfci_Exit
 ;
 ; Other code must set up the pointers.
 ;
-; Y is index position.
-;
 ; RETURN  A = character
 ; --------------------------------------------------------------------------
 
 GameGetLeftChar
 
-	jsr GameFilterCharIndex ; Filter Y, set TempCharIndex
+	ldy zGO_CHAR_INDEX
+	cmp #10
+	bcc b_ggrc_GetChar
+	bcs b_ggrc_Exit_Failure
 
-	lda #0                    ; Corresponds to blank space.
-
-	cpy #$FF                  ; Current index for character.
-	bne b_ggrc_GetChar        ; Go get value and save temp
-
-	rts                       ; (BEQ) If index is not set, just return 0.
-
-	; Yes, the branch above goes into the routine below.
+	; Yes, the branches above goes into the routine below.
 
 ; ==========================================================================
 ; GET RIGHT CHAR
@@ -1774,43 +1762,30 @@ GameGetLeftChar
 ; Given the current character index, get the character on the right 
 ; side of the display string.
 ; 
-; This is more complicated than left.   The index counts 0 to 12.  
-; If the value is 10, 11, 12, then force to retrieve from position 
-; 9 in the text string. 
-; The character on the right are addressed at positions 19 to 10.
-; a little math is involved.
-;
-; Other code must set up the pointers.
+; If the index is greater than or equal to 10, then return negative value.
 ; 
-; Y is index position.
-;
 ; RETURN  A = character
 ; --------------------------------------------------------------------------
 
 GameGetRightChar
 
-	jsr GameFilterCharIndex   ; Filter Y, set TempCharIndex
-
-	lda #0                    ; Corresponds to blank space.
-
-; ldy zGO_CHAR_INDEX  
-	cpy #$FF                  ; Current index for character.
-	beq b_ggrc_Exit           ; If index is not set, just return 0.
+	ldy zGO_CHAR_INDEX
+	cmp #10
+	bcs  b_ggrc_Exit_Failure
 
 	sec                       ; set carry
 	lda #19                   ; last position on text line
-	sbc TempCharIndex         ; minus index
-	sta TempCharIndex         ; Change CharIndex result for caller.
+	sbc zGO_CHAR_INDEX         ; minus index
 	tay                       ; use index in Y
-
 
 b_ggrc_GetChar
 	lda (zGAME_OVER_TEXT),Y   ; Get character at index 
-	sta TempCharValue         ; Save in temp buffer in case of using A again
-
-b_ggrc_Exit
 	rts
 
+b_ggrc_Exit_Failure
+	lda #$FF
+	rts
+	
 
 ; ==========================================================================
 ; SUPPPORT - SETUP CSET ADDR 
@@ -1824,29 +1799,29 @@ b_ggrc_Exit
 ; A == the character value.
 ; --------------------------------------------------------------------------
 
-GameSetupCsetAddresss
+;GameSetupCsetAddresss
 
-	ldx #0
-	stx zGO_CSET_C_ADDR
-	stx zGO_CSET_C_ADDR+1
+;	ldx #0
+;	stx zGO_CSET_C_ADDR
+;	stx zGO_CSET_C_ADDR+1
 
-	clc
+;	clc
 
-	asl
-	rol zGO_CSET_C_ADDR+1 ; times 2
-	asl
-	rol zGO_CSET_C_ADDR+1 ; times 4
-	asl
-	rol zGO_CSET_C_ADDR+1 ; times 8
+;	asl
+;	rol zGO_CSET_C_ADDR+1 ; times 2
+;	asl
+;	rol zGO_CSET_C_ADDR+1 ; times 4
+;	asl
+;	rol zGO_CSET_C_ADDR+1 ; times 8
 
-	sta zGO_CSET_C_ADDR
+;	sta zGO_CSET_C_ADDR
 
-	clc
-	lda #>CHARACTER_SET
-	adc zGO_CSET_C_ADDR+1
-	sta zGO_CSET_C_ADDR+1
-	
-	rts
+;	clc
+;	lda #>CHARACTER_SET
+;	adc zGO_CSET_C_ADDR+1
+;	sta zGO_CSET_C_ADDR+1
+
+;	rts
 
 
 ; ==========================================================================
@@ -1857,32 +1832,32 @@ GameSetupCsetAddresss
 ; Setup the address for the mask table based on the frame number.
 ;
 ; Multiply frame number by 8.  Add to base address of mask image array.
-;
-; A == the current frame number.
 ; --------------------------------------------------------------------------
 
-GameSetupMaskAddresss
+;GameSetupMaskAddresss
 
-	ldx #0
-	stx zGO_MASK_ADDR
-	stx zGO_MASK_ADDR+1
+;	ldx #0
+;	stx zGO_MASK_ADDR
+;	stx zGO_MASK_ADDR+1
 
-	clc
+;	lda zGO_FRAME 
 
-	asl
-	rol zGO_MASK_ADDR+1 ; times 2
-	asl
-	rol zGO_MASK_ADDR+1 ; times 4
-	asl
-	rol zGO_MASK_ADDR+1 ; times 8
+;	clc
 
-	clc
-	adc #<TABLE_GAME_OVER_MASK_FRAMES
-	sta zGO_MASK_ADDR
-	lda #>TABLE_GAME_OVER_MASK_FRAMES
-	adc zGO_MASK_ADDR+1
-	sta zGO_MASK_ADDR+1
+;	asl
+;	rol zGO_MASK_ADDR+1 ; times 2
+;	asl
+;	rol zGO_MASK_ADDR+1 ; times 4
+;	asl
+;	rol zGO_MASK_ADDR+1 ; times 8
 
-	rts
+;	clc
+;	adc #<TABLE_GAME_OVER_MASK_FRAMES
+;	sta zGO_MASK_ADDR
+;	lda #>TABLE_GAME_OVER_MASK_FRAMES
+;	adc zGO_MASK_ADDR+1
+;	sta zGO_MASK_ADDR+1
+
+;	rts
 
 
