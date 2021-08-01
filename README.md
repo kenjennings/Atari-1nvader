@@ -19,7 +19,7 @@ Tested in Atari800 and Altirra emulators. Development/Test configuration is NTSC
 
 **1 Aug 2021**
 
-Philsan reported that PAL shows junk at the top of the screen.   Looks like it is residual parts of the mothership.   Changed the erase code for the mothership.
+Philsan reported that PAL video mode shows junk at the top of the screen.   Looks like it is residual parts of the mothership.   Changed the erase code for the mothership.
 
 Also, last "fixes" for the baseline to remove the guns between the end game and title screen ended up removing the mothership entirely from the title screen until the motherhip starts moving.  oops.
 
