@@ -816,10 +816,8 @@ b_gzgot_ZeroLoop
 ; Rare enough to be surprising when it occurs.
 ; --------------------------------------------------------------------------
 
-;gfx_go_temp .byte 0
 
 GFX_GAME_OVER_TEXT0
-;	.sb "ABCDEFGHIJKLMNOPQRST"
 	.sb "  G A M E  O V E R  "   ; Do this about 96% of the time.
 GFX_GAME_OVER_TEXT1
 	.sb "     LOOOOOSER!     "
@@ -839,21 +837,26 @@ GFX_GAME_OVER_TEXT8
 	.sb " GRANDMA DID BETTER!"
 GFX_GAME_OVER_TEXT9
 	.sb " ARE YOU GONNA CRY? "
+GFX_GAME_OVER_TEXT10
+	.sb " DO YOU NEED MOMMY? "
+GFX_GAME_OVER_TEXT11
+	.sb "    TASTY HUMANS!   "
 
 TABLE_HI_GFX_GAMEOVER
-		.by >GFX_GAME_OVER_TEXT0,>GFX_GAME_OVER_TEXT1
-		.by >GFX_GAME_OVER_TEXT2,>GFX_GAME_OVER_TEXT3
-		.by >GFX_GAME_OVER_TEXT4,>GFX_GAME_OVER_TEXT5
-		.by >GFX_GAME_OVER_TEXT6,>GFX_GAME_OVER_TEXT7
-		.by >GFX_GAME_OVER_TEXT8,>GFX_GAME_OVER_TEXT9
-		
-TABLE_LO_GFX_GAMEOVER
-		.by <GFX_GAME_OVER_TEXT0,<GFX_GAME_OVER_TEXT1
-		.by <GFX_GAME_OVER_TEXT2,<GFX_GAME_OVER_TEXT3
-		.by <GFX_GAME_OVER_TEXT4,<GFX_GAME_OVER_TEXT5
-		.by <GFX_GAME_OVER_TEXT6,<GFX_GAME_OVER_TEXT7
-		.by <GFX_GAME_OVER_TEXT8,<GFX_GAME_OVER_TEXT9
+	.by >GFX_GAME_OVER_TEXT0,>GFX_GAME_OVER_TEXT1
+	.by >GFX_GAME_OVER_TEXT2,>GFX_GAME_OVER_TEXT3
+	.by >GFX_GAME_OVER_TEXT4,>GFX_GAME_OVER_TEXT5
+	.by >GFX_GAME_OVER_TEXT6,>GFX_GAME_OVER_TEXT7
+	.by >GFX_GAME_OVER_TEXT8,>GFX_GAME_OVER_TEXT9
+	.by >GFX_GAME_OVER_TEXT10,>GFX_GAME_OVER_TEXT11
 
+TABLE_LO_GFX_GAMEOVER
+	.by <GFX_GAME_OVER_TEXT0,<GFX_GAME_OVER_TEXT1
+	.by <GFX_GAME_OVER_TEXT2,<GFX_GAME_OVER_TEXT3
+	.by <GFX_GAME_OVER_TEXT4,<GFX_GAME_OVER_TEXT5
+	.by <GFX_GAME_OVER_TEXT6,<GFX_GAME_OVER_TEXT7
+	.by <GFX_GAME_OVER_TEXT8,<GFX_GAME_OVER_TEXT9
+	.by <GFX_GAME_OVER_TEXT10,<GFX_GAME_OVER_TEXT11
 
 Gfx_Choose_Game_Over_Text
 	ldx RANDOM                   ; Get a random value (0 to 255) 
@@ -876,8 +879,8 @@ b_cgot_Test2
 	bne b_gcgot_Continue
 
 b_cgot_TestOthers
-	cpx #10                      ; Is it 0 to 9?
-	bcc b_gcgot_Continue         ; Yes.  Then use default (0).
+	cpx #12                      ; Is it 0 to 11?
+	bcc b_gcgot_Continue         ; Yes.  Use what we have now.
 
 	ldx #0                       ; No.  Force default message
 

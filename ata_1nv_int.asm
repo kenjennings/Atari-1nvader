@@ -960,7 +960,7 @@ TITLE_DLI_6
 	mStart_DLI ; Saves A and Y
 
 	
-	lda #[COLOR_ORANGE2|$4] ; ($24) Change COLPF1 to use as alternate ground color.
+	lda TT_DLI6_Alt_Ground ; ($24) Change COLPF1 to use as alternate ground color.
 	sta WSYNC
 	sta COLPF1
 
@@ -1075,20 +1075,20 @@ b_td2_UpdateColor
 ; colors on the two scrolling author credits lines.
 ; -----------------------------------------------------------------------------
 
-DLI_SYNC_PF_DEC
+;DLI_SYNC_PF_DEC
 
-	sta WSYNC
+;	sta WSYNC
 
-DLI_PF_DEC
+;DLI_PF_DEC
 
-	stx COLPF0
-	sty COLPF1
-	dex
-	dex
-	dey
-	dey
+;	stx COLPF0
+;	sty COLPF1
+;	dex
+;	dex
+;	dey
+;	dey
 
-	rts
+;	rts
 
 
 ;==============================================================================
@@ -1098,17 +1098,17 @@ DLI_PF_DEC
 ; scrolling documentation line.
 ; -----------------------------------------------------------------------------
 
-DLI_SYNC_PF0_DEC
+;DLI_SYNC_PF0_DEC
 
-	sta WSYNC  
+;	sta WSYNC  
 
-DLI_PF0_DEC
+;DLI_PF0_DEC
 
-	sty COLPF0
-	dey
-	dey
+;	sty COLPF0
+;	dey
+;	dey
 
-	rts
+;	rts
 
 
 	.align $0100

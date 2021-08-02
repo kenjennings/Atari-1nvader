@@ -36,6 +36,8 @@
 
 	icl "ata_1nv_gfx.asm"       ; Data for Display Lists and Screen Memory (2K)
 
+	icl "ata_1nv_gfx_color.asm" ; Data for NTSC/PAL color values
+
 	icl "ata_1nv_cset.asm"      ; Data for custom character set (1K space)
 
 	icl "ata_1nv_pmg.asm"       ; Data for Player/Missile graphics (and reserve the 2K bitmap).
@@ -69,7 +71,7 @@
 
 GameStart
 
-	jsr GameLoop 
+	jsr GameLoop  ; in game.asm
 
 	jmp GameStart ; Do While More Electricity
 

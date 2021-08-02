@@ -41,7 +41,7 @@ zMOTHERSHIP_ANIM_FRAME      .byte 3   ; delay for animation
 zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed index into speed table 0, 2, 4, ..., 14 
 zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
 zMOTHERSHIP_MOVEMENT        .byte $00 ; Value to add/subtract from Mothership X
-zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
+;zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
 
 zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
 zMOTHERSHIP_HITS            .byte $00 ; Number of times the mothership is hit.

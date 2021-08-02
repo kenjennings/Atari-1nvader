@@ -33,7 +33,7 @@ zInputScanFrames   .byte $00
 ; Countdown Color =========================================================
 
 zCountdownTimer       .byte $01
-zCountdownColor       .byte $04
+; zCountdownColor       .byte $04
 
 
 ; Title Logo Values =========================================================
@@ -122,7 +122,7 @@ zLandPhase       .byte $00  ; 0 == waiting  1 == scrolling.
 zLandMotion      .byte $00  ; 0 == left/right !0 == right/left
 
 zLandHS          .byte 0   ; fine horizontal scroll value start.
-zLandColor       .byte 0   ; index for repeat DLIs on the scrolling land 
+;zLandColor       .byte 0   ; index for repeat DLIs on the scrolling land 
 
 
 ; Flickering Stars values ==================================================
@@ -185,7 +185,7 @@ zThisDLI .byte 0
 zCOUNTDOWN_FLAG    .byte $00 ; Counts phase, 4, 3, 2, 1, 0.  When it returns to 0, then trigger next phase (game)
 zCOUNTDOWN_SECS    .byte $00 ; Countdown jiffies per tick tock event. (the 3, 2, 1, GO)
 
-zSTATS_TEXT_COLOR  .byte $08 ; color/luminance of text on stats line.
+;zSTATS_TEXT_COLOR  .byte $08 ; color/luminance of text on stats line.
 
 
 
@@ -246,9 +246,9 @@ zPLAYER_DEBOUNCE
 zPLAYER_ONE_DEBOUNCE .byte $00 ; Set when laser is shot.   cleared when button released.  Cannot shoot again unless button released.
 zPLAYER_TWO_DEBOUNCE .byte $00 ; Set when laser is shot.   cleared when button released.  Cannot shoot again unless button released.
 
-zPLAYER_COLOR
-zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color 
-zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color 
+;zPLAYER_COLOR
+;zPLAYER_ONE_COLOR  .byte $00 ; Player 1 current color 
+;zPLAYER_TWO_COLOR  .byte $00 ; Player 2 current color 
 
 zPLAYER_BUMP
 zPLAYER_ONE_BUMP   .byte $00 ; Player 1 direction change is flagged
