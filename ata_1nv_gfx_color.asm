@@ -175,7 +175,7 @@ TABLE_PAL_COLORS
 	.byte $08 ; color/luminance of text on stats line.
 
 ;zMOTHERSHIP_COLOR   
-	.byte $26 ; Game mothership color.
+	.byte $36 ; Game mothership color.
 
 ;TT_DLI6_Alt_Ground  
 	.byte [COLOR_ORANGE1|$4]  ; ($24) Change COLPF1 to use as alternate ground color.
@@ -274,13 +274,13 @@ TABLE_PAL_COLORS
 	.byte $ff
 
 ;TABLE_COLOR_BLINE_PM0
-	.byte $54
-	.byte $56
-	.byte $58
-	.byte $5a
-	.byte $5c
-	.byte $5a
-	.byte $58
+	.byte $44
+	.byte $46
+	.byte $48
+	.byte $4a
+	.byte $4c
+	.byte $4a
+	.byte $48
 	.byte $ff
 
 ;TABLE_COLOR_BLINE_PM1
