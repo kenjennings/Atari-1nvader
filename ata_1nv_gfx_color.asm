@@ -52,8 +52,17 @@ b_gsnop_CopyLoopPAL
 	cpx #[END_OF_COLOR_TABLE-TABLE_GAME_COLORS]
 	bne b_gsnop_CopyLoopPAL
 
+	ldx #2
+b_gnsop_PromptPAL
+	lda PAL_PROMPT,x
+	sta GFX_SCORE_HI-6,X
+	dex
+	bpl b_gnsop_PromptPAL
+
 b_gsnop_Exit
 	rts
+
+PAL_PROMPT .sb "PAL"
 
 
 ; ==========================================================================
