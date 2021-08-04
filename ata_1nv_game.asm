@@ -195,6 +195,8 @@ b_gi_LoopFillZero
 	lda #0
 	sta zThisDLI            ; Init the DLI index.
 
+	jsr Gfx_SetNTSCorPAL    ; establish color lookup tables based on NTSC or PAL.
+	
 	; Set up the DLI.   This should be safe here without knowing what the screen
 	; is doing, because the default OS display does not have DLI options on any 
 	; mode instructions, AND a custom screen will not be started until the bottom
@@ -365,7 +367,7 @@ GameSetupTitle
 	lda #128
 	sta SHPOSP3
 
-	lda #$46
+	lda zMOTHERSHIP_COLOR
 	sta PCOLOR2
 	sta PCOLOR3
 
