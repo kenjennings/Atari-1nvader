@@ -119,17 +119,23 @@ TABLE_COLOR_COMP2 ; COLPF1 Ken
 	.byte COLOR_PINK+$4,COLOR_PINK+$6,COLOR_PINK+$8,COLOR_PINK+$a
 	
 TABLE_COLOR_DOCS ; COLPF0 Documentation
-	.byte COLOR_YELLOW_GREEN+$8,COLOR_YELLOW_GREEN+$a,COLOR_YELLOW_GREEN+$c,COLOR_YELLOW_GREEN+$e
-	.byte COLOR_GREEN+$4,COLOR_GREEN+$6,COLOR_GREEN+$8,COLOR_GREEN+$a
+	.byte COLOR_YELLOW_GREEN+$8
+	.byte COLOR_YELLOW_GREEN+$a
+	.byte COLOR_YELLOW_GREEN+$c
+	.byte COLOR_YELLOW_GREEN+$e
+	.byte COLOR_GREEN+$4
+	.byte COLOR_GREEN+$6
+	.byte COLOR_GREEN+$8
+	.byte COLOR_GREEN+$a
 
 
-TABLE_LAND_COLPF0
+TABLE_LAND_COLPF0 ; Browns
 	.byte $0e,$0e,$0e,$0e,$0c,$38,$36,$34
 
-TABLE_LAND_COLPF1
+TABLE_LAND_COLPF1 ; Greens
 	.byte $0E,$0e,$0e,$0c,$d8,$d6,$d4,$d2
 
-TABLE_LAND_COLPF2
+TABLE_LAND_COLPF2 ; Blues
 	.byte $0E,$0C,$9A,$98,$96,$94,$92,$90
 
 
@@ -187,7 +193,7 @@ TABLE_PAL_COLORS
 	.byte $36 ; Game mothership color.
 
 ;TT_DLI6_Alt_Ground  
-	.byte [COLOR_ORANGE1|$4]  ; ($24) Change COLPF1 to use as alternate ground color.
+	.byte [$e0|$4]  ; ($24) Change COLPF1 to use as alternate ground color.
 
 
 ;TABLE_COLOR_AUTHOR1 ; COLPF0 Darren
@@ -241,17 +247,17 @@ TABLE_PAL_COLORS
 	.byte COLOR_AQUA+$a
 
 
-;TABLE_LAND_COLPF0
+;TABLE_LAND_COLPF0 ; Browns
 	.byte $0e
 	.byte $0e
 	.byte $0e
 	.byte $0e
 	.byte $0c
-	.byte $e8
-	.byte $e6
-	.byte $e4
+	.byte $18
+	.byte $16
+	.byte $14
 
-;TABLE_LAND_COLPF1
+;TABLE_LAND_COLPF1 ; Greens
 	.byte $0E
 	.byte $0e
 	.byte $0e
@@ -261,7 +267,7 @@ TABLE_PAL_COLORS
 	.byte $b4
 	.byte $b2
 
-;TABLE_LAND_COLPF2
+;TABLE_LAND_COLPF2 ; Blues
 	.byte $0E
 	.byte $0C
 	.byte $8A
@@ -273,49 +279,49 @@ TABLE_PAL_COLORS
 
 
 ;TABLE_COLOR_BLINE_BUMPER
-	.byte $72
-	.byte $76
-	.byte $7A
-	.byte $7C
-	.byte $7A
-	.byte $76
-	.byte $72
+	.byte $62
+	.byte $66
+	.byte $6A
+	.byte $6C
+	.byte $6A
+	.byte $66
+	.byte $62
 	.byte $ff
 
 ;TABLE_COLOR_BLINE_PM0
-	.byte $54
-	.byte $56
-	.byte $58
-	.byte $5a
-	.byte $5c
-	.byte $5a
-	.byte $58
+	.byte $44
+	.byte $46
+	.byte $48
+	.byte $4a
+	.byte $4c
+	.byte $4a
+	.byte $48
 	.byte $ff
 
 ;TABLE_COLOR_BLINE_PM1
-	.byte $94
-	.byte $96
-	.byte $98
-	.byte $9a
-	.byte $9c
-	.byte $9a
-	.byte $98
+	.byte $84
+	.byte $86
+	.byte $88
+	.byte $8a
+	.byte $8c
+	.byte $8a
+	.byte $88
 	.byte $ff
 
 
 ;TABLE_COLOR_LASERS ; Interleaved, so it can be addressed by  X player index.  0 to 5
 	.byte $0F
 	.byte $0F
-	.byte $dE
-	.byte $4e
-	.byte $d8
-	.byte $48
-	.byte $d2
-	.byte $42
-	.byte $d8
-	.byte $48
-	.byte $de
-	.byte $4e
+	.byte $2E
+	.byte $5e
+	.byte $28
+	.byte $58
+	.byte $22
+	.byte $52
+	.byte $28
+	.byte $58
+	.byte $2e
+	.byte $5e
 
 ;TABLE_COLOR_EXPLOSION 
 	.byte $00
