@@ -25,6 +25,14 @@ Also, last "fixes" for the baseline to remove the guns between the end game and 
 
 Added Playtesters to the credit text.
 
+---
+
+**9 Aug 2021**
+
+Philsan reported that PAL colors didn't match NTSC colors.  I had put no thought into PAL at all.  So, I isolated all references to colors in the game to a contiguous block of variables, figured out PAL detection, and when the computer is operating in PAL video mode it overwrites the color references with alternate versions for PAL display.
+
+Also, Philsan noticed that the giant mothership flies "under" the high score text.  This artifact is due to Players/Missiles always having lower priority than  ANTIC Mode 2 text (COLPF1) no matter what PRIOR says about priority.   To resolve this the scrore text is removed during the countdown sequence to start the game.  The scores are redrawn when the actual game starts. 
+
 | **Title** |
 | ------- |
 | [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/20-BASELINE-TitleTesters.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
