@@ -487,6 +487,8 @@ b_gt_ExitTitleAnimation
 	sta zCOUNTDOWN_SECS     ; jiffy ticks, not secs.
 	jsr Gfx_DrawCountdown   ; Update the countdown text.  (Blank)
 
+	jsr Gfx_Clear_Scores    ; Remove the scroes temporarily.
+
 	lda #EVENT_COUNTDOWN
 	sta zCurrentEvent
 	lda #0 
