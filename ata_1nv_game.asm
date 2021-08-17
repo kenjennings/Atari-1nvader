@@ -694,6 +694,7 @@ GameSetupMain
 	jsr GameRandomizeMothership     ; Set the starting X position and random direction.
 
 	ldx #0
+;	ldx #20
 	jsr GameSetMotherShipRow        ; Convert Row 0 to Y position on screen.
 	lda #24
 	sta zMOTHERSHIP_Y               ; Force "old" position above the row 0 position. 
@@ -804,7 +805,7 @@ GameMain
 
 	lda #EVENT_SETUP_GAMEOVER      ; Next game loop event is setup for end game.
 	sta zCurrentEvent
-	jsr Gfx_Zero_Game_Over_Text  
+;	jsr Gfx_Zero_Game_Over_Text  
 
 b_gm_EndGameLoop
 	rts

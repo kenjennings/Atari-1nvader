@@ -796,7 +796,7 @@ b_grsl_TestEndLeft                  ; At HSCROL 0.  This may be a boundary.
 
 b_grsl_EndLandScrolling
 
-rts
+	rts
 
 
 
@@ -809,9 +809,11 @@ rts
 Gfx_Zero_Game_Over_Text
 
 	lda #0   ; Corresponds to blank space character
+;	lda RANDOM
 	ldy #19  ; Text line is 20 characters.
 
 b_gzgot_ZeroLoop
+;	lda RANDOM
 	sta GFX_GAME_OVER_LINE,y
 	dey
 	bpl b_gzgot_ZeroLoop
