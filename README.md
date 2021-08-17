@@ -41,6 +41,8 @@ After the problems resolved on 9 Aug, somehow the Game Over text display stopped
 
 Did you know MADS will accept "rts" in the label position?   Enough said about that stupid programming trick.
 
+---
+
 | **Title** |
 | ------- |
 | [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/20-BASELINE-TitleTesters.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
