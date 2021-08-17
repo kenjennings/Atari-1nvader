@@ -33,6 +33,14 @@ Philsan reported that PAL colors didn't match NTSC colors.  I had put no thought
 
 Also, Philsan noticed that the giant mothership flies "under" the high score text.  This artifact is due to Players/Missiles always having lower priority than  ANTIC Mode 2 text (COLPF1) no matter what PRIOR says about priority.   To resolve this the scrore text is removed during the countdown sequence to start the game.  The scores are redrawn when the actual game starts. 
 
+---
+
+**16 Aug 2021**
+
+After the problems resolved on 9 Aug, somehow the Game Over text display stopped working.  Weird that.
+
+Did you know MADS will accept "rts" in the label position?   Enough said about that stupid programming trick.
+
 | **Title** |
 | ------- |
 | [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/20-BASELINE-TitleTesters.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
