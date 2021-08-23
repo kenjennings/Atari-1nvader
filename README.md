@@ -19,7 +19,7 @@ Tested in Atari800 and Altirra emulators. Development/Test configuration is NTSC
 
 **PLAYTESTERS ON PARADE**
 
-- *VINYLLA* -- The first victim evaluating the running XEX before there was a coherent game.
+- *VINYLLA* -- The first victim evaluating the barely running XEX before there was a coherent game.
 
 - *PHILSAN* -- Suggested improving the color management to make PAL colors more consistent with NTSC.
 
