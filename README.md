@@ -17,7 +17,7 @@ Tested in Atari800 and Altirra emulators. Development/Test configuration is NTSC
 
 ---
 
-**PLAYTESTERS ON PARADE**
+**ATARI PLAYTESTERS ON PARADE**
 
 - *VINYLLA* -- The first victim evaluating the barely running XEX before there was a coherent game.
 
