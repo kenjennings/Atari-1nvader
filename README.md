@@ -17,7 +17,7 @@ Tested in Atari800 and Altirra emulators. Development/Test configuration is NTSC
 
 ---
 
-**ATARI PLAYTESTERS ON PARADE**
+**ATARI PLAYTESTER PARADE**
 
 - *VINYLLA* -- The first victim evaluating the barely running XEX before there was a coherent game.
 
@@ -55,9 +55,13 @@ Did you know MADS will accept "rts" in the label position?   Enough said about t
 | ------- |
 | [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/20-BASELINE-TitleTesters.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
 
+---
+
 | **Game** | 
 | ------- |
 | [![GAME](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/19-BASELINE-Game.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Game.md "Game") |
+
+---
 
 | **GAME OVER** | 
 | ------------- |
