@@ -121,6 +121,18 @@ The remaining work is triggering the end screen, and then showing the end screen
 
 --- 
 
+**29 Aug 2021 -- Multi-color Mothership**
+
+[![V21 BETA](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/22-BETA-Game.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+Playtester Level42 suggested making the mothership multi-color.
+
+Reworked the Player/Missile use to make a multi-color mothership on the title screen and in the game. Also, the motherships have animated running lights and windows.
+
+Due to the way Player/Missile multi-color players work, there is an unavoidable difference between the PAL and NTSC rendering of the motherships. The overlay color produced by the two players' color is based on OR'ing the binary value of the two registers together -- NOT merging the aparent color displayed. As a result, the PAL values used to make the two red colors for the mothership combine to result in nicely light-blue lights and windows. In NTSC different values produce the reds, and the binary OR combining these values is still in the red area of the palette, so the lights are red.
+
+---
+
 **DD MMM 2021 -- TO-DO**
 
 [![V17_WIP](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/17-WIP-TO-DO.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
