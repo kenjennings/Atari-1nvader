@@ -154,4 +154,18 @@ Added Playtesters text to the scrolling documentation.
 
 ---
 
+[![V21 BETA](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/21-BETA-Title.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+**29 Aug 2021 -- Multi-color Mothership**
+
+Playtester Level42 suggested making the mothership multi-color.
+
+Reworked the Player/Missile use to make a multi-color mothership on the title screen and in the game. Also, the motherships have animated running lights and windows.
+
+Due to the way Player/Missile multi-color players work, there is an unavoidable difference between the PAL and NTSC rendering of the motherships. The overlay color produced by the two players' color is based on OR'ing the binary value of the two registers together -- NOT merging the aparent color displayed. As a result, the PAL values used to make the two red colors for the mothership combine to result in nicely light-blue lights and windows. In NTSC different values produce the reds, and the binary OR combining these values is still in the red area of the palette, so the lights are red.
+
+Updated the Playtesters list accordingly, and while I was here, updated the Documentation scroller to have two gradient colors in the text.
+
+---
+
 [ Go Back To MAIN Page ](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
