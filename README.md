@@ -73,7 +73,7 @@ Updated the Playtesters list accordingly, and while I was here, updated the Docu
 
 | **Game** | 
 | ------- |
-| [![GAME](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/12-BETA-Game.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Game.md "Game") |
+| [![GAME](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/22-BETA-Game.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Game.md "Game") |
 
 ---
 
