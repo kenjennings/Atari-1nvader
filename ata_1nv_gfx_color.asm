@@ -88,12 +88,11 @@ zCountdownColor
 zSTATS_TEXT_COLOR   
 	.byte $08 ; color/luminance of text on stats line.
 
-zMOTHERSHIP_COLOR   
-	.byte $46 ; Game mothership color.
-
+zMOTHERSHIP_COLOR   .byte COLOR_PURPLE+$8 ; Game mothership color. PM2 $58 / PM3 $46  ||  $5E
+zMOTHERSHIP_COLOR2  .byte COLOR_PINK+$6   ; Game mothership color. PM2 $48 / PM3 $36  ||  $7E (PAL)
 
 TT_DLI6_Alt_Ground  
-	.byte [COLOR_ORANGE2|$4]  ; ($24) Change COLPF1 to use as alternate ground color.
+	.byte COLOR_ORANGE2+$4  ; ($24) Change COLPF1 to use as alternate ground color.
 
 
 TABLE_COLOR_AUTHOR1 ; COLPF0 Darren
@@ -107,16 +106,34 @@ TABLE_COLOR_AUTHOR1 ; COLPF0 Darren
 	.byte COLOR_BLUE2+$a
 	
 TABLE_COLOR_COMP1 ; COLPF0 Darren
-	.byte COLOR_BLUE_GREEN+$8,COLOR_BLUE_GREEN+$a,COLOR_BLUE_GREEN+$c,COLOR_BLUE_GREEN+$e
-	.byte COLOR_AQUA+$4,COLOR_AQUA+$6,COLOR_AQUA+$8,COLOR_AQUA+$a
+	.byte COLOR_BLUE_GREEN+$8
+	.byte COLOR_BLUE_GREEN+$a
+	.byte COLOR_BLUE_GREEN+$c
+	.byte COLOR_BLUE_GREEN+$e
+	.byte COLOR_AQUA+$4
+	.byte COLOR_AQUA+$6
+	.byte COLOR_AQUA+$8
+	.byte COLOR_AQUA+$a
 
 TABLE_COLOR_AUTHOR2 ; COLPF1 Ken
-	.byte COLOR_RED_ORANGE+$8,COLOR_RED_ORANGE+$a,COLOR_RED_ORANGE+$c,COLOR_RED_ORANGE+$e
-	.byte COLOR_ORANGE2+$4,COLOR_ORANGE2+$6,COLOR_ORANGE2+$8,COLOR_ORANGE2+$a
+	.byte COLOR_RED_ORANGE+$8
+	.byte COLOR_RED_ORANGE+$a
+	.byte COLOR_RED_ORANGE+$c
+	.byte COLOR_RED_ORANGE+$e
+	.byte COLOR_ORANGE2+$4
+	.byte COLOR_ORANGE2+$6
+	.byte COLOR_ORANGE2+$8
+	.byte COLOR_ORANGE2+$a
 
 TABLE_COLOR_COMP2 ; COLPF1 Ken
-	.byte COLOR_PURPLE+$8,COLOR_PURPLE+$a,COLOR_PURPLE+$c,COLOR_PURPLE+$e
-	.byte COLOR_PINK+$4,COLOR_PINK+$6,COLOR_PINK+$8,COLOR_PINK+$a
+	.byte COLOR_PURPLE+$8
+	.byte COLOR_PURPLE+$a
+	.byte COLOR_PURPLE+$c
+	.byte COLOR_PURPLE+$e
+	.byte COLOR_PINK+$4
+	.byte COLOR_PINK+$6
+	.byte COLOR_PINK+$8
+	.byte COLOR_PINK+$a
 	
 TABLE_COLOR_DOCS ; COLPF0 Documentation
 	.byte COLOR_YELLOW_GREEN+$8
@@ -128,39 +145,112 @@ TABLE_COLOR_DOCS ; COLPF0 Documentation
 	.byte COLOR_GREEN+$8
 	.byte COLOR_GREEN+$a
 
+TABLE_COLOR_DOCS2 ; COLPF1 Documentation
+	.byte COLOR_LITE_ORANGE+$8
+	.byte COLOR_LITE_ORANGE+$a
+	.byte COLOR_LITE_ORANGE+$c
+	.byte COLOR_LITE_ORANGE+$e
+	.byte COLOR_ORANGE1+$4
+	.byte COLOR_ORANGE1+$6
+	.byte COLOR_ORANGE1+$8
+	.byte COLOR_ORANGE1+$a
 
 TABLE_LAND_COLPF0 ; Browns
-	.byte $0e,$0e,$0e,$0e,$0c,$38,$36,$34
+	.byte $0e
+	.byte $0e
+	.byte $0e
+	.byte $0e
+	.byte $0c
+	.byte $38
+	.byte $36
+	.byte $34
 
 TABLE_LAND_COLPF1 ; Greens
-	.byte $0E,$0e,$0e,$0c,$d8,$d6,$d4,$d2
+	.byte $0E
+	.byte $0e
+	.byte $0e
+	.byte $0c
+	.byte $d8
+	.byte $d6
+	.byte $d4
+	.byte $d2
 
 TABLE_LAND_COLPF2 ; Blues
-	.byte $0E,$0C,$9A,$98,$96,$94,$92,$90
+	.byte $0E
+	.byte $0C
+	.byte $9A
+	.byte $98
+	.byte $96
+	.byte $94
+	.byte $92
+	.byte $90
 
 
 TABLE_COLOR_BLINE_BUMPER
-	.byte $72,$76,$7A,$7C,$7A,$76,$72,$ff
+	.byte $72
+	.byte $76
+	.byte $7A
+	.byte $7C
+	.byte $7A
+	.byte $76
+	.byte $72
+	.byte $ff
 
 TABLE_COLOR_BLINE_PM0
-	.byte $54,$56,$58,$5a,$5c,$5a,$58,$ff
+	.byte $54
+	.byte $56
+	.byte $58
+	.byte $5a
+	.byte $5c
+	.byte $5a
+	.byte $58
+	.byte $ff
 
 TABLE_COLOR_BLINE_PM1
-	.byte $84,$86,$88,$8a,$8c,$8a,$88,$ff
+	.byte $94
+	.byte $96
+	.byte $98
+	.byte $9a
+	.byte $9c
+	.byte $9a
+	.byte $98
+	.byte $ff
 
 
 TABLE_COLOR_LASERS ; Interleaved, so it can be addressed by  X player index.  0 to 5
-	.byte $0F,$0F,$3E,$6e,$38,$68,$32,$62,$38,$68,$3e,$6e
+	.byte $0F,$0F
+	.byte $3E,$6e
+	.byte $38,$68
+	.byte $32,$62
+	.byte $38,$68
+	.byte $3e,$6e
 
 TABLE_COLOR_EXPLOSION 
-	.byte $00,$90,$92,$94,$96,$98,$9E,$0E
+	.byte $00
+	.byte $90
+	.byte $a2
+	.byte $a4
+	.byte $a6
+	.byte $a8
+	.byte $aE
+	.byte $0E
 
 
 TABLE_GAME_OVER_PF0 ; colors for initial blast-in frames in reverse
-	.byte $ca,$cc,$ce,$ce,$0e,$0e
+	.byte $ca
+	.byte $cc
+	.byte $ce
+	.byte $ce
+	.byte $0e
+	.byte $0e
 
 TABLE_GAME_OVER_PF1 ; colors for next phase in reverse
-	.byte $06,$06,$06,$08,$08,$c8
+	.byte $06
+	.byte $06
+	.byte $06
+	.byte $08
+	.byte $08
+	.byte $c8
 
 TABLE_GAME_OVER_PF2 ; Colors for DLI transition - 16 scan lines for Mode 7 text
 	.byte $02,$02,$04,$04,$04,$06,$06,$08,$08,$c6,$c8,$ca,$cc,$cc,$cc,$ce ; 0
@@ -190,62 +280,74 @@ TABLE_PAL_COLORS
 	.byte $08 ; color/luminance of text on stats line.
 
 ;zMOTHERSHIP_COLOR   
-	.byte $36 ; Game mothership color.
+	.byte PAL_COLOR_PURPLE+$8 ; Game mothership color. PM2 $58 / PM3 $46  ||  $5E
+;zMOTHERSHIP_COLOR2  
+	.byte PAL_COLOR_PINK+$6   ; Game mothership color. PM2 $48 / PM3 $36  ||  $7E (PAL)
+
 
 ;TT_DLI6_Alt_Ground  
-	.byte [$e0|$4]  ; ($24) Change COLPF1 to use as alternate ground color.
+	.byte PAL_COLOR_ORANGE2+$4  ; ($24) Change COLPF1 to use as alternate ground color.
 
 
 ;TABLE_COLOR_AUTHOR1 ; COLPF0 Darren
-	.byte COLOR_BLUE2+$8
-	.byte COLOR_BLUE2+$a
-	.byte COLOR_BLUE2+$c
-	.byte COLOR_BLUE2+$e
-	.byte COLOR_BLUE1+$4
-	.byte COLOR_BLUE1+$6
-	.byte COLOR_BLUE1+$8
-	.byte COLOR_BLUE1+$a
+	.byte PAL_COLOR_LITE_BLUE+$8
+	.byte PAL_COLOR_LITE_BLUE+$a
+	.byte PAL_COLOR_LITE_BLUE+$c
+	.byte PAL_COLOR_LITE_BLUE+$e
+	.byte PAL_COLOR_BLUE2+$4
+	.byte PAL_COLOR_BLUE2+$6
+	.byte PAL_COLOR_BLUE2+$8
+	.byte PAL_COLOR_BLUE2+$a
 	
 ;TABLE_COLOR_COMP1 ; COLPF0 Darren
-	.byte COLOR_AQUA+$8
-	.byte COLOR_AQUA+$a
-	.byte COLOR_AQUA+$c
-	.byte COLOR_AQUA+$e
-	.byte COLOR_LITE_BLUE+$4
-	.byte COLOR_LITE_BLUE+$6
-	.byte COLOR_LITE_BLUE+$8
-	.byte COLOR_LITE_BLUE+$a
+	.byte PAL_COLOR_BLUE_GREEN+$8
+	.byte PAL_COLOR_BLUE_GREEN+$a
+	.byte PAL_COLOR_BLUE_GREEN+$c
+	.byte PAL_COLOR_BLUE_GREEN+$e
+	.byte PAL_COLOR_AQUA+$4
+	.byte PAL_COLOR_AQUA+$6
+	.byte PAL_COLOR_AQUA+$8
+	.byte PAL_COLOR_AQUA+$a
 
 ;TABLE_COLOR_AUTHOR2 ; COLPF1 Ken
-	.byte COLOR_ORANGE1+$8
-	.byte COLOR_ORANGE1+$a
-	.byte COLOR_ORANGE1+$c
-	.byte COLOR_ORANGE1+$e
-	.byte COLOR_ORANGE_GREEN+$4
-	.byte COLOR_ORANGE_GREEN+$6
-	.byte COLOR_ORANGE_GREEN+$8
-	.byte COLOR_ORANGE_GREEN+$a
+	.byte PAL_COLOR_RED_ORANGE+$8
+	.byte PAL_COLOR_RED_ORANGE+$a
+	.byte PAL_COLOR_RED_ORANGE+$c
+	.byte PAL_COLOR_RED_ORANGE+$e
+	.byte PAL_COLOR_ORANGE2+$4
+	.byte PAL_COLOR_ORANGE2+$6
+	.byte PAL_COLOR_ORANGE2+$8
+	.byte PAL_COLOR_ORANGE2+$a
 
 ;TABLE_COLOR_COMP2 ; COLPF1 Ken
-	.byte COLOR_PINK+$8
-	.byte COLOR_PINK+$a
-	.byte COLOR_PINK+$c
-	.byte COLOR_PINK+$e
-	.byte COLOR_ORANGE2+$4
-	.byte COLOR_ORANGE2+$6
-	.byte COLOR_ORANGE2+$8
-	.byte COLOR_ORANGE2+$a
+	.byte PAL_COLOR_PURPLE+$8
+	.byte PAL_COLOR_PURPLE+$a
+	.byte PAL_COLOR_PURPLE+$c
+	.byte PAL_COLOR_PURPLE+$e
+	.byte PAL_COLOR_PINK+$4
+	.byte PAL_COLOR_PINK+$6
+	.byte PAL_COLOR_PINK+$8
+	.byte PAL_COLOR_PINK+$a
 	
 ;TABLE_COLOR_DOCS ; COLPF0 Documentation
-	.byte COLOR_GREEN+$8
-	.byte COLOR_GREEN+$a
-	.byte COLOR_GREEN+$c
-	.byte COLOR_GREEN+$e
-	.byte COLOR_AQUA+$4
-	.byte COLOR_AQUA+$6
-	.byte COLOR_AQUA+$8
-	.byte COLOR_AQUA+$a
+	.byte PAL_COLOR_YELLOW_GREEN+$8
+	.byte PAL_COLOR_YELLOW_GREEN+$a
+	.byte PAL_COLOR_YELLOW_GREEN+$c
+	.byte PAL_COLOR_YELLOW_GREEN+$e
+	.byte PAL_COLOR_GREEN+$4
+	.byte PAL_COLOR_GREEN+$6
+	.byte PAL_COLOR_GREEN+$8
+	.byte PAL_COLOR_GREEN+$a
 
+;TABLE_COLOR_DOCS2 ; COLPF1 Documentation
+	.byte PAL_COLOR_LITE_ORANGE+$8
+	.byte PAL_COLOR_LITE_ORANGE+$a
+	.byte PAL_COLOR_LITE_ORANGE+$c
+	.byte PAL_COLOR_LITE_ORANGE+$e
+	.byte PAL_COLOR_ORANGE1+$4
+	.byte PAL_COLOR_ORANGE1+$6
+	.byte PAL_COLOR_ORANGE1+$8
+	.byte PAL_COLOR_ORANGE1+$a
 
 ;TABLE_LAND_COLPF0 ; Browns
 	.byte $0e

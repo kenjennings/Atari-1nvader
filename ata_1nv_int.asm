@@ -228,6 +228,17 @@ b_mdv_DecBigMothership
 	dec zBIG_MOTHERSHIP_Y       ; This section will run once with Y==-1, to erase mothership.
 
 b_mdv_EndBigMothership
+	; Whether or not the mothership is moving the lights must be maintained.
+	jsr Pmg_AnimateMothershipLights
+	jsr Pmg_AnimateBigMothershipWindows
+
+	; P0 and P1 are shared between the big mothership and the guns.   
+	; The size for the Players needs to be reset to double width for the 
+	; top half of the screen.  A DLI after the mothership will set the size 
+	; for the guns.
+	lda #PM_SIZE_DOUBLE 
+	sta SIZEP0
+	sta SIZEP1
 
 
 ; ======== 2) MANAGE COUNTDOWN ANIMATION  ========
@@ -701,7 +712,7 @@ TITLE_DLI_1
 	; Setup PRIOR for 16 grey-scale graphics, and Missile color overlay.
 	; The screen won't show any noticeable change here, because the COLBK 
 	; value is black, and this won't change for the 16-shade mode.
-	lda #[FIFTH_PLAYER|GTIA_MODE_16_SHADE|$01] 
+	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_16_SHADE|$01] 
 	sta PRIOR
 
 	mChainDLI TITLE_DLI_1,TITLE_DLI_2
@@ -769,10 +780,12 @@ TITLE_DLI_2
 	sta VSCROL                     ; =2, default. untrigger the hack.
 	sty VSCROL
 
+; this could be deferred.  need to insert DLI 2.5 to handle the colors
+; for the One Liner Subtitle.  (One button. One Alien. One Life. No Mercy.)
 	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
 	sty DMACTL                     ; Set all the ANTIC screen controls and DMA options.
 
-	lda #[GTIA_MODE_DEFAULT|$01]       ; Return to normal color interpretation, Players on top.
+	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01]       ; Return to normal color interpretation, Players on top.
 	sta PRIOR
 
 	pla
@@ -865,9 +878,15 @@ b_dli4_LoopColors
 	lda TABLE_COLOR_DOCS,y
 	sta WSYNC    
 	sta COLPF0
+	lda TABLE_COLOR_DOCS2,y
+	sta COLPF1
 	
 	dey
 	bpl b_dli4_LoopColors
+
+	lda #PM_SIZE_NORMAL  ; Guns below mothership need correct size
+	sta SIZEP0
+	sta SIZEP1
 
 	pla
 	tay
@@ -1018,7 +1037,7 @@ b_dli6_NextLoop
 	lda zSTATS_TEXT_COLOR
 	sta COLPF1     ; Text luminance
 
-;	lda #[GTIA_MODE_DEFAULT|$01] 
+;	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01] 
 ;	sta PRIOR
 
 	pla

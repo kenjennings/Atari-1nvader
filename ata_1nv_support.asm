@@ -1223,8 +1223,8 @@ b_gpe_DoCurrentExplosion
 	dex
 	stx zEXPLOSION_COUNT
 	lda TABLE_COLOR_EXPLOSION,X       ; Get color from table.
-	sta PCOLOR3                       ; Update OS shadow register.
-	sta COLPM3                        ; Update hardware register to be redundant.
+	sta COLOR3                        ; Update OS shadow register.
+	sta COLPF3                        ; Update hardware register to be redundant.
 	rts
 
 

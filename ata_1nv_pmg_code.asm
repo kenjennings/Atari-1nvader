@@ -46,7 +46,7 @@ Pmg_Init
 	sta SDMCTL
 
 	; Setup PRIOR 
-	lda #[FIFTH_PLAYER|GTIA_MODE_DEFAULT|1] ; Normal CTIA color interpretation
+	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|1] ; Normal CTIA color interpretation
 	sta GPRIOR
 
 	rts 
@@ -67,47 +67,44 @@ Pmg_Init
 
 Pmg_AllZeroHPOS
 
-	jsr Pmg_SetHPOSZero   ; Sets all HPOS off screen.
+	jsr Pmg_SetZero         ; Sets all HPOS off screen and colors 0.
 
 	lda #$00                ; 0 position
 	ldx #$03                ; four objects, 3 to 0
 
-bAZ_LoopZeroPMSpecs
+b_pazh_LoopZeroPMSpecs
 	sta SIZEP0,x            ; Player width 3, 2, 1, 0
-	sta PCOLOR0,x           ; And black the colors.
+
 	dex
-	bpl bAZ_LoopZeroPMSpecs
+	bpl b_pazh_LoopZeroPMSpecs
 
 	sta SIZEM
 
 	rts
 
 
+
 ;==============================================================================
-;											Pmg_SetHPOSZero  A  X
+; SET ZERO                                                              A  X
 ;==============================================================================
-; Zero the hardware HPOS registers.
+; Zero the shadow HPOS registers and color registers.
 ;
-; Useful for DLI which needs to remove Players from the screen.
-; With no other changes (i.e. the size,) this is sufficient to remove 
-; visibility for all Player/Missile overlay objects 
+; Remove Players from the screen.  zero colors.
 ; -----------------------------------------------------------------------------
 
-Pmg_SetHPOSZero
+Pmg_SetZero
 
+	ldx #7
 	lda #$00                ; 0 position
 
-	sta HPOSP0 ; Zero Player positions 0, 1, 2, 3
-	sta HPOSP1
-	sta HPOSP2
-	sta HPOSP3
-
-	sta HPOSM0 ; Zero Missile positions 0, 1, 2, 3
-	sta HPOSM1
-	sta HPOSM2
-	sta HPOSM3
+b_psz_LoopFillZero
+	sta PCOLOR0,x           ; Init - Zero color registers.
+	sta SHPOSP0,x           ; Init - Zero PM HPOS Values
+	dex
+	bpl b_psz_LoopFillZero 
 
 	rts
+
 
 
 ; ==========================================================================
@@ -192,9 +189,13 @@ Pmg_Draw_Big_Mothership
 	bmi b_pdbm_Zero       ; If negative, then 0 the top image memory
 
 b_pdbm_LoopDraw
-	lda PMG_IMG_BIGGERSHIP_L,X ; Get byte from saved image
+	lda PMG_IMG_BIGGERSHIP_L0,X ; Get byte from saved image
+	sta PLAYERADR0,Y       ; Write to P/M memory
+	lda PMG_IMG_BIGGERSHIP_L1,X ; Get byte from saved image
+	sta PLAYERADR1,Y       ; Write to P/M memory
+	lda PMG_IMG_BIGGERSHIP_R2,X ; Get byte from saved image
 	sta PLAYERADR2,Y       ; Write to P/M memory
-	lda PMG_IMG_BIGGERSHIP_R,X ; Get byte from saved image
+	lda PMG_IMG_BIGGERSHIP_R3,X ; Get byte from saved image
 	sta PLAYERADR3,Y       ; Write to P/M memory
 
 	iny                    ; One position lower.
@@ -205,9 +206,13 @@ b_pdbm_LoopDraw
 
 	; End by zeroing the next two bytes to erase a prior image.
 	lda #0
+	sta PLAYERADR0,Y       ; Write to P/M memory
+	sta PLAYERADR1,Y       ; Write to the other P/M memory
 	sta PLAYERADR2,Y       ; Write to P/M memory
 	sta PLAYERADR3,Y       ; Write to the other P/M memory
 	iny
+	sta PLAYERADR0,Y       ; Write to P/M memory
+	sta PLAYERADR1,Y       ; Write to the other P/M memory
 	sta PLAYERADR2,Y       ; Write to P/M memory
 	sta PLAYERADR3,Y       ; Write to the other P/M memory
 
@@ -223,6 +228,8 @@ b_pdbm_Zero                ; Zero 8 bytes from position 8 to 15
 	ldx #15                 ; 15, 14, 13, ... 7, 6, 5 . . . 0
 
 b_pdbm_LoopZero
+	sta PLAYERADR0,X       ; Zero Player memory
+	sta PLAYERADR1,X       ; Zero Player memory
 	sta PLAYERADR2,X       ; Zero Player memory
 	sta PLAYERADR3,X       ; Zero Player memory
 	dex
@@ -267,10 +274,10 @@ Pmg_CollectCollisions
 
 b_pcc_SetCollisionFlags
 	lda P0PL                         ; GTIA collision register Player 0 (laser 1)...
-	and #COLPMF2_BIT                 ; Hit Player 2 (mothership)?
+	and #[COLPMF2_BIT|COLPMF3_BIT]   ; Hit Player 2 or 3 (mothership)?
 	sta zPLAYER_ONE_SHOT_THE_SHERIFF ; Laser 1 collision with mothership (P0 to P2)
 	lda P1PL                         ; GTIA collision register Player 1 (laser 2)...
-	and #COLPMF2_BIT                 ; Hit Player 2 (mothership)?
+	and #[COLPMF2_BIT|COLPMF3_BIT]   ; Hit Player 2 or 3  (mothership)?
 	sta zPLAYER_TWO_SHOT_THE_SHERIFF ; Laser 1 collision with mothership (P1 to P2)
 
 b_pcc_EndOfCollisionDetection
@@ -535,7 +542,7 @@ b_pde_RemoveExplosion
 	ldx #7                    ; loop counter.
 	lda #0
 b_pde_EraseLoop
-	sta PLAYERADR3,Y          ; Zero byte into Player memory
+	sta MISSILEADR,Y          ; Zero byte into Player memory
 	iny
 	dex
 	bpl b_pde_EraseLoop
@@ -547,7 +554,7 @@ b_pde_DrawExplosion
 	txa
 b_pde_DrawLoop
 	lda PMG_IMG_EXPLOSION,X   ; Get byte from image.
-	sta PLAYERADR3,Y          ; Write image byte into Player memory
+	sta MISSILEADR,Y          ; Write image byte into Player memory
 	iny
 	inx
 	cpx #8
@@ -574,9 +581,20 @@ b_pde_StopExplosion          ; Turn off all the running specs.
 	tax
 
 b_pde_SetHardware
-	stx SHPOSP3              ; HPOS Shadow register = X Position.
-	sta PCOLOR3              ; Update OS shadow register.
-	sta COLPM3               ; Update hardware register to be redundant.
+	stx SHPOSM0  ; HPOS Shadow register = X Position.
+	inx
+	inx
+	stx SHPOSM1
+	inx
+	inx
+	stx SHPOSM2
+	inx
+	inx
+	stx SHPOSM3
+           
+	sta COLOR3              ; Update OS shadow register.
+	sta COLPF3              ; Update hardware register to be redundant.
+
 
 b_pde_Exit
 	rts
@@ -611,35 +629,6 @@ Pmg_Draw_Players
 	rts
 
 
-; ==========================================================================
-; CLEAR GUNS
-; ==========================================================================
-; At this point I'm just too lazy to do this right. 
-; Gaming the Y positions didn't work. Copy the image bitmaps for the guns to the player Y positions.
-;
-; We're cheating a little here.   Usually for a general purpose 
-; routine the player should be erased at the old Y, and redrawn 
-; at the new Y.  However, in this simple game the player's gun image 
-; includes a 0 byte at the start and the end, so when moved one 
-; scan line at a time (the only possible movement it can do) a 
-; redraw will delete any old image.
-;
-; Zero the redraw flags.
-; Copy the Players' NEW_Y to Y.
-;
-; X == Player gun to update
-; --------------------------------------------------------------------------
-
-;Pmg_Draw_Players
-;
-;	ldx #0
-;	jsr Pmg_Draw_Player
-;
-;	ldx #1
-;	jsr Pmg_Draw_Player
-;
-;	rts
-;
 
 ; ==========================================================================
 ; DRAW PLAYER
@@ -755,8 +744,10 @@ b_pdms_DoHPOS
 	lda zMOTHERSHIP_NEW_X   ; And set new X position
 	sta zMOTHERSHIP_X
 	sta SHPOSP2
+	sta SHPOSP3
 
 	jsr Pmg_AnimateMothershipWindows
+	jsr Pmg_AnimateMothershipLights
 
 b_pdms_Exit
 
@@ -785,6 +776,16 @@ Pmg_EraseMothership
 	sta PLAYERADR2+6,Y
 	sta PLAYERADR2+7,Y
 
+	sta PLAYERADR3,Y       
+	sta PLAYERADR3+1,Y
+	sta PLAYERADR3+2,Y
+	sta PLAYERADR3+3,Y
+
+	sta PLAYERADR3+4,Y       
+	sta PLAYERADR3+5,Y
+	sta PLAYERADR3+6,Y
+	sta PLAYERADR3+7,Y
+
 	rts
 
 
@@ -798,29 +799,54 @@ Pmg_EraseMothership
 
 Pmg_DrawMothership
 
-	lda PMG_IMG_MOTHERSHIP
+	lda PMG_IMG_MOTHERSHIP_P2
 	sta PLAYERADR2,Y
 
-	lda PMG_IMG_MOTHERSHIP+1
+	lda PMG_IMG_MOTHERSHIP_P2+1
 	sta PLAYERADR2+1,Y
 
-	lda PMG_IMG_MOTHERSHIP+2
+	lda PMG_IMG_MOTHERSHIP_P2+2
 	sta PLAYERADR2+2,Y
 
-	lda PMG_IMG_MOTHERSHIP+3
+	lda PMG_IMG_MOTHERSHIP_P2+3
 	sta PLAYERADR2+3,Y
 
-	lda PMG_IMG_MOTHERSHIP+4
+	lda PMG_IMG_MOTHERSHIP_P2+4
 	sta PLAYERADR2+4,Y
 	
-	lda PMG_IMG_MOTHERSHIP+5
+	lda PMG_IMG_MOTHERSHIP_P2+5
 	sta PLAYERADR2+5,Y
 
-	lda PMG_IMG_MOTHERSHIP+6
+	lda PMG_IMG_MOTHERSHIP_P2+6
 	sta PLAYERADR2+6,Y
 
-	lda PMG_IMG_MOTHERSHIP+7
+	lda PMG_IMG_MOTHERSHIP_P2+7
 	sta PLAYERADR2+7,Y
+
+
+	lda PMG_IMG_MOTHERSHIP_P3
+	sta PLAYERADR3,Y
+
+	lda PMG_IMG_MOTHERSHIP_P3+1
+	sta PLAYERADR3+1,Y
+
+	lda PMG_IMG_MOTHERSHIP_P3+2
+	sta PLAYERADR3+2,Y
+
+	lda PMG_IMG_MOTHERSHIP_P3+3
+	sta PLAYERADR3+3,Y
+
+	lda PMG_IMG_MOTHERSHIP_P3+4
+	sta PLAYERADR3+4,Y
+	
+	lda PMG_IMG_MOTHERSHIP_P3+5
+	sta PLAYERADR3+5,Y
+
+	lda PMG_IMG_MOTHERSHIP_P3+6
+	sta PLAYERADR3+6,Y
+
+	lda PMG_IMG_MOTHERSHIP_P3+7
+	sta PLAYERADR3+7,Y
 
 	rts
 
@@ -838,8 +864,10 @@ Pmg_ShiftMothership
 	lda #0
 
 	sta PLAYERADR2,Y       ; Write 0 to Y + 0 P/M memory
+	sta PLAYERADR3,Y       ; Write 0 to Y + 0 P/M memory
 	iny                    ; Y + 1
 	sta PLAYERADR2,Y       ; Write 0 to Y + 1 P/M memory
+	sta PLAYERADR3,Y       ; Write 0 to Y + 0 P/M memory
 	iny                    ; Y + 1  (Or Y + 2 total)
 	sty zMOTHERSHIP_Y      ; Save as the new "current" position.
 
@@ -859,11 +887,11 @@ Pmg_ShiftMothership
 
 Pmg_AnimateMothershipWindows
 
-	dec zMOTHERSHIP_ANIM_FRAME ; Decrement clock for animation.
+	dec zMOTHERSHIP_ANIM_CLOCK ; Decrement clock for animation.
 	bpl b_pamsw_Exit           ; If still positive, skip animation
 
-	lda #3                     ; Reset counter.. then do animation.
-	sta zMOTHERSHIP_ANIM_FRAME
+	lda #MOTHERHIP_START_ANIM  ; Reset counter.. then do animation.
+	sta zMOTHERSHIP_ANIM_CLOCK
 
 	ldx zMOTHERSHIP_ANIM       ; X = current windows animation frame
 	lda zMOTHERSHIP_DIR        ; Mothership direction.  0 = Left to right. 1 = Right to Left
@@ -882,16 +910,156 @@ b_pamsw_DoAnimL2R              ; Left to Right.
 
 b_pamsw_WriteAnimByte
 	stx zMOTHERSHIP_ANIM       ; Save updated animation frame.
-;	ldy zMOTHERSHIP_NEW_Y      ; Get (New) position of mothership.
 	ldy zMOTHERSHIP_Y          ; Get (New) position of mothership.
 	iny                        ; Plus 3 for correct offset.
 	iny
 	iny
 	lda PMG_MOTHERSHIP_ANIM,X  ; Get the windows frame
-	sta PLAYERADR2,Y           ; update the image in the player.
+	sta PLAYERADR3,Y           ; update the image in the player.
 
 b_pamsw_Exit
 	rts
+
+
+; ==========================================================================
+; ANIMATE BIG MOTHERSHIP WINDOWS
+; ==========================================================================
+; Draw animated window on mothership.  
+; --------------------------------------------------------------------------
+
+Pmg_AnimateBigMothershipWindows
+
+	dec zMOTHERSHIP_ANIM_CLOCK  ; Decrement clock for animation.
+	bpl b_pabmsw_DrawAnimation  ; If still positive, do not reset clock, just draw frame
+
+	lda #MOTHERHIP_START_ANIM   ; Reset clock.
+	sta zMOTHERSHIP_ANIM_CLOCK
+
+	inc zMOTHERSHIP_BIG_ANIM    ; update animation frame
+	ldx zMOTHERSHIP_BIG_ANIM
+	cpx #14                     ; Went past the end?
+	bne b_pabmsw_DrawAnimation  ; No.  Ready to use the frame.
+	ldx #0                      ; Yes, reset frame to beginning of this animation loop
+	stx zMOTHERSHIP_BIG_ANIM    ; Save reset animation frame.
+
+b_pabmsw_DrawAnimation
+	ldy zBIG_MOTHERSHIP_Y       ; Get (New) position of mothership.
+	bmi b_pabmsw_Exit           ; Don't animate if mothership is gone.
+
+	ldx zMOTHERSHIP_BIG_ANIM    ; Get (possibly updated) animation frame.
+	lda PMG_BIG_WINDOWS_L,X
+	sta PLAYERADR1+6,Y
+	sta PLAYERADR1+7,Y
+
+	lda PMG_BIG_WINDOWS_R,X
+	sta PLAYERADR3+6,Y
+	sta PLAYERADR3+7,Y
+
+b_pabmsw_Exit
+	rts
+
+
+; ==========================================================================
+; ANIMATE MOTHERSHIP LIGHTS
+; ==========================================================================
+; Decrement the clock that goes with the light on/off time. 
+; When the clock runs out, toggle the light state.
+; Update current mothership image based on current state of lights.
+; --------------------------------------------------------------------------
+
+Pmg_AnimateMothershipLights
+
+	ldy #1  ; to reset light on/off state to on
+
+; Run the clocks. . .
+
+	dec zMOTHERSHIP_LIGHT_CLOCK1 ; deduct from clock for Light on top of ship
+	bpl b_pamsl_DoClock2         ; if it didn't roll negative, then no on/off change
+	lda #MOTHERSHIP_START_CLOCK1 ; clock ran out.  reset the clock
+	sta zMOTHERSHIP_LIGHT_CLOCK1
+	dec zMOTHERSHIP_LIGHT1       ; 
+	bpl b_pamsl_DoClock2
+	sty zMOTHERSHIP_LIGHT1
+
+b_pamsl_DoClock2
+	dec zMOTHERSHIP_LIGHT_CLOCK2 ; Light on left leg
+	bpl b_pamsl_DoClock3
+	lda #MOTHERSHIP_START_CLOCK2
+	sta zMOTHERSHIP_LIGHT_CLOCK2
+	dec zMOTHERSHIP_LIGHT2
+	bpl b_pamsl_DoClock3
+	sty zMOTHERSHIP_LIGHT2
+
+b_pamsl_DoClock3
+	dec zMOTHERSHIP_LIGHT_CLOCK3 ; Light on right leg.
+	bpl b_pamsl_UpdateLights
+	lda #MOTHERSHIP_START_CLOCK3
+	sta zMOTHERSHIP_LIGHT_CLOCK3
+	dec zMOTHERSHIP_LIGHT3
+	bpl b_pamsl_UpdateLights
+	sty zMOTHERSHIP_LIGHT3
+
+b_pamsl_UpdateLights
+	lda zCurrentEvent
+	cmp #EVENT_TITLE              ; Animating Big mothership?
+	beq b_pamsl_DoBigMothership
+	cmp #EVENT_COUNTDOWN          ; Animating Big mothership?
+	beq b_pamsl_DoBigMothership
+	cmp #EVENT_GAME               ; Animating Small mothership?
+	beq b_pamsl_DoSmallMothership ; The game mothership.
+
+	rts
+
+; Set the lights for the big mothership.
+
+b_pamsl_DoBigMothership
+	lda zBIG_MOTHERSHIP_Y ; If mothership is off screen, then no animation.
+	bmi b_pamsl_Exit
+
+	ldy zBIG_MOTHERSHIP_Y
+	
+	ldx zMOTHERSHIP_LIGHT1     ;  light at top of mothership
+	lda PMG_BIG_TOP_LIGHT_L,x
+	sta PLAYERADR1,Y           ; update the image in the player.
+	sta PLAYERADR1+1,Y         ; update the image in the player.
+	lda PMG_BIG_TOP_LIGHT_R,x
+	sta PLAYERADR3,Y           ; update the image in the player.
+	sta PLAYERADR3+1,Y         ; update the image in the player.
+
+	ldx zMOTHERSHIP_LIGHT2     ; light on the left leg of mothership
+	lda PMG_BIG_LIGHT_L,x
+	sta PLAYERADR1+14,Y
+	sta PLAYERADR1+15,Y
+
+	ldx zMOTHERSHIP_LIGHT3     ; light on the right leg of mothership
+	lda PMG_BIG_LIGHT_R,x
+	sta PLAYERADR3+14,Y
+	sta PLAYERADR3+15,Y
+
+b_pamsl_Exit
+	rts
+
+; Set the lights for the small mothership.
+
+b_pamsl_DoSmallMothership
+	ldy zMOTHERSHIP_Y
+	ldx zMOTHERSHIP_LIGHT1     ;  light at top of mothership
+	lda PMG_TOP_LIGHT,x
+	sta PLAYERADR3,Y           ; update the image in the player.
+
+	lda PLAYERADR3+7,Y         ; get the image in the player.
+	ldx zMOTHERSHIP_LIGHT2     ; light on the left leg of mothership
+	and PMG_LIGHT_L_MASK,x     ; turn off this light bit, retain other.
+	ora PMG_LIGHT_L_BIT,x      ; turn on or off this light bit.
+
+	ldx zMOTHERSHIP_LIGHT3     ; light on the right leg of mothership
+	and PMG_LIGHT_R_MASK,x     ; turn off this light bit, retain other.
+	ora PMG_LIGHT_R_BIT,x      ; turn on or off this light bit.
+
+	sta PLAYERADR3+7,Y         ; update the image in the player.
+
+	rts
+
 
 
 ; ==========================================================================
@@ -969,17 +1137,38 @@ Pmg_StuffitInMissiles
 Pmg_AdustMissileHPOS
 
 	sta SHPOSM3 ; Fake shadow reg.
-	sta HPOSM3  ; Hardware position register.
+;	sta HPOSM3  ; Hardware position register.
 	clc
 	adc #4      ; +4
 	sta SHPOSM2 ; More of the same. . . .
-	sta HPOSM2
+;	sta HPOSM2
 	adc #4      ; +4
 	sta SHPOSM1
-	sta HPOSM1
+;	sta HPOSM1
 	adc #4      ; +4
 	sta SHPOSM0
-	sta HPOSM0  ;  Yes, this is a bit of overkill.
+;	sta HPOSM0  ;  Yes, this is a bit of overkill.
+
+	rts
+
+
+;==============================================================================
+;												EraseTitleLogo  A
+;==============================================================================
+; Mothership explosions in the game use Missiles.   So, the image used 
+; to colorize the title must be removed for the game.
+; -----------------------------------------------------------------------------
+
+Pmg_EraseTitleLogo 
+
+	ldx #TITLE_LOGO_Y_POS
+	lda #0
+
+b_petl_LoopErase
+	sta MISSILEADR,X
+	inx
+	cpx #[TITLE_LOGO_Y_POS+18]
+	bne b_petl_LoopErase
 
 	rts
 
@@ -1121,24 +1310,14 @@ b_pmpm_EndPlayerMovement ; Decide if Lazer or Player sets the HPOS at the start 
 	lda zCurrentEvent    ; Is this 0? 
 	beq b_pmpm_Exit      ; Yes.  Should not be here
 	cmp #EVENT_GAME      ; Is it game?
-	bcc b_pmpm_SetPlayer ; No. So, no lasers.
+	bcc b_pmpm_Exit      ; No. So, no lasers.  (On the title screen the mothership uses HPOSPx)
 
 	lda zLASER_ONE_X     ; Copy laser 1  X to shadow registers.
 	sta SHPOSP0          ; Copy laser 1  X to shadow registers.
 	lda zLASER_TWO_X     ; Copy laser 2  X to shadow registers.
 	sta SHPOSP1          ; Copy laser 2  X to shadow registers.
-	jmp b_pmpm_Exit
-
-b_pmpm_SetPlayer         ; In any other case, Guns X position goes to shadow register.
-	lda zPLAYER_ONE_X    ; Copy Player 1  X to shadow register
-	sta SHPOSP0          ; Copy Player 1  X to shadow register
-	lda zPLAYER_TWO_X    ; Copy Player 2  X to shadow register
-	sta SHPOSP1          ; Copy Player 2  X to shadow register
 
 b_pmpm_Exit
-;	lda #0
-;	sta zPLAYER_ONE_REDRAW
-;	sta zPLAYER_TWO_REDRAW
 
 	rts
 

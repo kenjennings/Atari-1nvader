@@ -179,18 +179,9 @@ GameInit
 	; Zero all Player positions (fake shadow registers for HPOS) 
 	; DLIs will (re)set them all as needed other.
 
-	ldx #7
-	lda #0
-b_gi_LoopFillZero
-	sta PCOLOR0,x           ; Init - Zero color registers.
-	sta SHPOSP0,x           ; Init - Zero PM HPOS Values
-	dex
-	bpl b_gi_LoopFillZero
+	jsr Pmg_SetZero
 
 	sta COLOR4 ; COLBK  - Playfield Background color (Border for modes 2, 3, and F) 
-
-	lda #COLOR_WHITE|$0C    ; Light white
-	sta COLOR1              ; COLPF1 - Playfield 1 color (mode 2 text)
 
 	lda #0
 	sta zThisDLI            ; Init the DLI index.
@@ -218,8 +209,6 @@ b_gi_LoopFillZero
 
 	jsr Pmg_Init            ; Will also reset GRACTL and SDMACTL settings for P/M DMA
 
-	lda #%01010101          ; PM_SIZE_DOUBLE all missiles ; Title screen uses double Width Missiles.
-	sta SIZEM               ; Misslies are not used elsewhere, so this is global/constant.
 
 ; Scrolling Terrain Values ==================================================
 ; The mountains are a constant component on the Title and Game screens.
@@ -255,7 +244,7 @@ b_gi_LoopFillZero
 	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
 	sta SDMCTL
 
-	lda #[FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01] 
+	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01] 
 	sta GPRIOR
 
 	rts                     ; And now ready to go back to main game loop . . . .
@@ -285,6 +274,9 @@ GameSetupTitle
 
 	lda #$00
 	sta zSTATS_TEXT_COLOR
+
+	lda #COLOR_WHITE|$0C    ; Light white
+	sta COLOR1              ; COLPF1 - Playfield 1 color (mode 2 text)
 
 	jsr Gfx_ShowScreen
 
@@ -363,17 +355,27 @@ GameSetupTitle
 	sta zBigMothershipSpeed
 
 	lda #112
-	sta SHPOSP2
+	sta SHPOSP0
+	sta SHPOSP1
 	lda #128
+	sta SHPOSP2
 	sta SHPOSP3
 
 	lda zMOTHERSHIP_COLOR
+	sta PCOLOR0
 	sta PCOLOR2
-	sta PCOLOR3
+	lda zMOTHERSHIP_COLOR2
+	sta PCOLOR1
+	sta PCOLOR3 
 
 	lda #PM_SIZE_DOUBLE
+	sta SIZEP0
+	sta SIZEP1
 	sta SIZEP2
 	sta SIZEP3
+
+	lda #%01010101          ; PM_SIZE_DOUBLE all missiles ; Title screen uses double Width Missiles.
+	sta SIZEM               ; 
 
 	jsr Pmg_Draw_Big_Mothership
 
@@ -669,6 +671,8 @@ b_mdv_LoopSetCountdownColor
 
 GameSetupMain
 
+	jsr Pmg_EraseTitleLogo ; The colorizer image must be removed to use missile  for mothership explosion
+
 	lda #0                  ; Zero a lot of things . . 
 
 	sta SHPOSM3             ; Remove the animated colors from the title.
@@ -702,8 +706,11 @@ GameSetupMain
 	; P L A Y E R S 
 
 	lda #PM_SIZE_NORMAL
+	sta SIZEP0
+	sta SIZEP1
 	sta SIZEP2
 	sta SIZEP3
+	sta SIZEM
 
 	; Setting random direction for both players.
 	; Not doing any comparison for the player on or off,

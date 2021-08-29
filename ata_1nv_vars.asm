@@ -36,12 +36,27 @@ zMOTHERSHIP_Y               .byte $00 ; Game mothership Y coord
 zMOTHERSHIP_NEW_Y           .byte $00 ; Game mothership Y coord 
 
 zMOTHERSHIP_DIR             .byte $00 ; Mothership direction.  0 = left to right.   1 = Right to Left
-zMOTHERSHIP_ANIM            .byte $00 ; Animation frame for windows
-zMOTHERSHIP_ANIM_FRAME      .byte 3   ; delay for animation 
+
+MOTHERHIP_START_ANIM=3
+zMOTHERSHIP_ANIM            .byte $00 ; Animation frame for windows on small mothership
+zMOTHERSHIP_BIG_ANIM        .byte $00 ; Animation Frame for windows on big mothership. 0 to 13
+zMOTHERSHIP_ANIM_CLOCK      .byte MOTHERHIP_START_ANIM   ; delay for animation 
+
+MOTHERSHIP_START_CLOCK1=60            ; The light on top of the ship
+zMOTHERSHIP_LIGHT_CLOCK1    .byte MOTHERSHIP_START_CLOCK1
+zMOTHERSHIP_LIGHT1          .byte $1  ; toggle $0, $1 for off and on
+
+MOTHERSHIP_START_CLOCK2=61            ; The light on the left leg 
+zMOTHERSHIP_LIGHT_CLOCK2    .byte MOTHERSHIP_START_CLOCK2
+zMOTHERSHIP_LIGHT2          .byte $1  ; toggle $0, $1 for off and on
+
+MOTHERSHIP_START_CLOCK3=62            ; The light on the right leg 
+zMOTHERSHIP_LIGHT_CLOCK3    .byte MOTHERSHIP_START_CLOCK3
+zMOTHERSHIP_LIGHT3          .byte $1  ; toggle $0, $1 for off and on
+
 zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed index into speed table 0, 2, 4, ..., 14 
 zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
 zMOTHERSHIP_MOVEMENT        .byte $00 ; Value to add/subtract from Mothership X
-;zMOTHERSHIP_COLOR           .byte $00 ; Game mothership color.
 
 zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
 zMOTHERSHIP_HITS            .byte $00 ; Number of times the mothership is hit.
@@ -107,12 +122,12 @@ TABLE_STAR_LOCATION ; star
 ; This is also do-able with a LSR to multiply times 8 then add offset.
 
 TABLE_ROW_TO_Y ; r2ytab 
-.byte 36,44,52,60     ; 0  - 3 ; 36
-.byte 68,76,84,92     ; 4  - 7
-.byte 100,108,116,124 ; 8  - 11
-.byte 132,140,148,156 ; 12 - 15
-.byte 164,172,180,188 ; 16 - 19
-.byte 196,204,212     ; 20 - 22
+	.byte 36,44,52,60     ; 0  - 3   ; 36 + ( Y * 8 )
+	.byte 68,76,84,92     ; 4  - 7
+	.byte 100,108,116,124 ; 8  - 11
+	.byte 132,140,148,156 ; 12 - 15
+	.byte 164,172,180,188 ; 16 - 19
+	.byte 196,204,212     ; 20 - 22
 
 TABLE_TO_DIGITS ; 0 to 21.  (22 is last row which should be undisplayed.)
 	.byte $00,$01,$02,$03,$04,$05,$06,$07,$08,$09
@@ -129,6 +144,6 @@ TABLE_SPEED_CONTROL ; How many pixels to move each frame ( two values - frame +0
 ;zGO_COLPF0      .byte $00    ; Color value for PF0
 ;zGO_COLPF1      .byte $00    ; Color value for PF1
 
-; ======== E N D   O F   V A R I A B L E S ======== 
-
 DELAYED .byte 60
+
+; ======== E N D   O F   V A R I A B L E S ======== 
