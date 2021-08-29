@@ -23,6 +23,8 @@ Tested in Atari800 and Altirra emulators. Development/Test configuration is NTSC
 
 - *PHILSAN* -- Suggested improving the color management to make PAL colors more consistent with NTSC.
 
+- *LEVEL42* -- Suggested making the mothership multi-color.
+
 ---
 
 **1 Aug 2021**
@@ -51,15 +53,27 @@ Did you know MADS will accept "rts" in the label position?   Enough said about t
 
 ---
 
+**29 Aug 2021**
+
+Playtester Level42 suggested making the mothership multi-color. 
+
+Reworked the Player/Missile use to make a multi-color mothership on the title screen and in the game.  Also, the motherships have animated running lights and windows.
+
+Due to the way Player/Missile multi-color players work, there is an unavoidable difference between the PAL and NTSC rendering of the motherships.   The overlay color produced by the two players' color is based on OR'ing the binary value of the two registers together -- NOT merging the aparent color displayed.   As a result, the PAL values used to make the two red colors for the mothership combine to result in nicely light-blue lights and windows.  In NTSC different values produce the reds, and the binary OR combining these values is still in the red area of the palette, so the lights are red.
+
+Updated the Playtesters list accordingly, and while I was here, updated the Documentation scroller to have two gradient colors in the text.
+
+---
+
 | **Title** |
 | ------- |
-| [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/20-BASELINE-TitleTesters.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
+| [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/21-BETA-Title.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
 
 ---
 
 | **Game** | 
 | ------- |
-| [![GAME](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/19-BASELINE-Game.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Game.md "Game") |
+| [![GAME](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/12-BETA-Game.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Game.md "Game") |
 
 ---
 
