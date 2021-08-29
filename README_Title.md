@@ -154,9 +154,9 @@ Added Playtesters text to the scrolling documentation.
 
 ---
 
-[![V21 BETA](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/21-BETA-Title.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
-
 **29 Aug 2021 -- Multi-color Mothership**
+
+[![V21 BETA](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/21-BETA-Title.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
 
 Playtester Level42 suggested making the mothership multi-color.
 
