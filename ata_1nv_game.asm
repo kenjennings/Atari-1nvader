@@ -810,6 +810,14 @@ GameMain
 	lda zGAME_OVER_FLAG            ; Did mothership/player motion reach end game?
 	beq b_gm_EndGameLoop           ; No.   Continue game
 
+	; Hacky bit.   It turnsout that the lasers could still be visible.
+	; The lasers need to be removed or they will end up frozen on screen 
+	; during the game onver.
+	lda #0
+	sta zLASER_ONE_NEW_Y
+	sta zLASER_TWO_NEW_Y
+	jsr Pmg_Draw_Lasers            ; remove lasers if present.
+
 	lda #EVENT_SETUP_GAMEOVER      ; Next game loop event is setup for end game.
 	sta zCurrentEvent
 ;	jsr Gfx_Zero_Game_Over_Text  
