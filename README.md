@@ -41,7 +41,7 @@ Added Playtesters to the credit text.
 
 Philsan reported that PAL colors didn't match NTSC colors.  I had put no thought into PAL at all.  So, I isolated all references to colors in the game to a contiguous block of variables, figured out PAL detection, and when the computer is operating in PAL video mode it overwrites the color references with alternate versions for PAL display.
 
-Also, Philsan noticed that the giant mothership flies "under" the high score text.  This artifact is due to Players/Missiles always having lower priority than  ANTIC Mode 2 text (COLPF1) no matter what PRIOR says about priority.   To resolve this the scrore text is removed during the countdown sequence to start the game.  The scores are redrawn when the actual game starts. 
+Also, Philsan noticed that the giant mothership flies "under" the high score text.  This artifact is due to Players/Missiles always having lower priority than  ANTIC Mode 2 text (COLPF1) no matter what PRIOR says about priority.   To resolve this the score text is removed during the countdown sequence to start the game.  The scores are redrawn when the actual game starts. 
 
 ---
 
