@@ -15,6 +15,91 @@
 
 
 ; ==========================================================================
+; SUPPORT - FRAME MANAGEMENT
+; ==========================================================================
+; Runs at the start of VBI.  
+;
+; Manages PAL/NTSC frame counter.
+; 
+; Based on the Frame counter determine the next Increment value 
+; for horizontal player movement, vertical laser movement, and 
+; mothership horizontal movement (also based on speed).
+; 
+; The joy of this is that this code, and all the other position code 
+; doesn't care if we're in PAL or NTSC.  Everything is driven by 
+; table data.  Once the initalization code set PAL or NTSC, then 
+; everything after becomes automatic.
+; --------------------------------------------------------------------------
+
+gFrameAsIndex .byte $00
+
+FrameManagement
+
+	inc zTHIS_FRAME         ; Next Frame value
+	lda zTHIS_FRAME          
+	cmp zMaxNTSCorPALFrames ; compare to limit
+	bne b_fm_SkipFrameReset ; If not at limit, continue 
+
+	lda #0
+	sta zTHIS_FRAME         ; Reset Frame value
+b_fm_SkipFrameReset
+
+	; Frame counter times two...
+	asl                     ; Frame value times 2
+	sta gFrameAsIndex      ; Save for later
+	tax
+
+	; Plus 0 or 1 for video mode...
+	lda zNTSCorPAL
+	beq b_fm_SkipIncIndex   ; If 0 (PAL), then no increment
+	inx
+	stx gFrameAsIndex
+b_fm_SkipIncIndex
+
+	; Determine Player X increment/decrement
+	lda TABLE_PLAYER_CONTROL,x
+	sta zINC_PLAYER_X
+
+	; Determine shot Y decrement
+	lda TABLE_LASER_CONTROL,x
+	sta zINC_LASER_Y
+
+	; Determine Mothership X increment
+	jsr FrameControlMothershipSpeed
+
+	rts
+
+
+; ==========================================================================
+; SUPPORT - FRAME CONTROL MOTHERSHIP SPEED
+; ==========================================================================
+; Callable by VBI or anytime.
+;
+; Given the current frame, and the mothership speed, set the 
+; increment value.
+;
+; Called on every frame by the VBI.   Called by main code any time
+; the mothership speed changes.
+;
+; Assume the gFrameAsIndex was already set by prior VBI.
+; --------------------------------------------------------------------------
+
+FrameControlMothershipSpeed
+
+	; Determine Mothership X increment
+	ldy zMOTHERSHIP_MOVE_SPEED  ; Get speed.
+	lda TABLE_TIMES_TWELVE,y    ; Times 12 for array size
+	clc
+	adc gFrameAsIndex           ; Add to current index (already calculated)
+	tax                         ; use as index
+	lda TABLE_SPEED_CONTROL,x   ; Get mothership speed from table.
+	sta zINC_MOTHERSHIP_X       ; Save for reference later.
+	sta zMOTHERSHIP_MOVEMENT    ; save for code to use later
+
+	rts
+
+
+; ==========================================================================
 ; SUPPORT - PLAYERS SELECTION INPUT
 ; ==========================================================================
 ; Runs during Title screen and Countdown
@@ -426,12 +511,15 @@ b_gchs_Exit
 
 GamePlayersMovement
 
-	lda zAnimatePlayers   ; Check timer to delay movment. (VBI updates)
-	bne b_gpm_Exit        ; Timer not 0, so still running.
+;	lda zAnimatePlayers   ; Check timer to delay movment. (VBI updates)
+;	bne b_gpm_Exit        ; Timer not 0, so still running.
 
-	lda #2                ; Player movement timer expired.  
-	sta zAnimatePlayers   ; Reset it.
+;	lda #2                ; Player movement timer expired.  
+;	sta zAnimatePlayers   ; Reset it.
 	
+	lda zINC_PLAYER_X     ; Check if movement is allowed on this frame.
+	beq b_gpm_Exit        ; No.  So, no need to do anything.
+
 	; First, run through the easy choices first that don't involve 
 	; interaction between the two players.
 	
@@ -578,7 +666,7 @@ GameMovePlayerLeftToBumper
 	bne b_gmpltb_Exit   ; Yes, do not test this bounce.
 
 	ldy zPLAYER_X,X     ; Subtract one from player position.
-	dey
+	dey                 ; or subtract zINC_PLAYER_X.
 
 	sty zPLAYER_NEW_X,X ; Save new position.
 	cpy #PLAYER_MIN_X   ; Has it reached the mininum?
@@ -648,7 +736,7 @@ GameMovePlayerRightToBumper
 	bne b_gmprtb_Exit   ; Yes, do not test this bounce.
 
 	ldy zPLAYER_X,X     ; Add one to player position.
-	iny
+	iny                 ; or add zINC_PLAYER_X.
 	
 	sty zPLAYER_NEW_X,X ; Save new position.
 	cpy #PLAYER_MAX_X   ; Has it reached the maximum?
@@ -769,17 +857,20 @@ CheckLaserInProgress
 	beq b_clip_Exit     ; No. Nothing to do.
 
 	lda zLASER_Y,X  
-	cmp #LASER_END_Y    ; Is Laser at Y Limit?
+	cmp #LASER_END_Y    ; Is Laser not yet at Y Limit?
+	bcc b_clip_StopLaser
 	bne b_clip_DoMove   ; No.  
 
+b_clip_StopLaser
 	; Stop Laser Sound here.  If the other laser is not running
 
 	lda #0              ; Zero New_Y is signal to remove from screen.
 	beq b_clip_UpdateY
 
 b_clip_DoMove
-	sec                 ; Subtract 4 from laser Y
-	sbc #4
+	sec                 ; Subtract from laser Y
+	sbc zINC_LASER_Y
+;	sbc #4
 	
 b_clip_UpdateY
 	sta zLASER_NEW_Y,X  ; New Y is set.
@@ -980,17 +1071,20 @@ b_gmm_SetRegularMinMax         ; Here use the normal values for screen width.
 ; from the table (indexed by Move speed + 0, and Move speed + 1)
 ; Toggle the counter value to create the +0/+1 offset each frame.
 
+; This has already been determined by lookup from a table
+; during the vertical blank.  zMOTHERSHIP_MOVEMENT is ready for use.
+
 b_gmm_ContinueSetSpeed
-	ldy zMOTHERSHIP_MOVE_SPEED      ; index into speed table.
-	dec zMOTHERSHIP_SPEEDUP_COUNTER ; toggle the offsetter, 1,0,-1 (1).
-	bpl b_gmm_ContinueSpeedSetup    ; If still positive, then collect speed value 
-	lda #1                          ; Offsetter went negative.  
-	sta zMOTHERSHIP_SPEEDUP_COUNTER ; Reset the offsetter to 1.
-	iny                             ; increment the index into the speed table.
+;	ldy zMOTHERSHIP_MOVE_SPEED      ; index into speed table.
+;	dec zMOTHERSHIP_SPEEDUP_COUNTER ; toggle the offsetter, 1,0,-1 (1).
+;	bpl b_gmm_ContinueSpeedSetup    ; If still positive, then collect speed value 
+;	lda #1                          ; Offsetter went negative.  
+;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; Reset the offsetter to 1.
+;	iny                             ; increment the index into the speed table.
 
 b_gmm_ContinueSpeedSetup
-	lda TABLE_SPEED_CONTROL,y       ; A == value from speed table to add/subtract 
-	sta zMOTHERSHIP_MOVEMENT        ; Save new value to add/subtract  
+;	lda TABLE_SPEED_CONTROL,y       ; A == value from speed table to add/subtract 
+;	sta zMOTHERSHIP_MOVEMENT        ; Save new value to add/subtract  
 
 	lda zMOTHERSHIP_X               ; A == Get current X position
 
@@ -1481,7 +1575,8 @@ GameDecrementtHitCounter
 
 b_gdhc_CheckSpeedControl        ; Need to add +2 for 2 entries for hpos+ entries.
 	inc  zMOTHERSHIP_MOVE_SPEED ; Speedup++
-	inc  zMOTHERSHIP_MOVE_SPEED ; Speedup++
+	jsr FrameControlMothershipSpeed  ; Maybe overkill.  VBI will also do this.
+;	inc  zMOTHERSHIP_MOVE_SPEED ; Speedup++
 
 b_gdhc_Exit
 	rts

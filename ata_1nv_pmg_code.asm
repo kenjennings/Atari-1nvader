@@ -1291,7 +1291,7 @@ b_psp_End
 
 Pmg_ManagePlayersMovement
 
-	dec zAnimatePlayers        ; Decrement.   Let Main reset when it reaches 0.
+;	dec zAnimatePlayers        ; Decrement.   Let Main reset when it reaches 0.
 
 	ldx #0
 	jsr Pmg_DeterminePlayerDraw
@@ -1351,8 +1351,3 @@ b_pdpd_Flag_Redraw
 
 b_pdpd_Exit
 	rts
-
-
-
-
-

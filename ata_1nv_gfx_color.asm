@@ -29,7 +29,7 @@
 ; --------------------------------------------------------------------------
 
 ; ==========================================================================
-; SET NTSC OR PAL
+; SET NTSC OR PAL COLORS
 ;
 ; Update the master lookup table for colors per the hardware 
 ; register indicating NTSC or PAL.  By default the master table 
@@ -37,29 +37,29 @@
 ; from the PAL table if this is a PAL Atari.
 ; --------------------------------------------------------------------------
 
-Gfx_SetNTSCorPAL
+Gfx_SetNTSCorPALColors
 
-	ldx #0 
+	jsr Gfx_SetNTSCorPAL  ; Returns A == PAL or NTSC flag.
+	bne b_gsnopc_Exit     ; 1 == NTSC.   Nothing to do.
 
-	lda PAL
-	and #MASK_NTSCPAL_BITS ; Clear (xxxx000x) = PAL/SECAM, Set (xxxx111x) = NTSC
-	bne b_gsnop_Exit
+	tax                   ; 0 == PAL.    Copy from the alternate color tables.
 
-b_gsnop_CopyLoopPAL
+b_gsnopc_CopyLoopPAL
 	lda TABLE_PAL_COLORS,x
 	sta TABLE_GAME_COLORS,x
 	inx
 	cpx #[END_OF_COLOR_TABLE-TABLE_GAME_COLORS]
-	bne b_gsnop_CopyLoopPAL
+	bne b_gsnopc_CopyLoopPAL
 
+; HACKERY TO BE REMOVED AFTER DEBUGGING VISUALS 
 	ldx #2
-b_gnsop_PromptPAL
+b_gnsopc_PromptPAL
 	lda PAL_PROMPT,x
 	sta GFX_SCORE_HI-6,X
 	dex
-	bpl b_gnsop_PromptPAL
+	bpl b_gnsopc_PromptPAL
 
-b_gsnop_Exit
+b_gsnopc_Exit
 	rts
 
 PAL_PROMPT .sb "PAL"

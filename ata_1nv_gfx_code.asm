@@ -14,6 +14,34 @@
 ; --------------------------------------------------------------------------
 
 ; ==========================================================================
+; SET NTSC OR PAL
+; ==========================================================================
+; Determine video standard.   
+; Set some flags used later in the game.
+; 
+; Return A  (or CPU Z) == PAL or NTSC flag. 
+; Clear (xxxx000x) = 0 = PAL/SECAM, Set (xxxx111x) = 1 = NTSC
+; --------------------------------------------------------------------------
+
+Gfx_SetNTSCorPAL
+
+	lda PAL
+	and #MASK_NTSCPAL_BITS ; Clear (xxxx000x) = PAL/SECAM, Set (xxxx111x) = NTSC
+	beq b_gsnop_UpdateFlag ; Value 0.  Write as-is.
+	lda #1                 ; I want this to be be only %1, not %00001110
+b_gsnop_UpdateFlag
+	sta zNTSCorPAL
+
+	tax
+
+	lda TABLE_NTSC_OR_PAL_FRAMES,x
+	sta zMaxNTSCorPALFrames
+
+	lda zNTSCorPAL
+	rts
+
+
+; ==========================================================================
 ; ANIMATE TITLE LOGO
 ; ==========================================================================
 ; Change the Title screen's LMS pointer to the graphics for the big logo

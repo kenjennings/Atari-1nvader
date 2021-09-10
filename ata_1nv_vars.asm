@@ -23,6 +23,159 @@ zGAME_OVER_FLAG             .byte $00  ; The game is over?
 
 gDEBOUNCE                   .byte 0    ; Flag to make sure joystick buttons are released.
 
+
+; ==========================================================================
+; TIMING PER VIDEO STANDARD . . .
+; Motion/positioning controls:
+; At startup, the program determines the video standard and then sets 
+; zNTSCorPAL and the zMaxNTSCorPALFrames limit accordingly.
+; The VBI increments the Frame Counter (zTHIS_FRAME) up to the limits of
+; zMaxNTSCorPALFrames and resets to 0 as needed.
+;
+; The original game on the C64 uses speed/pixel counts based on 
+; higher resolution which required the Atari version already scale 
+; the movements across multiple frames.   In order to accommodate PAL
+; this scaling has to be scaled further to make 5 PAL frames
+; the equivalent of 6 NTSC frames.
+;
+; And so, in order to scale PAL to meet NTSC speed specifications there 
+; is an array of multiple entries providing the speed/increment values 
+; with the PAL sequence of ficve frames adjusted to match the same 
+; distance over six NTSC frames.
+;
+; The VBI uses the Frame counter plus the video standard flag (0/1) to 
+; acquire values from tables used to populate the current INC value and 
+; speed control.
+; Other common cycles (animation loops, etc.) just iterate per each
+; VBI.  I judged speed scaling for these not so important.
+;
+; Basic lookup for Player and Laser control:
+; INDEX == ( THIS_FRAME * 2 ) + zNTSCorPALflag
+; INC_PLAYER = TABLE_PLAYER_X[ INDEX ]
+; INC_LASER = TABLE_LASER_Y[ INDEX ]
+;
+; Extended lookup for Mothership:
+; INDEX == ( MOTHERSHIP_MOVE_SPEED * 12) + ( THIS_FRAME * 2 ) + zNTSCorPALflag
+; MOTHERSHIP_MOVEMENT = TABLE_SPEED_CONTROL[ INDEX ]
+
+PAL_FRAMES=$5
+NTSC_FRAMES=$6
+
+zNTSCorPAL                  .byte $01         ; Clear (0) = PAL/SECAM, Set (1) = NTSC
+zMaxNTSCorPALFrames         .byte NTSC_FRAMES ; Max number of frames per video standard (see tables)
+
+zTHIS_FRAME                 .byte $00         ; Frame counter 0 to 4 (PAL) or 0 to 5 (NTSC) 
+zINC_PLAYER_X               .byte $00         ; X Value to add this frame
+zINC_LASER_Y                .byte $00         ; Y value to add this frame
+zINC_MOTHERSHIP_X           .byte $00         ; X Value to add this frame (Speed control)
+zMOTHERSHIP_MOVEMENT        .byte $00 ; Value to add/subtract from Mothership X
+
+zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed index into speed table 0, 2, 4, ..., 14 
+zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
+
+; Run-time config for frame limits for PAL or NTSC video modes. Index by zNTSCorPAL.
+TABLE_NTSC_OR_PAL_FRAMES     
+	.byte PAL_FRAMES,NTSC_FRAMES
+
+; How many pixels to move the Player each frame.  PAL, NTSC per each.
+; Technically, we can simply use as flag whether or not to process
+; horizontal movement for the player.   If this is 1, then movement
+; can occur.
+; Lookup X == ( THIS_FRAME * 2 ) + zNTSCorPALflag
+TABLE_PLAYER_CONTROL 
+	.byte 0,0 ; Frame 1, PAL, NTSC
+	.byte 1,1 ; Frame 2, PAL, NTSC
+	.byte 0,0 ; Frame 3, PAL, NTSC
+	.byte 1,1 ; Frame 4, PAL, NTSC
+	.byte 1,0 ; Frame 5, PAL, NTSC
+	.byte 0,1 ; Frame 6, (-), NTSC
+
+; How many pixels to move the Laser each frame.  PAL, NTSC per each.
+; Lookup X == ( THIS_FRAME * 2 ) + zNTSCorPALflag
+TABLE_LASER_CONTROL
+	.byte 5,4 ; Frame 1, PAL, NTSC
+	.byte 5,4 ; Frame 2, PAL, NTSC
+	.byte 4,4 ; Frame 3, PAL, NTSC
+	.byte 5,4 ; Frame 4, PAL, NTSC
+	.byte 4,4 ; Frame 5, PAL, NTSC
+	.byte 0,4 ; Frame 6, (-), NTSC
+
+; How many pixels to horizontally move the mothership.  Pal, NTSC per each.
+; Since there are multiple speed values for the mothership, there 
+; is a control table for each of the speed values.
+; Since there are 12 entries (6 PAL, 6 NTSC) per each mothership speed 
+; setting the starting point of each is 12 times the mothership speed.
+; To make the times 12 easier, provide a direct lookup.
+; Lookup X == ( MOTHERSHIP_MOVE_SPEED * 12) + ( THIS_FRAME * 2 ) + zNTSCorPALflag
+
+TABLE_TIMES_TWELVE
+	.byte 0,12,24,36,38,60,72,84
+
+;	.byte 1,1,1,2,2,2,2,3 ; speed option 1, 2, 3, 4, two values each.
+;	.byte 3,3,3,4,4,4,4,5 
+; How many pixels to move the mothership each frame.   PAL, NTSC per each.
+TABLE_SPEED_CONTROL
+; Mothership speed 1
+	.byte 1,1 ; Frame 1, PAL, NTSC
+	.byte 1,1 ; Frame 2, PAL, NTSC
+	.byte 2,1 ; Frame 3, PAL, NTSC
+	.byte 1,1 ; Frame 4, PAL, NTSC
+	.byte 1,1 ; Frame 5, PAL, NTSC
+	.byte 0,1 ; Frame 6, (-), NTSC
+; Mothership speed 2
+	.byte 2,1 ; Frame 1, PAL, NTSC
+	.byte 2,2 ; Frame 2, PAL, NTSC
+	.byte 1,1 ; Frame 3, PAL, NTSC
+	.byte 2,2 ; Frame 4, PAL, NTSC
+	.byte 2,1 ; Frame 5, PAL, NTSC
+	.byte 0,2 ; Frame 6, (-), NTSC
+; Mothership speed 3
+	.byte 2,2 ; Frame 1, PAL, NTSC
+	.byte 2,2 ; Frame 2, PAL, NTSC
+	.byte 3,2 ; Frame 3, PAL, NTSC
+	.byte 2,2 ; Frame 4, PAL, NTSC
+	.byte 3,2 ; Frame 5, PAL, NTSC
+	.byte 0,2 ; Frame 6, (-), NTSC
+; Mothership speed 4
+	.byte 3,2 ; Frame 1, PAL, NTSC
+	.byte 3,3 ; Frame 2, PAL, NTSC
+	.byte 3,2 ; Frame 3, PAL, NTSC
+	.byte 3,3 ; Frame 4, PAL, NTSC
+	.byte 3,2 ; Frame 5, PAL, NTSC
+	.byte 0,3 ; Frame 6, (-), NTSC
+; Mothership speed 5
+	.byte 3,3 ; Frame 1, PAL, NTSC
+	.byte 4,3 ; Frame 2, PAL, NTSC
+	.byte 3,3 ; Frame 3, PAL, NTSC
+	.byte 4,3 ; Frame 4, PAL, NTSC
+	.byte 4,3 ; Frame 5, PAL, NTSC
+	.byte 0,3 ; Frame 6, (-), NTSC
+; Mothership speed 6
+	.byte 4,3 ; Frame 1, PAL, NTSC
+	.byte 4,4 ; Frame 2, PAL, NTSC
+	.byte 5,3 ; Frame 3, PAL, NTSC
+	.byte 4,4 ; Frame 4, PAL, NTSC
+	.byte 4,3 ; Frame 5, PAL, NTSC
+	.byte 0,4 ; Frame 6, (-), NTSC
+; Mothership speed 7
+	.byte 5,4 ; Frame 1, PAL, NTSC
+	.byte 5,4 ; Frame 2, PAL, NTSC
+	.byte 4,4 ; Frame 3, PAL, NTSC
+	.byte 5,4 ; Frame 4, PAL, NTSC
+	.byte 5,4 ; Frame 5, PAL, NTSC
+	.byte 0,4 ; Frame 6, (-), NTSC
+; Mothership speed 8
+	.byte 5,4 ; Frame 1, PAL, NTSC
+	.byte 5,5 ; Frame 2, PAL, NTSC
+	.byte 6,4 ; Frame 3, PAL, NTSC
+	.byte 5,5 ; Frame 4, PAL, NTSC
+	.byte 6,4 ; Frame 5, PAL, NTSC
+	.byte 0,5 ; Frame 6, (-), NTSC
+
+
+; ==========================================================================
+; OTHER MOTHERSHIP VALUES . . .
+
 MOTHERSHIP_MIN_X = 40  ; Farthest Left off the normal width screen.
 MOTHERSHIP_MAX_X = 208 ; Farthest right off the normal width screen.
 MOTHERSHIP_MIN_Y = 36  ; starting position of mothership, last position for laser.
@@ -53,10 +206,6 @@ zMOTHERSHIP_LIGHT2          .byte $1  ; toggle $0, $1 for off and on
 MOTHERSHIP_START_CLOCK3=62            ; The light on the right leg 
 zMOTHERSHIP_LIGHT_CLOCK3    .byte MOTHERSHIP_START_CLOCK3
 zMOTHERSHIP_LIGHT3          .byte $1  ; toggle $0, $1 for off and on
-
-zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed index into speed table 0, 2, 4, ..., 14 
-zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
-zMOTHERSHIP_MOVEMENT        .byte $00 ; Value to add/subtract from Mothership X
 
 zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
 zMOTHERSHIP_HITS            .byte $00 ; Number of times the mothership is hit.
@@ -134,15 +283,10 @@ TABLE_TO_DIGITS ; 0 to 21.  (22 is last row which should be undisplayed.)
 	.byte $10,$11,$12,$13,$14,$15,$16,$17,$18,$19
 	.byte $20,$21,$22
 
-TABLE_SPEED_CONTROL ; How many pixels to move each frame ( two values - frame +0, frame +1, looping.)
-	.byte 1,1,1,2,2,2,2,3 ; speed option 1, 2, 3, 4, two values each.
-	.byte 3,3,3,4,4,4,4,5 
 
 ; Game Over Text Values =====================================================
 
 ;zGO_FRAME       .byte $ff    ; Frame counter, 6 to 0.
-;zGO_COLPF0      .byte $00    ; Color value for PF0
-;zGO_COLPF1      .byte $00    ; Color value for PF1
 
 DELAYED .byte 60
 

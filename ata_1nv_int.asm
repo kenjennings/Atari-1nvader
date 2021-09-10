@@ -165,13 +165,6 @@ ExitMyImmediateVBI
 ; GAME OVER ACTIVITIES
 ;
 ;
-; Manage death of frog. 
-; Fine Scroll the boats.
-; Update Player/Missile object display.
-; Perform the boat parts animations.
-; Manage timers and countdowns.
-; Scroll the line of credit text.
-; Blink the Press Button prompt if enabled.
 ;==============================================================================
 
 MyDeferredVBI
@@ -184,11 +177,13 @@ MyDeferredVBI
 
 b_mdv_DoMyDeferredVBI
 
-; ======== Beginning  ========
-; Kill Attract mode, and clear Player/Missile collisions.
+; ======== Beginning - global for all ========
+; Kill Attract mode.  Process PAL v NTSC frame,
 
 	lda #0
 	sta ATRACT
+
+	jsr FrameManagement
 
 ; ======== TITLE SCREEN AND COUNTDOWN ACTIVIES  ========
 ; ======================================================

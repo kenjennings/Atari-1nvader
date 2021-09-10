@@ -186,8 +186,8 @@ GameInit
 	lda #0
 	sta zThisDLI            ; Init the DLI index.
 
-	jsr Gfx_SetNTSCorPAL    ; establish color lookup tables based on NTSC or PAL.
-	
+	jsr Gfx_SetNTSCorPALColors    ; establish color lookup tables based on NTSC or PAL.
+
 	; Set up the DLI.   This should be safe here without knowing what the screen
 	; is doing, because the default OS display does not have DLI options on any 
 	; mode instructions, AND a custom screen will not be started until the bottom
@@ -731,8 +731,8 @@ GameSetupMain
 
 	jsr Gfx_ShowScreen
 
-	lda #2                          ; Reset the animation timer for players/left/right movement.
-	sta zAnimatePlayers
+;	lda #2                          ; Reset the animation timer for players/left/right movement.
+;	sta zAnimatePlayers
 
 	lda #EVENT_GAME                 ; Fire up the game screen.
 	sta zCurrentEvent
