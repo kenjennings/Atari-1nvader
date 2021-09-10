@@ -65,6 +65,14 @@ Updated the Playtesters list accordingly, and while I was here, updated the Docu
 
 ---
 
+**9 Sep 2021**
+
+Revised the PAL v NTSC selection code.
+
+Added generalized movement control based on PAL v NTSC for the players, lasers, and game mothership.  Thes should now run on PAL at the same apparent speed as NTSC.  The motion determination is read from tables and set by the VBI on every frame.   The changes to make this work in the main code were very little.   Instead of inc, dec, adding/subtracting fixed values the code uses the values determined by the VBI.
+
+---
+
 | **Title** |
 | ------- |
 | [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/21-BETA-Title.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
