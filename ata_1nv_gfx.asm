@@ -175,34 +175,66 @@
 DISPLAY_LIST_TITLE                                          ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
-	mDL_BLANK DL_BLANK_4
+	mDL_BLANK DL_BLANK_4|DL_DLI                             ; (DLI 0) Gradient scores then end with Narrow screen DMA (2) P1
 
-	mDL_LMS   DL_TEXT_2|DL_DLI,GFX_SCORE_LINE               ; 00 (020 - 027) (DLI 0) Narrow screen DMA (2) P1 score, High score, P2 score
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00 (020 - 027) score, High score, P2 score
 	mDL_BLANK DL_BLANK_4                                    ; 01 (028 - 031) Blank 4
 	mDL_BLANK DL_BLANK_5                                    ; 01 (032 - 036) Blank 5
 	mDL_LMS   DL_TEXT_7,GFX_COUNTDOWN_LINE                  ; 02 (037 - 052) Mode 7 text for 3, 2, 1, GO! Countdown
 	mDL_BLANK DL_BLANK_3                                    ; 04 (053 - 055) Blank 3
 
-	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (056 - 058) (DLI 1) Blank 7   start GTIA $4 in PRIOR 
+	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (056 - 058) (DLI 1) Blank 7   start GTIA $4 in PRIOR
 	mDL_BLANK DL_BLANK_1                                    ;    (059 - 059) Blank 1 Allow time for prior DLI to act. 
-	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (060 - 062) (DLI 2) Blank 3   (DLI vscroll hack next lines) 
+	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (060 - 062) (DLI 2) Blank 3   (DLI logo color 1) 
 
-DL_LMS_TITLE = [ * + 1 ]                                    ; Get Address of LMS low byte value.    
-	mDL_LMS   DL_MAP_F|DL_VSCROLL,GFX_TITLE_FRAME1          ;    (063 - 065)  (Mode F) * 3 Animated Gfx  
-	mDL       DL_MAP_F                                      ;    (066 - 068)  (Mode F) * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL                           ;    (069 - 071)  (Mode F) * 3 Animated Gfx 
-	mDL       DL_MAP_F                                      ;    (072 - 074)  (Mode F) * 3 Animated Gfx
-	mDL       DL_MAP_F|DL_VSCROLL                           ;    (075 - 077)  (Mode F) * 3 Animated Gfx 
-	mDL       DL_MAP_F                                      ;    (078 - 080)  (Mode F) * 3 Animated Gfx  Turn Off VSCROL hack, reset 
+DL_LMS_TITLE1 = [ * + 2 ]                                   ; Get Address of LMS low byte value.    
+;	mDL_LMS   DL_MAP_F|DL_VSCROLL,GFX_TITLE_FRAME1          ;    (063 - 065)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 1
+;	mDL       DL_MAP_F                                      ;    (066 - 068)  (Mode F) * 3 Animated Gfx
+;	mDL       DL_MAP_F|DL_VSCROLL                           ;    (069 - 071)  (Mode F) * 3 Animated Gfx 
+;	mDL       DL_MAP_F                                      ;    (072 - 074)  (Mode F) * 3 Animated Gfx
+;	mDL       DL_MAP_F|DL_VSCROLL                           ;    (075 - 077)  (Mode F) * 3 Animated Gfx 
+;	mDL       DL_MAP_F                                      ;    (078 - 080)  (Mode F) * 3 Animated Gfx  Turn Off VSCROL hack, reset 
 
-	mDL_BLANK DL_BLANK_7                                    ;    (081 - 090) Blank 7 
-	mDL_BLANK [DL_BLANK_3|DL_DLI]                           ;              + Blank 3  (DLI 3) (Hscroll authors, run colors)
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1                     ;    (063 - 065)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 1
+DL_LMS_TITLE2 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1                     ;    (063 - 065)  (Mode F) * 3 Animated Gfx  
+DL_LMS_TITLE3 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1              ;    (063 - 065)  (Mode F) * 3 Animated Gfx  (DLI logo color 2)   
+	mDL       DL_MAP_F                                      ;    (066 - 068)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 2
+DL_LMS_TITLE4 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+32                  ;    (066 - 068)  (Mode F) * 3 Animated Gfx 
+DL_LMS_TITLE5 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+32           ;    (066 - 068)  (Mode F) * 3 Animated Gfx  (DLI logo color 3) 
+	mDL       DL_MAP_F                                      ;    (069 - 071)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 3
+DL_LMS_TITLE6 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+64                  ;    (069 - 071)  (Mode F) * 3 Animated Gfx  
+DL_LMS_TITLE7 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+64           ;    (069 - 071)  (Mode F) * 3 Animated Gfx  (DLI logo color 4) 
+	mDL       DL_MAP_F                                      ;    (072 - 074)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 4
+DL_LMS_TITLE8 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+96                  ;    (072 - 074)  (Mode F) * 3 Animated Gfx  
+DL_LMS_TITLE9 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+96           ;    (072 - 074)  (Mode F) * 3 Animated Gfx  (DLI logo color 5) 
+	mDL       DL_MAP_F                                      ;    (075 - 077)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 5
+DL_LMS_TITLE10 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+128                 ;    (075 - 077)  (Mode F) * 3 Animated Gfx  
+DL_LMS_TITLE11 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+128          ;    (075 - 077)  (Mode F) * 3 Animated Gfx  (DLI logo color 6) 
+	mDL       DL_MAP_F                                      ;    (078 - 080)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 6
+DL_LMS_TITLE12 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+160                 ;    (078 - 080)  (Mode F) * 3 Animated Gfx  
+DL_LMS_TITLE13 = [ * + 2 ] 
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+160          ;    (078 - 080)  (Mode F) * 3 Animated Gfx  (DLI 2.5 - screen DMA/normal GTIA)
+	
+	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (081 - 083) Blank 3   (DLI 2.7 -- Tag Line gradient.)
+	mDL_BLANK DL_BLANK_4                                    ;    (084 - 090) Blank 4 
+	mDL_BLANK [DL_BLANK_3|DL_DLI]                           ;    (084 - 090) Blank 3  (DLI 3) (Hscroll authors, run colors)
 
 DL_LMS_SCROLL_CREDIT1 = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT1       ; 10 (091 - 098) (6) Author(s) Credit line
-	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ;    (099 - 099)  Blank1  (DLI 3.2) (Hscroll authors, run colors)
+	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ;    (099 - 099)  Blank1  (DLI 3.2) (Hscroll system, run colors)
 DL_LMS_SCROLL_CREDIT2 = [ * + 1 ]
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT2       ; 10 (100 - 107) (6) Author(s) Credit line
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT2       ; 10 (100 - 107) (6) System(s) Credit line
 
 	mDL_BLANK DL_BLANK_8                                    ; 11 (108 - 115) Blank 8 Mothership graphic (PMG)
 	mDL_BLANK DL_BLANK_8                                    ; 12 (116 - 123) Blank 8 Mothership graphic (PMG)
@@ -483,6 +515,15 @@ GFX_SCORE_P2
 
 ; 768 bytes
 
+; Each frame is aligned to a page.  This will make all the low byte
+; of addresses the same across each page, and the high byte values 
+; will be the same for every line on the same screen.   This will 
+; simplify page flipping the graphics as only the high byte will
+; need to be updated, and it will be the same update for every 
+; line.
+
+	.align $0100
+
 GFX_TITLE_FRAME1 ; 32 * 6 = 192
 	.by $00 $00 $00 $00 $00 $00 $00 $03 $0C $00 $03 $06 $00 $0C $00 $03 $06 $9C $00 $03 $69 $C3 $0C $36 $90 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $60 $09 $30 $0C $09 $00 $09 $00 $36 $0C $00 $30 $06 $00 $00 $09 $00 $0C $00 $00 $00 $00 $00 $00 $00
@@ -490,6 +531,8 @@ GFX_TITLE_FRAME1 ; 32 * 6 = 192
 	.by $00 $00 $00 $00 $00 $00 $00 $0C $03 $00 $96 $03 $03 $00 $90 $0C $06 $00 $09 $0C $00 $00 $03 $09 $60 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $03 $0C $00 $03 $06 $C0 $06 $0C $93 $03 $00 $0C $03 $00 $00 $0C $00 $0C $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $06 $09 $00 $0C $09 $00 $03 $00 $06 $0C $09 $63 $06 $9C $36 $09 $00 $03 $00 $00 $00 $00 $00 $00 $00
+
+	.align $0100
 
 GFX_TITLE_FRAME2
 	.by $00 $00 $00 $00 $00 $00 $00 $0C $09 $00 $0C $03 $00 $09 $00 $0C $03 $69 $00 $0C $36 $9C $09 $C3 $60 $00 $00 $00 $00 $00 $00 $00
@@ -499,6 +542,8 @@ GFX_TITLE_FRAME2
 	.by $00 $00 $00 $00 $00 $00 $00 $0C $09 $00 $0C $03 $90 $03 $09 $6C $0C $00 $09 $0C $00 $00 $09 $00 $09 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $03 $06 $00 $09 $06 $00 $0C $00 $03 $09 $06 $3C $03 $69 $C3 $06 $00 $0C $00 $00 $00 $00 $00 $00 $00
 
+	.align $0100
+
 GFX_TITLE_FRAME3
 	.by $00 $00 $00 $00 $00 $00 $00 $09 $06 $00 $09 $0C $00 $06 $00 $09 $0C $36 $00 $09 $C3 $69 $06 $9C $30 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $C0 $03 $90 $06 $03 $00 $03 $00 $9C $06 $00 $90 $0C $00 $00 $03 $00 $06 $00 $00 $00 $00 $00 $00 $00
@@ -506,6 +551,8 @@ GFX_TITLE_FRAME3
 	.by $00 $00 $00 $00 $00 $00 $00 $06 $09 $00 $3C $09 $09 $00 $30 $06 $0C $00 $03 $06 $00 $00 $09 $03 $C0 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $09 $06 $00 $09 $0C $60 $0C $06 $39 $09 $00 $06 $09 $00 $00 $06 $00 $06 $00 $00 $00 $00 $00 $00 $00
 	.by $00 $00 $00 $00 $00 $00 $00 $0C $03 $00 $06 $03 $00 $09 $00 $0C $06 $03 $C9 $0C $36 $9C $03 $00 $09 $00 $00 $00 $00 $00 $00 $00
+
+	.align $0100
 
 GFX_TITLE_FRAME4
 	.by $00 $00 $00 $00 $00 $00 $00 $06 $03 $00 $06 $09 $00 $03 $00 $06 $09 $C3 $00 $06 $9C $36 $03 $69 $C0 $00 $00 $00 $00 $00 $00 $00

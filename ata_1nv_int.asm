@@ -262,6 +262,8 @@ b_mdv_SkipTitleGfx
 
 	lda ZTitleLogoBaseColor      ; Always restore this from the base.
 	sta ZTitleLogoColor          ; Save it for the DLI use
+	lda #0 
+	sta zTitleLogoCount          ; Reset count of the color change DLI on the logo.
 
 	dec zAnimateTitlePM
 	; Note that the main code is responsible for loading up the Missile image.  
@@ -683,12 +685,27 @@ TITLE_DLI  ; Placeholder for VBI to restore staring address for DLI chain.
 
 TITLE_DLI_0
 
-	pha
+	mStart_DLI
+
+	ldy #$0E
+
+	sta WSYNC                ; line 0
+
+b_tdli0_LoopTextColor
+	sta WSYNC                ; line 1/14, 2/12, 3/10, 4/8, 5/6, 6/4, 7/2 
+	sty COLPF1
+	dey
+	dey
+	cpy #$02
+	bne b_tdli0_LoopTextColor
 
 	; Set all the ANTIC screen controls and DMA options.
 	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NARROW]
-	sta WSYNC            ; sync to end of scan line
+	sta WSYNC                ; line 8
 	sta DMACTL
+
+	pla
+	tay
 
 	mChainDLI TITLE_DLI_0,TITLE_DLI_1
 
@@ -731,62 +748,80 @@ TITLE_DLI_1
 
 TITLE_DLI_2
 
-	 mStart_DLI ; Saves A and Y
+	mStart_DLI ; Saves A and Y
 
-;1
-	ldy #14                        ; This will hack VSCROL for a 1 scan line mode into a 3 scan line mode
-	lda #2
-	sta WSYNC                      ; (1.0) sync to end of line.
-	sta VSCROL                     ; =2, default. untrigger the hack if on for prior line.
-;	nop
-	sty VSCROL                     ; =14, 15, 0, trick it into 3 scan lines.
-	jsr DLI_PF3_SYNC_INC_SYNC      ; (1.1 and 1.2 scan lines)
+	lda zTitleLogoColor     ; PF3   Update color register.
+	sta WSYNC               ; SYNC  (1.1) sync to end of line.
+	sta COLPF3
 
-;2
-	jsr DLI_SYNC_PF3_SYNC_INC_SYNC ; (2.0, 2.1 and 2.2 scan lines)
+	cmp #COLOR_ORANGE_GREEN ; INC   Is it the ending color?
+	bne b_tdli2_AddToColor  ;       No. Add to the color component.
 
-;3
-	lda #2
-	sta WSYNC                      ; (3.0) sync to end of line.
-	sta VSCROL                     ; =2, default. untrigger the hack if on for prior line.
-;	nop
-	sty VSCROL                     ; =14, 15, 0, trick it into 3 scan lines.
-	jsr DLI_PF3_SYNC_INC_SYNC      ; (3.1 and 3.2 scan lines)
+	lda #COLOR_ORANGE1      ;       Yes.  Reset to first color.
+	bne b_tdli2_UpdateColor ;       Go do the update.
 
-;4
-	jsr DLI_SYNC_PF3_SYNC_INC_SYNC ; (4.0, 4.1 and 4.2 scan lines)
+b_tdli2_AddToColor
+	clc
+	adc #$10                ;       Add 16 to color.
 
-;5
-	lda #2
-	sta WSYNC                      ; (5.0) sync to end of line.
-	sta VSCROL                     ; =2, default. untrigger the hack if on for prior line.
-;	nop
-	sty VSCROL                     ; =14, 15, 0, trick it into 3 scan lines.
-	jsr DLI_PF3_SYNC_INC_SYNC      ; (3.1 and 3.2 scan lines)
+b_tdli2_UpdateColor
+	sta zTitleLogoColor     ;       Save it for the next DLI use
 
-;6
-	jsr DLI_SYNC_PF3_SYNC_INC_SYNC ; (6.0, 6.1 and 6.2 scan lines)
+	inc zTitleLogoCount
+	lda zTitleLogoCount
+	cmp #6
+	beq b_tdli2_ExitChain
 
-; FINISHED - Turn off the VSCROL hack, restore normal screen .
+	; Normal Exit 
+	pla
+	tay
+	pla
 
-	lda #2
-	ldy #0
-	sta WSYNC                      ; (7.0) sync to end of scan line
-	sta VSCROL                     ; =2, default. untrigger the hack.
-	sty VSCROL
+	rti
 
-; this could be deferred.  need to insert DLI 2.5 to handle the colors
-; for the One Liner Subtitle.  (One button. One Alien. One Life. No Mercy.)
-	ldy #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
-	sty DMACTL                     ; Set all the ANTIC screen controls and DMA options.
 
-	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01]       ; Return to normal color interpretation, Players on top.
-	sta PRIOR
-
+b_tdli2_ExitChain
 	pla
 	tay
 
-	mChainDLI TITLE_DLI_2,TITLE_DLI_3 ; Done here.  Finally go to next DLI.
+	mChainDLI TITLE_DLI_2,TITLE_DLI_2_5 ; Done here.  Finally go to next DLI.
+
+
+;==============================================================================
+; TITLE_DLI_2_5                                           
+;==============================================================================
+; AFTER the multi-color logo fun and games reset the playfield to normal 
+; width, and turn off the GTIA playfield color interpretation.
+; -----------------------------------------------------------------------------
+
+TITLE_DLI_2_5
+
+	pha
+
+	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
+	sta WSYNC                      ; Next scan line
+	sta DMACTL                     ; Set all the ANTIC screen controls and DMA options.
+	; Return to normal color interpretation, Players on top.
+	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01]       
+	sta PRIOR
+
+	mChainDLI TITLE_DLI_2_5,TITLE_DLI_2_7 ; Done here.  Finally go to next DLI.
+
+
+;==============================================================================
+; TITLE_DLI_2_7                                          
+;==============================================================================
+; Handle the colors for the One Liner Subtitle.  
+; (One button. One Alien. One Life. No Mercy.)
+
+TITLE_DLI_2_7
+
+	pha
+
+; For now, nothing.  placeholder .
+
+	mChainDLI TITLE_DLI_2_7,TITLE_DLI_3 ; Done here.  Finally go to next DLI.
+
 
 
 ;==============================================================================

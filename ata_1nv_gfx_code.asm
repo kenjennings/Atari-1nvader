@@ -45,17 +45,52 @@ b_gsnop_UpdateFlag
 ; ANIMATE TITLE LOGO
 ; ==========================================================================
 ; Change the Title screen's LMS pointer to the graphics for the big logo
-; on the screen.  Basically, page flipping.   Change one pointer to 
-; change what the screen displays rather than copy hundreds of bytes.
+; on the screen.  Basically, this is page flipping.
+; This is called when the VBI timer runs out controlling the graphics 
+; animation speed.
 ; The VBI decremented the countdown clock for animation, so remember to 
 ; reset it here.
+;
+; Originally, when using the ANTIC vscroll bug to create 3 scanline 
+; mode in GTIA there was only one LMS address to update.  
+; HOWEVER, a tester noticed that MistPGA has a glitchy title display 
+; which looks like the device has a failure to understand operation of 
+; the ANTIC vscroll bug.  
+; There is no need for cleverness here to save DMA time. The VSCROLL 
+; version still needed a DLI to run continuously for 18 scan lines to
+; manage the VSCROLL hack timing and set the COLPF3 colors. Thus no real 
+; time was saved by using the hack to remove excess LMS instructions.
+;
+; For maximum compatibility the code is reverted to a conventional DLI 
+; with LMS instruction to repeat lines of screen data.
+; Doing so eliminates the VSCROLL code in the DLI leaving a small DLI 
+; activity to set once every 3 scan lines to set  the fifth player 
+; (COLPF3) color. 
+;
+; Animation of the graphics now means that the LMS addresses for 
+; 18 scan lines of display needs to be updated. HOWEVER, this does not 
+; mean 18 updates.  Since the data is sequential then at the end of the 
+; third repeated line ANTIC will continue reading the next line 
+; automatically, so, every third line does not need LMS.  This 
+; works out to only 13 LMS addresses that need to be updated. 
+;
+; Also, since each frame of graphics is aligned to a page, the 
+; addresses for all the data on a given screen have the same high 
+; byte value.   AND, since each frame is aligned to a page the low 
+; bytes are the same for each line of graphics data from frame to frame.  
+; Therefore, only the high bytes need to be updated for the LMS 
+; instructions and they will all be updated to the same high 
+; byte value for the page. 
+;
+; In conclusion, there is only one load, and 13 stores to update the 
+; logo animation where the worst case could have been 36 loads and stores.
 ; --------------------------------------------------------------------------
 
 TABLE_GFX_TITLE_LOGO        ; Stored in reverse order for less iteration code.
-	.word GFX_TITLE_FRAME4
-	.word GFX_TITLE_FRAME3
-	.word GFX_TITLE_FRAME2
-	.word GFX_TITLE_FRAME1
+	.byte >GFX_TITLE_FRAME4
+	.byte >GFX_TITLE_FRAME3
+	.byte >GFX_TITLE_FRAME2
+	.byte >GFX_TITLE_FRAME1
 
 Gfx_Animate_Title_Logo
 
@@ -69,13 +104,22 @@ Gfx_Animate_Title_Logo
 	lda #TITLE_LOGO_FRAME_MAX    ; Reset frame counter 
 
 b_gatl_SkipReset
-	sta zTITLE_LOGO_FRAME        ; to max value.
-	asl                          ; *2 for word size
-	tax                          ; Now use the  value *2 as index.
-	lda TABLE_GFX_TITLE_LOGO,X   ; Get the new graphics address low byte
-	sta DL_LMS_TITLE             ; and update the display list LMS.
-	lda TABLE_GFX_TITLE_LOGO+1,X ; Get the new graphics address high byte
-	sta DL_LMS_TITLE+1           ; and update the display list LMS.
+	sta zTITLE_LOGO_FRAME        ; save updated value.
+	tax                          ; Now use the  value as index.
+	lda TABLE_GFX_TITLE_LOGO,X   ; Get the new graphics address high byte
+	sta DL_LMS_TITLE1            ; and update the display list LMS.
+	sta DL_LMS_TITLE2            ; and update the display list LMS.
+	sta DL_LMS_TITLE3            ; and again
+	sta DL_LMS_TITLE4            ; and again
+	sta DL_LMS_TITLE5            ; ...
+	sta DL_LMS_TITLE6            ; ...
+	sta DL_LMS_TITLE7            ; ...
+	sta DL_LMS_TITLE8            ; ...
+	sta DL_LMS_TITLE9            ; yawn
+	sta DL_LMS_TITLE10           ; ...
+	sta DL_LMS_TITLE11           ; ...
+	sta DL_LMS_TITLE12           ; ...
+	sta DL_LMS_TITLE13           ; last LMS high byte to update.
 
 	rts
 

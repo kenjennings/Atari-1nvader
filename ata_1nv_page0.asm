@@ -55,9 +55,9 @@ zTitleHPos             .byte TITLE_LOGO_X_START   ; Missile position.
 
 TITLE_LOGO_Y_POS       = 71                       ; Just a constant.  No need for variable.
 
-ZTitleLogoBaseColor   .byte COLOR_ORANGE1         ; Starting value for first DLI. 
-ZTitleLogoColor       .byte COLOR_ORANGE1         ; Value for DLI. Loop from $10 to $E0 by 16
-
+zTitleLogoBaseColor   .byte COLOR_ORANGE1         ; Starting value for first DLI. 
+zTitleLogoColor       .byte COLOR_ORANGE1         ; Value for DLI. Loop from $10 to $E0 by 16
+zTitleLogoCount       .byte 0                     ; How many times has the logo dli run?
 
 ; Scrolling Credits Values ==================================================
 
