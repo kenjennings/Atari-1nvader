@@ -75,7 +75,7 @@ Added generalized movement control based on PAL v NTSC for the players, lasers, 
 
 **12 Sep 2021**
 
-Tentative fix to allow MistFPGA Atari to display the title screen properly.
+Tentative fix to allow MiSTer FPGA (Atari on a chip) to display the title screen properly.
 
 Eliminated the overly clever VSCROL hack to turn single scan-line mode F into three scan lines which are the basis for the chunky GTIA pixels for the 1NVADER logo.   Replaced it with just regular LMS instructions in the display list to repeat the data.   
 
