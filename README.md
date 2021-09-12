@@ -73,6 +73,16 @@ Added generalized movement control based on PAL v NTSC for the players, lasers, 
 
 ---
 
+**12 Sep 2021**
+
+Tentative fix to allow MistFPGA Atari to display the title screen properly.
+
+Eliminated the overly clever VSCROL hack to turn single scan-line mode F into three scan lines which are the basis for the chunky GTIA pixels for the 1NVADER logo.   Replaced it with just regular LMS instructions in the display list to repeat the data.   
+
+Nothing too brilliant and time critical is going on at this part of the screen, so the VSCROL hack which saves ANTIC DMA time was just overkill for the display.
+
+---
+
 | **Title** |
 | ------- |
 | [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/21-BETA-Title.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
