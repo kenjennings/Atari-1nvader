@@ -561,7 +561,7 @@ b_mdv_DoGameOver
 b_mdv_DoGameOverTransition         ; Let's animate text being displayed.
 	lda zGO_CHAR_INDEX             ; 0 to 9 [12] (-1 is starting state) 13 is end.
 	cmp #13 
-	beq b_mdv_ButtonToContinue     ; Animation is over when char index reaches 13.
+	beq b_EndofEndofGameOver       ; Animation is over when char index reaches 13.
 
 	dec zGO_FRAME                  ; 5 to 0. -1 is reset and increment char index.
 	bpl b_mdv_DoGameOverAnimation  ; 0 or more.  So, Frame does not need reset.
@@ -571,25 +571,17 @@ b_mdv_DoGameOverTransition         ; Let's animate text being displayed.
 	inc zGO_CHAR_INDEX             ; Go to next character.
 	lda zGO_CHAR_INDEX
 	cmp #13 
-	beq b_mdv_ButtonToContinue     ; Animation is over when char index reaches 13.
+	beq b_EndofEndofGameOver       ; Animation is over when char index reaches 13.
 
 	jsr Gfx_UpdateGameOverChars    ; Update chars on screen with color bits set.
 
 b_mdv_DoGameOverAnimation
 	jsr Gfx_SetupCOLPF2Index       ; Setup base index used for DLI for COLPF2
-	jmp b_EndofEndofGameOver
+;	jmp b_EndofEndofGameOver
 
 ; ======================================================
 ; Something else, etc.  maybe.
 
-b_mdv_ButtonToContinue  ; get joystick and debounce it.
-
-	jsr libAnyButton         ; Insure debounce from button trigger.
-	bpl b_EndofEndofGameOver ; 0 or 1 means no input yet 
-
-	; -1 means a button a pressed after debounce
-	lda EVENT_SETUP_TITLE     ; Recycle back to the title.
-	sta zCurrentEvent          
 
 b_EndofEndofGameOver
 
@@ -616,11 +608,11 @@ ExitMyDeferredVBI
 	sta HPOSP0   ; VBI Copy SHPOSP0 to HPOSP0
 	lda SHPOSP1  ; VBI Copy SHPOSP1 to HPOSP1
 	sta HPOSP1   ; VBI Copy SHPOSP1 to HPOSP1
-	lda SHPOSP2
+	lda SHPOSP2  ; blah blah
 	sta HPOSP2
 	lda SHPOSP3
 	sta HPOSP3
-	lda SHPOSM0
+	lda SHPOSM0  ; etc etc etc
 	sta HPOSM0
 	lda SHPOSM1
 	sta HPOSM1
@@ -687,17 +679,7 @@ TITLE_DLI_0
 
 	mStart_DLI
 
-	ldy #$0E
-
-	sta WSYNC                ; line 0
-
-b_tdli0_LoopTextColor
-	sta WSYNC                ; line 1/14, 2/12, 3/10, 4/8, 5/6, 6/4, 7/2 
-	sty COLPF1
-	dey
-	dey
-	cpy #$02
-	bne b_tdli0_LoopTextColor
+	jsr DLI_ScoreLineGradient
 
 	; Set all the ANTIC screen controls and DMA options.
 	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NARROW]
@@ -816,9 +798,20 @@ TITLE_DLI_2_5
 
 TITLE_DLI_2_7
 
-	pha
+	 mStart_DLI ; Saves A and Y
 
-; For now, nothing.  placeholder .
+	ldy #7
+
+b_dli27_LoopColors
+	lda TABLE_COLOR_TAGLINE,y
+	sta WSYNC    
+	sta COLPF0
+
+	dey
+	bpl b_dli27_LoopColors
+
+	pla
+	tay
 
 	mChainDLI TITLE_DLI_2_7,TITLE_DLI_3 ; Done here.  Finally go to next DLI.
 
@@ -1089,32 +1082,32 @@ b_dli6_NextLoop
 ; There are two entry points.  The first adds an extra WSYNC at the start.
 ; -----------------------------------------------------------------------------
 
-DLI_SYNC_PF3_SYNC_INC_SYNC 
+;DLI_SYNC_PF3_SYNC_INC_SYNC 
 
-	sta WSYNC               ; SYNC  (1.0) sync to end of line.
+;	sta WSYNC               ; SYNC  (1.0) sync to end of line.
 
-DLI_PF3_SYNC_INC_SYNC 
+;DLI_PF3_SYNC_INC_SYNC 
 
-	lda zTitleLogoColor     ; PF3   Update color register.
-	sta COLPF3
-	sta WSYNC               ; SYNC  (1.1) sync to end of line.
+;	lda zTitleLogoColor     ; PF3   Update color register.
+;	sta COLPF3
+;	sta WSYNC               ; SYNC  (1.1) sync to end of line.
 
-	cmp #COLOR_ORANGE_GREEN ; INC   Is it the ending color?
-	bne b_td2_AddToColor    ;       No. Add to the color component.
+;	cmp #COLOR_ORANGE_GREEN ; INC   Is it the ending color?
+;	bne b_td2_AddToColor    ;       No. Add to the color component.
 
-	lda #COLOR_ORANGE1      ;       Yes.  Reset to first color.
-	bne b_td2_UpdateColor   ;       Go do the update.
+;	lda #COLOR_ORANGE1      ;       Yes.  Reset to first color.
+;	bne b_td2_UpdateColor   ;       Go do the update.
 
-b_td2_AddToColor
-	clc
-	adc #$10                ;       Add 16 to color.
+;b_td2_AddToColor
+;	clc
+;	adc #$10                ;       Add 16 to color.
 
-b_td2_UpdateColor
-	sta zTitleLogoColor     ;       Save it for the next DLI use
+;b_td2_UpdateColor
+;	sta zTitleLogoColor     ;       Save it for the next DLI use
 
-	sta WSYNC               ; SYNC  (1.2) sync to end of line.
+;	sta WSYNC               ; SYNC  (1.2) sync to end of line.
 
-	rts
+;	rts
 
 
 ;==============================================================================
@@ -1200,8 +1193,20 @@ b_td2_UpdateColor
 
 GAME_DLI  ; Placeholder for VBI to restore starting address for DLI chain.
 
-
 GAME_DLI_0
+
+	mStart_DLI
+
+	jsr DLI_ScoreLineGradient
+
+	pla
+	tay
+
+	mChainDLI GAME_DLI_0,GAME_DLI_1
+
+
+
+GAME_DLI_1
 
 	mStart_DLI ; Saves A and Y
 
@@ -1278,6 +1283,19 @@ GAME_OVER_DLI  ; Placeholder for VBI to restore starting address for DLI chain.
 
 GAME_OVER_DLI_0
 
+	mStart_DLI
+
+	jsr DLI_ScoreLineGradient
+
+	pla
+	tay
+
+	mChainDLI GAME_OVER_DLI_0,GAME_OVER_DLI_1
+
+
+
+GAME_OVER_DLI_1
+
 	mStart_DLI ; Saves A and Y
 
 	ldy zGO_FRAME ; Get current frame
@@ -1290,19 +1308,19 @@ GAME_OVER_DLI_0
 	pla                            ; Done executing this series of DLIs.   
 	tay
 
-	mChainDLI GAME_OVER_DLI_0,GAME_OVER_DLI_1 ; next DLI is multi-scan-lines
+	mChainDLI GAME_OVER_DLI_1,GAME_OVER_DLI_2 ; next DLI is multi-scan-lines
 
 	rti
 
 
 ;==============================================================================
-;                                              GAME_OVER_DLI_1
+;                                              GAME_OVER_DLI_2
 ;==============================================================================
 ; Set COLPF2 and COLPF3 per tables for 16 scan lines.
 ; Chain to next DLI that does the land scrolling. 
 ; -----------------------------------------------------------------------------
 
-GAME_OVER_DLI_1
+GAME_OVER_DLI_2
 
 	mStart_DLI ; Saves A and Y
 
@@ -1328,9 +1346,44 @@ b_GODLI1_CopyLoop
 	pla                              
 	tay
 
-	mChainDLI GAME_OVER_DLI_1,TITLE_DLI_5 ; Do the land colors next.
+	mChainDLI GAME_OVER_DLI_2,TITLE_DLI_5 ; Do the land colors next.
 
 ;==============================================================================
 
 DoNothing_DLI ; In testing mode jump here to not do anything or to stop the DLI chain.
 	 rti
+
+
+;==============================================================================
+; R E U S A B L E S -- DLI things called by JSR from multiple places.
+
+;==============================================================================
+; Gradient for the score line.
+; Expect mStartDLI is called before this.
+; Intentional double WSYNC to put the brightest color ($E) on the 
+; second line to be visible on the font.
+; Stops after six lines having used color ($4), since most
+; characters use only 6 lines of data, and I don't want the bottom
+; to become too dark.
+; The code also adds an extra WSYNC to make sure the execution point
+; is at the last scan line for the text mode. (The Game/GameOver will 
+; end here, but the title screen will set narrow screen DMA on the next
+; scan line [a blank line] after the text mode.
+
+DLI_ScoreLineGradient
+
+	ldy #$0E
+
+	sta WSYNC                ; line 0
+
+b_dli_LoopScoreTextColor
+	sta WSYNC                ; line 1/14, 2/12, 3/10, 4/8, 5/6, 6/4,
+	sty COLPF1
+	dey
+	dey
+	cpy #$02
+	bne b_dli_LoopScoreTextColor
+
+	sta WSYNC ;  line 7/(2 but not used) 
+	rts
+

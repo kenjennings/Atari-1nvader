@@ -8,7 +8,7 @@
 ; SCREEN GRAPHICS MEMORY
 ;
 ; Display Lists have a 1K boundary.
-; ANTIC screen RAM automatic memeory scan has a 4K boundary.
+; ANTIC screen RAM automatic memory scan has a 4K boundary.
 ; The sum of everything here is less than 2K, so using 2K alignment 
 ; should make a safe space, since the Display Lists are declared first.
 ; --------------------------------------------------------------------------
@@ -16,116 +16,13 @@
 	.align $0800 ; Align graphics data to 2K boundary.
 
 ; ==========================================================================
-; Title Screen C64
-; --------------------------------------------------------------------------
-
-;    ------------------------------------------
-; 00 | 000000          000000          000000 | P1 score, High score, P2 score
-; 01 |                                        | 
-; 02 |                                        | 
-; 03 |                                        | 
-; 04 |                   3                    | 3, 2, 1, GO line 
-; 05 |                                        | 
-; 06 |           1NNNVVVAADDDEEERRR           | Animated Gfx
-; 07 |           1NNNVVVAADDDEEERRR           | Animated Gfx
-; 08 |           1NNNVVVAADDDEEERRR           | Animated Gfx
-; 09 |                                        | 
-; 10 |           2019 Darren Foulds           | Credit line
-; 11 |                                        | 
-; 12 |                  ****                  | Mothership graphic
-; 13 |                  ****                  | Mothership graphic
-; 14 |                                        | 
-; 15 |Scrolling docs and scrolling docs.......| Fine scrolling docs
-; 16 |                                        | 
-; 17 |                                        | 
-; 18 |                                        | 
-; 19 |             Mountains                  | Mountains
-; 20 |             Mountains                  | Mountains
-; 21 |             Mountains                  | Mountains
-; 22 |             Mountains                  | Mountains
-; 23 |B   Solid ground and bumpers           B| Ground and bumpers, 
-; 24 |]]]]]]]]]]]]]]]          [[[[[[[[[[[[[[[| Ground, gun parking area
-;    ------------------------------------------
-
-
-; ==========================================================================
-; Game Screen C64
-; Alien travels line progression 0 to 21.  22 is end of game.
-; --------------------------------------------------------------------------
-
-;    ------------------------------------------
-; 00 | 000000          000000          000000 |  P1 score, High score, P2 score
-; 01 |                                        | 
-; 02 |                                        | 
-; 03 |                                        | 
-; 04 |                                        | 
-; 05 |                                        | 
-; 06 |                                        | 
-; 07 |                                        | 
-; 08 |                                        | 
-; 09 |                                        | 
-; 10 |                                        | 
-; 11 |                                        | 
-; 12 |                                        | 
-; 13 |                                        | 
-; 14 |                                        | 
-; 15 |                                        | 
-; 16 |                                        | 
-; 17 |                                        | 
-; 18 |                                        | 
-; 19 |             Mountains                  | Mountains
-; 20 |             Mountains                  | Mountains
-; 21 |             Mountains                  | Mountains
-; 22 |             Mountains                  | Mountains
-; 23 |B   Solid ground and bumpers           B| Ground and bumpers, guns operational
-; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left
-;    ------------------------------------------
-
-
-; ==========================================================================
-; Game Over Screen C64
-; --------------------------------------------------------------------------
-
-;    ------------------------------------------
-; 00 | 000000          000000          000000 |  P1 score, High score, P2 score
-; 01 |                                        | 
-; 02 |                                        | 
-; 03 |                                        | 
-; 04 |                                        |  
-; 05 |                                        | 
-; 06 |                                        | 
-; 07 |               GAME  OVER               | Animated Gfx
-; 08 |                                        | 
-; 09 |                                        | 
-; 10 |                                        |  
-; 11 |                                        | 
-; 12 |                                        |  
-; 13 |                                        |  
-; 14 |                                        | 
-; 15 |                                        |   
-; 16 |                                        | 
-; 17 |                                        | 
-; 18 |                                        | 
-; 19 |             Mountains                  | Mountains
-; 20 |             Mountains                  | Mountains
-; 21 |             Mountains                  | Mountains
-; 22 |             Mountains                  | Mountains
-; 23 |B   Solid ground and bumpers           B| Ground and bumpers, guns operational
-; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left
-;    ------------------------------------------
-
-
-; ==========================================================================
 ; Display Lists.
 ;
-; ANTIC has a 1K boundary limit for Display Lists.  It has a 4K boundary 
-; for screen memory.   There is less than 1K of data below, so if we 
-; align to 1K then we know nothing will run over the 1K or the 4K boundary.
 ; --------------------------------------------------------------------------
 
 
 ; ==========================================================================
-; Title Screen Atari
+; Title Screen Atari -- Draft for planning
 ; --------------------------------------------------------------------------
 ;
 ;    ------------------------------------------ (000 - 019) Blank scan lines. 8+8+4
@@ -167,10 +64,12 @@
 ; The end of the display is something else.  There are fpur lines
 ; of text characters for the mountains the ground line for the 
 ; players, and the stats line under that.  That's 16 bytes each
-; each time, so we can end each display list by a JMP to one
-; common ending.
-
-; 55 bytes.
+; each time, so we can end the other display lists by a JMP to 
+; this one common ending.
+;
+; 25 lines * 8 scan lines == 200 scan lines
+;
+; 200 scan lines + 20 leading blanks == 220 lines defined by display list
 
 DISPLAY_LIST_TITLE                                          ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
@@ -178,78 +77,77 @@ DISPLAY_LIST_TITLE                                          ; System VBI sets co
 	mDL_BLANK DL_BLANK_4|DL_DLI                             ; (DLI 0) Gradient scores then end with Narrow screen DMA (2) P1
 
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00 (020 - 027) score, High score, P2 score
-	mDL_BLANK DL_BLANK_4                                    ; 01 (028 - 031) Blank 4
-	mDL_BLANK DL_BLANK_5                                    ; 01 (032 - 036) Blank 5
-	mDL_LMS   DL_TEXT_7,GFX_COUNTDOWN_LINE                  ; 02 (037 - 052) Mode 7 text for 3, 2, 1, GO! Countdown
-	mDL_BLANK DL_BLANK_3                                    ; 04 (053 - 055) Blank 3
-
-	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (056 - 058) (DLI 1) Blank 7   start GTIA $4 in PRIOR
-	mDL_BLANK DL_BLANK_1                                    ;    (059 - 059) Blank 1 Allow time for prior DLI to act. 
-	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (060 - 062) (DLI 2) Blank 3   (DLI logo color 1) 
-
-DL_LMS_TITLE1 = [ * + 2 ]                                   ; Get Address of LMS low byte value.    
-;	mDL_LMS   DL_MAP_F|DL_VSCROLL,GFX_TITLE_FRAME1          ;    (063 - 065)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 1
-;	mDL       DL_MAP_F                                      ;    (066 - 068)  (Mode F) * 3 Animated Gfx
-;	mDL       DL_MAP_F|DL_VSCROLL                           ;    (069 - 071)  (Mode F) * 3 Animated Gfx 
-;	mDL       DL_MAP_F                                      ;    (072 - 074)  (Mode F) * 3 Animated Gfx
-;	mDL       DL_MAP_F|DL_VSCROLL                           ;    (075 - 077)  (Mode F) * 3 Animated Gfx 
-;	mDL       DL_MAP_F                                      ;    (078 - 080)  (Mode F) * 3 Animated Gfx  Turn Off VSCROL hack, reset 
-
-	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1                     ;    (063 - 065)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 1
-DL_LMS_TITLE2 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1                     ;    (063 - 065)  (Mode F) * 3 Animated Gfx  
-DL_LMS_TITLE3 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1              ;    (063 - 065)  (Mode F) * 3 Animated Gfx  (DLI logo color 2)   
-	mDL       DL_MAP_F                                      ;    (066 - 068)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 2
-DL_LMS_TITLE4 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+32                  ;    (066 - 068)  (Mode F) * 3 Animated Gfx 
-DL_LMS_TITLE5 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+32           ;    (066 - 068)  (Mode F) * 3 Animated Gfx  (DLI logo color 3) 
-	mDL       DL_MAP_F                                      ;    (069 - 071)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 3
-DL_LMS_TITLE6 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+64                  ;    (069 - 071)  (Mode F) * 3 Animated Gfx  
-DL_LMS_TITLE7 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+64           ;    (069 - 071)  (Mode F) * 3 Animated Gfx  (DLI logo color 4) 
-	mDL       DL_MAP_F                                      ;    (072 - 074)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 4
-DL_LMS_TITLE8 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+96                  ;    (072 - 074)  (Mode F) * 3 Animated Gfx  
-DL_LMS_TITLE9 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+96           ;    (072 - 074)  (Mode F) * 3 Animated Gfx  (DLI logo color 5) 
-	mDL       DL_MAP_F                                      ;    (075 - 077)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 5
-DL_LMS_TITLE10 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+128                 ;    (075 - 077)  (Mode F) * 3 Animated Gfx  
-DL_LMS_TITLE11 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+128          ;    (075 - 077)  (Mode F) * 3 Animated Gfx  (DLI logo color 6) 
-	mDL       DL_MAP_F                                      ;    (078 - 080)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 6
-DL_LMS_TITLE12 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+160                 ;    (078 - 080)  (Mode F) * 3 Animated Gfx  
-DL_LMS_TITLE13 = [ * + 2 ] 
-	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+160          ;    (078 - 080)  (Mode F) * 3 Animated Gfx  (DLI 2.5 - screen DMA/normal GTIA)
 	
-	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (081 - 083) Blank 3   (DLI 2.7 -- Tag Line gradient.)
-	mDL_BLANK DL_BLANK_4                                    ;    (084 - 090) Blank 4 
-	mDL_BLANK [DL_BLANK_3|DL_DLI]                           ;    (084 - 090) Blank 3  (DLI 3) (Hscroll authors, run colors)
+	mDL_BLANK DL_BLANK_5                                    ; 01 (028 - 032) Blank 5
+	mDL_LMS   DL_TEXT_7,GFX_COUNTDOWN_LINE                  ; 02 (033 - 048) Mode 7 text for 3, 2, 1, GO! Countdown
+	mDL_BLANK DL_BLANK_3|DL_DLI                             ;    (049 - 051) (DLI 1) Blank 3   start GTIA $4 in PRIOR
+	mDL_BLANK DL_BLANK_2|DL_DLI                             ;    (052 - 053) (DLI 2) Blank 2   (DLI2 logo color 1) 
+
+DL_LMS_TITLE1 = [ * + 2 ]                                   ; Get addresss of LMS high byte values.    
+DL_LMS_TITLE2 = [ * + 5 ] 
+DL_LMS_TITLE3 = [ * + 8 ] 
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1                     ;    (054 - 054)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 1
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1                     ;    (055 - 055)  (Mode F) * 3 Animated Gfx  
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1              ;    (056 - 056)  (Mode F) * 3 Animated Gfx  (DLI2 logo color 2)   
+
+DL_LMS_TITLE4 = [ * + 3 ] 
+DL_LMS_TITLE5 = [ * + 6 ] 
+	mDL       DL_MAP_F                                      ;    (057 - 057)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 2
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+32                  ;    (058 - 058)  (Mode F) * 3 Animated Gfx 
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+32           ;    (059 - 059)  (Mode F) * 3 Animated Gfx  (DLI2 logo color 3) 
+
+DL_LMS_TITLE6 = [ * + 3 ] 
+DL_LMS_TITLE7 = [ * + 6 ] 
+	mDL       DL_MAP_F                                      ;    (060 - 060)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 3
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+64                  ;    (061 - 061)  (Mode F) * 3 Animated Gfx  
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+64           ;    (062 - 062)  (Mode F) * 3 Animated Gfx  (DLI2 logo color 4) 
+
+DL_LMS_TITLE8 = [ * + 3 ] 
+DL_LMS_TITLE9 = [ * + 6 ] 
+	mDL       DL_MAP_F                                      ;    (063 - 063)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 4
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+96                  ;    (064 - 064)  (Mode F) * 3 Animated Gfx  
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+96           ;    (065 - 065)  (Mode F) * 3 Animated Gfx  (DLI2 logo color 5) 
+
+DL_LMS_TITLE10 = [ * + 3 ] 
+DL_LMS_TITLE11 = [ * + 6 ] 
+	mDL       DL_MAP_F                                      ;    (066 - 066)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 5
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+128                 ;    (067 - 067)  (Mode F) * 3 Animated Gfx  
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+128          ;    (068 - 068)  (Mode F) * 3 Animated Gfx  (DLI2 logo color 6) 
+
+DL_LMS_TITLE12 = [ * + 3 ] 
+DL_LMS_TITLE13 = [ * + 6 ] 
+	mDL       DL_MAP_F                                      ;    (069 - 069)  (Mode F) * 3 Animated Gfx  GFX_TITLE_FRAME1, line 6
+	mDL_LMS   DL_MAP_F,GFX_TITLE_FRAME1+160                 ;    (070 - 070)  (Mode F) * 3 Animated Gfx  
+	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+160          ;    (071 - 071)  (Mode F) * 3 Animated Gfx  (DLI 2.5 - screen DMA/normal GTIA)
+
+	mDL_BLANK DL_BLANK_2|DL_DLI                             ;    (072 - 073) Blank 2   (DLI 2.7 -- Tag Line gradient.)
+	mDL_LMS   DL_TEXT_6,GFX_TAG_LINE1                       ; 09 (074 - 081) (6) Tag Line
+	mDL_BLANK [DL_BLANK_5|DL_DLI]                           ;    (082 - 086) Blank 5  (DLI 3) (Hscroll authors, run colors)
 
 DL_LMS_SCROLL_CREDIT1 = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT1       ; 10 (091 - 098) (6) Author(s) Credit line
-	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ;    (099 - 099)  Blank1  (DLI 3.2) (Hscroll system, run colors)
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT1       ; 10 (087 - 094) (6) Author(s) Credit line
+	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ;    (095 - 095)  Blank 1 (DLI 3.2) (Hscroll system, run colors)
 DL_LMS_SCROLL_CREDIT2 = [ * + 1 ]
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT2       ; 10 (100 - 107) (6) System(s) Credit line
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_CREDIT2       ; 10 (096 - 103) (6) System(s) Credit line
 
-	mDL_BLANK DL_BLANK_8                                    ; 11 (108 - 115) Blank 8 Mothership graphic (PMG)
-	mDL_BLANK DL_BLANK_8                                    ; 12 (116 - 123) Blank 8 Mothership graphic (PMG)
-	mDL_BLANK DL_BLANK_8                                    ; 13 (124 - 131) Blank 8 Mothership graphic (PMG)
-	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 14 (132 - 139) (DLI 4) Blank 8 (Hscroll docs, run colors).
+	mDL_BLANK DL_BLANK_8                                    ; 11 (104 - 111) Blank 8 Mothership graphic (PMG)
+	mDL_BLANK DL_BLANK_8                                    ; 12 (112 - 119) Blank 8 Mothership graphic (PMG)
+	mDL_BLANK DL_BLANK_8                                    ; 13 (120 - 127) Blank 8 Mothership graphic (PMG)
+	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 14 (128 - 135) Blank 8 (DLI 4)  (Hscroll docs, run colors).
 
 DL_LMS_SCROLL_DOCS = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (140 - 147) (6) Fine scrolling docs
-	mDL_BLANK DL_BLANK_8                                    ; 16 (148 - 155) Blank 8
-	mDL_BLANK DL_BLANK_8                                    ; 17 (156 - 163) Blank 8
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (136 - 143) (6) Fine scrolling docs
 
+	mDL_BLANK DL_BLANK_4                                    ; 16 (144 - 147) Blank 4
+DL_LMS_OPTION = [ * + 1 ]   
+	mDL_LMS   DL_TEXT_6,GFX_OPTION                          ; 17 (148 - 155) (6) Options name
+DL_LMS_OPTION_TEXT= [ * + 1 ]  
+	mDL_LMS   DL_TEXT_2,GFX_OPTION_TEXT                     ; 18 (156 - 163) (2) Options documentation
+	mDL_BLANK DL_BLANK_1                                    ; 16 (164 - 164) Blank 1
 
-BOTTOM_OF_DISPLAY  ; (164 - 219)
+BOTTOM_OF_DISPLAY  ; (165 - 219)
 
-	mDL_BLANK DL_BLANK_8|DL_DLI                             ; 18 (164 - 171) (DLI 5) Blank 8
+	mDL_BLANK DL_BLANK_7|DL_DLI                             ; 18 (165 - 171) (DLI 5) Blank 7
 
 DL_LMS_SCROLL_LAND1 = [ * + 1 ]                                  
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL|DL_DLI,GFX_MOUNTAINS1    ; 19 (172 - 179) (6) (DLI 5) Fine scrolling mountains
@@ -271,7 +169,9 @@ DISPLAY_LIST_DO_NOTHING
 
 
 ; ==========================================================================
-; Game Screen Atari
+; Game Screen Atari -- Draft
+; --------------------------------------------------------------------------
+;
 ; Alien travels line progression 0 to 21.  22 is end of game.
 ;
 ; At any time there are 4 stars on screen.
@@ -355,9 +255,11 @@ DISPLAY_LIST_DO_NOTHING
 
 DISPLAY_LIST_GAME                                           ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 
-	mDL_BLANK DL_BLANK_8                                    ;    (000 - 019) Blank scan lines. 8 + 8 + 4 
+	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
-	mDL_BLANK DL_BLANK_4
+	mDL_BLANK DL_BLANK_4|DL_DLI                             ; (DLI 0) Gradient scores then end with Narrow screen DMA (2) P1
+
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
 
 ; Having problems with DLI running too long... Altirra says that 
 ; recursive DLI are being triggered.  Not sure why.  There should be 
@@ -367,19 +269,18 @@ DISPLAY_LIST_GAME                                           ; System VBI sets co
 ; on text mode line 2, and the DLI to begin the scrolling mountains 
 ; does not begin on the moded 6 line for stars.
 
-	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00 (020 - 027) (2) P1 score, High score, P2 score
+	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ; 00      (028 - 028) (DLI 1) for star line that fol;ows.  HSCROL + COLPF0
 
-	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ; 00 (028 - 028) 
-	
 DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first star's LMS address
 	.rept 14
 		mDL_LMS   [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+3   ; 01 - 14 (029 - 140) (171) (6) Stars   14 * 8 = 112
 		mDL_BLANK [DL_BLANK_1|DL_DLI]                       ; 01 - 14 (141 - 154)                   14 * 1 =  14
 	.endr
 
-	mDL_LMS [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5         ; 15 (155 - 162) (171) (6) Stars   
+	mDL_LMS [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5         ; 15      (155 - 162) (171) (6) Stars   
+	mDL_BLANK DL_BLANK_2                                    ; 16      (163 - 164) Blank 2
 
-	mDL_JMP BOTTOM_OF_DISPLAY                               ; -- - 24  (164 - 219) End of screen. 
+	mDL_JMP BOTTOM_OF_DISPLAY                               ; -- - 24  (165 - 219) End of screen. 
 
 
 
@@ -415,7 +316,6 @@ DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first
 ; 24 |]]]]]]]]]]]]]]]Looooosers[[[[[[[[[[[[[[[| (212 - 219) (2) Looosers.
 ;    ------------------------------------------
 
-; 63 bytes 
 
 ; The Game Over screen is 95% the same as the Game screen.  
 ; The program will update the LMS for line 7 to read the 
@@ -426,11 +326,12 @@ DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first
 
 DISPLAY_LIST_GAMEOVER                                       ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 
-	mDL_BLANK DL_BLANK_8                                    ;    (000 - 019) Blank scan lines. 8 + 8 + 4 
+	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
 	mDL_BLANK DL_BLANK_8
-	mDL_BLANK DL_BLANK_4
+	mDL_BLANK DL_BLANK_4|DL_DLI                             ; (DLI 0) Gradient scores then end with Narrow screen DMA (2) P1
 
-	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00 (020 - 027) (2) P1 score, High score, P2 score
+	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
+
 	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ; DLI to set COLPF0, COLPF1
 
 	.rept 6
@@ -445,7 +346,7 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Game Over Text lin
 	.rept 6
 		mDL_BLANK DL_BLANK_8                                ; -- (092 - 139) Blank Lines  (-) 6 * 8 == 48 blanks.
 	.endr
-	mDL_BLANK DL_BLANK_6                                    ; -- (140 - 145) 
+	mDL_BLANK DL_BLANK_7                                    ; -- (140 - 145) 
 
   
 	mDL_BLANK DL_BLANK_8                                    ; -- (163 - 170) 
@@ -565,6 +466,8 @@ GFX_TITLE_FRAME4
 
 	.align $0100
 
+GFX_TAG_LINE1 
+	.sb "  SUBTAG LINE HERE  "
 ; Text line for the two major authors, C64, Atari.
 
 GFX_SCROLL_CREDIT1
@@ -583,6 +486,22 @@ GFX_SCROLL_CREDIT2
 
 	.align $0100
 
+
+; OPTION key menu text.
+; Press OPTION to show choices.
+; Press SELECT to choose.
+
+GFX_OPTION
+	.sb "  OPTION TEXT HERE  "
+GFX_OPTION_START
+	.sb "                    " ; 20 blanks to allow for OPTION to scroll left to right.
+	.sb "                    " ; another 20 blanks to allow the description to scroll right to left
+GFX_OPTION_TEXT
+	.sb "DESCRIPTION FOR OPTION CHOICES GOES HERE"
+
+
+	.align $0100
+
 ; GFX_SCROLL_DOCS on Atari.  
 ; Declared in gfx.asm aligned in memory to accommodate 
 ; fine scrolling directly from where it is declared. 
@@ -593,10 +512,15 @@ GFX_SCROLL_CREDIT2
 
 GFX_SCROLL_DOCS
 scrtxt   
-	.sb      "                      PRESS FIRE TO PLAY"
-	.sb +$40,"     FIRE SHOOTS AND CHANGES CANNON DIRECTION "
-	.sb      "     MORE POINTS WHEN 1NVADER IS HIGH UP"
-	.sb +$40,"     1NVADER SLOWS DOWN AFTER EIGHTY HITS "
+	.sb      "                      PRESS FIRE TO PLAY. "
+	.sb +$40,"     FIRE SHOOTS AND CHANGES CANNON DIRECTION."
+	.sb      "     MORE POINTS WHEN 1NVADER IS HIGH UP. "
+	.sb +$40,"     1NVADER SLOWS DOWN AFTER EIGHTY HITS."
+	.sb      "     PRESS"
+	.sb +$40," OPTION "
+	.sb      " FOR GAME MODES THEN PRESS"
+	.sb +$40," SELECT "
+	.sb      "TO CHOOSE."
 	.sb      "     C64 VERSION 2019 - "
 	.sb +$40,"DARREN FOULDS "
 	.sb      " @DARRENTHEFOULDS "
@@ -661,8 +585,8 @@ GFX_END_DOCS
 
 	.align $0100  ; Align to a page, so only low bytes need to be changed for scrolling
 
-mountc	; mountain screen view chars
-		; Note all values modified -$20 for Atari character codes.
+	; mountain screen view chars
+	; Note all values modified -$20 for Atari character codes.
 GFX_MOUNTAINS1
 	.byte $00,$00 ; Two extra bytes here, so LMS 0/HS 0 will show nothing of the first two chars in the buffer.
 	.byte $00,$bd,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$bd,$00,$00,$00 
@@ -684,17 +608,15 @@ GFX_MOUNTAINS4
 	.byte $00,$00,$00,$7b,$00,$00,$00,$00,$00,$00,$00,$00,$7c,$00,$7b,$00,$00,$00,$3b,$3f
 
 
-	.align $0100
 
-
-; This is 40 chars, because it won't "move" by LMS changes.
+; This is 20 chars, because it won't "move" by LMS changes.
 GFX_BUMPERLINE
 	.byte $C2,$04,$05,$48,$49,$06,$44,$4b,$5b,$00,$44,$45,$06,$48,$49,$04,$0b,$1b,$46,$C3
 
 
 ; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left
 
-GFX_STATSLINE  ; "          L:00   PT:0000   H:00         "  ; "L:", "PT:", "H:" Use P/M graphics
+GFX_STATSLINE  ; "          L:00   PT:0000   H:00         "  ; "L:", "PT:", "H:" Use P/M graphics?
 	.sb "          "
 GFX_STAT_ROW
 	.sb $0,$0
@@ -705,6 +627,9 @@ GFX_STAT_POINTS
 GFX_STAT_HITS
 	.sb $0,$0
 	.sb "          " 
+
+
+	.align $0100
 
 ; The first 21 bytes of data are blank which is used to show no star. 
 ; That is, LMS=Line+0, and HSCROLL=15.  
@@ -732,10 +657,6 @@ GFX_STARS_LINE
 GFX_THIS_IS_BLANK ; we need 20 blanks for a moment for the Game Over screen
 	.sb "                    "
 
-
-	.align $0100 ; Align to page will keep all the Game over text in the same page.
-
-
 ; For Game over there is a display line, and then various 
 ; source lines of text that are copied over the line when 
 ; the game is over.  
@@ -744,58 +665,4 @@ GFX_GAME_OVER_LINE
 	.ds 20
 
 
-;TABLE_GAME_OVER_MASK_FRAMES ; TEMP CHAR IMAGE == CHARSET IMAGE AND MASK
-;	.byte $ff ; 11111111  frame 6  (0) X * 8 == 0
-;	.byte $ff ; 11111111 
-;	.byte $ff ; 11111111 
-;	.byte $ff ; 11111111 
-;	.byte $ff ; 11111111 
-;	.byte $ff ; 11111111 
-;	.byte $ff ; 11111111 
-;	.byte $ff ; 11111111 
-
-;	.byte $7e ; .111111.  frame 5  (1) X * 8 == 8
-;	.byte $7e ; .111111.
-;	.byte $7e ; .111111.
-;	.byte $7e ; .111111.
-;	.byte $7e ; .111111.
-;	.byte $ff ; 11111111 
-;	.byte $ff ; 11111111 
-;	.byte $ff ; 11111111 
-
-;	.byte $3c ; ..1111.  frame 4   (2) X * 8 == 16
-;	.byte $3c ; ..1111.
-;	.byte $3c ; ..1111..
-;	.byte $7e ; .111111.
-;	.byte $7e ; .111111.
-;	.byte $7e ; .111111.
-;	.byte $7e ; .111111.
-;	.byte $7e ; .111111.
-
-;	.byte $18 ; ...11...  frame 3   (3) X * 8 == 24
-;	.byte $18 ; ...11..
-;	.byte $3c ; ..1111..
-;	.byte $3c ; ..1111..
-;	.byte $3c ; ..1111..
-;	.byte $3c ; ..1111..
-;	.byte $7e ; .111111.
-;	.byte $7e ; .111111.
-
-;	.byte $00 ; ........  frame 2   (4) X * 8 == 32
-;	.byte $00 ; ........
-;	.byte $18 ; ...11...
-;	.byte $18 ; ...11...
-;	.byte $18 ; ...11...
-;	.byte $3c ; ..1111..
-;	.byte $3c ; ..1111..
-;	.byte $3c ; ..1111..
-
-;	.byte $00 ; ........  frame 1    (5) X * 8 == 40
-;	.byte $00 ; ........
-;	.byte $00 ; ........
-;	.byte $00 ; ........
-;	.byte $00 ; ........
-;	.byte $18 ; ...11...
-;	.byte $18 ; ...11...
-;	.byte $18 ; ...11...
 
