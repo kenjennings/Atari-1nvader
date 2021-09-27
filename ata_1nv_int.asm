@@ -715,15 +715,9 @@ TITLE_DLI_1
 ;==============================================================================
 ; TITLE_DLI_2                                             
 ;==============================================================================
-; DLI to game the VSCROL to hack mode F into 3 scan lines tall.  
-; Runs VSCROL hacks on 3 pairs of Mode F lines for the title (six lines).
-; Gruesome debugging cycle on this.  Could not get this to run as a couple
-; smaller DLIs that repeat.  no matter what.  So, here one DLI bludgeons
-; the  VSCROL and WSYNCs its way down the six extended mode F lines.
-;
-; At the same time, it is incrementing and reloading the COLPF3 value 
-; for the Missiles/5th Player color overlay.   Each line is a different base
-; color. In theory that's 4 grey shades + (6 lines * 4 shades) + background
+; DLI to increment and reload the COLPF3 value for the Missiles/5th Player
+; color overlay.   Each line is a different base color. 
+; In theory that's 4 grey shades + (6 lines * 4 shades) + background
 ; which is 29 colors possible on the logo.  In reality its probably closer
 ; to 18 to 20 given the shape of text v the overlay. 
 ; -----------------------------------------------------------------------------
@@ -732,22 +726,22 @@ TITLE_DLI_2
 
 	mStart_DLI ; Saves A and Y
 
-	lda zTitleLogoColor     ; PF3   Update color register.
-	sta WSYNC               ; SYNC  (1.1) sync to end of line.
+	lda zTitleLogoColor     ; Update color register.
+	sta WSYNC               ; (1.1) sync to end of line.
 	sta COLPF3
 
-	cmp #COLOR_ORANGE_GREEN ; INC   Is it the ending color?
-	bne b_tdli2_AddToColor  ;       No. Add to the color component.
+	cmp #COLOR_ORANGE_GREEN ; Is it the ending color?
+	bne b_tdli2_AddToColor  ; No. Add to the color component.
 
-	lda #COLOR_ORANGE1      ;       Yes.  Reset to first color.
-	bne b_tdli2_UpdateColor ;       Go do the update.
+	lda #COLOR_ORANGE1      ; Yes.  Reset to first color.
+	bne b_tdli2_UpdateColor ; Go do the update.
 
 b_tdli2_AddToColor
 	clc
-	adc #$10                ;       Add 16 to color.
+	adc #$10                ; Add 16 to color.
 
 b_tdli2_UpdateColor
-	sta zTitleLogoColor     ;       Save it for the next DLI use
+	sta zTitleLogoColor     ; Save it for the next DLI use
 
 	inc zTitleLogoCount
 	lda zTitleLogoCount
@@ -794,7 +788,7 @@ TITLE_DLI_2_5
 ; TITLE_DLI_2_7                                          
 ;==============================================================================
 ; Handle the colors for the One Liner Subtitle.  
-; (One button. One Alien. One Life. No Mercy.)
+; (One Button. One Alien. One Life. No Mercy.)
 
 TITLE_DLI_2_7
 
@@ -914,7 +908,48 @@ b_dli4_LoopColors
 	pla
 	tay
 
-	mChainDLI TITLE_DLI_4,TITLE_DLI_5 ; Done here.  Finally go to next DLI.
+
+	mChainDLI TITLE_DLI_4,TITLE_DLI_4_5 ; Done here.  Finally go to next DLI.
+
+
+;==============================================================================
+; TITLE_DLI_4_5                                             
+;==============================================================================
+; DLI to run the horizontally scrolling Documentation  and  stuff  gradient 
+; colors into COLPF0 for the text on the line.
+; -----------------------------------------------------------------------------
+
+TITLE_DLI_4_5
+
+	 mStart_DLI ; Saves A and Y
+
+	ldy #7
+
+	lda zOptionHScroll ; Scroll value for options.  VBI sets this and LMS.
+	sta HSCROL
+
+b_dli4_5_LoopColors
+	lda TABLE_COLOR_OPTS0,y
+	sta WSYNC    
+	sta COLPF0
+	lda TABLE_COLOR_OPTS1,y
+	sta COLPF1
+	lda TABLE_COLOR_OPTS2,y
+	sta COLPF2
+	
+	dey
+	bpl b_dli4_5_LoopColors
+	
+	lda #0
+	sta COLPF2 ; Need COLPF2 to be black for options text below.
+
+	jsr DLI_ScoreLineGradient ; shade the documentation line 
+
+	pla
+	tay
+
+	mChainDLI TITLE_DLI_4_5,TITLE_DLI_5 ; Done here.  Finally go to next DLI.
+
 
 
 ;==============================================================================
@@ -1057,12 +1092,20 @@ b_dli6_NextLoop
 	ldy zPLAYER_TWO_COLOR
 	sty COLPM1
 
-	lda zSTATS_TEXT_COLOR
-	sta COLPF1     ; Text luminance
+	ldy zSTATS_TEXT_COLOR
+	sty COLPF1      ; Stats Text luminance
+	beq b_dli6_Exit ; If text is off, then do nothing else.
 
-;	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01] 
-;	sta PRIOR
+b_dli6_LoopStatsColor ; Gradient for stats if it is on.
+	sta WSYNC
+	sta WSYNC
+	dey
+	dey
+	sty COLPF1      ; Stats Text luminance
+	cpy #4
+	bne b_dli6_LoopStatsColor 
 
+b_dli6_Exit
 	pla
 	tay
 

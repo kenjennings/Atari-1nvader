@@ -138,11 +138,11 @@ DL_LMS_SCROLL_CREDIT2 = [ * + 1 ]
 DL_LMS_SCROLL_DOCS = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (136 - 143) (6) Fine scrolling docs
 
-	mDL_BLANK DL_BLANK_4                                    ; 16 (144 - 147) Blank 4
+	mDL_BLANK DL_BLANK_4|DL_DLI                             ; 16 (144 - 147) Blank 4 (DLI 4.5 -- HSCROLL and COLPF0/1/2 options) and options docs.
 DL_LMS_OPTION = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6,GFX_OPTION                          ; 17 (148 - 155) (6) Options name
+	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_OPTION               ; 17 (148 - 155) (6) Options name
 DL_LMS_OPTION_TEXT= [ * + 1 ]  
-	mDL_LMS   DL_TEXT_2,GFX_OPTION_TEXT                     ; 18 (156 - 163) (2) Options documentation
+	mDL_LMS   DL_TEXT_2|DL_HSCROLL,GFX_OPTION_TEXT          ; 18 (156 - 163) (2) Options documentation
 	mDL_BLANK DL_BLANK_1                                    ; 16 (164 - 164) Blank 1
 
 BOTTOM_OF_DISPLAY  ; (165 - 219)
@@ -492,12 +492,16 @@ GFX_SCROLL_CREDIT2
 ; Press SELECT to choose.
 
 GFX_OPTION
-	.sb "  OPTION TEXT HERE  "
+	.sb "  OPTION "
+	.sb +$40,"TEXT "
+	.sb +$80,"HERE  "
 GFX_OPTION_START
 	.sb "                    " ; 20 blanks to allow for OPTION to scroll left to right.
 	.sb "                    " ; another 20 blanks to allow the description to scroll right to left
+	; Note the spaces below are @ signs due to the +$40 needed to print 
+	; screen bytes using the Mode 2 versions of characters.
 GFX_OPTION_TEXT
-	.sb "DESCRIPTION FOR OPTION CHOICES GOES HERE"
+	.sb +$40,"DESCRIPTION@FOR@OPTION@CHOICES@GOES@HERE"
 
 
 	.align $0100

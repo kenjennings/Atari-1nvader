@@ -12,16 +12,18 @@
 ; Revised version includes A-Z 0-9 that are displayable 
 ; using ANTIC mode 2 or ANTIC mode 6/7 text.  
 ; Updates created in the GRIDED.BXL program. 
-; The initial conversion to assembly source created by atf2code utility. 
+; The new conversion to assembly source created by atf2code utility. 
 ; --------------------------------------------------------------------------
 
 
-	.align $0400 ; Align character set to 1K boundary, because some 
-	; character values are used in Mode2.   Most characters are used 
-	; for Mode 6 or 7 which have only 64 characters.
+	.align $0400
+	; Although most characters are used for Mode 6 or 7 text which has 
+	; 64 characters and needs only 512 byte alignment, additional 
+	; features use Mode 2 text which allows 128 characters and 
+	; requires a 1K boundary.   
 
 ; ==========================================================================
-; Oddly, this character set defines most values in the same order as the
+; This character set defines many values in the same order as the
 ; Atari.  The C64 program offsets this data at +$20.  For Atari purposes
 ; this can stay at the $00 offset position.   In the C64 code the 
 ; references to character values need to be offset by -$20 to show 
@@ -31,24 +33,27 @@
 ; other symbol characters for text.  There are some special characters 
 ; for the ground, the bumpers, the mountains, and the stars.
 ;
-; However, this font has problems.  The minimum horizontal pixel size on 
-; a NTSC composite display that can accurately render color is a color 
-; clock.  The font uses single-pixel width lines.  In the usual ANTIC
-; text mode 2 (40 colums) each pixel is only one half color clock wide.  
-; Real Atari hardware using a composite or TV display will render text 
-; in this font with artifact colors scattered throughout.  
+; However, the original font has problems.  The minimum horizontal 
+; pixel size on a NTSC composite display that can accurately render 
+; color is a "color clock".  The font uses single-pixel width lines.  
+; In the usual ANTIC text mode 2 (40 colums) each pixel is only one-
+; half color clock wide.  Real Atari hardware using a composite or TV 
+; display will render text in this font with artifact colors scattered 
+; throughout.  
 ;
 ; On the C64 this is even worse as its single-pixel width lines are not 
 ; even a correct fraction of a color clock.  Artifact colors vary by 
-; characcter position.  So far, all the videos I've seen of the game 
+; character position.  So far, all the videos I've seen of the game 
 ; were shot on emulators that don't accurately simulate the C64's 
-; pixels' low correlation to the NTSC color clock.  But back to the 
-; immediate problems on the Atari.....
+; pixels' low correlation to the NTSC color clock.  
+;
+; But, back to the immediate problems on the Atari.....
 ;
 ; The correct solution for the characters that will be displayed in ANTIC
 ; mode 2 is to use two, adjacent horizontal pixels to cover an entire 
-; color clock.  However, I'm far toooo lazy to redefine the entire 
-; character set for the limited text in the game.
+; color clock.  During initial development I decided I was far toooo 
+; lazy to redefine the entire character set for the limited text in 
+; the game.
 ;
 ; The next choice is to use a different text mode that displays color
 ; clock-sized pixels.   ANTIC Mode 6 and 7 use 8-bit wide glyph images
@@ -57,31 +62,45 @@
 ; text is displayed.  
 ;
 ; ANTIC Mode 6 characters are twice the width of Mode 2 characters. 
-; However, Mode 6 also provides other benefits that can be applied to 
-; additional bells and whistles.   This mode has full color indirection
-; unlike Mode 2.   This mode requires much less DMA than Mode 2 and so 
-; provides more CPU time for Display List Interrupts.
+; However, Mode 6  provides other benefits that can be applied to 
+; additional bells and whistles.  Unline Mode 2 text, Mode 6 provides
+; full color indirection and use of five color registers (backgound 
+; plus four foreground colors.)  This mode requires much less DMA 
+; than Mode 2 and so provides more CPU time for Display List 
+; Interrupts.
 ;
 ; The mountains and ground can be displayed using the Mode 6 characters 
 ; with some modifications to use different color registers which will 
-; allow mixing the white snow with the grey mountains on the same 
+; allow mixing white snow with other colors for the mountains on the same 
 ; line.  (In fact, Display List Interrupts will be used to apply several
-; shades of gray to the mountains.)
+; shades of color to the mountains.)
 ;
 ; The score line at the top and the current alien line value information 
 ; at the bottom of the screen will still use the Mode 2 character text mode.
-; These lines use the numbers and not text, so only the number glyphs will 
-; be edited to double the pixel width for consistent rendering.
+; These lines use the numbers and not text, so in the original port/release 
+; of the game for the Atari only the number glyphs are edited to double the 
+; pixel width for consistent rendering.
 ;
-; Converting integer values (the score) into readable text on screen 
-; involves a lot of extra coding work.  Rather than handling the score 
-; as an integer, the score will be directly generated as individual bytes
+; Converting integer values (the scores) into readable text on screen 
+; could involve a lot of extra coding work.  Rather than handling the 
+; score as an integer, the scores will be handled as individual bytes
 ; for each digit.  This will take a little extra coding to manage the 
 ; score as base 10 values per each byte, but the conversion to display 
-; these bytes on screen will be quick and easy.   Basically, just add 
-; the appropriate offset value to the decimal digits 0 through 9 and this 
+; these bytes on screen is quick and easy.   Basically, just add the 
+; appropriate offset value to the decimal digits 0 through 9 and this 
 ; directly provides the internal character value to write to the screen.
+; There is no need to break up values into nybbles for display.  
 ;
+; Since Mode 2 text is used for the scores and statistics the full 128 
+; characters are available.   So, ten characters in the second set of 64
+; which are available to Mode 2 are used for the numbers, so the base 
+; characters used for Mode 6 text do not need to be adjusted. 
+;
+; The September updates included reworking the font.   Most of the first
+; 64 characters in the character set remain for the Mode 6 text lines.
+; The mostly unused second half of 64 characters now has the A-Z upper
+; case defined for use with Mode 2 text lines. The scores, statistics,
+; and a new line that describes option features use Mode 2 text.
 ; --------------------------------------------------------------------------
 
 ; ==========================================================================
@@ -99,15 +118,18 @@
 ; These are for the animated 3, 2, 1 game start counter.  On the C64 this 
 ; was two characters put together to make a wide character.  The Atari 
 ; Mode 6 characters are already "double width", so the game could use
-; just 3 characters to immitate the C64 start.  Buuuut, looking for a 
-; little bit of amping up the bass here.  The Atari version does an
-; animation growing a tiny number into a large, double-height number 
-; using Player/Missile Graphic.
+; just 3 characters to immitate the C64 start.  The Atari version now
+; displays the countdown using Mode 7 text which is twice as tall as 
+; Mode 6 text, so now the characters are 16 scan lines tall, allowing 
+; for more screen area for visual color effects on the countdown display. 
 ;
+; The new font was edited in my GRIDED program for font editing, and 
+; the assembly output was created by my atf2code program.  Comments
+; that existed in the original character set assembly code have been 
+; transferred here.
 ; --------------------------------------------------------------------------
 
 CHARACTER_SET
-
 
 ; Page 0xE0.  Chars 0 to 31 -- Symbols, numbers
 ; Char $00: SPACE  

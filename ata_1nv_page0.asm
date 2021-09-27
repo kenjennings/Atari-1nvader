@@ -33,7 +33,9 @@ zInputScanFrames   .byte $00
 ; Countdown Color =========================================================
 
 zCountdownTimer       .byte $01
-; zCountdownColor       .byte $04
+
+zCountdownColor       .byte $04
+
 
 
 ; Title Logo Values =========================================================
@@ -53,7 +55,7 @@ zTitleLogoPMFrame      .byte $00
 TITLE_LOGO_X_START     = 78
 zTitleHPos             .byte TITLE_LOGO_X_START   ; Missile position.
 
-TITLE_LOGO_Y_POS       = 71                       ; Just a constant.  No need for variable.
+TITLE_LOGO_Y_POS       = 62                       ; Just a constant.  No need for variable.
 
 zTitleLogoBaseColor   .byte COLOR_ORANGE1         ; Starting value for first DLI. 
 zTitleLogoColor       .byte COLOR_ORANGE1         ; Value for DLI. Loop from $10 to $E0 by 16
@@ -82,7 +84,7 @@ zCredit2HS          .byte 12   ; fine horizontal scroll value start.
 
 ; Big Mothership Values =====================================================
 
-BIG_MOTHERSHIP_START = 127 
+BIG_MOTHERSHIP_START = 120
 zBIG_MOTHERSHIP_Y   .byte BIG_MOTHERSHIP_START ; Starting position of the big mothership
 
 BIG_MOTHERSHIP_SPEED = 1 ; Number of frames to count per move.
@@ -97,6 +99,15 @@ DOCS_STEP_TIMER  = 2
 zDocsScrollTimer .byte DOCS_STEP_TIMER ; How many frames to wait for each fine scroll.
 
 zDocsHS          .byte 15   ; fine horizontal scroll value start.
+
+
+; Scrolling Options text. ======================================================
+
+zOptionHScroll   .byte 15 ; fine scroll for options. (both lines.)
+
+
+zSTATS_TEXT_COLOR  .byte $08 ; color/luminance of text on stats line.
+
 
 
 ; Scrolling Terrain Values ==================================================

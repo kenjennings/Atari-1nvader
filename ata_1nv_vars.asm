@@ -19,10 +19,6 @@
 	.by "** Ken Jennings  2021 **"
 
 
-zGAME_OVER_FLAG             .byte $00  ; The game is over?
-
-gDEBOUNCE                   .byte 0    ; Flag to make sure joystick buttons are released.
-
 
 ; ==========================================================================
 ; TIMING PER VIDEO STANDARD . . .
@@ -289,5 +285,14 @@ TABLE_TO_DIGITS ; 0 to 21.  (22 is last row which should be undisplayed.)
 ;zGO_FRAME       .byte $ff    ; Frame counter, 6 to 0.
 
 DELAYED .byte 60
+
+zGAME_OVER_FLAG             .byte $00  ; The game is over?
+
+; Automatic return to title screen
+zGAME_OVER_FRAME            .byte 0    ; Frame counter 255 to 0
+zGAME_OVER_TICKS            .byte 0    ; decrement every GAME_OVER_FRAME=0.  Large countdown.
+
+
+gDEBOUNCE                   .byte 0    ; Flag to make sure joystick buttons are released.
 
 ; ======== E N D   O F   V A R I A B L E S ======== 
