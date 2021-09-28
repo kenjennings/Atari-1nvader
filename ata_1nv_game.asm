@@ -635,7 +635,7 @@ b_gc_End
 
 b_mdv_WaitForCountdownScanline
 	ldy VCOUNT
-	cpy #23
+	cpy #21
 	bne b_mdv_WaitForCountdownScanline
 
 	ldy #12
@@ -854,6 +854,13 @@ GameSetupOver
 	lda #64
 	sta zGO_COLPF2_INDEX          ; Just a default....  probably unecessary.
 
+	; Automatic return to title screen
+	lda #0 
+	sta zGAME_OVER_FRAME          ; Frame counter 255 to 0
+	lda #15 
+	sta zGAME_OVER_TICKS          ; decrement every GAME_OVER_FRAME=0.  Large countdown.
+
+
 	lda #EVENT_GAMEOVER           ; Next game loop event is game over screen
 	sta zCurrentEvent
 
@@ -863,13 +870,41 @@ GameSetupOver
 ; ==========================================================================
 ; GAME OVER
 ; ==========================================================================
-; When I wasn't paying attention everything for this 
+; When I wasn't paying attention almost everything  for this 
 ; ended up in the VBI section instead.  
 ; If this is a problem then the VBI will be peeled apart to move 
 ; other code here.
+;
+; Another time later  . . .  suggestion to add autmatic return to 
+; the title screen.   So, a large counter is implemented that decrements
+; everything the frame countdown reaches 0.  When the large counter
+; reaches 0, then force advance to Title screen as if a button had 
+; been pressed.
 ; --------------------------------------------------------------------------
 
 GameOver
+
+	; Check if VBI is done with Game over animation.
+	lda zGO_CHAR_INDEX       ; 0 to 9 [12] (-1 is starting state) 13 is end.
+	cmp #13 
+	bne b_go_ExitGameOver    ; No, do not run the manual or automatic end of game
+
+	; Check if manual end of game (button press)?
+	jsr libAnyButton         ; Insure debounce from button trigger.
+	bmi b_go_SetupForTitle   ; -1 means a button a pressed after debounce (0 or 1 means no input yet )
+         
+	; Check for automatic return to title screen?
+	dec zGAME_OVER_FRAME     ; Frame counter 255 to 0
+	bne b_go_ExitGameOver    ; Not 0.  Nothing to do.
+
+	dec zGAME_OVER_TICKS     ; decrement every GAME_OVER_FRAME=0.  Large countdown.
+	bne b_go_ExitGameOver    ; Not 0.  Nothing to do.
+
+b_go_SetupForTitle           ; Next frame, setup for title.
+	lda EVENT_SETUP_TITLE    ; Recycle back to the title.
+	sta zCurrentEvent          
+
+b_go_ExitGameOver
 
 	rts
 

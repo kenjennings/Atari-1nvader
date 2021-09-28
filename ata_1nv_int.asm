@@ -272,43 +272,7 @@ b_mdv_SkipTitleGfx
 	
 	bne b_mdv_SkipTitleMissileUpdate ; !0 is not time to animate missiles?
 
-	lda ZTitleLogoBaseColor      ; Get the Base color
-	cmp #COLOR_ORANGE_GREEN      ; Is it the ending color?
-	bne b_mdv_AddToColor         ; No.  Add to the color component.
-
-	lda #COLOR_ORANGE1           ; Yes.  Reset to first color.
-	bne b_mdv_UpdateColor        ; Go do the update.
-
-b_mdv_AddToColor
-	clc
-	adc #$10                      ; Add 16 to color.
-
-b_mdv_UpdateColor
-	sta ZTitleLogoBaseColor      ; Resave the new update
-	sta ZTitleLogoColor          ; Save it for the DLI use
-	sta COLOR3                   ; Make sure it starts in the OS shadow and 
-	sta COLPF3                   ; the hardware registers.
-
-	; Third, change the Missile animation images and position.
-
-	ldx ZTitleHPos              ; Move horizontally right two color clocks per animation.
-	inx
-	inx
-
-	ldy zTitleLogoPMFrame       ; Go to the next Missile image index
-	iny
-	cpy #TITLE_LOGO_PMIMAGE_MAX ; Did it go past the last frame?
-	bne b_mdv_SkipResetPMImage  ; No.  Do not reset Missile image index.
-
-	ldx #TITLE_LOGO_X_START     ; Reset horizontal position to the start
-	ldy #0                      ; Reset missile image index to start.
-
-b_mdv_SkipResetPMImage
-	stx ZTitleHPos              ; Save modified base Missile pos, whatever happened above.
-	sty zTitleLogoPMFrame       ; Save new Missile image index.
-
-	txa
-	jsr Pmg_AdustMissileHPOS    ; Update the missile HPOS.
+	jsr Pmg_AdjustMissileColorAndHPOS ; Change Missile color and position.
 
 b_mdv_SkipTitleMissileUpdate
 
@@ -766,19 +730,20 @@ b_tdli2_ExitChain
 ;==============================================================================
 ; TITLE_DLI_2_5                                           
 ;==============================================================================
-; AFTER the multi-color logo fun and games reset the playfield to normal 
-; width, and turn off the GTIA playfield color interpretation.
+; AFTER the multi-color logo fun and games reset the playfield to normal  
+; GTIA playfield color interpretation.
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_2_5
 
 	pha
 
-	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
-	sta WSYNC                      ; Next scan line
-	sta DMACTL                     ; Set all the ANTIC screen controls and DMA options.
+;	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
+;	sta WSYNC                      ; Next scan line
+;	sta DMACTL                     ; Set all the ANTIC screen controls and DMA options.
 	; Return to normal color interpretation, Players on top.
 	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01]       
+	sta WSYNC                      ; Next scan line
 	sta PRIOR
 
 	mChainDLI TITLE_DLI_2_5,TITLE_DLI_2_7 ; Done here.  Finally go to next DLI.
@@ -787,8 +752,10 @@ TITLE_DLI_2_5
 ;==============================================================================
 ; TITLE_DLI_2_7                                          
 ;==============================================================================
-; Handle the colors for the One Liner Subtitle.  
+; Handle the colors for the One Liner Tag line subtitle.  
 ; (One Button. One Alien. One Life. No Mercy.)
+; At the end, set the playfield DMA back to normal width.
+; -----------------------------------------------------------------------------
 
 TITLE_DLI_2_7
 
@@ -806,6 +773,10 @@ b_dli27_LoopColors
 
 	pla
 	tay
+
+	lda #[ENABLE_DL_DMA|ENABLE_PM_DMA|PM_1LINE_RESOLUTION|PLAYFIELD_WIDTH_NORMAL]
+	sta WSYNC                      ; Next scan line
+	sta DMACTL                     ; Set all the ANTIC screen controls and DMA options.
 
 	mChainDLI TITLE_DLI_2_7,TITLE_DLI_3 ; Done here.  Finally go to next DLI.
 
@@ -948,12 +919,12 @@ b_dli4_5_LoopColors
 	pla
 	tay
 
-	mChainDLI TITLE_DLI_4_5,TITLE_DLI_5 ; Done here.  Finally go to next DLI.
+	mChainDLI TITLE_DLI_4_5,TITLE_DLI_COMMON_MOUNTAINS ; Done here.  Finally go to next DLI.
 
 
 
 ;==============================================================================
-; TITLE_DLI_5                                             
+; TITLE_DLI_COMMON_MOUNTAINS                                             
 ;==============================================================================
 ; DLI to run the colors for the horizontally scrolling land.
 ; Fine scroll is already set, so, this just sets COLPF0, 1, 2.
@@ -962,7 +933,7 @@ b_dli4_5_LoopColors
 ; top of the line, and in the middle of the line of text.
 ; -----------------------------------------------------------------------------
 
-TITLE_DLI_5
+TITLE_DLI_COMMON_MOUNTAINS
 
 	mStart_DLI ; Saves A and Y
 
@@ -1018,11 +989,11 @@ b_dli5_FinalExit            ; Chain to next DLI
 	pla
 	tay
 
-	mChainDLI TITLE_DLI_5,TITLE_DLI_6 ; Done here.  Finally go to next DLI.
+	mChainDLI TITLE_DLI_COMMON_MOUNTAINS,TITLE_DLI_COMMON_LASTLINES ; Done here.  Finally go to next DLI.
 
 
 ;==============================================================================
-; TITLE_DLI_6                                             
+; TITLE_DLI_COMMON_LASTLINES                                             
 ;==============================================================================
 ; Do the colors for the non-scrolling land under the mountains.
 ; Start the background from darkest dirt color and increment brighness.
@@ -1032,7 +1003,7 @@ b_dli5_FinalExit            ; Chain to next DLI
 ; -----------------------------------------------------------------------------
 
 
-TITLE_DLI_6
+TITLE_DLI_COMMON_LASTLINES
 
 	mStart_DLI ; Saves A and Y
 
@@ -1081,10 +1052,10 @@ b_dli6_NextLoop
 	; NOTE.  This is only halvsies work.  ANTIC Mode 2 Text does not render invisible 
 	; UNDER the Players objects.  It always renders on top.   So, where the idle guns 
 	; overlap the stats line the text will show on top of the Players.   The Code 
-	; MUST ALSO remove the stats text when it is not needed -- when the guns are in 
-	; the idle positions.
+	; MUST ALSO remove the actual statistics text when it is not needed -- when the 
+	; guns are in the idle positions.
 	
-	sta WSYNC      ; Next scan line set the colors for the stats line of text. 
+	sta WSYNC      ; Next scan line set the colors for the STATISTICS text. 
 	sta COLBK      ; Background/border to black, too.
 	sta COLPF2     ; Text background
 
@@ -1093,10 +1064,10 @@ b_dli6_NextLoop
 	sty COLPM1
 
 	ldy zSTATS_TEXT_COLOR
-	sty COLPF1      ; Stats Text luminance
+	sty COLPF1      ; STATISTICS LINE Text luminance
 	beq b_dli6_Exit ; If text is off, then do nothing else.
 
-b_dli6_LoopStatsColor ; Gradient for stats if it is on.
+b_dli6_LoopStatsColor ; Gradient for STATISTICS LINE if it is on.
 	sta WSYNC
 	sta WSYNC
 	dey
@@ -1110,90 +1081,7 @@ b_dli6_Exit
 	tay
 
 
-	mChainDLI TITLE_DLI_6,DoNothing_DLI ; Done here.  Park it until VBI restarts it.
-
-
-
-
-;==============================================================================
-;                                              DLI_(SYNC)_PF3_SYNC_INC_SYNC
-;==============================================================================
-; Title supporting routine used by DLI_2 to manage COLPF3 and consume a 
-; couple scan lines of the display.
-; This is moved into a function, because the same pattern is repeated 
-; for each of the rows of pixels.
-; There are two entry points.  The first adds an extra WSYNC at the start.
-; -----------------------------------------------------------------------------
-
-;DLI_SYNC_PF3_SYNC_INC_SYNC 
-
-;	sta WSYNC               ; SYNC  (1.0) sync to end of line.
-
-;DLI_PF3_SYNC_INC_SYNC 
-
-;	lda zTitleLogoColor     ; PF3   Update color register.
-;	sta COLPF3
-;	sta WSYNC               ; SYNC  (1.1) sync to end of line.
-
-;	cmp #COLOR_ORANGE_GREEN ; INC   Is it the ending color?
-;	bne b_td2_AddToColor    ;       No. Add to the color component.
-
-;	lda #COLOR_ORANGE1      ;       Yes.  Reset to first color.
-;	bne b_td2_UpdateColor   ;       Go do the update.
-
-;b_td2_AddToColor
-;	clc
-;	adc #$10                ;       Add 16 to color.
-
-;b_td2_UpdateColor
-;	sta zTitleLogoColor     ;       Save it for the next DLI use
-
-;	sta WSYNC               ; SYNC  (1.2) sync to end of line.
-
-;	rts
-
-
-;==============================================================================
-;                                              DLI_SYNC_PF_DEC
-;==============================================================================
-; Title dupporting routine used by DLI_3 to manage COLPF0 and COLPF1 
-; colors on the two scrolling author credits lines.
-; -----------------------------------------------------------------------------
-
-;DLI_SYNC_PF_DEC
-
-;	sta WSYNC
-
-;DLI_PF_DEC
-
-;	stx COLPF0
-;	sty COLPF1
-;	dex
-;	dex
-;	dey
-;	dey
-
-;	rts
-
-
-;==============================================================================
-;                                              DLI_SYNC_PF0_DEC
-;==============================================================================
-; Title supporting routine used by DLI_4 to manage COLPF0 on the 
-; scrolling documentation line.
-; -----------------------------------------------------------------------------
-
-;DLI_SYNC_PF0_DEC
-
-;	sta WSYNC  
-
-;DLI_PF0_DEC
-
-;	sty COLPF0
-;	dey
-;	dey
-
-;	rts
+	mChainDLI TITLE_DLI_COMMON_LASTLINES,DoNothing_DLI ; Done here.  Park it until VBI restarts it.
 
 
 	.align $0100
@@ -1301,7 +1189,7 @@ b_GDLI0_ShortcutToExit             ; If star was Inactive this is the easy exit 
 	pla                            ; Done executing this series of DLIs.   
 	tay
 
-	mChainDLI GAME_DLI_0,TITLE_DLI_5 ; Do the land colors next.
+	mChainDLI GAME_DLI_0,TITLE_DLI_COMMON_MOUNTAINS ; Do the land colors next.
 
 
 b_GDLI0_NormalExit                ; Exit without changing the DLI vector.
@@ -1389,7 +1277,7 @@ b_GODLI1_CopyLoop
 	pla                              
 	tay
 
-	mChainDLI GAME_OVER_DLI_2,TITLE_DLI_5 ; Do the land colors next.
+	mChainDLI GAME_OVER_DLI_2,TITLE_DLI_COMMON_MOUNTAINS ; Do the land colors next.
 
 ;==============================================================================
 

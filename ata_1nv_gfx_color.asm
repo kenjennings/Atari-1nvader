@@ -88,7 +88,8 @@ TABLE_COLOR_TAGLINE ; COLPF0 - One button, one life, one alien, blah blah.
 	.byte COLOR_GREY+$8
 	.byte COLOR_GREY+$a
 
-; Options will not change over time.  Can treat this as master.
+; Options will not change over time.  Can treat this as MASTER.
+TABLE_GREY_MASTER
 TABLE_COLOR_OPTS0 ; COLPF0 - Name of Options.
 	.byte COLOR_GREY+$8
 	.byte COLOR_GREY+$a 

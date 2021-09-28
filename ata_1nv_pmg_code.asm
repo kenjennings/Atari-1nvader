@@ -1152,6 +1152,60 @@ Pmg_AdustMissileHPOS
 	rts
 
 
+
+
+; ==========================================================================
+; 									AdjustMissileColorAndHPOS (MISSILES)
+; ==========================================================================
+; Part of the code used by VBI.   After VBI manages the timer for 
+; animation, then if the timer runs out update the base color of the
+; missile overlays, and then change the horizontal positions.
+; --------------------------------------------------------------------------
+
+Pmg_AdjustMissileColorAndHPOS
+
+	lda ZTitleLogoBaseColor      ; Get the Base color
+	cmp #COLOR_ORANGE_GREEN      ; Is it the ending color?
+	bne b_pamcah_AddToColor         ; No.  Add to the color component.
+
+	lda #COLOR_ORANGE1           ; Yes.  Reset to first color.
+	bne b_pamcah_UpdateColor        ; Go do the update.
+
+b_pamcah_AddToColor
+	clc
+	adc #$10                      ; Add 16 to color.
+
+b_pamcah_UpdateColor
+	sta ZTitleLogoBaseColor      ; Resave the new update
+	sta ZTitleLogoColor          ; Save it for the DLI use
+	sta COLOR3                   ; Make sure it starts in the OS shadow and 
+	sta COLPF3                   ; the hardware registers.
+
+	; Third, change the Missile animation images and position.
+
+	ldx ZTitleHPos              ; Move horizontally right two color clocks per animation.
+	inx
+	inx
+
+	ldy zTitleLogoPMFrame       ; Go to the next Missile image index
+	iny
+	cpy #TITLE_LOGO_PMIMAGE_MAX ; Did it go past the last frame?
+	bne b_pamcah_SkipResetPMImage  ; No.  Do not reset Missile image index.
+
+	ldx #TITLE_LOGO_X_START     ; Reset horizontal position to the start
+	ldy #0                      ; Reset missile image index to start.
+
+b_pamcah_SkipResetPMImage
+	stx ZTitleHPos              ; Save modified base Missile pos, whatever happened above.
+	sty zTitleLogoPMFrame       ; Save new Missile image index.
+
+	txa
+	jsr Pmg_AdustMissileHPOS    ; Update the missile HPOS.
+
+	rts
+
+
+
 ;==============================================================================
 ;												EraseTitleLogo  A
 ;==============================================================================

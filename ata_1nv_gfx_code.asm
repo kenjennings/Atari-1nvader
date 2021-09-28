@@ -124,6 +124,23 @@ b_gatl_SkipReset
 	rts
 
 
+
+; ==========================================================================
+; ANIMATE TAG LINE
+; ==========================================================================
+; Animate tag line colors/set text.
+;
+; VBI only manages the timers and states.
+; Main line copies/computes the colors for the tag line and 
+; updates the LMS for the text per the current state.
+;
+; Tag Line Cycle.
+
+; --------------------------------------------------------------------------
+
+Gfx_Animate_Tag_Line
+
+
 ; ==========================================================================
 ; CLEAR STATS
 ; ==========================================================================
@@ -1173,3 +1190,28 @@ Gfx_SetupCOLPF2Index
 	sta zGO_COLPF2_INDEX
 
 	rts
+
+
+
+
+; ==========================================================================
+; TAG LINE
+; ==========================================================================
+; The line below the Given the current frame number set the correct index offset for the 
+; COLPF2 index used by the DLI on this frame.
+; Since the index use counts down 16 times, the starting value for the 
+; index is:
+;
+; (((frame index + 1) * 16) - 1)  OR
+;
+; frame   index
+; 0        15
+; 1        31
+; 2        47
+; 3        63
+; 4        79
+; 5        95
+;
+; It is 12 bytes of instructions to do the formula and store the result.
+; So, just use a table lookup.  Duh.
+; --------------------------------------------------------------------------

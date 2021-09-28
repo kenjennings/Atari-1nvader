@@ -823,6 +823,9 @@
 ; New tag line under the title. This will have text that fades in and out.
 ; New Options line, and Options documentation line.  The Options 
 ; line has color tables for gradients on COLPF0, COLPF1, COLPF2.
+; Color Tables have been optimized to remove colors that do not need 
+; PAL remapping, and to remove unused entries.   The table is very near 
+; the  max 256 bytes.
 ; Score line and Options Documentations use the same code for creating 
 ; a gradient. 
 ; Colors have been changed for the scrolling documentation line to 
@@ -831,7 +834,15 @@
 ; STILL TO-DO is to fix the scan line misalignment on the game 
 ; screen and game over screens. 
 ; ==========================================================================
-
+;
+; Sep 28, 2021
+; ============
+; Prettifying Ongoing
+; -------------------
+; More DLI tweaking and adjustments.
+; Started creating the tag line's supporting data for animation.
+; Etc.   Misc internal organization. 
+; ==========================================================================
 
 
 ; ==========================================================================

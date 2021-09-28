@@ -121,7 +121,7 @@ DL_LMS_TITLE13 = [ * + 6 ]
 	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+160          ;    (071 - 071)  (Mode F) * 3 Animated Gfx  (DLI 2.5 - screen DMA/normal GTIA)
 
 	mDL_BLANK DL_BLANK_2|DL_DLI                             ;    (072 - 073) Blank 2   (DLI 2.7 -- Tag Line gradient.)
-	mDL_LMS   DL_TEXT_6,GFX_TAG_LINE1                       ; 09 (074 - 081) (6) Tag Line
+	mDL_LMS   DL_TEXT_6,GFX_TAG_TEXT                        ; 09 (074 - 081) (6) Tag Line
 	mDL_BLANK [DL_BLANK_5|DL_DLI]                           ;    (082 - 086) Blank 5  (DLI 3) (Hscroll authors, run colors)
 
 DL_LMS_SCROLL_CREDIT1 = [ * + 1 ]   
@@ -278,7 +278,7 @@ DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first
 	.endr
 
 	mDL_LMS [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5         ; 15      (155 - 162) (171) (6) Stars   
-	mDL_BLANK DL_BLANK_2                                    ; 16      (163 - 164) Blank 2
+	mDL_BLANK DL_BLANK_1                                    ; 16      (163 - 164) Blank 2
 
 	mDL_JMP BOTTOM_OF_DISPLAY                               ; -- - 24  (165 - 219) End of screen. 
 
@@ -466,8 +466,13 @@ GFX_TITLE_FRAME4
 
 	.align $0100
 
-GFX_TAG_LINE1 
-	.sb "  SUBTAG LINE HERE  "
+GFX_TAG_TEXT ; Displayed using Narrow DMA.
+	.sb "   ONE BUTTON   "
+	.sb "    ONE ALIEN   "
+	.sb "    ONE LIFE    "
+	.sb "    NO MERCY    "
+
+
 ; Text line for the two major authors, C64, Atari.
 
 GFX_SCROLL_CREDIT1
@@ -521,10 +526,10 @@ scrtxt
 	.sb      "     MORE POINTS WHEN 1NVADER IS HIGH UP. "
 	.sb +$40,"     1NVADER SLOWS DOWN AFTER EIGHTY HITS."
 	.sb      "     PRESS"
-	.sb +$40," OPTION "
+	.sb +$40," OPTION"
 	.sb      " FOR GAME MODES THEN PRESS"
 	.sb +$40," SELECT "
-	.sb      "TO CHOOSE."
+	.sb      "TO CHOOSE. "
 	.sb      "     C64 VERSION 2019 - "
 	.sb +$40,"DARREN FOULDS "
 	.sb      " @DARRENTHEFOULDS "

@@ -238,6 +238,38 @@ zMOTHERSHIP_ROW_AS_DIGITS   .byte $00,$00 ; Mothership text line row number as 2
 
 
 ; ==========================================================================
+; TITLE SCREEN TAG LINE . . .
+
+GFX_TAG_COUNTER 
+	.byte 0 ; current jiffy counter.  When this is 0, then steps counts
+
+GFX_TAG_STEPS
+	.byte 0 ; How many steps in the current state.  When 0, then increment State.
+
+GFX_TAG_STATE
+	.byte 0 ; count 0,1,2,3 -- wait off, fade in, wait on, fade out.  When state = 4 then TAG_LINE++
+
+GFX_TAG_LINE
+	.byte 0 ; index to tables 0, 1, 2, 3.  (Also, * 16 to get new Text LMS)
+
+GFX_TAG_OFF_COUNT     ; Jiffies to wait at start before fade-in.
+	.byte 255,60,60,60
+
+GFX_TAG_FADE_IN_COUNT ; jiffies between color updates
+	.byte 2,2,2,4
+
+GFX_TAG_WAIT_COUNT    ; Jiffies to wait before fade-out.
+	.byte 60,60,60,180
+
+GFX_TAG_FADE_OUT_COUNT ; jiffies between color updates
+	.byte 2,2,2,6
+
+GFX_TAG_STATE_STEPS ; How many times does this state loop?  (fad in/out animations.)
+	.byte 0,8,0,8
+
+
+
+; ==========================================================================
 
 ; Points for Mothership by row.
 
