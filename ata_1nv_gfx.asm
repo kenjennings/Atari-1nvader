@@ -121,6 +121,7 @@ DL_LMS_TITLE13 = [ * + 6 ]
 	mDL_LMS   DL_MAP_F|DL_DLI,GFX_TITLE_FRAME1+160          ;    (071 - 071)  (Mode F) * 3 Animated Gfx  (DLI 2.5 - screen DMA/normal GTIA)
 
 	mDL_BLANK DL_BLANK_2|DL_DLI                             ;    (072 - 073) Blank 2   (DLI 2.7 -- Tag Line gradient.)
+DL_LMS_TAG_TEXT = [ * + 1 ]
 	mDL_LMS   DL_TEXT_6,GFX_TAG_TEXT                        ; 09 (074 - 081) (6) Tag Line
 	mDL_BLANK [DL_BLANK_5|DL_DLI]                           ;    (082 - 086) Blank 5  (DLI 3) (Hscroll authors, run colors)
 
@@ -466,21 +467,22 @@ GFX_TITLE_FRAME4
 
 	.align $0100
 
-GFX_TAG_TEXT ; Displayed using Narrow DMA.
+GFX_TAG_TEXT ; Displayed using Narrow DMA.  (16 * 4 == 64)   [51 + 51 + 64 == 166]
 	.sb "   ONE BUTTON   "
-	.sb "    ONE ALIEN   "
+	.sb "   ONE  ALIEN   "
 	.sb "    ONE LIFE    "
-	.sb "    NO MERCY    "
+	.sb "    NO "
+	.sb +$40,"MERCY    "
 
 
 ; Text line for the two major authors, C64, Atari.
 
-GFX_SCROLL_CREDIT1
+GFX_SCROLL_CREDIT1 ; 20 + 11 + 20 == 51 
 	.sb "    DARREN FOULDS   "  ; +0, HSCROL 12
 	.sb "           "           ; Padding to allow values to leave.
 	.sb "   ken jennings     "  ; +30, HSCROL 12
 
-GFX_SCROLL_CREDIT2
+GFX_SCROLL_CREDIT2; 20 + 11 + 20 == 51
 	.by $00,$52,$50,$52,$51,$00,$4D ; "2021 -"
 	.sb " atari "
 	.by $58,$4d                     ; "8-"
@@ -501,7 +503,7 @@ GFX_OPTION
 	.sb +$40,"TEXT "
 	.sb +$80,"HERE  "
 GFX_OPTION_START
-	.sb "                    " ; 20 blanks to allow for OPTION to scroll left to right.
+	.sb "                      " ; 22 blanks to allow for OPTION to scroll left to right.
 	.sb "                    " ; another 20 blanks to allow the description to scroll right to left
 	; Note the spaces below are @ signs due to the +$40 needed to print 
 	; screen bytes using the Mode 2 versions of characters.
@@ -672,6 +674,5 @@ GFX_THIS_IS_BLANK ; we need 20 blanks for a moment for the Game Over screen
 
 GFX_GAME_OVER_LINE
 	.ds 20
-
 
 

@@ -249,6 +249,8 @@ b_mdv_EndBigMothership
 
 b_mdv_DoTitleAnimation 
 
+	jsr Gfx_RunTagLine           ; Fade in/out tagline message
+
 	; First, Animate the Title graphics (gfx pixels)
 
 	dec zAnimateTitleGfx         ; decrement countown clock
@@ -764,9 +766,11 @@ TITLE_DLI_2_7
 	ldy #7
 
 b_dli27_LoopColors
-	lda TABLE_COLOR_TAGLINE,y
+	lda TABLE_COLOR_TAGLINE_PF0,y
 	sta WSYNC    
 	sta COLPF0
+	lda TABLE_COLOR_TAGLINE_PF1,y   
+	sta COLPF1
 
 	dey
 	bpl b_dli27_LoopColors

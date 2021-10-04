@@ -78,7 +78,7 @@ SIZEOF_EXPLOSION_TABLE=7  ; Actually, size is 8.  7 is the starting index. Look 
 ; difference between NTSC and PAL.
 
 ; Tagline will change over time.
-TABLE_COLOR_TAGLINE ; COLPF0 - One button, one life, one alien, blah blah.
+TABLE_COLOR_TAGLINE_PF0 ; COLPF0 - One button, one life, one alien, blah blah.
 	.byte COLOR_GREY+$8
 	.byte COLOR_GREY+$a
 	.byte COLOR_GREY+$c
@@ -88,6 +88,17 @@ TABLE_COLOR_TAGLINE ; COLPF0 - One button, one life, one alien, blah blah.
 	.byte COLOR_GREY+$8
 	.byte COLOR_GREY+$a
 
+; Tagline will change over time.
+TABLE_COLOR_TAGLINE_PF1 ; COLPF1 - (NO) MERCY
+	.byte COLOR_GREY+$8
+	.byte COLOR_GREY+$a
+	.byte COLOR_GREY+$c
+	.byte COLOR_GREY+$e
+	.byte COLOR_GREY+$4
+	.byte COLOR_GREY+$6
+	.byte COLOR_GREY+$8
+	.byte COLOR_GREY+$a
+	
 ; Options will not change over time.  Can treat this as MASTER.
 TABLE_GREY_MASTER
 TABLE_COLOR_OPTS0 ; COLPF0 - Name of Options.

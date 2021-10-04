@@ -296,6 +296,8 @@ GameSetupTitle
 	sta ZTitleLogoBaseColor      ; Resave the new update
 	sta ZTitleLogoColor          ; Save it for the DLI use
 
+	jsr Gfx_InitTagLine          ; Tag line under the logo
+
 
 	; ===== The scrolling credits =====
 

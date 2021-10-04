@@ -939,6 +939,10 @@ b_gzgot_ZeroLoop
 ; Rare enough to be surprising when it occurs.
 ; --------------------------------------------------------------------------
 
+; Note, this is 240 bytes of text below.   However, the game over animation 
+; will result in COPYING bytes from these sources to the GAME_OVER_LINE.
+; These values/declarations do not need to be aligned or fall within any 
+; managed, aligned graphics memory
 
 GFX_GAME_OVER_TEXT0
 	.sb "  G A M E  O V E R  "   ; Do this about 96% of the time.
@@ -964,6 +968,8 @@ GFX_GAME_OVER_TEXT10
 	.sb " DO YOU NEED MOMMY? "
 GFX_GAME_OVER_TEXT11
 	.sb "    TASTY HUMANS!   "
+
+
 
 TABLE_HI_GFX_GAMEOVER
 	.by >GFX_GAME_OVER_TEXT0,>GFX_GAME_OVER_TEXT1
@@ -1197,21 +1203,331 @@ Gfx_SetupCOLPF2Index
 ; ==========================================================================
 ; TAG LINE
 ; ==========================================================================
-; The line below the Given the current frame number set the correct index offset for the 
-; COLPF2 index used by the DLI on this frame.
-; Since the index use counts down 16 times, the starting value for the 
-; index is:
+; A series of text messages appear under the logo.
+; They fade up from black, remain momentarily, then fade to black.
 ;
-; (((frame index + 1) * 16) - 1)  OR
+; There are activites common to each -- mostly waiting.  Some activities 
+; must loop multiple times (fade in, fade out).  A speed setting per 
+; loop or the activity is also needed.
 ;
-; frame   index
-; 0        15
-; 1        31
-; 2        47
-; 3        63
-; 4        79
-; 5        95
+; The tagline is just a cosmetic nicety.   There is no reason to scale 
+; the timing to make PAL execute in the same speed as NTSC.  
+; Additionally, since the color values for the tag line are all grey, 
+; palette adjustment for PAL does not occur. 
 ;
-; It is 12 bytes of instructions to do the formula and store the result.
-; So, just use a table lookup.  Duh.
+; In Detail:
+;
+; (ONE BUTTON)
+; Long Wait (10 sec), Fade in, Wait (1 sec), Fade out.
+; (ONE ALIEN)
+;      Wait (1 sec),  Fade in, Wait (1 Sec), Fade out.
+; (ONE LIFE)
+;      Wait (1 sec),  Fade in, Wait (1 Sec), Fade out.
+; (NO) /MERCY/
+;      Wait (1 sec)   Fade in,  
+; /NO/ (MERCY)
+;      Wait (2 sec),  Fade in, Wait (2 sec), Fade out (NO and MERCY).
+;
+; In order to have two Fade-ins for the same line ("NO", then "MERCY") 
+; there needs to be two color registers on the line, and then two 
+; different fade in routines, one per color registers.   Fade out is  
+; done at the same time, so one fade out routine can be used that 
+; decrements both color registers.
+;
+; The individual activities:
+;
+; (0) Wait                 X seconds, X jiffies per second
+; (1) Fade in COLPF0,      X loops,   X jiffies wait per loop.
+; (2) Fade in COLPF1,      X loops,   X jiffies wait per loop.
+; (3) Fade out COLPF0/PF1, X loops,   X jiffies wait per loop.
+;
+; The display LMS List:
+;
+; (0) ONE BUTTON -- All COLPF0
+; (1) ONE ALIEN  -- All COLPF0
+; (2) ONE LIFE   -- All COLPF0
+; (3) NO MERCY   -- "NO" COLPF0, "MERCY" COLPF1
+;
+; The LMS value is the same across multiple states in the animation.
+; Rather than specifying an LMS value that infrequently changes 
+; in a program state array, instead define LMS value changes as 
+; a state in the loop.   The high bit of the state identification 
+; would indicate the step is an LMS change, and the remainder of 
+; the state identification value is the index for the LMS.  The
+; step and jiffy counter for the LMS change would be 0.  If it is
+; examines by timer code, then this should trigger the state engine 
+; to immediately move to the next state in the array.
+;
+; STATE = LMS =
+; $80   = (0) = "ONE BUTTON"
+; $81   = (1) = "ONE ALIEN"
+; $82   = (2) = "ONE ALIEN"
+; $83   = (3) = "ONE ALIEN"
+;
+; Implementation - The Complete sequence:
+; 
+; INIT == Set All COLPF0/1 in table == 0, set TAG_INDEX = 0
+; 
+; CONTINUOUS LOOP
+; FUNCTION    = STATE |  STEPS   | JIFFIES 
+; LMS         = ($80) |  0 sec   |  0 jiffies (ONE BUTTON)
+; Wait        =  (0)  | 10 sec   | 60 jiffies 
+; Fade in PF0 =  (1)  | 16 loops |  2 jiffies  
+; Wait        =  (0)  |  1  sec  | 60 jiffies 
+; Fade out    =  (3)  | 16 loops |  2 jiffies 
+; LMS         = ($81) |  0 sec   |  0 jiffies (ONE ALIEN)
+; Wait        =  (0)  |  1 sec   | 60 jiffies 
+; Fade in PF0 =  (1)  | 16 loops |  2 jiffies  
+; Wait        =  (0)  |  1  sec  | 60 jiffies 
+; Fade out    =  (3)  | 16 loops |  2 jiffies  
+; LMS         = ($82) |  0 sec   |  0 jiffies (ONE LIFE)
+; Wait        =  (0)  |  1 sec   | 60 jiffies  
+; Fade in PF0 =  (1)  | 16 loops |  2 jiffies  
+; Wait        =  (0)  |  1  sec  | 60 jiffies 
+; Fade out    =  (3)  | 16 loops |  2 jiffies 
+; LMS         = ($83) |  0 sec   |  0 jiffies (NO MERCY)
+; Wait        =  (0)  |  1 sec   | 60 jiffies 
+; Fade in PF0 =  (1)  | 16 loops |  2 jiffies  
+; Wait        =  (0)  |  1 sec   | 60 jiffies  
+; Fade in PF1 =  (2)  | 16 loops |  2 jiffies  
+; Wait        =  (0)  |  2 sec   | 60 jiffies 
+; Fade out    =  (3)  | 16 loops |  2 jiffies 
+; END LOOP
+;
+;
+; Pseudo coding this . . . 
+; Hint -- LMS states are executed the moment they are encountered.
+; Other states must run the jiffy counter to zero and then execute 
+; per the number of steps specified.
+;
+;
+; Start of Routine Service Tag Line States and Steps:
+; Count the jiffies...
+; If TAG_COUNTER >0 Then TAG_COUNTER--: JumpTo End of Routine
+; (Jiffy Counter has ended, check state, end state.) 
+;
+; TAG_COUNTER = TAG_STEP_JIFFIES[ TAG_INDEX ] ; reset jiffy counter in case we loop the step again.
+; If TAG_STEPS > 0 Then TAG_STEPS--: JumpTo RunState
+;
+;
+; NextState:
+; TAG_INDEX++
+; Call SetTagState
+; JumpTo End of Routine
+;
+;
+; SetTagState:
+; TAG_STATE = TAG_ENGINE_STATES[ TAG_INDEX ]
+;
+; If TAG_STATE == 255 Then TAG_INDEX = 0 : JumpTo SetTagState
+;
+; If TAG_STATE & $80 Then Call RunState : TAG_INDEX++ : JumpTo SetTagState
+;
+; TAG_STEPS   = TAG_STATE_STEPS[ TAG_INDEX ]
+; TAG_COUNTER = TAG_STEP_JIFFIES[ TAG_INDEX ]
+;
+; End of SetTagState
+;
+;
+; RunState:
+; If TAG_STATE & $80 Then Call SetTagLMS : End of RunState
+;
+; TAG_COUNTER = TAG_STEP_JIFFIES[ TAG_INDEX ]
+; 
+; Switch ( TAG_STATE )
+;     0: ( Wait  ) ; Nothing to do.  Main logic maintains jiffy count and step count.
+;
+;     1: ( Fade In COLPF0 )
+;        Loop 0 to 7
+;            If COLOR_TAGLINE_PF0[ Loop ] < GREY_MASTER[ Loop ] Then COLOR_TAGLINE_PF0[ Loop ]++
+;        Next Loop
+;
+;     2: ( Fade in COLPF1 )
+;        Loop 0 to 7
+;            If COLOR_TAGLINE_PF1[ Loop ] < GREY_MASTER[ Loop ] Then COLOR_TAGLINE_PF1[ Loop ]++
+;        Next Loop
+;
+;     3: ( Fade out COLPF0/PF1 )
+;        Loop 0 to 7
+;            If COLOR_TAGLINE_PF0[ Loop ] != 0 Then COLOR_TAGLINE_PF0[ Loop ]--
+;            If COLOR_TAGLINE_PF1[ Loop ] != 0 Then COLOR_TAGLINE_PF1[ Loop ]--
+;        Next Loop
+;
+; End Switch: JumpTo End of Routine
+;
+; End of RunState.
+;
+;
+; SetTagLMS:
+; INDEX = TAG_STATE & $7F ; Remove high bit.
+; LMS = GFX_TAG_LMS[ INDEX ]
+; DL_LMS_TAG_TEXT = LMS
+; End of SetTagLMS
+;
+;
+; End of Routine Service Tag Line States and Steps.
+;
 ; --------------------------------------------------------------------------
+
+; ==========================================================================
+; INIT TAG LINE
+; ==========================================================================
+; Set Tag Index Out of Range which will trigger going to the first 
+; entry immediately which will cause update of the LMS.
+; 
+; Technically, counters should be 0, too.  Buuut, since the first step 
+; in the index is to change the LMS pointer this will happen automatically.
+; 
+; Also zero the colord for COLPF0 and COLPF1 to make sure whatever is 
+; displayed in the tag line is off/not visible.
+; --------------------------------------------------------------------------
+
+Gfx_InitTagLine
+
+	lda #$FF
+	sta GFX_TAG_INDEX
+
+	lda #0
+	ldy #7
+b_gitl_LoopZeroColors
+	sta TABLE_COLOR_TAGLINE_PF0,y
+	sta TABLE_COLOR_TAGLINE_PF1,y
+	dey
+	bpl b_gitl_LoopZeroColors
+
+	rts
+
+
+; ==========================================================================
+; RUN TAG LINE
+; ==========================================================================
+; Very simply...
+; Check if init, then force setup to first entry in engine table.
+;
+; If jiffy timer on, then decrement jiffy timer. 
+; If jiffy timer found at 0, then check step counter.
+; If step counter on then decrement step counter, and  call the state 
+; engine for the current state.
+; If step counter found at 0, then increment to next entry in state engine.
+; end
+;
+; When going to Next State, copy state, steps, and counter.
+; If state $80 bit set, then immediately call.
+; End
+;
+; Running the State:  Based on state number do the appropriate action
+; ... Set new LMS
+; ... Wait
+; ... Increment COLPF0
+; ... Increment COLPF1
+; ... Decrement COLPF0/COLPF1
+; End.
+; --------------------------------------------------------------------------
+
+Gfx_RunTagLine
+
+	ldy GFX_TAG_INDEX             ; Is the Index -1?
+	bpl b_grtl_RunCounter         ; No.  Continue normally.
+
+	ldy #0                        ; Reset ...  index, 0 timer, and load first state (LMS).
+	sty GFX_TAG_INDEX             ; ... index to 0.
+	sty GFX_TAG_COUNTER           ; Jiffy delay to 0
+	sty GFX_TAG_STEPS             ; State steps to 0
+	lda TABLE_TAG_ENGINE_STATES   ; Get first state (which we know is LMS)
+	sta GFX_TAG_STATE             ; And Save.
+	bmi b_grtl_RunState           ; And run this now.  (Because it is LMS). (Always Branches)
+
+b_grtl_RunCounter
+	lda GFX_TAG_COUNTER           ; Is counter 0?
+	beq b_grtl_RunStep            ; Yes, counter ran out, do next step 
+	dec GFX_TAG_COUNTER           ; No, decrement, and
+	rts                           ; Done here until next time.
+
+b_grtl_RunStep
+	ldy GFX_TAG_INDEX             ; (Got here because jiffy counter 0.  Reset it). Get Current index
+	lda TABLE_TAG_STEP_JIFFIES,y  ; Load the current state's jiffy delay
+	sta GFX_TAG_COUNTER           ; Reset jiffy counter.
+
+	lda GFX_TAG_STEPS             ; Is Steps 0?
+	beq b_grtl_NextState          ; Yes.  Setup next state.
+	dec GFX_TAG_STEPS             ; No, decrement, and
+	bpl b_grtl_RunState           ; Run this state. (always branch)
+
+b_grtl_NextState
+	inc GFX_TAG_INDEX             ; Next state index
+	ldy GFX_TAG_INDEX             ; Get index
+	lda TABLE_TAG_ENGINE_STATES,y ; Get new state
+	cmp #$FF                      ; This is 255?
+	bne b_grtl_LoadNextState      ; No.  Continue as normal.
+	ldy #0                        ; Yes.  Reset the ...
+	sty GFX_TAG_INDEX             ; ... index to start.
+
+b_grtl_LoadNextState
+	lda TABLE_TAG_STEP_JIFFIES,y  ; Load the new state's jiffy delay
+	sta GFX_TAG_COUNTER
+	lda TABLE_TAG_STATE_STEPS,y   ; Load the new state's steps
+	sta GFX_TAG_STEPS
+	lda TABLE_TAG_ENGINE_STATES,y ; Load the new state.
+	sta GFX_TAG_STATE
+	bmi b_grtl_RunState           ; Is the State negative (LMS to execute now).
+	rts                           ; No.  End of state management.
+
+b_grtl_RunState
+	lda GFX_TAG_STATE             ; Get the current state
+	bmi b_grtl_ExecLMS            ; Negative means an LMS instruction
+	beq b_grtl_ExecWait           ; 0 == wait; already run by jiffy/step counter 
+	cmp #1
+	beq b_grtl_ExecFadePF0        ; 1 == Fade In COLPF0
+	cmp #2
+	beq b_grtl_ExecFadePF1        ; 2 == Fade In COLPF1
+	cmp #3
+	beq b_grtl_Exec_FadeOut       ; 3 == Fade Out COLPF0/COLPF1
+b_grtl_ExecWait                   ; Wait is a do-nothing activity.
+	rts                           ; And therefore, exit.
+
+b_grtl_ExecLMS                    ; EXECUTE SET LMS 
+	and #$7F                      ; Remove high bit
+	tay                           ; Use the rest as index
+	lda TABLE_GFX_TAG_LMS,y       ; Get LMS low byte from table
+	sta DL_LMS_TAG_TEXT           ; Update Display List.
+	jmp b_grtl_NextState          ; Go setup the next Step NOW.
+
+b_grtl_ExecFadePF0                ; EXECUTE FADE IN COLPF0
+	ldx #7                        ; Loop 8 times
+b_grtl_LoopIncCOLPF0
+	lda TABLE_COLOR_TAGLINE_PF0,x ; Get the current value
+	cmp TABLE_GREY_MASTER,x       ; Is it the same as the master table?
+	beq b_grtl_SkipIncPF0         ; Yes.  Nothing to increment.
+	inc TABLE_COLOR_TAGLINE_PF0,x ; Add 1 to current entry.
+b_grtl_SkipIncPF0
+	dex                           ; Subtract from index
+	bpl b_grtl_LoopIncCOLPF0      ; Loop 7...0
+	rts
+
+b_grtl_ExecFadePF1                ; EXECUTE FADE IN COLPF1
+	ldx #7                        ; Loop 8 times
+b_grtl_LoopIncCOLPF1
+	lda TABLE_COLOR_TAGLINE_PF1,x ; Get the current value
+	cmp TABLE_GREY_MASTER,x       ; Is it the same as the master table?
+	beq b_grtl_SkipIncPF1         ; Yes.  Nothing to increment.
+	inc TABLE_COLOR_TAGLINE_PF1,x ; Add 1 to current entry.
+b_grtl_SkipIncPF1
+	dex                           ; Subtract from index
+	bpl b_grtl_LoopIncCOLPF1      ; Loop 7...0
+	rts
+
+b_grtl_Exec_FadeOut               ; EXECUTE FADE OUT COLP0/COLPF1
+	ldx #7                        ; Loop 8 times
+b_grtl_LoopDecCOLPF
+	lda TABLE_COLOR_TAGLINE_PF0,x ; Get the current value
+	beq b_grtl_SkipDecPF0         ; Zero.   Nothing to decrement.
+	dec TABLE_COLOR_TAGLINE_PF0,x ; Subtract 1 from current entry.
+b_grtl_SkipDecPF0
+	lda TABLE_COLOR_TAGLINE_PF1,x ; Get the current value
+	beq b_grtl_SkipDecPF1         ; Zero.   Nothing to decrement.
+	dec TABLE_COLOR_TAGLINE_PF1,x ; And this was the same starting value, so decrement.
+b_grtl_SkipDecPF1
+	dex                           ; Subtract from index
+	bpl b_grtl_LoopDecCOLPF       ; Loop 7...0
+	rts
+

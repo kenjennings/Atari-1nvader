@@ -240,37 +240,55 @@ zMOTHERSHIP_ROW_AS_DIGITS   .byte $00,$00 ; Mothership text line row number as 2
 ; ==========================================================================
 ; TITLE SCREEN TAG LINE . . .
 
-GFX_TAG_COUNTER 
-	.byte 0 ; current jiffy counter.  When this is 0, then steps counts
+STE_WAIT=0
+STE_FIN0=1
+STE_FIN1=2
+STE_FINO=3
+STE_LMS=$80
 
-GFX_TAG_STEPS
-	.byte 0 ; How many steps in the current state.  When 0, then increment State.
+; index to state engine array. 
+GFX_TAG_INDEX    .byte 0 
 
-GFX_TAG_STATE
-	.byte 0 ; count 0,1,2,3 -- wait off, fade in, wait on, fade out.  When state = 4 then TAG_LINE++
+; current jiffy counter.  When this is 0, then do the next steps (or loop)
+GFX_TAG_COUNTER  .byte 0 
 
-GFX_TAG_LINE
-	.byte 0 ; index to tables 0, 1, 2, 3.  (Also, * 16 to get new Text LMS)
+; How many jiffies to wait for each STEP in a state
+TABLE_TAG_STEP_JIFFIES  
+	.byte 0,60,1,65,1      ; (ONE BUTTON)
+	.byte 0,55,1,65,1      ; (ONE ALIEN)
+	.byte 0,55,1,65,1      ; (ONE LIFE)
+	.byte 0,55,1,45,1,70,1 ; (NO MERCY)
 
-GFX_TAG_OFF_COUNT     ; Jiffies to wait at start before fade-in.
-	.byte 255,60,60,60
+; Countdown the steps (loops) for the current state.  When 0, then do next State.
+GFX_TAG_STEPS   .byte 0 
 
-GFX_TAG_FADE_IN_COUNT ; jiffies between color updates
-	.byte 2,2,2,4
+; How many times does this state loop?  (for fade in/out animations.) Index by STATE
+TABLE_TAG_STATE_STEPS    
+	.byte 0,8,16,0,16      ; (ONE BUTTON)
+	.byte 0,0,16,0,16      ; (ONE ALIEN)
+	.byte 0,0,16,0,16      ; (ONE LIFE)
+	.byte 0,0,16,0,16,1,16 ; (NO MERCY)
 
-GFX_TAG_WAIT_COUNT    ; Jiffies to wait before fade-out.
-	.byte 60,60,60,180
+; Current state being executed. 
+GFX_TAG_STATE   .byte 0 
 
-GFX_TAG_FADE_OUT_COUNT ; jiffies between color updates
-	.byte 2,2,2,6
+; State list for engine.
+TABLE_TAG_ENGINE_STATES
+	.byte STE_LMS|0,STE_WAIT,STE_FIN0,STE_WAIT,STE_FINO                   ; (ONE BUTTON)
+	.byte STE_LMS|1,STE_WAIT,STE_FIN0,STE_WAIT,STE_FINO                   ; (ONE ALIEN)
+	.byte STE_LMS|2,STE_WAIT,STE_FIN0,STE_WAIT,STE_FINO                   ; (ONE LIFE)
+	.byte STE_LMS|3,STE_WAIT,STE_FIN0,STE_WAIT,STE_FIN1,STE_WAIT,STE_FINO ; (NO MERCY)
+	.byte $FF
 
-GFX_TAG_STATE_STEPS ; How many times does this state loop?  (fad in/out animations.)
-	.byte 0,8,0,8
-
+; Address of text string for LMS.  Index by LINE.
+TABLE_GFX_TAG_LMS            
+	.byte <GFX_TAG_TEXT      ; (ONE BUTTON)
+	.byte <[GFX_TAG_TEXT+16] ; (ONE ALIEN)
+	.byte <[GFX_TAG_TEXT+32] ; (ONE LIFE)
+	.byte <[GFX_TAG_TEXT+48] ; (NO MERCY)
 
 
 ; ==========================================================================
-
 ; Points for Mothership by row.
 
 ; 00 = 1000 ; 01 = 0500 
@@ -286,14 +304,6 @@ TABLE_MOTHERSHIP_POINTS
 	.byte $02,$75,$02,$50,$02,$25,$02,$00,$01,$75 ; 10 - 14
 	.byte $01,$50,$01,$25,$01,$00,$00,$75,$00,$50 ; 15 - 19
 	.byte $00,$25,$00,$01                         ; 20 - 21
-
-; Are there really 8 stars? In the video it appears there are 4
-; in screen at any time.  It seems like the code wraps around 
-; at 6, so ...? 
-TABLE_STAR_LOCATION ; star
-	.byte 0,32,64,96       ; eight
-	.byte 128,160,192,224  ; stars
- 
 
 ; Table to convert row to Y coordinate for mothership.
 ; This is also do-able with a LSR to multiply times 8 then add offset.
@@ -311,6 +321,16 @@ TABLE_TO_DIGITS ; 0 to 21.  (22 is last row which should be undisplayed.)
 	.byte $10,$11,$12,$13,$14,$15,$16,$17,$18,$19
 	.byte $20,$21,$22
 
+
+; ==========================================================================
+
+; Are there really 8 stars? In the video it appears there are 4
+; in screen at any time.  It seems like the code wraps around 
+; at 6, so ...? 
+TABLE_STAR_LOCATION ; star
+	.byte 0,32,64,96       ; eight
+	.byte 128,160,192,224  ; stars
+ 
 
 ; Game Over Text Values =====================================================
 

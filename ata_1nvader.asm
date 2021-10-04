@@ -843,7 +843,18 @@
 ; Started creating the tag line's supporting data for animation.
 ; Etc.   Misc internal organization. 
 ; ==========================================================================
-
+;
+; Oct 4, 2021
+; ============
+; Prettification Continued
+; ------------------------
+; Animated Tag Line added under the big title graphics. 
+; A series of text messages fad in, and out in the tag line -- 
+; ONE BUTTON -- ONE ALIEN -- ONE LIFE -- NO MERCY.
+; Variable delays configured to execute the effect.
+; Looks like it it working ok.  It also appears to reinitialize itself
+; properly going from the Game Over back to the Title Screen.
+; ==========================================================================
 
 ; ==========================================================================
 ; Atari System Includes (MADS assembler versions)
