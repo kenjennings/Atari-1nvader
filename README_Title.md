@@ -168,4 +168,18 @@ Updated the Playtesters list accordingly, and while I was here, updated the Docu
 
 ---
 
+**5 Oct 2021 -- Prettification**
+
+[![V21 BETA](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/23-BETA-TitleGlitz.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
+
+Player/Missile graphics are used to tint the scores to match the color of the active player(s).
+
+An animated subtitle appears under the big title graphics providing some messages of emotional imapct. (ONE BUTTON -- ONE ALIEN -- ONE LIFE -- NO MERCY)
+
+There is a new line added for Options, and a line for Options documentation.  Supporting this, the custom character set is re-done to include appropriate A-Z for ANTIC Mode 2 text.
+
+(Scoring is temporarily broken.  Looks like this is due to the Player/Missile graphics overlays.  Looks like HITCLR needs to be done at a different time/place on screen.)
+
+---
+
 [ Go Back To MAIN Page ](https://github.com/kenjennings/Atari-1nvader/blob/master/README.md)
