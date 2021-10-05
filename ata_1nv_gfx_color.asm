@@ -123,6 +123,7 @@ TABLE_GAME_COLORS
 zMOTHERSHIP_COLOR   .byte COLOR_PURPLE+$8 ; Game mothership color. PM2 $58 / PM3 $46  ||  $5E
 zMOTHERSHIP_COLOR2  .byte COLOR_PINK+$6   ; Game mothership color. PM2 $48 / PM3 $36  ||  $7E (PAL)
 
+
 TT_DLI6_Alt_Ground  
 	.byte COLOR_ORANGE2+$4  ; ($24) Change COLPF1 to use as alternate ground color.
 

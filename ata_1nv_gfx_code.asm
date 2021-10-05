@@ -180,7 +180,10 @@ b_gcs_LoopClearLine
 
 Gfx_Clear_Scores
 
+;	rts
+
 	lda #0
+	sta gSCORES_ON
 
 	ldy #$05
 b_gcsc_LoopClearSores
@@ -191,7 +194,27 @@ b_gcsc_LoopClearSores
 
 	dey
 	bpl b_gcsc_LoopClearSores
-   
+  
+;  	lda #$FC
+;b_gss_WriteP1Img
+	sta PLAYERADR0+29
+	sta PLAYERADR0+30
+	sta PLAYERADR0+31
+	sta PLAYERADR0+32
+	sta PLAYERADR0+33
+	sta PLAYERADR0+34
+
+;	lda zPLAYER_TWO_ON
+;	beq b_gss_WriteP2Img
+;	lda #$FC
+;b_gss_WriteP2Img
+	sta PLAYERADR3+29
+	sta PLAYERADR3+30
+	sta PLAYERADR3+31
+	sta PLAYERADR3+32
+	sta PLAYERADR3+33
+	sta PLAYERADR3+34
+
 	rts
 
 
@@ -216,6 +239,8 @@ b_gcsc_LoopClearSores
 Gfx_ShowScreen
 
 	ldy #$01                        ; Number of digits (+0 and +1)
+	sty gSCORES_ON
+	
 b_gss_CopyStatsLoop
 	lda zSTATS_TEXT_COLOR           ; Is stats color off?  (i.e. 0?)
 	beq b_gss_WriteStatRow          ; Yes, copy 0 to screen (conveniently, blank space)
@@ -257,7 +282,7 @@ b_gss_LoopCopyScores
 b_gss_WriteP1Score
 	sta GFX_SCORE_P1,y
 
-	lda zPLAYER_TWO_ON      ; If player 1 is on?
+	lda zPLAYER_TWO_ON      ; If player 2 is on?
 	beq b_gss_WriteP2Score  ; No, write the zero byte (blank space) instead.
 	lda zPLAYER_TWO_SCORE,y ; Player on, get a digit from the score.
 	ora #$40                ; Turn $0 to $9 into $40 to $49
@@ -271,6 +296,31 @@ b_gss_WriteP2Score
 	dey
 	bpl b_gss_LoopCopyScores
    
+; The P/M Graphics overlay for text colors.
+
+;	lda zPLAYER_ONE_ON
+;	beq b_gss_WriteP1Img
+	lda #$FC
+b_gss_WriteP1Img
+	sta PLAYERADR0+29
+	sta PLAYERADR0+30
+	sta PLAYERADR0+31
+	sta PLAYERADR0+32
+	sta PLAYERADR0+33
+	sta PLAYERADR0+34
+
+;	lda zPLAYER_TWO_ON
+;	beq b_gss_WriteP2Img
+	lda #$FC
+b_gss_WriteP2Img
+	sta PLAYERADR3+29
+	sta PLAYERADR3+30
+	sta PLAYERADR3+31
+	sta PLAYERADR3+32
+	sta PLAYERADR3+33
+	sta PLAYERADR3+34
+
+
 	rts
 
 

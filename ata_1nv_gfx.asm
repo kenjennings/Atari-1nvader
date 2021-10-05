@@ -73,7 +73,7 @@
 
 DISPLAY_LIST_TITLE                                          ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
-	mDL_BLANK DL_BLANK_8
+	mDL_BLANK DL_BLANK_8|DL_DLI
 	mDL_BLANK DL_BLANK_4|DL_DLI                             ; (DLI 0) Gradient scores then end with Narrow screen DMA (2) P1
 
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00 (020 - 027) score, High score, P2 score
@@ -257,7 +257,7 @@ DISPLAY_LIST_DO_NOTHING
 DISPLAY_LIST_GAME                                           ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 
 	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
-	mDL_BLANK DL_BLANK_8
+	mDL_BLANK DL_BLANK_8|DL_DLI
 	mDL_BLANK DL_BLANK_4|DL_DLI                             ; (DLI 0) Gradient scores then end with Narrow screen DMA (2) P1
 
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
@@ -270,7 +270,9 @@ DISPLAY_LIST_GAME                                           ; System VBI sets co
 ; on text mode line 2, and the DLI to begin the scrolling mountains 
 ; does not begin on the moded 6 line for stars.
 
-	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ; 00      (028 - 028) (DLI 1) for star line that fol;ows.  HSCROL + COLPF0
+	mDL_BLANK [DL_BLANK_2|DL_DLI]                           ; 00      (028 - 028) (DLI 1) for star line 
+
+;	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ; 00      (028 - 028) (DLI 1) for star line that fol;ows.  HSCROL + COLPF0
 
 DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first star's LMS address
 	.rept 14
@@ -279,7 +281,7 @@ DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first
 	.endr
 
 	mDL_LMS [DL_TEXT_6|DL_HSCROLL],GFX_STARS_LINE+5         ; 15      (155 - 162) (171) (6) Stars   
-	mDL_BLANK DL_BLANK_1                                    ; 16      (163 - 164) Blank 2
+;	mDL_BLANK DL_BLANK_1                                    ; 16      (163 - 164) Blank 2
 
 	mDL_JMP BOTTOM_OF_DISPLAY                               ; -- - 24  (165 - 219) End of screen. 
 
@@ -328,12 +330,14 @@ DL_LMS_FIRST_STAR = [ * + 1 ]                               ; Remember the first
 DISPLAY_LIST_GAMEOVER                                       ; System VBI sets color regs, DMACTL.  Custom VBI sets HSCROL, VSCROL, HPOS, PSIZE
 
 	mDL_BLANK DL_BLANK_8                                    ; (000 - 019) Blank scan lines. 8 + 8 + 4 
-	mDL_BLANK DL_BLANK_8
+	mDL_BLANK DL_BLANK_8|DL_DLI
 	mDL_BLANK DL_BLANK_4|DL_DLI                             ; (DLI 0) Gradient scores then end with Narrow screen DMA (2) P1
 
 	mDL_LMS   DL_TEXT_2,GFX_SCORE_LINE                      ; 00      (020 - 027) (2) P1 score, High score, P2 score
 
-	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ; DLI to set COLPF0, COLPF1
+	mDL_BLANK [DL_BLANK_2|DL_DLI]                           ; DLI to set COLPF0, COLPF1
+
+;	mDL_BLANK [DL_BLANK_1|DL_DLI]                           ; DLI to set COLPF0, COLPF1
 
 	.rept 6
 		mDL_BLANK DL_BLANK_8                                ; -- (028 - 075) Blank Lines  (-) 6 * 8 == 48 blanks.
@@ -349,8 +353,9 @@ DL_LMS_GAME_OVER = [ * + 1 ]                                ; Game Over Text lin
 	.endr
 	mDL_BLANK DL_BLANK_7                                    ; -- (140 - 145) 
 
+	mDL_BLANK DL_BLANK_7                                    ; -- (163 - 170) 
   
-	mDL_BLANK DL_BLANK_8                                    ; -- (163 - 170) 
+;	mDL_BLANK DL_BLANK_8                                    ; -- (163 - 170) 
 
 	mDL_JMP BOTTOM_OF_DISPLAY                               ; 19 - 24 (172 - 219) End of screen. 
 

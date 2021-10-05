@@ -854,6 +854,16 @@
 ; Variable delays configured to execute the effect.
 ; Looks like it it working ok.  It also appears to reinitialize itself
 ; properly going from the Game Over back to the Title Screen.
+; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;
+; Score Color WIP
+; ---------------
+; Trying to use P/M graphics as an overlay to tint the scores for the 
+; players to match the player's gun color.   This isn't working like 
+; I expect...   I thought the COLPF1 would show through the player
+; and take on the color of the player.   This is not working. 
+; Players are covering up the playfield and the text.  Not making 
+; sense.  I know I have seen this working before.
 ; ==========================================================================
 
 ; ==========================================================================

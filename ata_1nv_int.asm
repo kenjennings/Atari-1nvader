@@ -641,7 +641,21 @@ TITLE_DLI  ; Placeholder for VBI to restore staring address for DLI chain.
 ; position on screen to accommodate the Countdown text.
 ; -----------------------------------------------------------------------------
 
+
 TITLE_DLI_0
+
+	mStart_DLI
+
+	jsr DLI_ColorFilterScores
+
+	pla
+	tay
+
+	mChainDLI TITLE_DLI_0,TITLE_DLI_0_1
+
+
+
+TITLE_DLI_0_1
 
 	mStart_DLI
 
@@ -652,10 +666,12 @@ TITLE_DLI_0
 	sta WSYNC                ; line 8
 	sta DMACTL
 
+	jsr DLI_RestorePlayers
+	
 	pla
 	tay
 
-	mChainDLI TITLE_DLI_0,TITLE_DLI_1
+	mChainDLI TITLE_DLI_0_1,TITLE_DLI_1
 
 
 ;==============================================================================
@@ -1126,18 +1142,37 @@ b_dli6_Exit
 ; $00 ........ 8
 ; -----------------------------------------------------------------------------
 
+
 GAME_DLI  ; Placeholder for VBI to restore starting address for DLI chain.
+
 
 GAME_DLI_0
 
 	mStart_DLI
 
-	jsr DLI_ScoreLineGradient
+	jsr DLI_ColorFilterScores
 
 	pla
 	tay
 
-	mChainDLI GAME_DLI_0,GAME_DLI_1
+	mChainDLI GAME_DLI_0,GAME_DLI_0_1
+
+
+
+GAME_DLI_0_1
+
+	mStart_DLI
+
+	jsr DLI_ScoreLineGradient
+
+	sta WSYNC
+
+	jsr DLI_RestorePlayers
+
+	pla
+	tay
+
+	mChainDLI GAME_DLI_0_1,GAME_DLI_1
 
 
 
@@ -1216,16 +1251,34 @@ b_GDLI0_NormalExit                ; Exit without changing the DLI vector.
 
 GAME_OVER_DLI  ; Placeholder for VBI to restore starting address for DLI chain.
 
+
 GAME_OVER_DLI_0
+
+	mStart_DLI
+
+	jsr DLI_ColorFilterScores
+
+	pla
+	tay
+
+	mChainDLI GAME_OVER_DLI_0,GAME_OVER_DLI_0_1
+
+
+
+GAME_OVER_DLI_0_1
 
 	mStart_DLI
 
 	jsr DLI_ScoreLineGradient
 
+	sta WSYNC
+	
+	jsr DLI_RestorePlayers
+
 	pla
 	tay
 
-	mChainDLI GAME_OVER_DLI_0,GAME_OVER_DLI_1
+	mChainDLI GAME_OVER_DLI_0_1,GAME_OVER_DLI_1
 
 
 
@@ -1319,6 +1372,74 @@ b_dli_LoopScoreTextColor
 	cpy #$02
 	bne b_dli_LoopScoreTextColor
 
-	sta WSYNC ;  line 7/(2 but not used) 
+;	sta WSYNC ;  line 7/(2 but not used) 
+	rts
+
+
+;==============================================================================
+; Move Players over score positions to color ize the values.
+; If player is not playing do not move.
+
+DLI_ColorFilterScores
+
+	lda gSCORES_ON
+	beq b_dli0_Skip
+
+	lda #52
+	sta HPOSP0
+	lda #180
+	sta HPOSP3
+
+	lda TABLE_COLOR_BLINE_PM0
+	and #$f0
+	sta COLPM0
+
+	lda TABLE_COLOR_BLINE_PM1
+	and #$f0
+	sta COLPM3
+
+	lda #PM_SIZE_QUAD
+	sta SIZEP0
+	sta SIZEP3
+
+	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|$00] 
+	sta PRIOR
+
+b_dli0_Skip
+	rts
+
+;==============================================================================
+; Restore game visuals after abusing Players to make color 
+; overlay for scores.
+
+DLI_RestorePlayers
+
+	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01] 
+	sta PRIOR
+
+	lda SHPOSP0 
+	sta HPOSP0
+	lda PCOLOR0
+	sta COLPM0
+
+	lda SHPOSP3 
+	sta HPOSP3
+	lda PCOLOR3
+	sta COLPM3
+
+	lda zCurrentEvent
+	cmp #EVENT_SETUP_GAME
+	bcs b_dli_rs_GameSizes ; Greater than or equal to Setup Game
+
+	lda #PM_SIZE_DOUBLE
+	bne b_dli_rs_SetSizes
+
+b_dli_rs_GameSizes
+	lda #PM_SIZE_NORMAL
+
+b_dli_rs_SetSizes
+	sta SIZEP0
+	sta SIZEP3
+
 	rts
 

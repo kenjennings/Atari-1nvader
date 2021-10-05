@@ -230,6 +230,8 @@ zPLAYER_TWO_SCORE            .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 d
 
 zHIGH_SCORE                  .byte $00,$00,$00,$00,$00,$00 ; 6 digits
 
+gSCORES_ON                   .byte $01 ; Flag that scores are visible.
+
 ; ==========================================================================
 ; STATISTICS . . .
 

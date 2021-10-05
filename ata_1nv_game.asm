@@ -278,7 +278,7 @@ GameSetupTitle
 	lda #COLOR_WHITE|$0C    ; Light white
 	sta COLOR1              ; COLPF1 - Playfield 1 color (mode 2 text)
 
-	jsr Gfx_ShowScreen
+;	jsr Gfx_ShowScreen
 
 
 	; ===== The Big Logo =====
@@ -416,6 +416,8 @@ GameSetupTitle
 	sta zPLAYER_TWO_REDRAW
 
 
+	jsr Gfx_ShowScreen
+
 	; ===== Start the Title running on the next frame =====
 
 	lda #EVENT_TITLE
@@ -491,7 +493,7 @@ b_gt_ExitTitleAnimation
 	sta zCOUNTDOWN_SECS     ; jiffy ticks, not secs.
 	jsr Gfx_DrawCountdown   ; Update the countdown text.  (Blank)
 
-	jsr Gfx_Clear_Scores    ; Remove the scroes temporarily.
+	jsr Gfx_Clear_Scores    ; Remove the scores temporarily.
 
 	lda #EVENT_COUNTDOWN
 	sta zCurrentEvent
