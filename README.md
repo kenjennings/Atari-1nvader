@@ -83,9 +83,21 @@ Nothing too brilliant and time critical is going on at this part of the screen, 
 
 ---
 
+**5 Oct 2021**
+
+New visuals, and enhancement for future modifications:
+
+- Player scores are tinted the color of the player.
+- Subtitle line added under the large logo.
+- Options line, and Options description lines added for future ability to choose game modes.
+
+(Kinda broke the player scoring.  Pretty sure this has to do with the Player/Missile overlays providing the color for the players' scores at the top of the screen and so I'll need to change when the logic whacks HITCLR to zero the Player/Missile collisions.   Shhhh.)
+
+---
+
 | **Title** |
 | ------- |
-| [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/21-BETA-Title.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
+| [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/23-BETA-TitleGlitz.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
 
 ---
 
