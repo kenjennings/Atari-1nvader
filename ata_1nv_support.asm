@@ -306,7 +306,9 @@ GameAddScore
 	lda zPLAYER_SHOT_THE_SHERIFF,X     ; Did this player get the hit?
 	beq b_gas_Exit                     ; No.  Nothing to do here.
 
-	jsr GameDecrementtHitCounter       ; Player award means minus 1 hit.
+	stx SAVEX
+	jsr GameDecrementHitCounter       ; Player award means minus 1 hit.
+	ldx SAVEX
 
 	lda #0                             ; Clear the artificial carry.
 	ldy #5                             ; Index into mothership points.
@@ -803,7 +805,7 @@ CheckNewExplosion
 	beq b_cne_Exit                 ; No. Nothing to do.
 
 	lda #0
-	sta zLASER_NEW_Y               ; Flag this laser to get erased.
+	sta zLASER_NEW_Y,X               ; Flag this laser to get erased.
 
 	lda zMOTHERSHIP_X              ; Set Explosion X, Y == Mothership X, Y
 	sta zEXPLOSION_X
@@ -1559,7 +1561,7 @@ GameResetHitCounter
 ; When new ones digit value is "0", then increment the mothership speed.
 ; --------------------------------------------------------------------------
 
-GameDecrementtHitCounter
+GameDecrementHitCounter
 
 	dec zMOTHERSHIP_HITS         ; If this goes to 0, then
 	beq GameResetHitCounter      ; go up to reset counter (will not return here.)
@@ -1576,7 +1578,6 @@ GameDecrementtHitCounter
 b_gdhc_CheckSpeedControl        ; Need to add +2 for 2 entries for hpos+ entries.
 	inc  zMOTHERSHIP_MOVE_SPEED ; Speedup++
 	jsr FrameControlMothershipSpeed  ; Maybe overkill.  VBI will also do this.
-;	inc  zMOTHERSHIP_MOVE_SPEED ; Speedup++
 
 b_gdhc_Exit
 	rts

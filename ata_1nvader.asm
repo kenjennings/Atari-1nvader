@@ -865,7 +865,15 @@
 ; Players are covering up the playfield and the text.  Not making 
 ; sense.  I know I have seen this working before.
 ; ==========================================================================
-
+;
+; Oct 5, 2021
+; ============
+; Correcting Corrections
+; ----------------------
+; Turns out Atari800 emulator will do correct Player/Missile and
+; Playfield priority behaviors.  The visualization options for 
+; the screen need to be different, and then everything was right.
+;
 ; ==========================================================================
 ; Atari System Includes (MADS assembler versions)
 	icl "ANTIC.asm"  ; Display List registers

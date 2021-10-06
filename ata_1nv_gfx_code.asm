@@ -125,21 +125,6 @@ b_gatl_SkipReset
 
 
 
-; ==========================================================================
-; ANIMATE TAG LINE
-; ==========================================================================
-; Animate tag line colors/set text.
-;
-; VBI only manages the timers and states.
-; Main line copies/computes the colors for the tag line and 
-; updates the LMS for the text per the current state.
-;
-; Tag Line Cycle.
-
-; --------------------------------------------------------------------------
-
-Gfx_Animate_Tag_Line
-
 
 ; ==========================================================================
 ; CLEAR STATS
@@ -197,12 +182,12 @@ b_gcsc_LoopClearSores
   
 ;  	lda #$FC
 ;b_gss_WriteP1Img
-	sta PLAYERADR0+29
-	sta PLAYERADR0+30
-	sta PLAYERADR0+31
-	sta PLAYERADR0+32
-	sta PLAYERADR0+33
-	sta PLAYERADR0+34
+	sta PLAYERADR2+29
+	sta PLAYERADR2+30
+	sta PLAYERADR2+31
+	sta PLAYERADR2+32
+	sta PLAYERADR2+33
+	sta PLAYERADR2+34
 
 ;	lda zPLAYER_TWO_ON
 ;	beq b_gss_WriteP2Img
@@ -297,21 +282,34 @@ b_gss_WriteP2Score
 	bpl b_gss_LoopCopyScores
    
 ; The P/M Graphics overlay for text colors.
-
-;	lda zPLAYER_ONE_ON
-;	beq b_gss_WriteP1Img
+	lda zCurrentEvent
+	cmp #EVENT_SETUP_GAME
+	bcc b_gss_P1on  ; less then setup Game then draw color block regardless.
+	
+	lda zPLAYER_ONE_ON ; Game mode, then zero  if player off.
+	beq b_gss_WriteP1Img
+	
+b_gss_P1on
 	lda #$FC
+	
 b_gss_WriteP1Img
-	sta PLAYERADR0+29
-	sta PLAYERADR0+30
-	sta PLAYERADR0+31
-	sta PLAYERADR0+32
-	sta PLAYERADR0+33
-	sta PLAYERADR0+34
+	sta PLAYERADR2+29
+	sta PLAYERADR2+30
+	sta PLAYERADR2+31
+	sta PLAYERADR2+32
+	sta PLAYERADR2+33
+	sta PLAYERADR2+34
 
-;	lda zPLAYER_TWO_ON
-;	beq b_gss_WriteP2Img
+	lda zCurrentEvent
+	cmp #EVENT_SETUP_GAME
+	bcc b_gss_P2on  ; less then setup Game then draw color block regardless.
+	
+	lda zPLAYER_TWO_ON ; Game mode, then zero if player off.
+	beq b_gss_WriteP2Img
+
+b_gss_P2on
 	lda #$FC
+	
 b_gss_WriteP2Img
 	sta PLAYERADR3+29
 	sta PLAYERADR3+30
@@ -319,7 +317,6 @@ b_gss_WriteP2Img
 	sta PLAYERADR3+32
 	sta PLAYERADR3+33
 	sta PLAYERADR3+34
-
 
 	rts
 
@@ -1416,7 +1413,6 @@ Gfx_SetupCOLPF2Index
 ;
 ;
 ; End of Routine Service Tag Line States and Steps.
-;
 ; --------------------------------------------------------------------------
 
 ; ==========================================================================

@@ -513,7 +513,7 @@ GFX_OPTION_START
 	; Note the spaces below are @ signs due to the +$40 needed to print 
 	; screen bytes using the Mode 2 versions of characters.
 GFX_OPTION_TEXT
-	.sb +$40,"DESCRIPTION@FOR@OPTION@CHOICES@GOES@HERE"
+	.sb +$40,"@DESCRIPTION@FOR@OPTION@CHOICES@GOES@HERE"
 
 
 	.align $0100

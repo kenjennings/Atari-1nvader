@@ -188,7 +188,8 @@ b_mdv_DoMyDeferredVBI
 ; ======== TITLE SCREEN AND COUNTDOWN ACTIVIES  ========
 ; ======================================================
 	lda zCurrentEvent               ; Get current state
-	cmp #[EVENT_COUNTDOWN+1]        ; Is it TITLE or COUNTDOWN
+;	cmp #[EVENT_COUNTDOWN+1]        ; Is it TITLE or COUNTDOWN
+	cmp #[EVENT_SETUP_GAME+1]
 	bcc b_mdv_DoBigMothership       ; Yes. Less Than < is correct
 
 	jmp b_mdv_DoGameManagement      ; No. Greater Than > COUNTDOWN is GAME or GAMEOVER
@@ -1373,6 +1374,7 @@ b_dli_LoopScoreTextColor
 	bne b_dli_LoopScoreTextColor
 
 ;	sta WSYNC ;  line 7/(2 but not used) 
+
 	rts
 
 
@@ -1386,20 +1388,20 @@ DLI_ColorFilterScores
 	beq b_dli0_Skip
 
 	lda #52
-	sta HPOSP0
+	sta HPOSP2
 	lda #180
 	sta HPOSP3
 
 	lda TABLE_COLOR_BLINE_PM0
 	and #$f0
-	sta COLPM0
+	sta COLPM2
 
 	lda TABLE_COLOR_BLINE_PM1
 	and #$f0
 	sta COLPM3
 
 	lda #PM_SIZE_QUAD
-	sta SIZEP0
+	sta SIZEP2
 	sta SIZEP3
 
 	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|$00] 
@@ -1417,10 +1419,10 @@ DLI_RestorePlayers
 	lda #[MULTICOLOR_PM|FIFTH_PLAYER|GTIA_MODE_DEFAULT|$01] 
 	sta PRIOR
 
-	lda SHPOSP0 
-	sta HPOSP0
-	lda PCOLOR0
-	sta COLPM0
+	lda SHPOSP2 
+	sta HPOSP2
+	lda PCOLOR2
+	sta COLPM2
 
 	lda SHPOSP3 
 	sta HPOSP3
@@ -1438,8 +1440,10 @@ b_dli_rs_GameSizes
 	lda #PM_SIZE_NORMAL
 
 b_dli_rs_SetSizes
-	sta SIZEP0
+	sta SIZEP2
 	sta SIZEP3
+
+	sta HITCLR
 
 	rts
 

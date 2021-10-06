@@ -257,7 +257,7 @@ b_pdbm_LoopZero
 Pmg_CollectCollisions
 
 	lda #0
-	sta zPLAYER_ONE_SHOT_THE_SHERIFF  ; Flag that the players did not shoot the mothership.
+	sta zPLAYER_ONE_SHOT_THE_SHERIFF  ; Zero the flag that the players did not shoot the mothership.
 	sta zPLAYER_TWO_SHOT_THE_SHERIFF
 
 	lda zLASER_ONE_X      ; Start VBI. Copy Laser 1 X to SHPOSP0
@@ -275,10 +275,10 @@ Pmg_CollectCollisions
 b_pcc_SetCollisionFlags
 	lda P0PL                         ; GTIA collision register Player 0 (laser 1)...
 	and #[COLPMF2_BIT|COLPMF3_BIT]   ; Hit Player 2 or 3 (mothership)?
-	sta zPLAYER_ONE_SHOT_THE_SHERIFF ; Laser 1 collision with mothership (P0 to P2)
+	sta zPLAYER_ONE_SHOT_THE_SHERIFF ; Laser 1 collision with mothership (P0 to P2/P3)
 	lda P1PL                         ; GTIA collision register Player 1 (laser 2)...
 	and #[COLPMF2_BIT|COLPMF3_BIT]   ; Hit Player 2 or 3  (mothership)?
-	sta zPLAYER_TWO_SHOT_THE_SHERIFF ; Laser 1 collision with mothership (P1 to P2)
+	sta zPLAYER_TWO_SHOT_THE_SHERIFF ; Laser 2 collision with mothership (P1 to P2/P3)
 
 b_pcc_EndOfCollisionDetection
 	sta HITCLR          ; Always reset the P/M collision bits for next frame.
