@@ -87,11 +87,12 @@ Nothing too brilliant and time critical is going on at this part of the screen, 
 
 New visuals, and enhancement for future modifications:
 
+- New gradients on the Player scores/high score line, and slightly different gradient on the darker statistics line at the bottom.
 - Player scores are tinted the color of the player.
 - Subtitle line added under the large logo.
 - Options line, and Options description lines added for future ability to choose game modes.
-
-(Kinda broke the player scoring.  Pretty sure this has to do with the Player/Missile overlays providing the color for the players' scores at the top of the screen and so I'll need to change when the logic whacks HITCLR to zero the Player/Missile collisions.   Shhhh.)
+- Revised font includes glyphs appropriate for ANTIC Mode 2 text to support the Options Descriptions line.
+- Game Over screen will automatically time out and return to the Title screen.  Around a minute-ish.
 
 ---
 
