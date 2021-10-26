@@ -879,9 +879,18 @@ GFX_STAT_HITS
 GFX_STARS_LINE
 	;    0123456789 123456789 123456789
 	;     ^^==================^^
-	.sb "                    *    "
+	.sb "                    "
+GFX_STAR_DISPLAYED
+	.sb "*    "
 GFX_THIS_IS_BLANK ; we need 20 blanks for a moment for the Game Over screen
 	.sb "                    "
+
+GFX_STAR_CHAR
+	.sb "*"
+GFX_CHEATER_CHARS
+	.sb "CHEATER"
+	.by 0 ; the current index into the CHATER_CHARS string.
+
 
 ; For Game over there is a display line, and then various 
 ; source lines of text that are copied over the line when 
