@@ -1577,3 +1577,39 @@ b_grtl_SkipDecPF1
 	bpl b_grtl_LoopDecCOLPF       ; Loop 7...0
 	rts
 
+
+
+
+; ==========================================================================
+; MENUS, SELECTIONS, OPTIONS
+; ==========================================================================
+; OPTION key menu text.
+; Press OPTION to show choices.
+; Press SELECT to choose.
+
+; The options text will be scrolling on/off the screen so fast, that 
+; fine scrolling is not needed.   Coarse scrolling is fine.  Therefore 
+; no extra buffer characters are needed.  Just stock 20 character plus
+; 20 characters for Mode 6, and 40 + 40 for Mode 2.
+;
+; Erase:
+; 1) Clear buffer at Right position.
+; 2) Scroll, ending at right position.
+; 3) Clear Left Postion.
+; 4) Set at left position.
+;
+; Running Text:
+; 1) Set to Left Postion.
+; 2) Copy Text to Right Position.
+; 3) Scroll ending at right position.
+; 4) Copy Text to Left position.
+; 5) Set to Left Position.
+; 6) Get/Allow/Process Input.
+; 
+
+;	.sb "  OPTION "     ; 10        ; White
+;	.sb +$40,"TEXT "    ; 5         ; Green
+;	.sb +$80,"HERE  "   ; 6 == 20   ; Red
+; --------------------------------------------------------------------------
+
+

@@ -103,7 +103,7 @@ zDocsHS          .byte 15   ; fine horizontal scroll value start.
 
 ; Scrolling Options text. ======================================================
 
-zOptionHScroll   .byte 15 ; fine scroll for options. (both lines.)
+;zOptionHScroll   .byte 15 ; fine scroll for options. (both lines.)
 
 
 zSTATS_TEXT_COLOR  .byte $08 ; color/luminance of text on stats line.

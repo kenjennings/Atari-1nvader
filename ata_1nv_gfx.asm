@@ -139,11 +139,11 @@ DL_LMS_SCROLL_CREDIT2 = [ * + 1 ]
 DL_LMS_SCROLL_DOCS = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (136 - 143) (6) Fine scrolling docs
 
-	mDL_BLANK DL_BLANK_4|DL_DLI                             ; 16 (144 - 147) Blank 4 (DLI 4.5 -- HSCROLL and COLPF0/1/2 options) and options docs.
+	mDL_BLANK DL_BLANK_4|DL_DLI                             ; 16 (144 - 147) Blank 4 (DLI 4.5 -- COLPF0/1/2 options) and options docs.
 DL_LMS_OPTION = [ * + 1 ]   
-	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_OPTION               ; 17 (148 - 155) (6) Options name
+	mDL_LMS   DL_TEXT_6,GFX_OPTION_LEFT                     ; 17 (148 - 155) (6) Options name
 DL_LMS_OPTION_TEXT= [ * + 1 ]  
-	mDL_LMS   DL_TEXT_2|DL_HSCROLL,GFX_OPTION_TEXT          ; 18 (156 - 163) (2) Options documentation
+	mDL_LMS   DL_TEXT_2,GFX_OPTION_TEXT_LEFT                ; 18 (156 - 163) (2) Options documentation
 	mDL_BLANK DL_BLANK_1                                    ; 16 (164 - 164) Blank 1
 
 BOTTOM_OF_DISPLAY  ; (165 - 219)
@@ -499,21 +499,223 @@ GFX_SCROLL_CREDIT2; 20 + 11 + 20 == 51
 	.align $0100
 
 
+; --------------------------------------------------------------------------
 ; OPTION key menu text.
 ; Press OPTION to show choices.
 ; Press SELECT to choose.
 
-GFX_OPTION
-	.sb "  OPTION "
-	.sb +$40,"TEXT "
-	.sb +$80,"HERE  "
-GFX_OPTION_START
-	.sb "                      " ; 22 blanks to allow for OPTION to scroll left to right.
-	.sb "                    " ; another 20 blanks to allow the description to scroll right to left
+; The options text will be scrolling on/off the screen so fast, that 
+; fine scrolling is not needed.   Coarse scrolling is fine.  Therefore 
+; no extra buffer characters are needed.  Just stock 20 character plus
+; 20 characters for Mode 6, and 40 + 40 for Mode 2.
+;
+; Erase:
+; 1) Clear buffer at Right position.
+; 2) Scroll, ending at right position.
+; 3) Clear Left Postion.
+; 4) Set at left position.
+;
+; Running Text:
+; 1) Set to Left Postion.
+; 2) Copy Text to Right Position.
+; 3) Scroll ending at right position.
+; 4) Copy Text to Left position.
+; 5) Set to Left Position.
+; 6) Get/Allow/Process Input.
+; 
+
+;	.sb "  OPTION "     ; 10        ; White
+;	.sb +$40,"TEXT "    ; 5         ; Green
+;	.sb +$80,"HERE  "   ; 6 == 20   ; Red
+; --------------------------------------------------------------------------
+
+GFX_OPTION_LEFT   ; END position left == LMS+0
+	.sb "                    " ; 20 blanks to allow for OPTION to scroll left to right.
+GFX_OPTION_RIGHT  ; Start position == LEFT+40 or RIGHT+0
+	.sb "                    " ; 20 blanks to allow for OPTION to scroll left to right.
+
 	; Note the spaces below are @ signs due to the +$40 needed to print 
 	; screen bytes using the Mode 2 versions of characters.
-GFX_OPTION_TEXT
-	.sb +$40,"@DESCRIPTION@FOR@OPTION@CHOICES@GOES@HERE"
+GFX_OPTION_TEXT_LEFT
+	.sb +$40,"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" ; 40 for left side.
+GFX_OPTION_TEXT_RIGHT
+	.sb +$40,"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" ; another 40 blanks to allow the description to scroll right to left
+
+
+	.align $0100
+
+GFX_OPTION_1                 ; OPTION MENUS
+	.sb "LASER RESTART MENU  "
+GFX_OPTION_2
+	.sb "LASER SPEED MENU    "
+GFX_OPTION_3
+	.sb "1NVADER STARTUP MENU"
+GFX_OPTION_4
+	.sb "1NVADER SPEEDUP MENU"
+GFX_OPTION_5
+	.sb "1NVADER SPEED MENU  "
+GFX_OPTION_6
+	.sb "TWO PLAYER MENU     "
+GFX_OPTION_7
+	.sb "OTHER STUFF MENU    "
+
+GFX_OPTION_1_TEXT
+	.sb +$40,"SET@THE@HEIGHT@THE@LASER@CAN@RESTART@@@@"
+GFX_OPTION_2_TEXT
+	.sb +$40,"SET@THE@SPEED@OF@THE@LASER@SHOTS@@@@@@@@"
+GFX_OPTION_3_TEXT
+	.sb +$40,"SET@THE@START@SPEED@FOR@THE@1NVADER@@@@@"
+GFX_OPTION_4_TEXT
+	.sb +$40,"SET@THE@NUMBER@OF@HITS@FOR@SPEEDUP@@@@@@"
+GFX_OPTION_5_TEXT
+	.sb +$40,"SET@THE@MAX@SPEED@OF@1NVADER@@@@@@@@@@@@"
+GFX_OPTION_6_TEXT
+	.sb +$40,"CHOOSE@THE@TWO@PLAYER@GAME@MODE@@@@@@@@@"
+GFX_OPTION_7_TEXT
+	.sb +$40,"MISCELLANEOUS@OTHER@THINGS@@@@@@@@@@@@@@" 
+
+
+GFX_MENU_1_1                 ; SELECT Laser Restart Menu
+	.sb "REGULAR RESTART     "
+GFX_MENU_1_2
+	.sb "SHORT RESTART       "
+GFX_MENU_1_3
+	.sb "LONG RESTART        "
+GFX_MENU_1_4
+	.sb "NO RESTART          "
+
+GFX_MENU_1_1_TEXT
+	.sb +$40,"RESTART@LASER@AT@THE@MIDDLE@OF@SCREEN@@@"
+GFX_MENU_1_2_TEXT
+	.sb +$40,"RESTART@LASER@NEARER@BOTTOM@OF@SCREEN@@@"
+GFX_MENU_1_3_TEXT
+	.sb +$40,"RESTART@LASER@NEARER@TOP@OF@SCREEN@@@@@@"
+GFX_MENU_1_4_TEXT
+	.sb +$40,"NO@RESTART@@@@@@@@@@MUST@PLAY@BETTER@@@@"
+
+ 
+GFX_MENU_2_1                 ; SELECT Laser Speed Menu
+	.sb "REGULAR LASERS      "
+GFX_MENU_2_2 
+	.sb "FAST LASERS         "
+GFX_MENU_2_3 
+	.sb "SLOW LASERS         "
+
+GFX_MENU_2_1_TEXT
+	.sb +$40,"THE@NORMAL@DEFAULT@SPEED@FOR@LASERS@@@@@"
+GFX_MENU_2_2_TEXT
+	.sb +$40,"FASTER@LASERS@MAY@NOT@HELP@SO@MUCH@@@@@@"
+GFX_MENU_2_3_TEXT
+	.sb +$40,"PAINFULLY@SLOW@LASERS@@@@@@@@@@@@@@@@@@@"
+
+
+GFX_MENU_3_1                 ; SELECT 1NVADER Startup Menu
+	.sb "REGULAR START 1     "
+GFX_MENU_3_2 
+	.sb "START AT 3          "
+GFX_MENU_3_3 
+	.sb "START AT 5          "
+GFX_MENU_3_4 
+	.sb "START AT 7          "
+GFX_MENU_3_5 
+	.sb "START AT MAX        "
+
+GFX_MENU_3_1_TEXT
+	.sb +$40,"NORMAL@DEFAULT@1NVADER@START@SPEED@@@@@@"
+GFX_MENU_3_2_TEXT
+	.sb +$40,"1NVADER@STARTS@AT@SPEED@3@@@@@@@@@@@@@@@"
+GFX_MENU_3_3_TEXT
+	.sb +$40,"1NVADER@STARTS@AT@SPEED@5@@@@@@@@@@@@@@@"
+GFX_MENU_3_4_TEXT
+	.sb +$40,"1NVADER@STARTS@AT@SPEED@7@@@@@@@@@@@@@@@"
+GFX_MENU_3_5_TEXT
+	.sb +$40,"1NVADER@AT@MAXIMUM@SPEED@LIKE@A@BOSS@@@@"
+
+
+GFX_MENU_4_1                 ; SELECT 1NVADER Speedup Menu
+	.sb "EVERY 10 HITS       "
+GFX_MENU_4_2
+	.sb "EVERY 7 HITS        "
+GFX_MENU_4_3
+	.sb "EVERY 5 HITS        "
+GFX_MENU_4_4
+	.sb "EVERY 3 HITS        "
+GFX_MENU_4_5
+	.sb "EVERY 10,9,8...     "
+GFX_MENU_4_6
+	.sb "NO SPEEDUP          "
+
+GFX_MENU_4_1_TEXT
+	.sb +$40,"DEFAULT@"
+	.byte GAME_HYPHEN_CHAR
+	.sb +$40,"@SPEEDUP@EVERY@TEN@HITS@@@@@@@@"
+GFX_MENU_4_2_TEXT
+	.sb +$40,"SPEED@UP@EVERY@SEVEN@HITS@@@@@@@@@@@@@@@"
+GFX_MENU_4_3_TEXT
+	.sb +$40,"SPEED@UP@EVERY@FIVE@HITS@@@@@@@@@@@@@@@@"
+GFX_MENU_4_4_TEXT
+	.sb +$40,"SPEED@UP@EVERY@THREE@HITS@@@@@@@@@@@@@@@"
+GFX_MENU_4_5_TEXT
+	.sb +$40,"PROGRESSIVELY@FEWER@SHOTS@PER@INCRMENT@@"
+GFX_MENU_4_6_TEXT
+	.sb +$40,"REMAIN@AT@STARTUP@SPEED@@@@@@@@@@@@@@@@@"
+
+
+GFX_MENU_5_1                 ; SELECT 1NVADER Max Speed Menu
+	.sb "1NVADER SPEED 1     "
+GFX_MENU_5_2               
+	.sb "1NVADER SPEED 3     "
+GFX_MENU_5_3               
+	.sb "1NVADER SPEED 5     "
+GFX_MENU_5_4               
+	.sb "MAXIMUM SPEED       "
+
+
+GFX_MENU_5_1_TEXT
+	.sb +$40,"SLOWEST@MAXIMUM@SPEED@@@@@@@@@@@@@@@@@@@"
+GFX_MENU_5_2_TEXT
+	.sb +$40,"SPEEDUP@TO@THREE@@@@@@@@@@@@@@@@@@@@@@@@"
+GFX_MENU_5_3_TEXT
+	.sb +$40,"SPEEDUP@TO@FIVE@@@@@@@@@@@@@@@@@@@@@@@@@"
+GFX_MENU_5_4_TEXT
+	.sb +$40,"UP@TO@MAXIMUM@SPEED@@@@@@@@@@@@@@@@@@@@@"
+
+
+GFX_MENU_6_1                   ; SELECT Two Player Modes Menu
+	.sb "FR1GULAR            " ; guns bounce
+GFX_MENU_6_3 
+	.sb "FR1GNORE            " ; guns ignore each other
+GFX_MENU_6_2                 
+	.sb "FRENEM1ES           " ; Attached to each other
+GFX_MENU_6_4 
+	.sb "FRE1GHBORS          " ; Separated in center
+
+
+GFX_MENU_6_1_TEXT
+	.sb +$40,"DEFAULT@MODE@@@@@GUNS@BOUNCE@EACH@OTHER@"
+GFX_MENU_6_2_TEXT
+	.sb +$40,"GUNS@IGNORE@EACH@OTHER@@@@@@@@@@@@@@@@@@"
+GFX_MENU_6_3_TEXT
+	.sb +$40,"GUNS@ARE@ATTACHED@@@@@@BOTH@CAN@SHOOT@@@"
+GFX_MENU_6_4_TEXT
+	.sb +$40,"GUNS@ARE@ATTACHED@@@@TAKE@TURNS@SHOOTING"
+GFX_MENU_6_5_TEXT
+	.sb +$40,"STAY@IN@YOUR@OWN@YARD@AND@OFF@MY@LAWN@@@"
+
+
+GFX_MENU_7_1                   ; SELECT Other things Menu
+	.sb "ONES1ES             " ; 2P - Take turns shooting
+GFX_MENU_7_2 
+	.sb "RESET ALL           " ; Return all game value to default
+GFX_MENU_7_3 
+	.sb "CHEAT MODE          " ; Alien never reaches bottom.
+
+GFX_MENU_7_1_TEXT
+	.sb +$40,"TWO@PLAYERS@TAKE@TURNS@SHOOTING@@@@@@@@@"
+GFX_MENU_7_2_TEXT
+	.sb +$40,"RESTORE@ALL@SETTINGS@TO@DEFAULTS@@@@@@@@"
+GFX_MENU_7_3_TEXT
+	.sb +$40,"ALIEN@NEVER@REACHES@BOTTOM@@@@@@U@R@LAME"
 
 
 	.align $0100
@@ -528,27 +730,33 @@ GFX_OPTION_TEXT
 
 GFX_SCROLL_DOCS
 scrtxt   
-	.sb      "                      PRESS FIRE TO PLAY. "
-	.sb +$40,"     FIRE SHOOTS AND CHANGES CANNON DIRECTION."
-	.sb      "     MORE POINTS WHEN 1NVADER IS HIGH UP. "
-	.sb +$40,"     1NVADER SLOWS DOWN AFTER EIGHTY HITS."
-	.sb      "     PRESS"
+	.sb      "                      PRESS"
+	.sb +$40," FIRE"
+	.sb      " TO PLAY      "
+	.sb      " PRESS"
 	.sb +$40," OPTION"
-	.sb      " FOR GAME MODES THEN PRESS"
-	.sb +$40," SELECT "
-	.sb      "TO CHOOSE. "
-	.sb      "     C64 VERSION 2019 - "
-	.sb +$40,"DARREN FOULDS "
-	.sb      " @DARRENTHEFOULDS "
-	.sb +$40,"     THX @BEDFORDLVLEXP     "
-	.sb      "HI NATE AND TBONE!"
-	.sb +$40,"     ATARI VERSION 2021 - "
-	.sb      "KEN JENNINGS "
-	.sb +$40,"HTTPS://GITHUB.COM/KENJENNINGS/ATARI-1NVADER "
-	.sb      "     THANKS TO ATARI PLAYTESTERS: "
-	.sb +$40,"VINYLLA, "
-	.sb      "PHILSAN, "
-	.sb +$40,"LEVEL42   "
+	.sb      ","
+	.sb +$40," SELECT"
+	.sb      ", "
+	.sb +$40,"START"
+	.sb      " TO CHOOSE GAME MODES AND OPTIONS   "
+	.sb +$40,"     FIRE"
+	.sb      " SHOOTS AND CHANGES CANNON DIRECTION "
+	.sb +$40,"     MORE POINTS WHEN 1NVADER IS HIGH UP  "
+	.sb      "     1NVADER SLOWS DOWN AFTER EIGHTY HITS "
+	.sb +$40,"     C64 VERSION 2019 - "
+	.sb      "DARREN FOULDS "
+	.sb +$40," @DARRENTHEFOULDS "
+	.sb      "     THX @BEDFORDLVLEXP     "
+	.sb +$40,"HI NATE AND TBONE!"
+	.sb      "     ATARI VERSION 2021 - "
+	.sb +$40,"KEN JENNINGS "
+	.sb      "HTTPS://GITHUB.COM/KENJENNINGS/ATARI-1NVADER "
+	.sb +$40,"     THANKS TO ATARI PLAYTESTERS: "
+	.sb      "VINYLLA, "
+	.sb +$40,"PHILSAN, "
+	.sb      "LEVEL42, "
+	.sb +$40,"YAUTJA   "
 GFX_END_DOCS
 	.sb "                      "
 
@@ -626,8 +834,10 @@ GFX_MOUNTAINS4
 
 
 ; This is 20 chars, because it won't "move" by LMS changes.
+; Two Zero Bytes in center are for the bumper characters during FREIGHBORS mode.
 GFX_BUMPERLINE
-	.byte $C2,$04,$05,$48,$49,$06,$44,$4b,$5b,$00,$44,$45,$06,$48,$49,$04,$0b,$1b,$46,$C3
+	.byte $C2,$04,$05,$48,$49,$06,$44,$4b,$5b,$00,$00,$44,$45,$48,$49,$04,$0b,$1b,$46,$C3
+;	.byte $C2,$04,$05,$48,$49,$06,$44,$4b,$5b,$00,$44,$45,$06,$48,$49,$04,$0b,$1b,$46,$C3  ;; original
 
 
 ; 24 |]]]]]]]]]]]]]]]00 0000 00[[[[[[[[[[[[[[[| Ground, stats - line, score value, hits left

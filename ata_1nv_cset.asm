@@ -444,31 +444,33 @@ CHARACTER_SET
 ; $82: # . . . . . # . 
 ; $00: . . . . . . . . 
 
-GAME_OVER_LEFT_CHAR=$1C
-GAME_OVER_LEFT_ADDR
+;GAME_OVER_LEFT_CHAR=$1C
+;GAME_OVER_LEFT_ADDR
 ; Char $1C:   <        ;  STAND-IN for Game Over Text during transition (LEFT)
-	.byte $01,$02,$04,$08,$10,$20,$40,$80
+; Char $1C:   <    ;     Left Side of CENTER BOUNCER
+	.byte $07,$0F,$0F,$0F,$0F,$0F,$07,$00
 ; $01: . . . . . . . # 
-; $02: . . . . . . # . 
-; $04: . . . . . # . . 
-; $08: . . . . # . . . 
-; $10: . . . # . . . . 
-; $20: . . # . . . . . 
-; $40: . # . . . . . . 
-; $80: # . . . . . . . 
+; $03: . . . . . . # # 
+; $03: . . . . . . # # 
+; $03: . . . . . . # # 
+; $03: . . . . . . # # 
+; $03: . . . . . . # # 
+; $01: . . . . . . . # 
+; $00: . . . . . . . . 
 
-GAME_OVER_RIGHT_CHAR=$1D
-GAME_OVER_RIGHT_ADDR
+;GAME_OVER_RIGHT_CHAR=$1D
+;GAME_OVER_RIGHT_ADDR
 ; Char $1D:   =    ;  STAND-IN for Game Over Text during transition (RIGHT)
-	.byte $80,$40,$20,$10,$08,$04,$02,$01
-; $80: # . . . . . . . 
-; $40: . # . . . . . . 
-; $20: . . # . . . . . 
-; $10: . . . # . . . . 
-; $08: . . . . # . . . 
-; $04: . . . . . # . . 
-; $02: . . . . . . # . 
-; $01: . . . . . . . # 
+; Char $1D:   =    ; Right side of CENTER BOUNCER
+	.byte $E0,$F0,$F0,$F0,$F0,$F0,$E0,$00
+; $80: # . . . . . . .
+; $c0: # # . . . . . .
+; $c0: # # . . . . . .
+; $c0: # # . . . . . .
+; $c0: # # . . . . . .
+; $c0: # # . . . . . .
+; $80: # . . . . . . .
+; $00: . . . . . . . . 
 
 ; Char $1E:   >    ; UNUSED
 	.byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -1512,12 +1514,14 @@ GAME_OVER_RIGHT_ADDR
 ; $7E: . # # # # # # . 
 ; $00: . . . . . . . . 
 
-; Char $7B: ctrl-; 
-	.byte $00,$00,$00,$00,$00,$00,$00,$00
+
+GAME_HYPHEN_CHAR=$1D
+; Char $7B: ctrl-;    ; A new hyphen
+	.byte $00,$00,$00,$3c,$00,$00,$00,$00
 ; $00: . . . . . . . . 
 ; $00: . . . . . . . . 
 ; $00: . . . . . . . . 
-; $00: . . . . . . . . 
+; $00: . . # # # # . . 
 ; $00: . . . . . . . . 
 ; $00: . . . . . . . . 
 ; $00: . . . . . . . . 
