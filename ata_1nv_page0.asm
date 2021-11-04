@@ -18,6 +18,12 @@
 	ORG $80
 
 
+; Utility ====================================================================
+
+zMemCpy_Src .word $0000
+zMemCpy_Dst .word $0000
+
+
 ; Game State Control Values ==================================================
 
 zCurrentEvent      .byte $00 ; Global Current Game Behavior.
@@ -28,14 +34,6 @@ zEventStage        .byte $00 ; Substage
 
 zAnimateFrames     .byte $00 
 zInputScanFrames   .byte $00
-
-
-; Countdown Color =========================================================
-
-zCountdownTimer       .byte $01
-
-zCountdownColor       .byte $04
-
 
 
 ; Title Logo Values =========================================================
@@ -103,9 +101,6 @@ zDocsHS          .byte 15   ; fine horizontal scroll value start.
 
 ; Scrolling Options text. ======================================================
 
-;zOptionHScroll   .byte 15 ; fine scroll for options. (both lines.)
-
-
 zSTATS_TEXT_COLOR  .byte $08 ; color/luminance of text on stats line.
 
 
@@ -136,7 +131,7 @@ zLandHS          .byte 0   ; fine horizontal scroll value start.
 zLandColor       .byte 0   ; index for repeat DLIs on the scrolling land 
 
 
-; Flickering Stars values ==================================================
+; Flickering Stars values ===================================================
 
 zDLIStarLinecounter .byte 0 
 
@@ -161,16 +156,12 @@ SHPOSM3 .byte 0 ; Fake Shadow register for HPOSM3
 
 zDL_LMS_STARS_ADDR .word 0 ; points to the LMS to change
 
-zTEMP_NEW_STAR_ID  .byte 0 ; gives the star 3, 2, 1, 0
-
-zTEMP_NEW_STAR_ROW .byte 0 ; Row number for star 0 to 17.
-
 zTEMP_ADD_STAR     .byte 0 ; Flag, 0 = no star to add.  !0 = Try adding a new star.
 
-zTEMP_BASE_COLOR   .byte 0 ; temporary color for star
-zTEMP_BASE_COLOR2  .byte 0 ; temporary color for star
+;zTEMP_BASE_COLOR   .byte 0 ; temporary color for star
+;zTEMP_BASE_COLOR2  .byte 0 ; temporary color for star
 
-zSTAR_COUNT        .byte 0 ; starcnt original code.
+;zSTAR_COUNT        .byte 0 ; starcnt original code.
 
 
 ; Game Over Text Values =====================================================
@@ -214,7 +205,7 @@ LASER_END_Y=36    ; also MOTHERSHIP_MIN_Y
 
 ; Player 1 and player 2 values are interleaved.
 ; I have a stupid idea of using an index for 
-; the players, and where applicable calling the 
+; the players, and (when applicable) calling the 
 ; same function for both players using only a 
 ; different index for the players, and so only
 ; one version of code.... in theory.

@@ -554,10 +554,10 @@ b_gcsr_TryNextEntry
 
 Gfx_Service_Star
 
-	stx zTEMP_NEW_STAR_ID            ; Save Star number
+	stx gTEMP_NEW_STAR_ID            ; Save Star number
 
 	lda TABLE_GFX_ACTIVE_STARS,X     ; A == the star's row
-	sta zTEMP_NEW_STAR_ROW           ; Save for later.
+	sta gTEMP_NEW_STAR_ROW           ; Save for later.
 	bmi b_gss_Exit                   ; This entry is not a real row, so there's nothing to do.
 
 	dec TABLE_GFX_STARS_COUNT,X      ; Decrement the frame counter.
@@ -593,7 +593,7 @@ b_gss_ProcessColor
 
 	and TABLE_GFX_STAR_COLOR_AND_OUT,y ; Mask to hold or drop the base color
 	ora TABLE_GFX_STAR_LUMA_OR_OUT,y   ; Mask to merge the luminance
-	ldy zTEMP_NEW_STAR_ROW             ; Get the row.
+	ldy gTEMP_NEW_STAR_ROW             ; Get the row.
 	sta TABLE_GFX_STAR_OUT_COLOR,Y     ; Save the new outer color.
 
 	ldy TABLE_GFX_STARS_COUNT,X        ; Y = Frame counter == Index to color masks.
@@ -601,7 +601,7 @@ b_gss_ProcessColor
 
 	and TABLE_GFX_STAR_COLOR_AND_IN,y ; Mask to hold or drop the base color
 	ora TABLE_GFX_STAR_LUMA_OR_IN,y   ; Mask to merge the luminance
-	ldy zTEMP_NEW_STAR_ROW            ; Get the row.
+	ldy gTEMP_NEW_STAR_ROW            ; Get the row.
 	sta TABLE_GFX_STAR_IN_COLOR,Y     ; Save the new inner color.
 
 b_gss_Exit
@@ -626,7 +626,7 @@ b_gss_Exit
 
 Gfx_Setup_New_Star
 	
-	stx zTEMP_NEW_STAR_ID              ; Save Star number
+	stx gTEMP_NEW_STAR_ID              ; Save Star number
 	
 	ldy TABLE_GFX_ACTIVE_STARS,X       ; Y == the star's row
 	bpl b_gsns_Exit                    ; This entry is not row $FF, so we can't remake it. 

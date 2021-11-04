@@ -1957,3 +1957,15 @@ b_ggrc_Exit_Failure
 ;	rts
 
 
+
+; ==========================================================================
+; SUPPPORT - MEMCPY
+; ==========================================================================
+; Assuming Src and Dst have been set up in 
+;
+; Setup the address for the mask table based on the frame number.
+;
+; Multiply frame number by 8.  Add to base address of mask image array.
+; --------------------------------------------------------------------------
+
+

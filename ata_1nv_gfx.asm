@@ -730,7 +730,8 @@ GFX_MENU_7_3_TEXT
 
 GFX_SCROLL_DOCS
 scrtxt   
-	.sb      "                      PRESS"
+	.sb      "                     "
+	.sb     ," PRESS"
 	.sb +$40," FIRE"
 	.sb      " TO PLAY      "
 	.sb      " PRESS"
@@ -756,7 +757,10 @@ scrtxt
 	.sb      "VINYLLA, "
 	.sb +$40,"PHILSAN, "
 	.sb      "LEVEL42, "
-	.sb +$40,"YAUTJA   "
+	.sb +$40,"YAUTJA         "
+	.sb      "TRY THE ATARI 10-LINER 1NVADER BY VICTOR PARADA - "
+	.sb +$40,"VITOCO"
+	.sb     , " - WWW.VITOCO.CL  "
 GFX_END_DOCS
 	.sb "                      "
 

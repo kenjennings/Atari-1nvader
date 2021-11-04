@@ -215,6 +215,16 @@ zEXPLOSION_X                .byte $00
 zEXPLOSION_Y                .byte $00
 zEXPLOSION_NEW_Y            .byte $00
 
+
+; ==========================================================================
+; COUNTDOWN 3, 2, 2, GO! COLOR . . .
+
+zCountdownTimer       .byte $01
+
+zCountdownColor       .byte $04
+
+
+
 ; ==========================================================================
 ; SCORING . . .
 
@@ -336,8 +346,6 @@ TABLE_STAR_LOCATION ; star
 
 ; Game Over Text Values =====================================================
 
-;zGO_FRAME       .byte $ff    ; Frame counter, 6 to 0.
-
 DELAYED .byte 60
 
 zGAME_OVER_FLAG             .byte $00  ; The game is over?
@@ -346,7 +354,94 @@ zGAME_OVER_FLAG             .byte $00  ; The game is over?
 zGAME_OVER_FRAME            .byte 0    ; Frame counter 255 to 0
 zGAME_OVER_TICKS            .byte 0    ; decrement every GAME_OVER_FRAME=0.  Large countdown.
 
-
 gDEBOUNCE                   .byte 0    ; Flag to make sure joystick buttons are released.
+
+
+
+; Game Screen Stars Control values ==========================================
+
+gTEMP_NEW_STAR_ID  .byte 0 ; gives the star 3, 2, 1, 0
+
+gTEMP_NEW_STAR_ROW .byte 0 ; Row number for star 0 to 17.
+
+
+; Star and Cheat Mode "Star" ================================================
+
+CHEAT_CLOCK = 60
+
+gSTARS_CHEAT_CLOCK .byte CHEAT_CLOCK ; countodown to change graphic
+
+gSTARS_OR_CHEAT .byte 0 ; 0 = normal.   1-5 current cheat char.
+
+gSTARS_OR_CHEAT_TABLE ; gSTARS_OR_CHEAT * 8 is index.
+
+; Char $0A:   *    ; Revise Star again for Atari for Mode 6 color
+	.byte $08,$00,$08,$2A,$08,$00,$08,$00
+; $08: . . . . # . . . 
+; $00: . . . . . . . . 
+; $08: . . . . # . . . 
+; $2A: . . # . # . # . 
+; $08: . . . . # . . . 
+; $00: . . . . . . . . 
+; $08: . . . . # . . . 
+; $00: . . . . . . . . 
+
+
+; Char $23:   C    
+	.byte $3C,$40,$40,$40,$40,$40,$7C,$00
+; $3C: . . # # # # . . 
+; $40: . # . . . . . . 
+; $40: . # . . . . . . 
+; $40: . # . . . . . . 
+; $40: . # . . . . . . 
+; $40: . # . . . . . . 
+; $7C: . # # # # # . . 
+; $00: . . . . . . . . 
+
+; Char $28:   H    
+	.byte $44,$44,$44,$5C,$44,$44,$44,$00
+; $44: . # . . . # . . 
+; $44: . # . . . # . . 
+; $44: . # . . . # . . 
+; $5C: . # . # # # . . 
+; $44: . # . . . # . . 
+; $44: . # . . . # . . 
+; $44: . # . . . # . . 
+; $00: . . . . . . . . 
+
+; Char $25:   E    
+	.byte $7C,$40,$40,$58,$40,$40,$7C,$00
+; $7C: . # # # # # . . 
+; $40: . # . . . . . . 
+; $40: . # . . . . . . 
+; $58: . # . # # . . . 
+; $40: . # . . . . . . 
+; $40: . # . . . . . . 
+; $7C: . # # # # # . . 
+; $00: . . . . . . . . 
+
+
+; Char $21:   A    
+	.byte $04,$0C,$14,$24,$5C,$44,$44
+; $04: . . . . . # . . 
+; $0C: . . . . # # . . 
+; $14: . . . # . # . . 
+; $24: . . # . . # . . 
+; $5C: . # . # # # . . 
+; $44: . # . . . # . . 
+; $44: . # . . . # . . 
+; $00: . . . . . . . . 
+
+; Char $34:   T    
+	.byte $00,$7C,$00,$10,$10,$10,$10,$00
+; $00: . . . . . . . . 
+; $7C: . # # # # # . . 
+; $00: . . . . . . . . 
+; $10: . . . # . . . . 
+; $10: . . . # . . . . 
+; $10: . . . # . . . . 
+; $10: . . . # . . . . 
+; $00: . . . . . . . . 
+
 
 ; ======== E N D   O F   V A R I A B L E S ======== 

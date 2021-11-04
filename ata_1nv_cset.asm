@@ -243,6 +243,7 @@ CHARACTER_SET
 ; $02: . . . . . . # . 
 ; $00: . . . . . . . . 
 
+GAME_STAR_CHAR  ; label is for animating cheat mode.
 ; Char $0A:   *    ; Revise Star again for Atari for Mode 6 color
 	.byte $08,$00,$08,$2A,$08,$00,$08,$00
 ; $08: . . . . # . . . 
