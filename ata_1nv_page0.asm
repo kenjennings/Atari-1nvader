@@ -20,7 +20,10 @@
 
 ; Utility ====================================================================
 
+; zMemSet_Len
 zMemCpy_Src .word $0000
+
+zMemSet_Dst
 zMemCpy_Dst .word $0000
 
 
@@ -32,8 +35,8 @@ zEventStage        .byte $00 ; Substage
 
 ; Timer Values ===============================================================
 
-zAnimateFrames     .byte $00 
-zInputScanFrames   .byte $00
+; zAnimateFrames     .byte $00 
+; zInputScanFrames   .byte $00
 
 
 ; Title Logo Values =========================================================
@@ -138,7 +141,7 @@ zDLIStarLinecounter .byte 0
 
 ; Generic Player/Missile Data Copying =======================================
 
-zPMG_IMAGE    .word 0 ; points to image data
+;zPMG_IMAGE    .word 0 ; points to image data
 
 zPMG_HARDWARE .word 0 ; points to the Player/Missile memory map.
 
@@ -240,9 +243,9 @@ zPLAYER_DIR
 zPLAYER_ONE_DIR    .byte $00 ; Player 1 direction ; 0 == left to right. 1 == right to left.
 zPLAYER_TWO_DIR    .byte $00 ; Player 2 direction ; 0 == left to right. 1 == right to left.
 
-zPLAYER_FIRE
-zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag (laser 1 color)
-zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag (laser 2 color)
+;zPLAYER_FIRE
+;zPLAYER_ONE_FIRE   .byte $00 ; Player 1 fire flag (laser 1 color)
+;zPLAYER_TWO_FIRE   .byte $00 ; Player 2 fire flag (laser 2 color)
 
 zPLAYER_DEBOUNCE      
 zPLAYER_ONE_DEBOUNCE .byte $00 ; Set when laser is shot.   cleared when button released.  Cannot shoot again unless button released.

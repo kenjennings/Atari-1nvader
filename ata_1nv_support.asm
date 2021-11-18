@@ -88,6 +88,10 @@ FrameControlMothershipSpeed
 
 	; Determine Mothership X increment
 	ldy zMOTHERSHIP_MOVE_SPEED  ; Get speed.
+
+;	; HACKERY
+;	ldy #7
+
 	lda TABLE_TIMES_TWELVE,y    ; Times 12 for array size
 	clc
 	adc gFrameAsIndex           ; Add to current index (already calculated)
@@ -1959,13 +1963,48 @@ b_ggrc_Exit_Failure
 
 
 ; ==========================================================================
+; SUPPPORT - MEMSET
+; ==========================================================================
+; Assuming Dst have been set up in zMemSet var.
+;
+; Y ==  real number of bytes.  (min 1, max 128)
+; A ==  value to write.
+; --------------------------------------------------------------------------
+
+libMemSet
+
+	dey                 ;  turn 1 to 128 into 0 to 127
+	bmi b_lms_Exit      ; 0 became -1 (or using other out of range value.)
+
+b_lms_Loop
+	sta (zMemSet_Dst),y
+	dey
+	bpl b_lms_Loop      ; Continue through Y = 0.  Stop at Y = -1
+
+b_lms_Exit
+	rts
+
+
+; ==========================================================================
 ; SUPPPORT - MEMCPY
 ; ==========================================================================
-; Assuming Src and Dst have been set up in 
+; Assuming Src and Dst have been set up in zMemCpy vars.
 ;
-; Setup the address for the mask table based on the frame number.
-;
-; Multiply frame number by 8.  Add to base address of mask image array.
+; Y ==  real number of bytes.  (min 1, max 128)
 ; --------------------------------------------------------------------------
+
+libMemCpy
+
+	dey                 ;  turn 1 to 128 into 0 to 127
+	bmi b_lmc_Exit      ; 0 became -1 (or using other out of range value.)
+
+b_lmc_Loop
+	lda (zMemCpy_Src),y
+	sta (zMemCpy_Dst),y
+	dey
+	bpl b_lmc_Loop      ; Continue through Y = 0.  Stop at Y = -1
+
+b_lmc_Exit
+	rts
 
 

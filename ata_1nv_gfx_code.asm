@@ -944,7 +944,7 @@ b_grsl_EndLandScrolling
 
 Gfx_Zero_Game_Over_Text
 
-	lda #0   ; Corresponds to blank space character
+	lda #$20   ; Corresponds to blank space character (i.e. the '@')
 ;	lda RANDOM
 	ldy #19  ; Text line is 20 characters.
 
@@ -992,30 +992,47 @@ b_gzgot_ZeroLoop
 ; managed, aligned graphics memory
 
 GFX_GAME_OVER_TEXT0
-	.sb "  G A M E  O V E R  "   ; Do this about 96% of the time.
+;	.sb      "  G A M E  O V E R  "   ; Do this about 96% of the time.
+	.sb +$40,"@@G@A@M@E@@O@V@E@R@@"   ; Do this about 96% of the time.
 GFX_GAME_OVER_TEXT1
-	.sb "     LOOOOOSER!     "
+	.sb +$40,"@@@@@LOOOOOSER"
+	.by CHAR_ALT_BANG
+	.sb +$40,"@@@@@"
 GFX_GAME_OVER_TEXT2
-	.sb "    LOOOOOOSERS!    "
+	.sb +$40,"@@@@LOOOOOOSERS"
+	.by CHAR_ALT_BANG
+	.sb +$40,"@@@@"
 GFX_GAME_OVER_TEXT3
-	.sb "KLAATU BARADA NIKTO "
+	.sb +$40,"KLAATU@BARADA@NIKTO@"
 GFX_GAME_OVER_TEXT4
-	.sb "  IT'S A COOKBOOK!  "
+	.sb +$40,"@@IT"
+	.by CHAR_ALT_APOS
+	.sb +$40,"S@A@COOKBOOK"
+	.by CHAR_ALT_BANG
+	.sb +$40,"@@"
 GFX_GAME_OVER_TEXT5
-	.sb "RESISTANCE IS FUTILE"
+	.sb +$40,"RESISTANCE@IS@FUTILE"
 GFX_GAME_OVER_TEXT6
-	.sb "U BASE R BELONG 2 US"
+	.sb +$40,"U@BASE@R@BELONG@2@US"
 GFX_GAME_OVER_TEXT7
-	.sb "  PWNED EARTHLING!  "
+	.sb +$40,"@@PWNED@EARTHLING"
+	.by CHAR_ALT_BANG
+	.sb +$40,"@@"
 GFX_GAME_OVER_TEXT8
-	.sb " GRANDMA DID BETTER!"
+	.sb +$40,"@GRANDMA@DID@BETTER"
+	.by CHAR_ALT_BANG
 GFX_GAME_OVER_TEXT9
-	.sb " ARE YOU GONNA CRY? "
+	.sb +$40,"@ARE@YOU@GONNA@CRY"
+	.by CHAR_ALT_QUES
+	.sb +$40,"@"
 GFX_GAME_OVER_TEXT10
-	.sb " DO YOU NEED MOMMY? "
+	.sb +$40,"@DO@YOU@NEED@MOMMY"
+	.by CHAR_ALT_QUES
+	.sb +$40,"@"
 GFX_GAME_OVER_TEXT11
-	.sb "    TASTY HUMANS!   "
-
+	.sb +$40,"@@@@TASTY@HUMANS"
+	.by CHAR_ALT_BANG
+	.sb +$40,"@@@"
 
 
 TABLE_HI_GFX_GAMEOVER
@@ -1034,8 +1051,15 @@ TABLE_LO_GFX_GAMEOVER
 	.by <GFX_GAME_OVER_TEXT8,<GFX_GAME_OVER_TEXT9
 	.by <GFX_GAME_OVER_TEXT10,<GFX_GAME_OVER_TEXT11
 
+; HACKERY
+;TEMP_CHOOSER .byte $FF
+
 Gfx_Choose_Game_Over_Text
+; HACKERY
+;	inc TEMP_CHOOSER
+;	ldx TEMP_CHOOSER
 	ldx RANDOM                   ; Get a random value (0 to 255) 
+
 
 	cpx #1                       ; "Loser!" singular
 	bne b_cgot_Test2
@@ -1612,4 +1636,50 @@ b_grtl_SkipDecPF1
 ;	.sb +$80,"HERE  "   ; 6 == 20   ; Red
 ; --------------------------------------------------------------------------
 
+	rts
 
+
+; ==========================================================================
+; CLEAR OPTION RIGHT BUFFER
+; ==========================================================================
+; Set memset address
+; Set Memset Length
+; Call Memset.
+; --------------------------------------------------------------------------
+
+Gfx_ClearOptionsRightBuffer
+
+	lda #<GFX_OPTION_RIGHT
+	sta zMemSet_Dst
+	lda #>GFX_OPTION_RIGHT
+	sta zMemSet_Dst+1
+
+	ldy #40
+	lda #0
+	
+	jsr libMemSet
+	rts
+
+; ==========================================================================
+; CLEAR OPTION LEFT BUFFER
+; ==========================================================================
+; Set memset address
+; Set Memset Length
+; Call Memset.
+; --------------------------------------------------------------------------
+
+Gfx_ClearOptionsLeftBuffer
+
+	lda #<GFX_OPTION_LEFT
+	sta zMemSet_Dst
+	lda #>GFX_OPTION_LEFT
+	sta zMemSet_Dst+1
+
+	ldy #40
+	lda #0
+	
+	jsr libMemSet
+	rts
+	
+	
+	

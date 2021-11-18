@@ -701,8 +701,9 @@ GameSetupMain
                                     
 	jsr GameRandomizeMothership     ; Set the starting X position and random direction.
 
-	ldx #0
+; HACKERY
 ;	ldx #20
+	ldx #0
 	jsr GameSetMotherShipRow        ; Convert Row 0 to Y position on screen.
 	lda #24
 	sta zMOTHERSHIP_Y               ; Force "old" position above the row 0 position. 

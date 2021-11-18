@@ -422,5 +422,7 @@ PM_TITLE_BITMAP_LINE6 ; .by 00000000 10100010 10001000 10101110 11111010 0010000
 ; (Saves lots of space in the Atari's structure executable file format.)
 ; --------------------------------------------------------------------------
 
-	.align $0800
+;	.align $0800
+
+	ORG PMADR+$0800 ; next addr is pmbase +2K
 

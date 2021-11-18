@@ -206,8 +206,8 @@ zMOTHERSHIP_LIGHT3          .byte $1  ; toggle $0, $1 for off and on
 zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
 zMOTHERSHIP_HITS            .byte $00 ; Number of times the mothership is hit.
 
-zMOTHERSHIP_SHOT_BY_ONE     .byte $0  ; Collision between PM0 (shot) and PM2
-zMOTHERSHIP_SHOT_BY_TWO     .byte $0  ; Collision between PM1 (shot) and PM2
+;zMOTHERSHIP_SHOT_BY_ONE     .byte $0  ; Collision between PM0 (shot) and PM2
+;zMOTHERSHIP_SHOT_BY_TWO     .byte $0  ; Collision between PM1 (shot) and PM2
 
 zEXPLOSION_ON               .byte $00 ; Explosion is present.   
 zEXPLOSION_COUNT            .byte $00 ; Timer/index for Explosion. 
@@ -228,7 +228,7 @@ zCountdownColor       .byte $04
 ; ==========================================================================
 ; SCORING . . .
 
-zSHOW_SCORE_FLAG             .byte $00 ; Flag to update score on screen.
+;zSHOW_SCORE_FLAG             .byte $00 ; Flag to update score on screen.
 
 zMOTHERSHIP_POINTS_AS_DIGITS .byte $00,$00,$00,$00,$00,$00 ; Points for current row.
 
@@ -298,6 +298,10 @@ TABLE_GFX_TAG_LMS
 	.byte <[GFX_TAG_TEXT+16] ; (ONE ALIEN)
 	.byte <[GFX_TAG_TEXT+32] ; (ONE LIFE)
 	.byte <[GFX_TAG_TEXT+48] ; (NO MERCY)
+
+
+; ==========================================================================
+; TITLE SCREEN OPTIONS MANAGEMENT . . .
 
 
 ; ==========================================================================
@@ -371,11 +375,11 @@ CHEAT_CLOCK = 60
 
 gSTARS_CHEAT_CLOCK .byte CHEAT_CLOCK ; countodown to change graphic
 
-gSTARS_OR_CHEAT .byte 0 ; 0 = normal.   1-5 current cheat char.
+gSTARS_OR_CHEAT    .byte 0           ; 0 = normal.   1-5 current cheat char.
 
-gSTARS_OR_CHEAT_TABLE ; gSTARS_OR_CHEAT * 8 is index.
+gSTARS_OR_CHEAT_TABLE                ; gSTARS_OR_CHEAT * 8 is index.
 
-; Char $0A:   *    ; Revise Star again for Atari for Mode 6 color
+; Char $0A:   *                      ; Revise Star again for Atari for Mode 6 color
 	.byte $08,$00,$08,$2A,$08,$00,$08,$00
 ; $08: . . . . # . . . 
 ; $00: . . . . . . . . 

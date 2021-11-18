@@ -907,8 +907,11 @@ b_dli4_LoopColors
 ;==============================================================================
 ; TITLE_DLI_4_5                                             
 ;==============================================================================
-; DLI to run the horizontally scrolling Documentation  and  stuff  gradient 
-; colors into COLPF0 for the text on the line.
+; DLI to stuff  gradient colors into COLPF0/COLPF1/COLPF2 for Mode 6 
+; options text line.
+; Then make sure COLPF2 is black for the documentation text done in 
+; Mode 2, then run the same gradient for COLPF1 that is used for the 
+; score line. 
 ; -----------------------------------------------------------------------------
 
 TITLE_DLI_4_5
@@ -917,8 +920,8 @@ TITLE_DLI_4_5
 
 	ldy #7
 
-	lda zOptionHScroll ; Scroll value for options.  VBI sets this and LMS.
-	sta HSCROL
+;	lda zOptionHScroll ; Scroll value for options.  VBI sets this and LMS.
+;	sta HSCROL
 
 b_dli4_5_LoopColors
 	lda TABLE_COLOR_OPTS0,y
@@ -1297,6 +1300,9 @@ GAME_OVER_DLI_1
 	pla                            ; Done executing this series of DLIs.   
 	tay
 
+	lda #>[CHARACTER_SET+$0200]
+	sta CHBASE
+	
 	mChainDLI GAME_OVER_DLI_1,GAME_OVER_DLI_2 ; next DLI is multi-scan-lines
 
 	rti
@@ -1335,6 +1341,9 @@ b_GODLI1_CopyLoop
 	pla                              
 	tay
 
+	lda #>CHARACTER_SET
+	sta CHBASE
+	
 	mChainDLI GAME_OVER_DLI_2,TITLE_DLI_COMMON_MOUNTAINS ; Do the land colors next.
 
 ;==============================================================================
