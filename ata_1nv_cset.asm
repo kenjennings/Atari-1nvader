@@ -1104,6 +1104,7 @@ CHAR_CENTER_BOUNCER=$1C ; and $1D
 ; $00: . . . . . . . . 
 
 CHAR_ALTERNATE_BLANK=$20  ; ($60 - $40 == $20)
+CHAR_MODE2_BLANK=$60
 ; Page 0xE3.  Chars 96 to 127 -- lowercase
 ; Char $60: ctrl-. 
 	.byte $00,$00,$00,$00,$00,$00,$00,$00

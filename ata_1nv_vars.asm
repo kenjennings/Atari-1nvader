@@ -36,12 +36,13 @@
 ;
 ; And so, in order to scale PAL to meet NTSC speed specifications there 
 ; is an array of multiple entries providing the speed/increment values 
-; with the PAL sequence of ficve frames adjusted to match the same 
+; with the PAL sequence of five frames adjusted to match the same 
 ; distance over six NTSC frames.
 ;
 ; The VBI uses the Frame counter plus the video standard flag (0/1) to 
 ; acquire values from tables used to populate the current INC value and 
 ; speed control.
+;
 ; Other common cycles (animation loops, etc.) just iterate per each
 ; VBI.  I judged speed scaling for these not so important.
 ;

@@ -1654,10 +1654,21 @@ Gfx_ClearOptionsRightBuffer
 	lda #>GFX_OPTION_RIGHT
 	sta zMemSet_Dst+1
 
-	ldy #40
-	lda #0
-	
+	ldy #20
+	lda #INTERNAL_BLANKSPACE ; $00
+
 	jsr libMemSet
+
+	lda #<GFX_OPTION_TEXT_RIGHT
+	sta zMemSet_Dst
+	lda #<GFX_OPTION_TEXT_RIGHT
+	sta zMemSet_Dst+1
+
+	ldy #40
+	lda #CHAR_MODE2_BLANK ; @ sign for blanks on mode 2
+
+	jsr libMemSet
+
 	rts
 
 ; ==========================================================================
@@ -1675,11 +1686,63 @@ Gfx_ClearOptionsLeftBuffer
 	lda #>GFX_OPTION_LEFT
 	sta zMemSet_Dst+1
 
-	ldy #40
-	lda #0
+	ldy #20
+	lda #INTERNAL_BLANKSPACE ; $00
 	
 	jsr libMemSet
+
+	lda #<GFX_OPTION_TEXT_LEFT
+	sta zMemSet_Dst
+	lda #<GFX_OPTION_TEXT_LEFT
+	sta zMemSet_Dst+1
+
+	ldy #40
+	lda #CHAR_MODE2_BLANK ; @ sign for blanks on mode 2
+
+	jsr libMemSet
+
 	rts
-	
-	
-	
+
+; ==========================================================================
+; COPY OPTION RIGHT TO LEFT BUFFER
+; ==========================================================================
+; Set memcpy addresses
+; Set Memcpy Length
+; Call Memcpy.
+; --------------------------------------------------------------------------
+
+Gfx_CopyOptionRightToLeftBuffer
+
+	lda #<GFX_OPTION_RIGHT
+	sta zMemCpy_Src
+	lda #>GFX_OPTION_RIGHT
+	sta zMemCpy_Src+1
+
+	lda #<GFX_OPTION_LEFT
+	sta zMemSet_Dst
+	lda #>GFX_OPTION_LEFT
+	sta zMemSet_Dst+1
+
+	ldy #20
+
+	jsr libMemCpy
+
+	lda #<GFX_OPTION_TEXT_RIGHT
+	sta zMemCpy_Src
+	lda #>GFX_OPTION_TEXT_RIGHT
+	sta zMemCpy_Src+1
+
+	lda #<GFX_OPTION_TEXT_LEFT
+	sta zMemSet_Dst
+	lda #>GFX_OPTION_TEXT_LEFT
+	sta zMemSet_Dst+1
+
+	ldy #40
+
+	jsr libMemCpy
+
+
+	rts
+
+
+
