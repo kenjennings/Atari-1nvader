@@ -361,6 +361,8 @@ zGAME_OVER_TICKS            .byte 0    ; decrement every GAME_OVER_FRAME=0.  Lar
 
 gDEBOUNCE                   .byte 0    ; Flag to make sure joystick buttons are released.
 
+gDEBOUNCE_OSS               .byte 0    ; Flag that Option/Select/Start are released. 
+gOSS_KEYS                   .byte 0    ; Current Option/Select/Start bits.
 
 
 ; Game Screen Stars Control values ==========================================

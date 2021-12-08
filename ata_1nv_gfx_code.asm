@@ -1607,28 +1607,28 @@ b_grtl_SkipDecPF1
 ; ==========================================================================
 ; MENUS, SELECTIONS, OPTIONS
 ; ==========================================================================
-; OPTION key menu text.
-; Press OPTION to show choices.
-; Press SELECT to choose.
-
+; Press OPTION key to cycle through top level menu. 
+; Press SELECT key to cycle through SELECT menu lists.
+; Press START key to engage the choice on the SELECT Menu.
+;
+; OPTION entries point to first entry on SELECT menu.
+; SELECT entries point to *function() to set/unset item.
+;
 ; The options text will be scrolling on/off the screen so fast, that 
 ; fine scrolling is not needed.   Coarse scrolling is fine.  Therefore 
-; no extra buffer characters are needed.  Just stock 20 character plus
+; no extra buffer characters are needed.  Just stock 20 characters plus
 ; 20 characters for Mode 6, and 40 + 40 for Mode 2.
 ;
-; Erase:
-; 1) Clear buffer at Right position.
-; 2) Scroll, ending at right position.
-; 3) Clear Left Postion.
-; 4) Set at left position.
+; The Default position before doing a scroll is the Display List LMS
+; pointed at the left side of the buffer.
 ;
-; Running Text:
-; 1) Set to Left Postion.
-; 2) Copy Text to Right Position.
-; 3) Scroll ending at right position.
-; 4) Copy Text to Left position.
-; 5) Set to Left Position.
-; 6) Get/Allow/Process Input.
+; Erasing or Running Text:
+; 0) DEFAULT: Set to Left Postion.
+; 1) MAIN: Copy Text to Right Position. (Set the On or Off text as needed.)
+; 2) VBI: Scroll ending at right position.
+; 3) MAIN:Copy Text to Left position.
+; 4) VBI: Set LMS to Left Position.
+; 5) VBI: Set Debounce for button/key input to get/allow/process Input.
 ; 
 
 ;	.sb "  OPTION "     ; 10        ; White

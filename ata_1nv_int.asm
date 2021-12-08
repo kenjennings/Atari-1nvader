@@ -48,8 +48,43 @@ b_ClearDebounce              ; Nobody is pressing a button.
 
 b_AnyButton_Exit
 	rts
+
+
+;==============================================================================
+;                                                           ANY SELECT  A
+;==============================================================================
+; Subroutine to verify no player is pressing the joystick button,
+; and then  for any player to press a button.
+;
+; Return A == debounce 
+;            1 waiting for debounce, 
+;            0 debounce occurred,
+;           -1 button pressed after debounce cleared.
+;==============================================================================
+
+libAnySelect               ; get Function buttons and debounce them.
+
+	lda CONSOL             ; console keys 0 when pressed
+	and #CONSOLE_KEYS      ; just keep the Option/Select/Start bits.
+	sta gOSS_KEYS          ; save for later
+	cmp #CONSOLE_KEYS      ; If keys is the same value as mask...
+	beq b_ClearOSSDebounce ; then none of the buttons are pressed.
 	
-	
+	; A button is pressed 
+	lda gDEBOUNCE_OSS      ; If debounce flag is on 
+	bne b_OSSButton_Exit   ; then ignore the buttons. 
+
+	lda #$ff               ; A button is pressed when debounce is off.
+	rts
+
+b_ClearOSSDebounce         ; Nobody is pressing a button.
+	lda #0                 ; Since the buttons are released
+	sta gDEBOUNCE_OSS      ; then remove the debounce flag 
+
+b_OSSButton_Exit
+	rts
+
+
 ;==============================================================================
 ;                                                           SCREENWAITFRAME  A
 ;==============================================================================
