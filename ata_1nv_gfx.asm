@@ -374,7 +374,8 @@ GFX_MENU_1_2_TEXT
 GFX_MENU_1_3_TEXT
 	.sb +$40,"RESTART@LASER@NEARER@TOP@OF@SCREEN@@@@@@"
 GFX_MENU_1_4_TEXT
-	.sb +$40,"NO@RESTART@@@@@@@@@@MUST@PLAY@BETTER@@@@"
+	.sb +$40,"RELEASE@BUTTON@AND@PRESS@AGAIN@TO@SHOOT@"
+
 
  
 GFX_MENU_2_1                 ; SELECT Laser Speed Menu
@@ -453,7 +454,6 @@ GFX_MENU_5_3
 GFX_MENU_5_4               
 	.sb "MAXIMUM SPEED       "
 
-
 GFX_MENU_5_1_TEXT
 	.sb +$40,"SLOWEST@MAXIMUM@SPEED@@@@@@@@@@@@@@@@@@@"
 GFX_MENU_5_2_TEXT
@@ -466,13 +466,14 @@ GFX_MENU_5_4_TEXT
 
 GFX_MENU_6_1                   ; SELECT Two Player Modes Menu
 	.sb "FR1GULAR            " ; guns bounce
-GFX_MENU_6_3 
+GFX_MENU_6_2 
 	.sb "FR1GNORE            " ; guns ignore each other
-GFX_MENU_6_2                 
+GFX_MENU_6_3                 
 	.sb "FRENEM1ES           " ; Attached to each other
-GFX_MENU_6_4 
+GFX_MENU_6_4
+	.sb "FRELPLESS           " ; Attached and single shot
+GFX_MENU_6_5 
 	.sb "FRE1GHBORS          " ; Separated in center
-
 
 GFX_MENU_6_1_TEXT
 	.sb +$40,"DEFAULT@MODE@@@@@GUNS@BOUNCE@EACH@OTHER@"
@@ -499,6 +500,183 @@ GFX_MENU_7_2_TEXT
 	.sb +$40,"RESTORE@ALL@SETTINGS@TO@DEFAULTS@@@@@@@@"
 GFX_MENU_7_3_TEXT
 	.sb +$40,"ALIEN@NEVER@REACHES@BOTTOM@@@@@@U@R@LAME"
+
+
+; ==========================================================================
+; MENUS, SELECTIONS, OPTIONS
+; ==========================================================================
+; Press OPTION key to cycle through top level menu. 
+; Press SELECT key to cycle through SELECT menu lists.
+; Press START key to engage the choice on the SELECT Menu.
+;
+; OPTION entries point to first entry on SELECT menu.
+; SELECT entries point to *function() to set/unset item.
+;
+; --------------------------------------------------------------------------
+
+
+; Where to go from OPTION when SELECT is pressed...
+
+TABLE_OPTIONS_SELECTMENUS
+	.byte 8  ; 8  SELECT Laser Restart Menu
+	.byte 13 ; 13 SELECT Laser Speed Menu
+	.byte 17 ; 17 SELECT 1NVADER Startup Menu
+	.byte 23 ; 23 SELECT 1NVADER Speedup Menu
+	.byte 30 ; 30 SELECT 1NVADER Max Speed Menu
+	.byte 35 ; 35 SELECT Two Player Modes Menu
+	.byte 41 ; 41 SELECT Other things Menu
+
+
+; Table: 0 in high byte means use low byte as the new index entry.
+
+TABLE_OPTIONS
+	.word GFX_OPTION_1 ; 0
+	.word GFX_OPTION_2 ; 1 
+	.word GFX_OPTION_3 ; 2
+	.word GFX_OPTION_4 ; 3 
+	.word GFX_OPTION_5 ; 4
+	.word GFX_OPTION_6 ; 5
+	.word GFX_OPTION_7 ; 6 
+	.word 0            ; 7  Return to Option entry 0
+	.word GFX_MENU_1_1 ; 8  SELECT Laser Restart Menu
+	.word GFX_MENU_1_2 ; 9
+	.word GFX_MENU_1_3 ; 10
+	.word GFX_MENU_1_4 ; 11
+	.word 8            ; 12 Return to Select entry 8
+	.word GFX_MENU_2_1 ; 13 SELECT Laser Speed Menu
+	.word GFX_MENU_2_2 ; 14  
+	.word GFX_MENU_2_3 ; 15
+	.word 13           ; 16 Return to Select entry 13
+	.word GFX_MENU_3_1 ; 17 SELECT 1NVADER Startup Menu
+	.word GFX_MENU_3_2 ; 18
+	.word GFX_MENU_3_3 ; 19
+	.word GFX_MENU_3_4 ; 20
+	.word GFX_MENU_3_5 ; 21
+	.word 17           ; 22 Return to Select entry 17
+	.word GFX_MENU_4_1 ; 23 SELECT 1NVADER Speedup Menu
+	.word GFX_MENU_4_2 ; 24 
+	.word GFX_MENU_4_3 ; 25
+	.word GFX_MENU_4_4 ; 26
+	.word GFX_MENU_4_5 ; 27 
+	.word GFX_MENU_4_6 ; 28
+	.word 23           ; 29 Return to Select entry 23
+	.word GFX_MENU_5_1 ; 30 SELECT 1NVADER Max Speed Menu
+	.word GFX_MENU_5_2 ; 31
+	.word GFX_MENU_5_3 ; 32
+	.word GFX_MENU_5_4 ; 33
+	.word 30           ; 34 Return to Select entry 30
+	.word GFX_MENU_6_1 ; 35 SELECT Two Player Modes Menu
+	.word GFX_MENU_6_2 ; 36 
+	.word GFX_MENU_6_3 ; 37            
+	.word GFX_MENU_6_4 ; 38
+	.word GFX_MENU_6_5 ; 39
+	.word 35           ; 40 Return to Select entry 35
+	.word GFX_MENU_7_1 ; 41 SELECT Other things Menu
+	.word GFX_MENU_7_2 ; 42
+	.word GFX_MENU_7_3 ; 43
+	.word 41           ; 44 Return to Select entry 41
+
+TABLE_OPTIONS_TEXT
+	.word GFX_OPTION_1_TEXT ; 0
+	.word GFX_OPTION_2_TEXT ; 1 
+	.word GFX_OPTION_3_TEXT ; 2
+	.word GFX_OPTION_4_TEXT ; 3 
+	.word GFX_OPTION_5_TEXT ; 4
+	.word GFX_OPTION_6_TEXT ; 5
+	.word GFX_OPTION_7_TEXT ; 6 
+	.word 0                 ; 7  Return to Option entry 0
+	.word GFX_MENU_1_1_TEXT ; 8  SELECT Laser Restart Menu
+	.word GFX_MENU_1_2_TEXT ; 9
+	.word GFX_MENU_1_3_TEXT ; 10
+	.word GFX_MENU_1_4_TEXT ; 11
+	.word 8                 ; 12 Return to Select entry 8
+	.word GFX_MENU_2_1_TEXT ; 13 SELECT Laser Speed Menu
+	.word GFX_MENU_2_2_TEXT ; 14  
+	.word GFX_MENU_2_3_TEXT ; 15
+	.word 13                ; 16 Return to Select entry 13
+	.word GFX_MENU_3_1_TEXT ; 17 SELECT 1NVADER Startup Menu
+	.word GFX_MENU_3_2_TEXT ; 18
+	.word GFX_MENU_3_3_TEXT ; 19
+	.word GFX_MENU_3_4_TEXT ; 20
+	.word GFX_MENU_3_5_TEXT ; 21
+	.word 17                ; 22 Return to Select entry 17
+	.word GFX_MENU_4_1_TEXT ; 23 SELECT 1NVADER Speedup Menu
+	.word GFX_MENU_4_2_TEXT ; 24 
+	.word GFX_MENU_4_3_TEXT ; 25
+	.word GFX_MENU_4_4_TEXT ; 26
+	.word GFX_MENU_4_5_TEXT ; 27 
+	.word GFX_MENU_4_6_TEXT ; 28
+	.word 23                ; 29 Return to Select entry 23
+	.word GFX_MENU_5_1_TEXT ; 30 SELECT 1NVADER Max Speed Menu
+	.word GFX_MENU_5_2_TEXT ; 31
+	.word GFX_MENU_5_3_TEXT ; 32
+	.word GFX_MENU_5_4_TEXT ; 33
+	.word 30                ; 34 Return to Select entry 30
+	.word GFX_MENU_6_1_TEXT ; 35 SELECT Two Player Modes Menu
+	.word GFX_MENU_6_2_TEXT ; 36 
+	.word GFX_MENU_6_3_TEXT ; 37            
+	.word GFX_MENU_6_4_TEXT ; 38
+	.word GFX_MENU_6_5_TEXT ; 39
+	.word 35                ; 40 Return to Select entry 35
+	.word GFX_MENU_7_1_TEXT ; 41 SELECT Other things Menu
+	.word GFX_MENU_7_2_TEXT ; 42
+	.word GFX_MENU_7_3_TEXT ; 43
+	.word 41                ; 44 Return to Select entry 41
+
+
+; Functions to set game options and update display OPTION large description (ON/OFF).
+
+TABLE_GET_FUNCTIONS
+	.word 0 ; 0
+	.word 0 ; 1 
+	.word 0 ; 2
+	.word 0 ; 3 
+	.word 0 ; 4
+	.word 0 ; 5
+	.word 0 ; 6 
+	.word 0            ; 7  Return to Option entry 0
+	.word 0 ;getLaserRestart-1 ; 8  SELECT Laser Restart Menu
+	.word GFX_MENU_1_2 ; 9
+	.word GFX_MENU_1_3 ; 10
+	.word GFX_MENU_1_4 ; 11
+	.word 8            ; 12 Return to Select entry 8
+	.word GFX_MENU_2_1 ; 13 SELECT Laser Speed Menu
+	.word GFX_MENU_2_2 ; 14  
+	.word GFX_MENU_2_3 ; 15
+	.word 13           ; 16 Return to Select entry 13
+	.word GFX_MENU_3_1 ; 17 SELECT 1NVADER Startup Menu
+	.word GFX_MENU_3_2 ; 18
+	.word GFX_MENU_3_3 ; 19
+	.word GFX_MENU_3_4 ; 20
+	.word GFX_MENU_3_5 ; 21
+	.word 17           ; 22 Return to Select entry 17
+	.word GFX_MENU_4_1 ; 23 SELECT 1NVADER Speedup Menu
+	.word GFX_MENU_4_2 ; 24 
+	.word GFX_MENU_4_3 ; 25
+	.word GFX_MENU_4_4 ; 26
+	.word GFX_MENU_4_5 ; 27 
+	.word GFX_MENU_4_6 ; 28
+	.word 23           ; 29 Return to Select entry 23
+	.word GFX_MENU_5_1 ; 30 SELECT 1NVADER Max Speed Menu
+	.word GFX_MENU_5_2 ; 31
+	.word GFX_MENU_5_3 ; 32
+	.word GFX_MENU_5_4 ; 33
+	.word 30           ; 34 Return to Select entry 30
+	.word GFX_MENU_6_1 ; 35 SELECT Two Player Modes Menu
+	.word GFX_MENU_6_2 ; 36 
+	.word GFX_MENU_6_3 ; 37            
+	.word GFX_MENU_6_4 ; 38
+	.word GFX_MENU_6_5 ; 39
+	.word 35           ; 40 Return to Select entry 35
+	.word GFX_MENU_7_1 ; 41 SELECT Other things Menu
+	.word GFX_MENU_7_2 ; 42
+	.word GFX_MENU_7_3 ; 43
+	.word 41           ; 44 Return to Select entry 41
+
+
+; Functions to set game options.
+
+TABLE_SET_FUNCTIONS
 
 
 	.align $0100
