@@ -359,24 +359,30 @@ GFX_OPTION_7_TEXT
 
 
 GFX_MENU_1_1                 ; SELECT Laser Restart Menu
-	.sb "REGULAR RESTART     "
+	.sb "MID AUTO SHOT       "
 GFX_MENU_1_2
-	.sb "SHORT RESTART       "
+	.sb "SHORT AUTO SHOT     "
 GFX_MENU_1_3
-	.sb "LONG RESTART        "
+	.sb "FAR AUTO SHOT       "
 GFX_MENU_1_4
-	.sb "NO RESTART          "
+	.sb "MID SHOT            "
+GFX_MENU_1_5
+	.sb "SHORT SHOT          "
+GFX_MENU_1_6
+	.sb "FAR SHOT            "
 
 GFX_MENU_1_1_TEXT
-	.sb +$40,"RESTART@LASER@AT@THE@MIDDLE@OF@SCREEN@@@"
+	.sb +$40,"AUTO@RESTART@LASER@HALF@WAY@UP@SCREEN@@@"
 GFX_MENU_1_2_TEXT
-	.sb +$40,"RESTART@LASER@NEARER@BOTTOM@OF@SCREEN@@@"
+	.sb +$40,"AUTO@RESTART@LASER@NEAR@BOTTOM@OF@SCREEN"
 GFX_MENU_1_3_TEXT
-	.sb +$40,"RESTART@LASER@NEARER@TOP@OF@SCREEN@@@@@@"
+	.sb +$40,"AUTO@RESTART@LASER@NEAR@TOP@OF@SCREEN@@@"
 GFX_MENU_1_4_TEXT
-	.sb +$40,"RELEASE@BUTTON@AND@PRESS@AGAIN@TO@SHOOT@"
-
-
+	.sb +$40,"MUST@RELEASE@BUTTON@TO@RESTART@LASER@@@@"
+GFX_MENU_1_5_TEXT
+	.sb +$40,"MUST@RELEASE@BUTTON@TO@RESTART@LASER@@@@"
+GFX_MENU_1_6_TEXT
+	.sb +$40,"MUST@RELEASE@BUTTON@TO@RESTART@LASER@@@@"
  
 GFX_MENU_2_1                 ; SELECT Laser Speed Menu
 	.sb "REGULAR LASERS      "
@@ -470,20 +476,16 @@ GFX_MENU_6_2
 	.sb "FR1GNORE            " ; guns ignore each other
 GFX_MENU_6_3                 
 	.sb "FRENEM1ES           " ; Attached to each other
-GFX_MENU_6_4
-	.sb "FRELPLESS           " ; Attached and single shot
-GFX_MENU_6_5 
+GFX_MENU_6_4 
 	.sb "FRE1GHBORS          " ; Separated in center
 
 GFX_MENU_6_1_TEXT
-	.sb +$40,"DEFAULT@MODE@@@@@GUNS@BOUNCE@EACH@OTHER@"
+	.sb +$40,"GUNS@BOUNCE@OFF@EACH@OTHER@@@@@@@@@@@@@@"
 GFX_MENU_6_2_TEXT
 	.sb +$40,"GUNS@IGNORE@EACH@OTHER@@@@@@@@@@@@@@@@@@"
 GFX_MENU_6_3_TEXT
-	.sb +$40,"GUNS@ARE@ATTACHED@@@@@@BOTH@CAN@SHOOT@@@"
+	.sb +$40,"GUNS@ARE@ATTACHED@TO@EACH@OTHER@@@@@@@@@"
 GFX_MENU_6_4_TEXT
-	.sb +$40,"GUNS@ARE@ATTACHED@@@@TAKE@TURNS@SHOOTING"
-GFX_MENU_6_5_TEXT
 	.sb +$40,"STAY@IN@YOUR@OWN@YARD@AND@OFF@MY@LAWN@@@"
 
 
@@ -519,12 +521,12 @@ GFX_MENU_7_3_TEXT
 
 TABLE_OPTIONS_SELECTMENUS
 	.byte 8  ; 8  SELECT Laser Restart Menu
-	.byte 13 ; 13 SELECT Laser Speed Menu
-	.byte 17 ; 17 SELECT 1NVADER Startup Menu
-	.byte 23 ; 23 SELECT 1NVADER Speedup Menu
-	.byte 30 ; 30 SELECT 1NVADER Max Speed Menu
-	.byte 35 ; 35 SELECT Two Player Modes Menu
-	.byte 41 ; 41 SELECT Other things Menu
+	.byte 15 ; 15 SELECT Laser Speed Menu
+	.byte 19 ; 19 SELECT 1NVADER Startup Menu
+	.byte 25 ; 25 SELECT 1NVADER Speedup Menu
+	.byte 32 ; 32 SELECT 1NVADER Max Speed Menu
+	.byte 37 ; 37 SELECT Two Player Modes Menu
+	.byte 42 ; 42 SELECT Other things Menu
 
 
 ; Table: 0 in high byte means use low byte as the new index entry.
@@ -537,44 +539,53 @@ TABLE_OPTIONS
 	.word GFX_OPTION_5 ; 4
 	.word GFX_OPTION_6 ; 5
 	.word GFX_OPTION_7 ; 6 
-	.word 0            ; 7  Return to Option entry 0
-	.word GFX_MENU_1_1 ; 8  SELECT Laser Restart Menu
-	.word GFX_MENU_1_2 ; 9
-	.word GFX_MENU_1_3 ; 10
-	.word GFX_MENU_1_4 ; 11
-	.word 8            ; 12 Return to Select entry 8
-	.word GFX_MENU_2_1 ; 13 SELECT Laser Speed Menu
-	.word GFX_MENU_2_2 ; 14  
-	.word GFX_MENU_2_3 ; 15
-	.word 13           ; 16 Return to Select entry 13
-	.word GFX_MENU_3_1 ; 17 SELECT 1NVADER Startup Menu
-	.word GFX_MENU_3_2 ; 18
-	.word GFX_MENU_3_3 ; 19
-	.word GFX_MENU_3_4 ; 20
-	.word GFX_MENU_3_5 ; 21
-	.word 17           ; 22 Return to Select entry 17
-	.word GFX_MENU_4_1 ; 23 SELECT 1NVADER Speedup Menu
-	.word GFX_MENU_4_2 ; 24 
-	.word GFX_MENU_4_3 ; 25
-	.word GFX_MENU_4_4 ; 26
-	.word GFX_MENU_4_5 ; 27 
-	.word GFX_MENU_4_6 ; 28
-	.word 23           ; 29 Return to Select entry 23
-	.word GFX_MENU_5_1 ; 30 SELECT 1NVADER Max Speed Menu
-	.word GFX_MENU_5_2 ; 31
-	.word GFX_MENU_5_3 ; 32
-	.word GFX_MENU_5_4 ; 33
-	.word 30           ; 34 Return to Select entry 30
-	.word GFX_MENU_6_1 ; 35 SELECT Two Player Modes Menu
-	.word GFX_MENU_6_2 ; 36 
-	.word GFX_MENU_6_3 ; 37            
-	.word GFX_MENU_6_4 ; 38
-	.word GFX_MENU_6_5 ; 39
-	.word 35           ; 40 Return to Select entry 35
-	.word GFX_MENU_7_1 ; 41 SELECT Other things Menu
-	.word GFX_MENU_7_2 ; 42
-	.word GFX_MENU_7_3 ; 43
-	.word 41           ; 44 Return to Select entry 41
+	.word 0            ; 7   Return to Option entry 0
+	; (SELECT Laser Restart Menu)
+	.word GFX_MENU_1_1 ; 8   Regular/Default Laser Auto Restart
+	.word GFX_MENU_1_2 ; 9   Short Laser Auto Restart
+	.word GFX_MENU_1_3 ; 10  Long Laser Auto Restart
+	.word GFX_MENU_1_4 ; 11  Regular Laser Manual Restart
+	.word GFX_MENU_1_5 ; 12  Regular Laser Manual Restart
+	.word GFX_MENU_1_6 ; 13  Regular Laser Manual Restart
+	.word 8            ; 14  Return to Select entry 8
+	; (SELECT Laser Speed Menu)
+	.word GFX_MENU_2_1 ; 15  Regular laser speed
+	.word GFX_MENU_2_2 ; 16  Fast laser speed (+2)
+	.word GFX_MENU_2_3 ; 17  Slow laser speed (-2)
+	.word 15           ; 18 Return to Select entry 15
+	; (SELECT 1NVADER Startup Menu)
+	.word GFX_MENU_3_1 ; 19 1nvader Start Speed 1
+	.word GFX_MENU_3_2 ; 20 1nvader Start Speed 3
+	.word GFX_MENU_3_3 ; 21 1nvader Start Speed 5
+	.word GFX_MENU_3_4 ; 22 1nvader Start Speed 7
+	.word GFX_MENU_3_5 ; 23 1nvader Start Speed MAX
+	.word 19           ; 24 Return to Select entry 19
+	; (SELECT 1NVADER Speedup Menu)
+	.word GFX_MENU_4_1 ; 25 1nvader speed up every 10 hits
+	.word GFX_MENU_4_2 ; 26 1nvader speed up every 7 hits
+	.word GFX_MENU_4_3 ; 27 1nvader speed up every 5 hits
+	.word GFX_MENU_4_4 ; 28 1nvader speed up every 3 hits 
+	.word GFX_MENU_4_5 ; 29 1nvader speed up progressive 10,9,8,7,6...
+	.word GFX_MENU_4_6 ; 30 1nvader speed up no speedup
+	.word 25           ; 31 Return to Select entry 25
+	; (SELECT 1NVADER Max Speed Menu)
+	.word GFX_MENU_5_1 ; 32 Max speed 1
+	.word GFX_MENU_5_2 ; 33 Max speed 3
+	.word GFX_MENU_5_3 ; 34 Max speed 5
+	.word GFX_MENU_5_4 ; 35 Max speed MAX (default)
+	.word 32           ; 36 Return to Select entry 32
+	; (SELECT Two Player Modes Menu)
+	.word GFX_MENU_6_1 ; 37 FR1GULAR - Default - Guns bounce off each other.
+	.word GFX_MENU_6_2 ; 38 FR1GNORE - Guns do not bounce off each other.
+	.word GFX_MENU_6_3 ; 39 FRENEM1ES - Guns attached to each other.           
+	.word GFX_MENU_6_4 ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.word 37           ; 41 Return to Select entry 37
+	; (SELECT Other things Menu)
+	.word GFX_MENU_7_1 ; 42 ONES1ES - 2P take turns shooting.
+	.word GFX_MENU_7_2 ; 43 Reset all values to defaults
+	.word GFX_MENU_7_3 ; 44 Cheat Mode - 1nvader never reaches bottom row.
+	.word 42           ; 45 Return to Select entry 42
+
 
 TABLE_OPTIONS_TEXT
 	.word GFX_OPTION_1_TEXT ; 0
@@ -584,44 +595,52 @@ TABLE_OPTIONS_TEXT
 	.word GFX_OPTION_5_TEXT ; 4
 	.word GFX_OPTION_6_TEXT ; 5
 	.word GFX_OPTION_7_TEXT ; 6 
-	.word 0                 ; 7  Return to Option entry 0
-	.word GFX_MENU_1_1_TEXT ; 8  SELECT Laser Restart Menu
-	.word GFX_MENU_1_2_TEXT ; 9
-	.word GFX_MENU_1_3_TEXT ; 10
-	.word GFX_MENU_1_4_TEXT ; 11
-	.word 8                 ; 12 Return to Select entry 8
-	.word GFX_MENU_2_1_TEXT ; 13 SELECT Laser Speed Menu
-	.word GFX_MENU_2_2_TEXT ; 14  
-	.word GFX_MENU_2_3_TEXT ; 15
-	.word 13                ; 16 Return to Select entry 13
-	.word GFX_MENU_3_1_TEXT ; 17 SELECT 1NVADER Startup Menu
-	.word GFX_MENU_3_2_TEXT ; 18
-	.word GFX_MENU_3_3_TEXT ; 19
-	.word GFX_MENU_3_4_TEXT ; 20
-	.word GFX_MENU_3_5_TEXT ; 21
-	.word 17                ; 22 Return to Select entry 17
-	.word GFX_MENU_4_1_TEXT ; 23 SELECT 1NVADER Speedup Menu
-	.word GFX_MENU_4_2_TEXT ; 24 
-	.word GFX_MENU_4_3_TEXT ; 25
-	.word GFX_MENU_4_4_TEXT ; 26
-	.word GFX_MENU_4_5_TEXT ; 27 
-	.word GFX_MENU_4_6_TEXT ; 28
-	.word 23                ; 29 Return to Select entry 23
-	.word GFX_MENU_5_1_TEXT ; 30 SELECT 1NVADER Max Speed Menu
-	.word GFX_MENU_5_2_TEXT ; 31
-	.word GFX_MENU_5_3_TEXT ; 32
-	.word GFX_MENU_5_4_TEXT ; 33
-	.word 30                ; 34 Return to Select entry 30
-	.word GFX_MENU_6_1_TEXT ; 35 SELECT Two Player Modes Menu
-	.word GFX_MENU_6_2_TEXT ; 36 
-	.word GFX_MENU_6_3_TEXT ; 37            
-	.word GFX_MENU_6_4_TEXT ; 38
-	.word GFX_MENU_6_5_TEXT ; 39
-	.word 35                ; 40 Return to Select entry 35
-	.word GFX_MENU_7_1_TEXT ; 41 SELECT Other things Menu
-	.word GFX_MENU_7_2_TEXT ; 42
-	.word GFX_MENU_7_3_TEXT ; 43
-	.word 41                ; 44 Return to Select entry 41
+	.word 0                 ; 7   Return to Option entry 0
+	; (SELECT Laser Restart Menu)
+	.word GFX_MENU_1_1_TEXT ; 8   Regular/Default Laser Auto Restart
+	.word GFX_MENU_1_2_TEXT ; 9   Short Laser Auto Restart
+	.word GFX_MENU_1_3_TEXT ; 10  Long Laser Auto Restart
+	.word GFX_MENU_1_4_TEXT ; 11  Regular Laser Manual Restart
+	.word GFX_MENU_1_5_TEXT ; 12  Regular Laser Manual Restart
+	.word GFX_MENU_1_6_TEXT ; 13  Regular Laser Manual Restart
+	.word 8                 ; 14  Return to Select entry 8
+	; (SELECT Laser Speed Menu)
+	.word GFX_MENU_2_1_TEXT ; 15  Regular laser speed
+	.word GFX_MENU_2_2_TEXT ; 16  Fast laser speed (+2)
+	.word GFX_MENU_2_3_TEXT ; 17  Slow laser speed (-2)
+	.word 15                ; 18 Return to Select entry 15
+	; (SELECT 1NVADER Startup Menu)
+	.word GFX_MENU_3_1_TEXT ; 19 1nvader Start Speed 1
+	.word GFX_MENU_3_2_TEXT ; 20 1nvader Start Speed 3
+	.word GFX_MENU_3_3_TEXT ; 21 1nvader Start Speed 5
+	.word GFX_MENU_3_4_TEXT ; 22 1nvader Start Speed 7
+	.word GFX_MENU_3_5_TEXT ; 23 1nvader Start Speed MAX
+	.word 19                ; 24 Return to Select entry 19
+	; (SELECT 1NVADER Speedup Menu)
+	.word GFX_MENU_4_1_TEXT ; 25 1nvader speed up every 10 hits
+	.word GFX_MENU_4_2_TEXT ; 26 1nvader speed up every 7 hits
+	.word GFX_MENU_4_3_TEXT ; 27 1nvader speed up every 5 hits
+	.word GFX_MENU_4_4_TEXT ; 28 1nvader speed up every 3 hits 
+	.word GFX_MENU_4_5_TEXT ; 29 1nvader speed up progressive 10,9,8,7,6...
+	.word GFX_MENU_4_6_TEXT ; 30 1nvader speed up no speedup
+	.word 25                ; 31 Return to Select entry 25
+	; (SELECT 1NVADER Max Speed Menu)
+	.word GFX_MENU_5_1_TEXT ; 32 Max speed 1
+	.word GFX_MENU_5_2_TEXT ; 33 Max speed 3
+	.word GFX_MENU_5_3_TEXT ; 34 Max speed 5
+	.word GFX_MENU_5_4_TEXT ; 35 Max speed MAX (default)
+	.word 32                ; 36 Return to Select entry 32
+	; (SELECT Two Player Modes Menu)
+	.word GFX_MENU_6_1_TEXT ; 37 FR1GULAR - Default - Guns bounce off each other.
+	.word GFX_MENU_6_2_TEXT ; 38 FR1GNORE - Guns do not bounce off each other.
+	.word GFX_MENU_6_3_TEXT ; 39 FRENEM1ES - Guns attached to each other.           
+	.word GFX_MENU_6_4_TEXT ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.word 37                ; 41 Return to Select entry 37
+	; (SELECT Other things Menu)
+	.word GFX_MENU_7_1_TEXT ; 42 ONES1ES - 2P take turns shooting.
+	.word GFX_MENU_7_2_TEXT ; 43 Reset all values to defaults
+	.word GFX_MENU_7_3_TEXT ; 44 Cheat Mode - 1nvader never reaches bottom row.
+	.word 42                ; 45 Return to Select entry 42
 
 
 ; Functions to set game options and update display OPTION large description (ON/OFF).
@@ -635,43 +654,51 @@ TABLE_GET_FUNCTIONS
 	.word 0 ; 5
 	.word 0 ; 6 
 	.word 0            ; 7  Return to Option entry 0
-	.word 0 ;getLaserRestart-1 ; 8  SELECT Laser Restart Menu
-	.word GFX_MENU_1_2 ; 9
-	.word GFX_MENU_1_3 ; 10
-	.word GFX_MENU_1_4 ; 11
-	.word 8            ; 12 Return to Select entry 8
-	.word GFX_MENU_2_1 ; 13 SELECT Laser Speed Menu
-	.word GFX_MENU_2_2 ; 14  
-	.word GFX_MENU_2_3 ; 15
-	.word 13           ; 16 Return to Select entry 13
-	.word GFX_MENU_3_1 ; 17 SELECT 1NVADER Startup Menu
-	.word GFX_MENU_3_2 ; 18
-	.word GFX_MENU_3_3 ; 19
-	.word GFX_MENU_3_4 ; 20
-	.word GFX_MENU_3_5 ; 21
-	.word 17           ; 22 Return to Select entry 17
-	.word GFX_MENU_4_1 ; 23 SELECT 1NVADER Speedup Menu
-	.word GFX_MENU_4_2 ; 24 
-	.word GFX_MENU_4_3 ; 25
-	.word GFX_MENU_4_4 ; 26
-	.word GFX_MENU_4_5 ; 27 
-	.word GFX_MENU_4_6 ; 28
-	.word 23           ; 29 Return to Select entry 23
-	.word GFX_MENU_5_1 ; 30 SELECT 1NVADER Max Speed Menu
-	.word GFX_MENU_5_2 ; 31
-	.word GFX_MENU_5_3 ; 32
-	.word GFX_MENU_5_4 ; 33
-	.word 30           ; 34 Return to Select entry 30
-	.word GFX_MENU_6_1 ; 35 SELECT Two Player Modes Menu
-	.word GFX_MENU_6_2 ; 36 
-	.word GFX_MENU_6_3 ; 37            
-	.word GFX_MENU_6_4 ; 38
-	.word GFX_MENU_6_5 ; 39
-	.word 35           ; 40 Return to Select entry 35
-	.word GFX_MENU_7_1 ; 41 SELECT Other things Menu
-	.word GFX_MENU_7_2 ; 42
-	.word GFX_MENU_7_3 ; 43
-	.word 41           ; 44 Return to Select entry 41
+	; (SELECT Laser Restart Menu)
+	.word 0 ; getLaserRestart-1 ; 8     Regular/Default Laser Auto Restart
+	.word GFX_MENU_1_2 ; 9   Short Laser Auto Restart
+	.word GFX_MENU_1_3 ; 10  Long Laser Auto Restart
+	.word GFX_MENU_1_4 ; 11  Regular Laser Manual Restart
+	.word GFX_MENU_1_5 ; 12  Regular Laser Manual Restart
+	.word GFX_MENU_1_6 ; 13  Regular Laser Manual Restart
+	.word 8            ; 14  Return to Select entry 8
+	; (SELECT Laser Speed Menu)
+	.word GFX_MENU_2_1 ; 15  Regular laser speed
+	.word GFX_MENU_2_2 ; 16  Fast laser speed (+2)
+	.word GFX_MENU_2_3 ; 17  Slow laser speed (-2)
+	.word 15           ; 18 Return to Select entry 15
+	; (SELECT 1NVADER Startup Menu)
+	.word GFX_MENU_3_1 ; 19 1nvader Start Speed 1
+	.word GFX_MENU_3_2 ; 20 1nvader Start Speed 3
+	.word GFX_MENU_3_3 ; 21 1nvader Start Speed 5
+	.word GFX_MENU_3_4 ; 22 1nvader Start Speed 7
+	.word GFX_MENU_3_5 ; 23 1nvader Start Speed MAX
+	.word 19           ; 24 Return to Select entry 19
+	; (SELECT 1NVADER Speedup Menu)
+	.word GFX_MENU_4_1 ; 25 1nvader speed up every 10 hits
+	.word GFX_MENU_4_2 ; 26 1nvader speed up every 7 hits
+	.word GFX_MENU_4_3 ; 27 1nvader speed up every 5 hits
+	.word GFX_MENU_4_4 ; 28 1nvader speed up every 3 hits 
+	.word GFX_MENU_4_5 ; 29 1nvader speed up progressive 10,9,8,7,6...
+	.word GFX_MENU_4_6 ; 30 1nvader speed up no speedup
+	.word 25           ; 31 Return to Select entry 25
+	; (SELECT 1NVADER Max Speed Menu)
+	.word GFX_MENU_5_1 ; 32 Max speed 1
+	.word GFX_MENU_5_2 ; 33 Max speed 3
+	.word GFX_MENU_5_3 ; 34 Max speed 5
+	.word GFX_MENU_5_4 ; 35 Max speed MAX (default)
+	.word 32           ; 36 Return to Select entry 32
+	; (SELECT Two Player Modes Menu)
+	.word GFX_MENU_6_1 ; 37 FR1GULAR - Default - Guns bounce off each other.
+	.word GFX_MENU_6_2 ; 38 FR1GNORE - Guns do not bounce off each other.
+	.word GFX_MENU_6_3 ; 39 FRENEM1ES - Guns attached to each other.           
+	.word GFX_MENU_6_4 ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.word 37           ; 41 Return to Select entry 37
+	; (SELECT Other things Menu)
+	.word GFX_MENU_7_1 ; 42 ONES1ES - 2P take turns shooting.
+	.word GFX_MENU_7_2 ; 43 Reset all values to defaults
+	.word GFX_MENU_7_3 ; 44 Cheat Mode - 1nvader never reaches bottom row.
+	.word 42           ; 45 Return to Select entry 42
 
 
 ; Functions to set game options.
