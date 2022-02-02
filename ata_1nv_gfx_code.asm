@@ -1636,7 +1636,8 @@ b_grtl_SkipDecPF1
 ;	.sb +$80,"HERE  "   ; 6 == 20   ; Red
 ; --------------------------------------------------------------------------
 
-Gfx
+Gfx_RunMenu_VBI
+
 	rts
 
 
@@ -1650,25 +1651,29 @@ Gfx
 
 Gfx_ClearOptionsRightBuffer
 
-	lda #<GFX_OPTION_RIGHT
-	sta zMemSet_Dst
-	lda #>GFX_OPTION_RIGHT
-	sta zMemSet_Dst+1
+;	lda #<GFX_OPTION_RIGHT
+;	sta zMemSet_Dst
+;	lda #>GFX_OPTION_RIGHT
+;	sta zMemSet_Dst+1
 
-	ldy #20
-	lda #INTERNAL_BLANKSPACE ; $00
+;	ldy #20
+;	lda #INTERNAL_BLANKSPACE ; $00
 
-	jsr libMemSet
+;	jsr libMemSet
 
-	lda #<GFX_OPTION_TEXT_RIGHT
-	sta zMemSet_Dst
-	lda #<GFX_OPTION_TEXT_RIGHT
-	sta zMemSet_Dst+1
+	mMemset GFX_OPTION_RIGHT,20,INTERNAL_BLANKSPACE
 
-	ldy #40
-	lda #CHAR_MODE2_BLANK ; @ sign for blanks on mode 2
+;	lda #<GFX_OPTION_TEXT_RIGHT
+;	sta zMemSet_Dst
+;	lda #>GFX_OPTION_TEXT_RIGHT
+;	sta zMemSet_Dst+1
 
-	jsr libMemSet
+;	ldy #40
+;	lda #CHAR_MODE2_BLANK ; @ sign for blanks on mode 2
+
+;	jsr libMemSet
+
+	mMemset GFX_OPTION_TEXT_RIGHT,40,CHAR_MODE2_BLANK
 
 	rts
 
@@ -1682,25 +1687,29 @@ Gfx_ClearOptionsRightBuffer
 
 Gfx_ClearOptionsLeftBuffer
 
-	lda #<GFX_OPTION_LEFT
-	sta zMemSet_Dst
-	lda #>GFX_OPTION_LEFT
-	sta zMemSet_Dst+1
+;	lda #<GFX_OPTION_LEFT
+;	sta zMemSet_Dst
+;	lda #>GFX_OPTION_LEFT
+;	sta zMemSet_Dst+1
 
-	ldy #20
-	lda #INTERNAL_BLANKSPACE ; $00
+;	ldy #20
+;	lda #INTERNAL_BLANKSPACE ; $00
 	
-	jsr libMemSet
+;	jsr libMemSet
 
-	lda #<GFX_OPTION_TEXT_LEFT
-	sta zMemSet_Dst
-	lda #<GFX_OPTION_TEXT_LEFT
-	sta zMemSet_Dst+1
+	mMemset GFX_OPTION_LEFT,20,INTERNAL_BLANKSPACE
 
-	ldy #40
-	lda #CHAR_MODE2_BLANK ; @ sign for blanks on mode 2
+;	lda #<GFX_OPTION_TEXT_LEFT
+;	sta zMemSet_Dst
+;	lda #>GFX_OPTION_TEXT_LEFT
+;	sta zMemSet_Dst+1
 
-	jsr libMemSet
+;	ldy #40
+;	lda #CHAR_MODE2_BLANK ; @ sign for blanks on mode 2
+
+;	jsr libMemSet
+
+	mMemset GFX_OPTION_TEXT_LEFT,40,CHAR_MODE2_BLANK
 
 	rts
 
@@ -1714,33 +1723,38 @@ Gfx_ClearOptionsLeftBuffer
 
 Gfx_CopyOptionRightToLeftBuffer
 
-	lda #<GFX_OPTION_RIGHT
-	sta zMemCpy_Src
-	lda #>GFX_OPTION_RIGHT
-	sta zMemCpy_Src+1
+;	lda #<GFX_OPTION_RIGHT
+;	sta zMemCpy_Src
+;	lda #>GFX_OPTION_RIGHT
+;	sta zMemCpy_Src+1
 
-	lda #<GFX_OPTION_LEFT
-	sta zMemSet_Dst
-	lda #>GFX_OPTION_LEFT
-	sta zMemSet_Dst+1
+;	lda #<GFX_OPTION_LEFT
+;	sta zMemSet_Dst
+;	lda #>GFX_OPTION_LEFT
+;	sta zMemSet_Dst+1
 
-	ldy #20
+;	ldy #20
 
-	jsr libMemCpy
+;	jsr libMemCpy 
 
-	lda #<GFX_OPTION_TEXT_RIGHT
-	sta zMemCpy_Src
-	lda #>GFX_OPTION_TEXT_RIGHT
-	sta zMemCpy_Src+1
+	mMemcpy GFX_OPTION_LEFT,GFX_OPTION_RIGHT,20
 
-	lda #<GFX_OPTION_TEXT_LEFT
-	sta zMemSet_Dst
-	lda #>GFX_OPTION_TEXT_LEFT
-	sta zMemSet_Dst+1
 
-	ldy #40
+;	lda #<GFX_OPTION_TEXT_RIGHT
+;	sta zMemCpy_Src
+;	lda #>GFX_OPTION_TEXT_RIGHT
+;	sta zMemCpy_Src+1
 
-	jsr libMemCpy
+;	lda #<GFX_OPTION_TEXT_LEFT
+;	sta zMemSet_Dst
+;	lda #>GFX_OPTION_TEXT_LEFT
+;	sta zMemSet_Dst+1
+
+;	ldy #40
+
+;	jsr libMemCpy
+
+	mMemcpy GFX_OPTION_TEXT_LEFT,GFX_OPTION_TEXT_RIGHT,40
 
 
 	rts

@@ -1885,7 +1885,7 @@ b_ggrc_GetChar
 b_ggrc_Exit_Failure
 	lda #$FF
 	rts
-	
+
 
 ; ==========================================================================
 ; SUPPPORT - SETUP CSET ADDR 
@@ -1969,6 +1969,10 @@ b_ggrc_Exit_Failure
 ;
 ; Y ==  real number of bytes.  (min 1, max 128)
 ; A ==  value to write.
+;
+; Return Value:
+; Neg flag = error
+; Z flag   = success.
 ; --------------------------------------------------------------------------
 
 libMemSet
@@ -1980,6 +1984,7 @@ b_lms_Loop
 	sta (zMemSet_Dst),y
 	dey
 	bpl b_lms_Loop      ; Continue through Y = 0.  Stop at Y = -1
+	ldy #0              ; Set Z flag, Clear negative flag.
 
 b_lms_Exit
 	rts
@@ -1991,6 +1996,10 @@ b_lms_Exit
 ; Assuming Src and Dst have been set up in zMemCpy vars.
 ;
 ; Y ==  real number of bytes.  (min 1, max 128)
+;
+; Return Value:
+; Neg flag = error
+; Z flag   = success.
 ; --------------------------------------------------------------------------
 
 libMemCpy
@@ -2003,6 +2012,7 @@ b_lmc_Loop
 	sta (zMemCpy_Dst),y
 	dey
 	bpl b_lmc_Loop      ; Continue through Y = 0.  Stop at Y = -1
+	ldy #0
 
 b_lmc_Exit
 	rts

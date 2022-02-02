@@ -304,9 +304,18 @@ TABLE_GFX_TAG_LMS
 ; ==========================================================================
 ; TITLE SCREEN OPTIONS MANAGEMENT . . .
 
-gCurrent_Option_Menu   .byte 0
+gOSS_ScrollState  .byte 0 ; Status of scrolling behavior. 
 
-gCurrent_Select_Entry
+gDEBOUNCE_OSS     .byte 0 ; Flag that Option/Select/Start are released. 
+gOSS_KEYS         .byte 0 ; Current Option/Select/Start bits.
+
+gOSS_Mode         .byte 0 ; 0 is option menu.  1 is select menu.
+
+gLastOptionMenu   .byte 0 ; When in OPTION mode and SELECT is pressed then remember the current Option menu. 
+
+gCurrentMenuEntry .byte 0 ; Menu entry number for Option and Select.
+
+gCurrentMenuText  .word 0 ; pointer to text for the menu 
 
 
 ; ==========================================================================
@@ -320,7 +329,6 @@ gCurrent_Select_Entry
 ; SELECT entries point to *function() to set/unset item.
 ;
 ; --------------------------------------------------------------------------
-
 
 ; Where to go from OPTION when SELECT is pressed...
 
@@ -660,8 +668,9 @@ TABLE_TO_DIGITS ; 0 to 21.  (22 is last row which should be undisplayed.)
 ; ==========================================================================
 
 ; Are there really 8 stars? In the video it appears there are 4
-; in screen at any time.  It seems like the code wraps around 
-; at 6, so ...? 
+; visible on screen at any time.  It seems like the code wraps  
+; around at 6, so ...? 
+
 TABLE_STAR_LOCATION ; star
 	.byte 0,32,64,96       ; eight
 	.byte 128,160,192,224  ; stars
@@ -678,10 +687,6 @@ zGAME_OVER_FRAME            .byte 0    ; Frame counter 255 to 0
 zGAME_OVER_TICKS            .byte 0    ; decrement every GAME_OVER_FRAME=0.  Large countdown.
 
 gDEBOUNCE                   .byte 0    ; Flag to make sure joystick buttons are released.
-
-gDEBOUNCE_OSS               .byte 0    ; Flag that Option/Select/Start are released. 
-gOSS_KEYS                   .byte 0    ; Current Option/Select/Start bits.
-
 
 ; Game Screen Stars Control values ==========================================
 
