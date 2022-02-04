@@ -7,6 +7,24 @@ Darren Foulds: https://github.com/darrenfoulds
 
 ---
 
+| **Title** |
+| ------- |
+| [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/23-BETA-TitleGlitz.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
+
+---
+
+| **Game** | 
+| ------- |
+| [![GAME](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/22-BETA-Game.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Game.md "Game") |
+
+---
+
+| **GAME OVER** | 
+| ------------- |
+| [![GAMEOVER](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/18-BASELINE-GameOver.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_GameOver.md "Game Over") |
+
+---
+
 **Development Progress**
 
 BETA TEST BASELINE - - NO AUDIO YET.  
@@ -93,23 +111,5 @@ New visuals, and enhancement for future modifications:
 - Options line, and Options description lines added for future ability to choose game modes.
 - Revised font includes glyphs appropriate for ANTIC Mode 2 text to support the Options Descriptions line.
 - Game Over screen will automatically time out and return to the Title screen.  Around a minute-ish.
-
----
-
-| **Title** |
-| ------- |
-| [![TITLE](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/23-BETA-TitleGlitz.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Title.md "Title") | 
-
----
-
-| **Game** | 
-| ------- |
-| [![GAME](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/22-BETA-Game.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_Game.md "Game") |
-
----
-
-| **GAME OVER** | 
-| ------------- |
-| [![GAMEOVER](https://github.com/kenjennings/Atari-1nvader/raw/master/pics/18-BASELINE-GameOver.png)](https://github.com/kenjennings/Atari-1nvader/blob/master/README_GameOver.md "Game Over") |
 
 ---
