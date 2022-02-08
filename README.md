@@ -1,4 +1,4 @@
-# Atari-1nvader
+# Atari-1nvader - WORK IN PROGRESS
 Atari 8-bit computer port (parody) of Darren Foulds' C64 1nvader game
 
 Darren Foulds: https://github.com/darrenfoulds
