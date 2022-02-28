@@ -616,7 +616,7 @@ GFX_STAR_CHAR
 	.sb "*"
 GFX_CHEATER_CHARS
 	.sb "CHEATER"
-	.by 0 ; the current index into the CHATER_CHARS string.
+	.by 0 ; the current index into the CHEATER_CHARS string.
 
 
 ; For Game over there is a display line, and then various 

@@ -322,6 +322,156 @@ b_gss_WriteP2Img
 
 
 
+; ==========================================================================
+; SCROLL CREDITS
+; ==========================================================================
+; Do the credits lines scrolling.
+;
+; Two lines of author credits.   
+; When the first line scrolls left the second line scrolls right.   
+; Pause for a few seconds for reading comprehension.
+; Then reverse directions.
+; Rinse.  Repeat.
+; 
+; The timer is maintained by the VBI, then it calls this routine.
+;
+; 1) (VBI) If waiting, continue to wait.
+; 2) (VBI) if not waiting, then do motion.  
+; 3) (VBI) Wait for motion timer.
+; 4) Execute motion. Either
+; 4)a) top row to the left, bottom row to the right, OR
+; 4)b) top row to the right, bottom row to the left
+; 5) At end, then reset
+; 5)a) toggle motion direction.
+; 5)b) restart the waiting phase.
+; --------------------------------------------------------------------------
+
+Gfx_CreditsScrolling
+
+	lda zCreditsMotion            ; What direction are we moving in?
+	beq b_gcs_CreditLeftRight     ; 0 is moving Left/Right
+
+	; Otherwise, we're going in the opposite direction here.  (Right/Left)
+
+	inc zCredit1HS                ; Credit 1 Right
+	lda zCredit1HS
+	cmp #16                       ; Reach the end of fine scrolling 16 color clocks?
+	bne b_gcs_Credit2_Left        ; No, go do the Credit2 line.
+	lda #0                        ; Yes. 
+	sta zCredit1HS                ; Reset the fine scroll, and...
+	dec DL_LMS_SCROLL_CREDIT1     ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_CREDIT1     ; and another 8 color clocks.
+
+b_gcs_Credit2_Left                ; Credit 2 Left
+	dec zCredit2HS                ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?              
+	bpl b_gcs_TestEndRightLeft    ; Nope.  End of scrolling, check end position
+	lda #15                       ; Yes. 
+	sta zCredit2HS                ; Reset the fine scroll, and...
+	inc DL_LMS_SCROLL_CREDIT2     ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_CREDIT2     ; and another 8 color clocks.
+
+b_gcs_TestEndRightLeft            ; They both scroll the same distance.  Check Line2's end position.
+	lda zCredit2HS                ; Get fine scroll position
+	cmp #12                       ; At the stopping point?
+	bne b_gcs_Exit  ; nope.  We're done with checking.
+	lda DL_LMS_SCROLL_CREDIT2     ; Get the coarse scroll position
+	cmp #<[GFX_SCROLL_CREDIT2+30] ; at the ending coarse scroll position?
+	bne b_gcs_Exit  ; nope.  We're done with checking.
+
+	; reset to do left/right, then re-enable the reading comprehension timer.
+	dec zCreditsMotion            ; It was 1 to do right/left scrolling. swap.
+	dec zCreditsPhase             ; It was 1 to do scrolling.  switch to waiting.
+	bne b_gcs_Exit  ; Finally done with this scroll direction. 
+
+;  we're going in the Left/Right direction. 
+
+b_gcs_CreditLeftRight
+	dec zCredit1HS                ; Credit 1 Left
+;	lda zCredit1HS                ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
+	bpl b_gcs_Credit2_Right       ; No, go do the Credit2 line. 
+	lda #15                       ; Yes. 
+	sta zCredit1HS                ; Reset the fine scroll, and...
+	inc DL_LMS_SCROLL_CREDIT1     ; Coarse scroll the text... 8 color clocks.
+	inc DL_LMS_SCROLL_CREDIT1     ; and another 8 color clocks.
+
+b_gcs_Credit2_Right
+	inc zCredit2HS                ; Credit 1 Right
+	lda zCredit2HS
+	cmp #16                       ; Reach the end of fine scrolling 16 color clocks?
+	bne b_gcs_TestEndLeftRight    ; Nope.  End of scrolling, check end position
+	lda #0                        ; Yes. 
+	sta zCredit2HS                ; Reset the fine scroll, and...
+	dec DL_LMS_SCROLL_CREDIT2     ; Coarse scroll the text... 8 color clocks.
+	dec DL_LMS_SCROLL_CREDIT2     ; and another 8 color clocks.
+
+
+b_gcs_TestEndLeftRight            ; They both scroll the same distance.  Check Line2's end position.
+	lda zCredit2HS                ; Get fine scroll position
+	cmp #12                       ; At the stopping point?
+	bne b_gcs_Exit  ; nope.  We're done with checking.
+	lda DL_LMS_SCROLL_CREDIT2     ; Get the coarse scroll position
+	cmp #<GFX_SCROLL_CREDIT2      ; at the ending coarse scroll position?
+	bne b_gcs_Exit  ; nope.  We're done with checking.
+
+	; reset to do left/right, then re-enable the reading comprehension timer.
+	inc zCreditsMotion            ; It was 0 to do left/right scrolling. swap.
+	dec zCreditsPhase             ; It was 1 to do scrolling.  switch to waiting.
+;	bne b_mdv_EndCreditScrolling  ; Finally done with this scroll direction. 
+
+b_gcs_Exit
+	rts
+
+
+
+; ==========================================================================
+; SCROLL DOCS
+; ==========================================================================
+; Do the documentation line scrolling.
+;
+; The timer is maintained by the VBI, then it calls this routine.
+;
+; 1) (VBI) Wait for motion timer.
+; 2) Execute motion.
+; 3)a) dec fine scroll to move left 
+; 3)b) if at end of fine scroll then increment LMS pointer.
+; 4) if at end of scrolling region, reset to start
+; --------------------------------------------------------------------------
+
+Gfx_DocsScrolling
+
+	dec zDocsHS                ; Docs 1 pixel Left.  Did it wrap from 0 to -1?
+	bpl b_gds_Exit             ; No.  We're done doing fine scrolling for this frame. 
+	lda #15                    ; Yes...
+	sta zDocsHS                ; Reset the fine scroll, and...
+	
+	lda DL_LMS_SCROLL_DOCS     
+	cmp #<GFX_END_DOCS         ; Test if low byte is the ending position.
+	bne b_gds_AddDocsLMS       ; No.  Ok to increment LMS
+	
+	lda DL_LMS_SCROLL_DOCS+1     
+	cmp #>GFX_END_DOCS         ; Test if high byte is the ending position.
+	bne b_gds_AddDocsLMS       ; No.  Ok to increment LMS
+
+	lda #<GFX_SCROLL_DOCS      ; Load low bytes of starting position.
+	sta DL_LMS_SCROLL_DOCS
+	lda #>GFX_SCROLL_DOCS      ; Load high bytes of starting position.
+	sta DL_LMS_SCROLL_DOCS+1
+
+	jmp b_gds_Exit
+
+b_gds_AddDocsLMS ; Coarse scroll the text... 8 color clocks.
+
+	clc
+	lda #2                     ; 16 color clocks is 2 characters.
+	adc DL_LMS_SCROLL_DOCS     ; add to low byte of LMS
+	sta DL_LMS_SCROLL_DOCS
+	bcc b_gds_Exit ; If there is carry
+	inc DL_LMS_SCROLL_DOCS+1   ; incrememnt high byte of LMS
+
+b_gds_Exit
+	rts
+
+
 
 ; ==========================================================================
 ; GAME SCREEN FLICKERING STARS

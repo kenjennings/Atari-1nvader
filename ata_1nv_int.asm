@@ -18,7 +18,7 @@
 
 
 ;==============================================================================
-;                                                           ANY BUTTON  A
+;                                                      ANY JOYSTICK BUTTON  A
 ;==============================================================================
 ; Subroutine to verify no player is pressing the joystick button,
 ; and then  for any player to press a button.
@@ -29,29 +29,31 @@
 ;           -1 button pressed after debounce cleared.
 ;==============================================================================
 
-libAnyButton                 ; get joystick button and debounce it.
+gDEBOUNCE_JOY_BUTTONS .byte 0 ; Flag to make sure joystick buttons are released.
+
+libAnyJoystickButton          ; get joystick button and debounce it.
 
 	lda STRIG0
-	and STRIG1            ; 0 means one or both buttons are pressed.
-	bne b_ClearDebounce   ; 1 means both buttons are not pressed.
+	and STRIG1                ; 0 means one or both buttons are pressed.
+	bne b_ClearDebounce       ; 1 means both buttons are not pressed.
 	
 	; A button is pressed 
-	lda gDEBOUNCE          ; If debounce flag is on 
-	bne b_AnyButton_Exit   ; then ignore the button. 
+	lda gDEBOUNCE_JOY_BUTTONS ; If debounce flag is on 
+	bne b_AnyButton_Exit      ; then ignore the button. 
 
-	lda #$ff               ; A button is pressed when debounce is off.
+	lda #$ff                  ; A button is pressed when debounce is off.
 	rts
 
-b_ClearDebounce              ; Nobody is pressing a button.
-	lda #0                   ; Since the buttons are released
-	sta gDEBOUNCE            ; then remove the debounce flag 
+b_ClearDebounce               ; Nobody is pressing a button.
+	lda #0                    ; Since the buttons are released
+	sta gDEBOUNCE_JOY_BUTTONS ; then remove the debounce flag 
 
 b_AnyButton_Exit
 	rts
 
 
 ;==============================================================================
-;                                                           ANY CONSOLE  A
+;                                                       ANY CONSOLE BUTTON A
 ;==============================================================================
 ; Subroutine to wait for all console key to be released, and then 
 ; collect the button pressed the first time. 
@@ -62,7 +64,10 @@ b_AnyButton_Exit
 ;           -1 button pressed after debounce cleared.
 ;==============================================================================
 
-libAnyConsole              ; get Function buttons and debounce them.
+gDEBOUNCE_OSS      .byte 0 ; Flag that Option/Select/Start are released. 
+gOSS_KEYS          .byte 0 ; Current Option/Select/Start bits.
+
+libAnyConsoleButton        ; get Function buttons and debounce them.
 
 	lda CONSOL             ; console keys 0 when pressed
 	and #CONSOLE_KEYS      ; just keep the Option/Select/Start bits.
@@ -223,9 +228,9 @@ b_mdv_DoMyDeferredVBI
 ; ======== TITLE SCREEN AND COUNTDOWN ACTIVIES  ========
 ; ======================================================
 	lda zCurrentEvent               ; Get current state
-;	cmp #[EVENT_COUNTDOWN+1]        ; Is it TITLE or COUNTDOWN
-	cmp #[EVENT_SETUP_GAME+1]
-	bcc b_mdv_DoBigMothership       ; Yes. Less Than < is correct
+;	cmp #[EVENT_COUNTDOWN+1]        
+	cmp #[EVENT_SETUP_GAME+1]       ; Is it TITLE or COUNTDOWN
+	bcc b_mdv_DoBigMothership       ; Yes. Less Than < SETUP is correct
 
 	jmp b_mdv_DoGameManagement      ; No. Greater Than > COUNTDOWN is GAME or GAMEOVER
 
@@ -323,9 +328,9 @@ b_mdv_SkipTitleMissileUpdate
 ; Then reverse directions.
 ; Rinse.  Repeat.
 
-; 1) If waiting, continue to wait.
-; 2) if not waiting, then do motion.  
-; 3) Wait for motion timer.
+; 1) (VBI) If waiting, continue to wait.
+; 2) (VBI) if not waiting, then do motion.  
+; 3) (VBI) Wait for motion timer.
 ; 4) Execute motion. Either
 ; 4)a) top row to the left, bottom row to the right, OR
 ; 4)b) top row to the right, bottom row to the left
@@ -336,7 +341,7 @@ b_mdv_SkipTitleMissileUpdate
 b_mdv_DoCreditScrolling
 
 	lda zCreditsPhase             ; 0 == waiting    1  == scrolling
-	bne b_mdv_RunCreditScrolling
+	bne b_mdv_DelayCreditScrollingTimer
 
 	; Waiting....
 	dec zCreditsTimer
@@ -346,87 +351,16 @@ b_mdv_DoCreditScrolling
 	inc zCreditsPhase             ; To get here we know this was 0.
 	lda #CREDITS_MAX_PAUSE
 	sta zCreditsTimer
-	
-	; We are moving the credits...
 
-b_mdv_RunCreditScrolling
-
+b_mdv_DelayCreditScrollingTimer
 	dec zCreditsScrollTimer       ; Delay to not scroll to quickly.
 	bne b_mdv_EndCreditScrolling
 
 	lda #CREDITS_STEP_TIMER       ; Reset the scroll timer
 	sta zCreditsScrollTimer
 
-	lda zCreditsMotion            ; What direction are we moving in?
-	beq b_mdv_CreditLeftRight     ; 0 is moving Left/Right
-
-	; Otherwise, we're going in the opposite direction here.  (Right/Left)
-
-	inc zCredit1HS                ; Credit 1 Right
-	lda zCredit1HS
-	cmp #16                       ; Reach the end of fine scrolling 16 color clocks?
-	bne b_mdv_Credit2_Left        ; No, go do the Credit2 line.
-	lda #0                        ; Yes. 
-	sta zCredit1HS                ; Reset the fine scroll, and...
-	dec DL_LMS_SCROLL_CREDIT1     ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_CREDIT1     ; and another 8 color clocks.
-
-b_mdv_Credit2_Left
-	dec zCredit2HS                ; Credit 2 Left
-;	lda zCredit2HS                ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
-	bpl b_mdv_TestEndRightLeft    ; Nope.  End of scrolling, check end position
-	lda #15                       ; Yes. 
-	sta zCredit2HS                ; Reset the fine scroll, and...
-	inc DL_LMS_SCROLL_CREDIT2     ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_CREDIT2     ; and another 8 color clocks.
-
-b_mdv_TestEndRightLeft            ; They both scroll the same distance.  Check Line2's end position.
-	lda zCredit2HS                ; Get fine scroll position
-	cmp #12                       ; At the stopping point?
-	bne b_mdv_EndCreditScrolling  ; nope.  We're done with checking.
-	lda DL_LMS_SCROLL_CREDIT2     ; Get the coarse scroll position
-	cmp #<[GFX_SCROLL_CREDIT2+30] ; at the ending coarse scroll position?
-	bne b_mdv_EndCreditScrolling  ; nope.  We're done with checking.
-
-	; reset to do left/right, then re-enable the reading comprehension timer.
-	dec zCreditsMotion            ; It was 1 to do right/left scrolling. swap.
-	dec zCreditsPhase             ; It was 1 to do scrolling.  switch to waiting.
-	bne b_mdv_EndCreditScrolling  ; Finally done with this scroll direction. 
-
-;  we're going in the Left/Right direction. 
-
-b_mdv_CreditLeftRight
-	dec zCredit1HS                ; Credit 1 Left
-;	lda zCredit1HS                ; Reach the end of fine scrolling 16 color clocks (wrap from 0 to -1)?
-	bpl b_mdv_Credit2_Right       ; No, go do the Credit2 line. 
-	lda #15                       ; Yes. 
-	sta zCredit1HS                ; Reset the fine scroll, and...
-	inc DL_LMS_SCROLL_CREDIT1     ; Coarse scroll the text... 8 color clocks.
-	inc DL_LMS_SCROLL_CREDIT1     ; and another 8 color clocks.
-
-b_mdv_Credit2_Right
-	inc zCredit2HS                ; Credit 1 Right
-	lda zCredit2HS
-	cmp #16                       ; Reach the end of fine scrolling 16 color clocks?
-	bne b_mdv_TestEndLeftRight    ; Nope.  End of scrolling, check end position
-	lda #0                        ; Yes. 
-	sta zCredit2HS                ; Reset the fine scroll, and...
-	dec DL_LMS_SCROLL_CREDIT2     ; Coarse scroll the text... 8 color clocks.
-	dec DL_LMS_SCROLL_CREDIT2     ; and another 8 color clocks.
-
-
-b_mdv_TestEndLeftRight            ; They both scroll the same distance.  Check Line2's end position.
-	lda zCredit2HS                ; Get fine scroll position
-	cmp #12                       ; At the stopping point?
-	bne b_mdv_EndCreditScrolling  ; nope.  We're done with checking.
-	lda DL_LMS_SCROLL_CREDIT2     ; Get the coarse scroll position
-	cmp #<GFX_SCROLL_CREDIT2      ; at the ending coarse scroll position?
-	bne b_mdv_EndCreditScrolling  ; nope.  We're done with checking.
-
-	; reset to do left/right, then re-enable the reading comprehension timer.
-	inc zCreditsMotion            ; It was 0 to do left/right scrolling. swap.
-	dec zCreditsPhase             ; It was 1 to do scrolling.  switch to waiting.
-	bne b_mdv_EndCreditScrolling  ; Finally done with this scroll direction. 
+	; We are moving the credits...
+	jsr Gfx_CreditsScrolling
 
 b_mdv_EndCreditScrolling
 
@@ -445,44 +379,19 @@ b_mdv_DocsScrolling
 	dec zDocsScrollTimer
 	bne b_mdv_EndDocsScrolling  ; Timer still >0
 
-	; Reset timer.  And start scrolling.
+	; Reset timer.
 	lda #DOCS_STEP_TIMER
 	sta zDocsScrollTimer
-	
-	; We are moving the documentation...
-	dec zDocsHS                ; Docs 1 pixel Left.  Did it wrap from 0 to -1?
-	bpl b_mdv_EndDocsScrolling ; No.  We're done doing fine scrolling for this frame. 
-	lda #15                    ; Yes...
-	sta zDocsHS                ; Reset the fine scroll, and...
-	
-	lda DL_LMS_SCROLL_DOCS     
-	cmp #<GFX_END_DOCS         ; Test if low byte is the ending position.
-	bne b_mdv_AddDocsLMS       ; No.  Ok to increment LMS
-	
-	lda DL_LMS_SCROLL_DOCS+1     
-	cmp #>GFX_END_DOCS         ; Test if high byte is the ending position.
-	bne b_mdv_AddDocsLMS       ; No.  Ok to increment LMS
 
-	lda #<GFX_SCROLL_DOCS      ; Load low bytes of starting position.
-	sta DL_LMS_SCROLL_DOCS
-	lda #>GFX_SCROLL_DOCS      ; Load high bytes of starting position.
-	sta DL_LMS_SCROLL_DOCS+1
-
-	jmp b_mdv_EndDocsScrolling
-
-b_mdv_AddDocsLMS ; Coarse scroll the text... 8 color clocks.
-
-	clc
-	lda #2                     ; 16 color clocks is 2 characters.
-	adc DL_LMS_SCROLL_DOCS     ; add to low byte of LMS
-	sta DL_LMS_SCROLL_DOCS
-	bcc b_mdv_EndDocsScrolling ; If there is carry
-	inc DL_LMS_SCROLL_DOCS+1   ; incrememnt high byte of LMS
+	; We are scrolling the documentation...
+	jsr Gfx_DocsScrolling  
 
 b_mdv_EndDocsScrolling
 
 
 ; ======== 6) MANAGE TERRAIN SCROLLING ========
+
+; This happens later for all screens . . .
 
 ; Scroll all four lines of terrain back and forth.
 ; All four move in the same direction/same speed.

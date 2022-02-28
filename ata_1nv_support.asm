@@ -126,7 +126,7 @@ PlayersSelectionInput
 	lda #0
 	sta PSI_Response
 
-	jsr libAnyButton         ; If debounce occurred then allow input.
+	jsr libAnyJoystickButton ; If debounce occurred then allow input.
 	bpl b_psi_Exit           ; 0 or 1 is No button press.  Waiting for debounce or debounce occurred.
 
 	ldx #0

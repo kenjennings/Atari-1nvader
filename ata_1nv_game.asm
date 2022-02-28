@@ -265,7 +265,7 @@ GameSetupTitle
 	; ===== Basics =====
 
 	lda #1
-	sta gDEBOUNCE  ; Make sure all joystick buttons are released before starting game.
+	sta gDEBOUNCE_JOY_BUTTONS ; Make sure all joystick buttons are released before starting game.
 
 	lda #4                  ; Starting at 4 insures this is erased.
 	sta zCOUNTDOWN_FLAG 
@@ -848,7 +848,7 @@ GameSetupOver
 	jsr Gfx_Choose_Game_Over_Text ; Choose text for message
 
 	lda #1
-	sta gDEBOUNCE                 ; Players need to release button before pressing again
+	sta gDEBOUNCE_JOY_BUTTONS     ; Players need to release button before pressing again
 
 	lda #0
 	sta zGO_CHAR_INDEX            ; Loops 0 to 9 [really 12] characters and ends at 13
@@ -895,7 +895,7 @@ GameOver
 	bne b_go_ExitGameOver    ; No, do not run the manual or automatic end of game
 
 	; Check if manual end of game (button press)?
-	jsr libAnyButton         ; Insure debounce from button trigger.
+	jsr libAnyJoystickButton ; Insure debounce from button trigger.
 	bmi b_go_SetupForTitle   ; -1 means a button a pressed after debounce (0 or 1 means no input yet )
          
 	; Check for automatic return to title screen?

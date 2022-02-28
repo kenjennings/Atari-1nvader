@@ -306,9 +306,6 @@ TABLE_GFX_TAG_LMS
 
 gOSS_ScrollState  .byte 0 ; Status of scrolling behavior. 
 
-gDEBOUNCE_OSS     .byte 0 ; Flag that Option/Select/Start are released. 
-gOSS_KEYS         .byte 0 ; Current Option/Select/Start bits.
-
 gOSS_Mode         .byte 0 ; 0 is option menu.  1 is select menu.
 
 gLastOptionMenu   .byte 0 ; When in OPTION mode and SELECT is pressed then remember the current Option menu. 
@@ -685,8 +682,6 @@ zGAME_OVER_FLAG             .byte $00  ; The game is over?
 ; Automatic return to title screen
 zGAME_OVER_FRAME            .byte 0    ; Frame counter 255 to 0
 zGAME_OVER_TICKS            .byte 0    ; decrement every GAME_OVER_FRAME=0.  Large countdown.
-
-gDEBOUNCE                   .byte 0    ; Flag to make sure joystick buttons are released.
 
 ; Game Screen Stars Control values ==========================================
 
