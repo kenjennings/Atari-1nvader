@@ -311,10 +311,15 @@ GFX_SCROLL_CREDIT2; 20 + 11 + 20 == 51
 ;	.sb +$80,"HERE  "   ; 6 == 20   ; Red
 ; --------------------------------------------------------------------------
 
-GFX_OPTION_LEFT                ; END position left == LMS+0
-	.sb "                    " ; 20 blanks to allow for OPTION to scroll left to right.
-GFX_OPTION_RIGHT               ; Start position == LEFT+40 or RIGHT+0
-	.sb "                    " ; 20 blanks to allow for OPTION to scroll left to right.
+GFX_OPTION_LEFT                         ; END position left == LMS+0
+	.sb "                    "          ; 20 blanks to allow for OPTION to scroll left to right.
+GFX_OPTION_LEFT_OO = GFX_OPTION_LEFT+17 ; On/Off text at the end of this string.
+GFX_LEFT_OO_OFFSET = 17
+
+GFX_OPTION_RIGHT                          ; Start position == LEFT+40 or RIGHT+0
+	.sb "                    "            ; 20 blanks to allow for OPTION to scroll left to right.
+GFX_OPTION_RIGHT_OO = GFX_OPTION_RIGHT+17 ; On/Off text at the end of this string.
+GFX_RIGHT_OO_OFFSET = 37
 
 	; Note the spaces below are @ signs due to the +$40 needed to print 
 	; screen bytes using the Mode 2 versions of characters.

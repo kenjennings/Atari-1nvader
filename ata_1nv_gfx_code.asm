@@ -1909,5 +1909,53 @@ Gfx_CopyOptionRightToLeftBuffer
 
 	rts
 
+; ==========================================================================
+; DISPLAY ON/OFF TEXT
+; ==========================================================================
+; A register provides offset for location into either the left side or the 
+; right side of the scroll buffer. 
+; The Left buffer is where updates appear when the START key is pressed.
+; The Right buffer  is where the on/off state appears in the string 
+; that is going to be scrolled on screen.
+;
+; This should be called directly after a "GET" operation to acquire
+; the on/off state of the given option.
+;
+;	.sb "  OPTION "     ; 10        ; White
+;	.sb +$40,"TEXT "    ; 5         ; Green
+;	.sb +$80,"HERE  "   ; 6 == 20   ; Red
+;
+; X register is left or right offset position.
+; A indicates OFF (0)  or ON (1).  (This should also be the Z flag.) 
+; --------------------------------------------------------------------------
+
+Gfx_Display_OnOff_Option
+
+	beq b_gdooo_Do_Off
+
+	; Display the text for "ON" in green.
+	
+	lda #INTERNAL_BLANKSPACE
+	sta GFX_OPTION_LEFT,X
+	
+	lda #[CSET_MODE67_COLPF1|INTERNAL_UPPER_O]
+	sta GFX_OPTION_LEFT+1,X
+	
+	lda #[CSET_MODE67_COLPF1|INTERNAL_UPPER_N]
+	sta GFX_OPTION_LEFT+2,X
+
+	rts
+
+b_gdooo_Do_Off
+	lda #[CSET_MODE67_COLPF2|INTERNAL_UPPER_O]
+	sta GFX_OPTION_LEFT,X
+
+	lda #[CSET_MODE67_COLPF2|INTERNAL_UPPER_F]
+	sta GFX_OPTION_LEFT+1,X
+
+	lda #[CSET_MODE67_COLPF2|INTERNAL_UPPER_F]
+	sta GFX_OPTION_LEFT+2,X
+
+	rts
 
 
