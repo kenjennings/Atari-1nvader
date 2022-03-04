@@ -304,9 +304,11 @@ TABLE_GFX_TAG_LMS
 ; ==========================================================================
 ; TITLE SCREEN OPTIONS MANAGEMENT . . .
 
-gOSS_ScrollState  .byte 0 ; Status of scrolling behavior. 
+gOSS_ScrollState  .byte 0 ; Status of scrolling behavior.  0, no scroll.  1, scrolling.
 
 gOSS_Mode         .byte 0 ; 0 is option menu.  1 is select menu.
+
+gOSS_Timer        .byte 0 ; Counts to wait for text.   If no input when this reaches 0, then erase menu.
 
 gLastOptionMenu   .byte 0 ; When in OPTION mode and SELECT is pressed then remember the current Option menu. 
 

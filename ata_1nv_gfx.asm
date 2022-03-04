@@ -90,7 +90,7 @@ DL_LMS_SCROLL_DOCS = [ * + 1 ]
 	mDL_BLANK DL_BLANK_4|DL_DLI                             ; 16 (144 - 147) Blank 4 (DLI 4.5 -- COLPF0/1/2 options) and options docs.
 DL_LMS_OPTION = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6,GFX_OPTION_LEFT                     ; 17 (148 - 155) (6) Options name
-DL_LMS_OPTION_TEXT= [ * + 1 ]  
+DL_LMS_OPTION_TEXT = [ * + 1 ]  
 	mDL_LMS   DL_TEXT_2,GFX_OPTION_TEXT_LEFT                ; 18 (156 - 163) (2) Options documentation
 	mDL_BLANK DL_BLANK_1                                    ; 16 (164 - 164) Blank 1
 
@@ -309,6 +309,15 @@ GFX_SCROLL_CREDIT2; 20 + 11 + 20 == 51
 ;	.sb "  OPTION "     ; 10        ; White
 ;	.sb +$40,"TEXT "    ; 5         ; Green
 ;	.sb +$80,"HERE  "   ; 6 == 20   ; Red
+;
+; FYI: These are the low byte loop targets for coarse scrolling the 
+; Options and Text lines:
+; 
+; START GFX_OPTION_LEFT  == $00
+; END   GFX_OPTION_RIGHT == $14
+;       and 
+; START GFX_OPTION_TEXT_LEFT  == $28
+; END   GFX_OPTION_TEXT_RIGHT == $50
 ; --------------------------------------------------------------------------
 
 GFX_OPTION_LEFT                         ; END position left == LMS+0

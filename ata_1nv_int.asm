@@ -389,7 +389,64 @@ b_mdv_DocsScrolling
 b_mdv_EndDocsScrolling
 
 
-; ======== 6) MANAGE TERRAIN SCROLLING ========
+; ======== 6) MANAGE OPTION, SELECT, START MENUS ========
+
+; 1) If menu is in motion, continue the motion.
+; 2) If motion ends here, then set the menu delay timer.
+
+
+; gOSS_ScrollState  .byte 0 ; Status of scrolling behavior. 
+
+; gOSS_Mode         .byte 0 ; 0 is option menu.  1 is select menu.
+
+; gOSS_Timer        .byte 0 ; Counts to wait for text.   If no input when this reaches 0, then erase menu.
+
+; gLastOptionMenu   .byte 0 ; When in OPTION mode and SELECT is pressed then remember the current Option menu. 
+
+; gCurrentMenuEntry .byte 0 ; Menu entry number for Option and Select.
+
+; gCurrentMenuText  .word 0 ; pointer to text for the menu 
+
+b_mdv_ManageMenus
+
+	; If menu is in motion, then move it.
+
+	lda gOSS_ScrollState   ; Are we scrolling?
+	beq b_mdv_OptNotMoving ; Nope. Go do the timer and console button reading.
+
+	; Otherwise, update the LMS in the display list to coarse scroll the menu text lines.
+
+	lda DL_LMS_OPTION         ; Get the LMS pointing to the Option text
+	cmp #<GFX_OPTION_RIGHT    ; Has it reached the right side?
+	beq b_mdv_CheckOptionText ; Yes. No more motion for this line
+	inc DL_LMS_OPTION         ; Nope.  Shift line one character.
+
+	; Same scroll for Option Text which is 40 characters.
+b_mdv_CheckOptionText
+	lda DL_LMS_OPTION_TEXT      ; Text is 40 character so it could still be moving.
+	cmp #<GFX_OPTION_TEXT_RIGHT ; Has it reached right side?
+	beq b_mdv_SetOptionWait     ; Yes. Set flags for main code.  Turn on wait timer.
+	inc DL_LMS_OPTION_TEXT      ; Nope.   Shift line one character.
+	bne b_mdv_EndManageMenus    ; Always skip to end when still scrolling.
+
+	; Scrolling has just ended.   Set some flags.
+b_mdv_SetOptionWait
+	lda #0
+	sta gOSS_ScrollState        ; Turn off scrolling, so we do not revisit the code above.
+	lda #$ff
+	sta gOSS_Timer              ; Set jiffy wait timer for mennu display.
+	bne b_mdv_EndManageMenus    ; Go To the End
+
+b_mdv_OptNotMoving
+	; First, Get input.
+	; If there is input then reset the timer.
+	; otherwise...
+	dec gOSS_Timer
+
+b_mdv_EndManageMenus
+
+
+; ======== 7) MANAGE TERRAIN SCROLLING ========
 
 ; This happens later for all screens . . .
 
