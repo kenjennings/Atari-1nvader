@@ -2086,7 +2086,7 @@ b_gcot_ClearOption_Loop
 	dex
 	bpl b_gcot_ClearOption_Loop
 
-	lda #INTERNAL_AT                ; Clear the Option Description line.
+;	lda #INTERNAL_AT                ; Clear the Option Description line.
 	ldx #39
 b_gcot_ClearOptionText_Loop
 	sta GFX_OPTION_TEXT_LEFT,X

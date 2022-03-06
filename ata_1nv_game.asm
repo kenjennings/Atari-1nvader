@@ -415,8 +415,19 @@ GameSetupTitle
 	sta zPLAYER_ONE_REDRAW
 	sta zPLAYER_TWO_REDRAW
 
+; ===== Setup Option/Select/Start Menu text =====
 
-	jsr Gfx_ShowScreen
+	jsr Gfx_ClearOSSText
+	lda #0
+	sta gOSS_Mode         ; 0 == Option Menu.
+	sta gLastOptionMenu
+	sta gCurrentMenuEntry
+	lda #$FE
+	sta gOSS_Timer
+
+	; ===== Update scores, text. =====
+
+	jsr Gfx_ShowScreen 
 
 	; ===== Start the Title running on the next frame =====
 
@@ -494,6 +505,8 @@ b_gt_ExitTitleAnimation
 	jsr Gfx_DrawCountdown   ; Update the countdown text.  (Blank)
 
 	jsr Gfx_Clear_Scores    ; Remove the scores temporarily.
+
+	jsr Gfx_ClearOSSText    ; Stop the menu display.
 
 	lda #EVENT_COUNTDOWN
 	sta zCurrentEvent
