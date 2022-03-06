@@ -1780,7 +1780,6 @@ b_grtl_SkipDecPF1
 ; 4) VBI: Set LMS to Left Position.
 ; 5) VBI: Set Debounce for button/key input to get/allow/process Input.
 ; 
-
 ;	.sb "  OPTION "     ; 10        ; White
 ;	.sb +$40,"TEXT "    ; 5         ; Green
 ;	.sb +$80,"HERE  "   ; 6 == 20   ; Red
@@ -1909,11 +1908,18 @@ Gfx_CopyOptionRightToLeftBuffer
 
 	rts
 
+
 ; ==========================================================================
 ; DISPLAY ON/OFF TEXT
 ; ==========================================================================
-; A register provides offset for location into either the left side or the 
-; right side of the scroll buffer. 
+; Display ON or Off indication for the current feature FROM A SELECT 
+; MENU ENTRY.  (OPTION entries do not have an ON/OFF)
+;
+; A register indicates if the entry state is on or off.
+;
+; X register provides offset for location into either the left side 
+; or the right side of the scroll buffer. 
+;
 ; The Left buffer is where updates appear when the START key is pressed.
 ; The Right buffer  is where the on/off state appears in the string 
 ; that is going to be scrolled on screen.
@@ -1931,7 +1937,7 @@ Gfx_CopyOptionRightToLeftBuffer
 
 Gfx_Display_OnOff_Option
 
-	beq b_gdooo_Do_Off
+	beq b_gdooo_Do_Off ; Foolishly trust that lda occurred right before this.
 
 	; Display the text for "ON" in green.
 	
@@ -1958,4 +1964,140 @@ b_gdooo_Do_Off
 
 	rts
 
+
+; ==========================================================================
+; SCROLL OSS TEXT
+; ==========================================================================
+; Called by the VBI after it tested the scrolling is active.
+;
+; Move the Option menu line (Mode 6) and the Option Description 
+; line (Mode 2) by coarse scrolling the LMS in the display list.
+;
+; Since the Mode 2 line has more characters it continues to scroll 
+; after the Mode 6 line is done.
+;
+; When BOTH lines are done, then the routine turns off the scrolling 
+; indicator and starts the visual countdown timer.  
+; The timer is restarted for any valid console key input.
+; (When the timer does expire the menu option will be removed 
+; from the screen.)
+;
+; When scrolling ends, Scroll flag is changed to -1 to signal to the 
+; main code to copy the right buffer to the left and reset the 
+; scroll lines back to the origins (the left side buffer.) 
+;
+; Exit conditions:
+; Negative Flag On  (BMI) == scrolling stopped this frame
+; Negative Flag Off (BPL) == scrolling still in progress. 
+; --------------------------------------------------------------------------
+
+Gfx_ScrollOSSText
+
+	lda DL_LMS_OPTION           ; Get the LMS pointing to the Option text
+	cmp #<GFX_OPTION_RIGHT      ; Has it reached the right side?
+	beq b_gsot_CheckOptionText  ; Yes. No more motion for this line
+	inc DL_LMS_OPTION           ; Nope.  Shift line one character.
+
+	; Same scroll for Option Text which is 40 characters.
+b_gsot_CheckOptionText
+	lda DL_LMS_OPTION_TEXT      ; Text is 40 character so it could still be moving.
+	cmp #<GFX_OPTION_TEXT_RIGHT ; Has it reached right side?
+	beq b_gsot_SetOptionWait    ; Yes. Set flags for main code.  Turn on wait timer.
+	inc DL_LMS_OPTION_TEXT      ; Nope.   Shift line one character.
+	bne b_gsot_End              ; Always skip to end when still scrolling.
+
+	; Scrolling has just ended.  Set some flags.
+b_gsot_SetOptionWait
+	lda #$FF
+	sta gOSS_ScrollState        ; Turn off scrolling, flag that main should reset text.
+	sta gOSS_Timer              ; Set jiffy wait timer for menu display.
+
+b_gsot_End
+	rts
+
+
+; ==========================================================================
+; RESET OSS TEXT
+; ==========================================================================
+; Called by the MAIN code after scrolling is finished.
+;
+; Copies the right buffers to the left buffers and resets the Display 
+; List LMS to point to the left buffers.
+;
+; Also turns off the End Of Scrolling flag (gOSS_ScrollState == -1)
+; and updates it to 0 indicating no scrolling motion. 
+; --------------------------------------------------------------------------
+
+Gfx_ResetOSSText
+
+	jsr Gfx_CopyOptionRightToLeftBuffer 
+
+	jsr Gfx_SetLeftOSSText      ; Force LMS to point to left buffer.
+
+	lda #$00
+	sta gOSS_ScrollState        ; Officially scrolling is now off.
+
+	rts
+
+
+; ==========================================================================
+; SET LEFT OSS TEXT
+; ==========================================================================
+; Forced LMS to point to the left buffers.
+;
+; Made into a routine, because it is needed at different times.
+; --------------------------------------------------------------------------
+
+Gfx_SetLeftOSSText
+
+	lda #<GFX_OPTION_LEFT       ; Set the LMS pointing to the Option text
+	lda DL_LMS_OPTION           
+
+	lda  #<GFX_OPTION_TEXT_LEFT ; Set the LMS pointing to the Option description text
+	sta DL_LMS_OPTION_TEXT 
+
+	rts
+
+
+; ==========================================================================
+; CLEAR OSS TEXT
+; ==========================================================================
+; Called by the MAIN code to init scroll lines, and to clear lines 
+; when the timer says the option menu has to go away.
+;
+; Zero the entire text buffer and description text lines. 
+; Reset the LMS to the left buffers.
+; Clear the scroll flags.
+;
+; Not the Title Screen Init must also set values for:
+; gOSS_Mode         ; 0 is option menu.  1 is select menu.
+; gOSS_Timer        ; Timer until removing text.
+; gLastOptionMenu   ; Last Option Menu used. 
+; gCurrentMenuEntry ; Menu entry number for Option and Select.
+; --------------------------------------------------------------------------
+
+Gfx_ClearOSSText
+
+	lda #INTERNAL_BLANKSPACE        ; Clear the Option menu
+	ldx #19
+b_gcot_ClearOption_Loop
+	sta GFX_OPTION_LEFT,X
+	sta GFX_OPTION_RIGHT,X
+	dex
+	bpl b_gcot_ClearOption_Loop
+
+	lda #INTERNAL_AT                ; Clear the Option Description line.
+	ldx #39
+b_gcot_ClearOptionText_Loop
+	sta GFX_OPTION_TEXT_LEFT,X
+	sta GFX_OPTION_TEXT_RIGHT,X
+	dex
+	bpl b_gcot_ClearOptionText_Loop
+
+	jsr Gfx_SetLeftOSSText          ; Force LMS to point to the left buffers.
+    
+	lda #$00
+	sta gOSS_ScrollState            ; Officially scrolling is now off.
+
+	rts
 

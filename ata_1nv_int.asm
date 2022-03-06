@@ -409,39 +409,21 @@ b_mdv_EndDocsScrolling
 
 b_mdv_ManageMenus
 
-	; If menu is in motion, then move it.
+	lda gOSS_ScrollState   ; Is menu in motion?
+	beq b_mdv_OptNotMoving ; 0 == Nope. Go do the timer and console button reading.
 
-	lda gOSS_ScrollState   ; Are we scrolling?
-	beq b_mdv_OptNotMoving ; Nope. Go do the timer and console button reading.
-
-	; Otherwise, update the LMS in the display list to coarse scroll the menu text lines.
-
-	lda DL_LMS_OPTION         ; Get the LMS pointing to the Option text
-	cmp #<GFX_OPTION_RIGHT    ; Has it reached the right side?
-	beq b_mdv_CheckOptionText ; Yes. No more motion for this line
-	inc DL_LMS_OPTION         ; Nope.  Shift line one character.
-
-	; Same scroll for Option Text which is 40 characters.
-b_mdv_CheckOptionText
-	lda DL_LMS_OPTION_TEXT      ; Text is 40 character so it could still be moving.
-	cmp #<GFX_OPTION_TEXT_RIGHT ; Has it reached right side?
-	beq b_mdv_SetOptionWait     ; Yes. Set flags for main code.  Turn on wait timer.
-	inc DL_LMS_OPTION_TEXT      ; Nope.   Shift line one character.
-	bne b_mdv_EndManageMenus    ; Always skip to end when still scrolling.
-
-	; Scrolling has just ended.   Set some flags.
-b_mdv_SetOptionWait
-	lda #0
-	sta gOSS_ScrollState        ; Turn off scrolling, so we do not revisit the code above.
-	lda #$ff
-	sta gOSS_Timer              ; Set jiffy wait timer for mennu display.
-	bne b_mdv_EndManageMenus    ; Go To the End
+	jsr Gfx_ScrollOSSText     ; update the LMS in the display list to coarse scroll
+	bne b_mdv_EndManageMenus  ; Always non-zero exit from Gfx_ScrollOSSTest
 
 b_mdv_OptNotMoving
-	; First, Get input.
-	; If there is input then reset the timer.
-	; otherwise...
-	dec gOSS_Timer
+	jsr libAnyConsoleButton     ; Is a console key pressed?
+	bmi b_mdv_GoodConsoleInput  ; -1 == yes. 0 or 1 == Nope
+	dec gOSS_Timer              ; when this is 0, Main code erases text.
+	bpl b_mdv_EndManageMenus
+	
+b_mdv_GoodConsoleInput
+	lda #$fe                    ; A console key was pressed.  Main will take care 
+	sta gOSS_Timer              ; of it.  Restart the timer in case, but not at #255 which is special.
 
 b_mdv_EndManageMenus
 
