@@ -29,6 +29,8 @@
 ;	ORG LOMEM_DOS_DUP       ; Use this if LOMEM_DOS won't work.  or just use $5000 or $6000
 
 	icl "ata_1nv_vars.asm"  ; Other variables' declarations
+
+	icl "ata_1nv_lib.asm"   ; Very Common Reusable Code
 ; --------------------------------------------------------------------------
 
 ; ==========================================================================

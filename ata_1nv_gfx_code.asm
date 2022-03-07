@@ -2069,7 +2069,7 @@ Gfx_SetLeftOSSText
 ; Reset the LMS to the left buffers.
 ; Clear the scroll flags.
 ;
-; Not the Title Screen Init must also set values for:
+; Note the Title Screen Init must also set values for:
 ; gOSS_Mode         ; 0 is option menu.  1 is select menu.
 ; gOSS_Timer        ; Timer until removing text.
 ; gLastOptionMenu   ; Last Option Menu used. 

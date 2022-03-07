@@ -1762,77 +1762,6 @@ b_gaav_Exit
 
 
 ; ==========================================================================
-; SUPPPORT - GAME OVER TRANSITION 
-; ==========================================================================
-; Per Frame Process - Animate display for Game Over screen.
-;
-; Called By VBI.   
-;
-; Presenting the Game Over text on the screen occurs in a transition 
-; character by character.  There are two transitions running -- one from 
-; the left edge of the screen toward the center, and one from the right 
-; edge of the screen toward the center.
-; Each transition action occurs at the same time in sync with each 
-; other.   When state one is done on a character it moves to the next 
-; character and state two begins on that old character positions, and so
-; forth for the following states.   This produces an animation that 
-; changes shape and color, character by character making it seem 
-; ambiguous what graphics mode is used for this activity. 
-;
-; One activity occurs per each transition stage. 
-; States 1 to 3 take six frames.  State 4 is the final state.
-; 
-; 1) COLPF0 - grow text by masking character image into a temporary work
-;    character.  (two characters needed, one for left, and one right.)
-;    color changes from white to very light green/blue like mothership 
-;    explosion.  On the last frame the temporary work character has the 
-;    same image map as the real character. 
-;    Stand-n characters' $1C for left sequence, $1D for right sequence.
-; 2) COLPF1 - Set character as real character with correct bits for the 
-;    current color register.  Transition color from light to med/dk grey.
-; 3) COLPF2 - subject to DLI that slides the colors from flat grey to 
-;    match the final colors of the "normal" color state.
-; 4) COLPF3 - the "normal" end state for constand display of the text.
-;    DLI has a green grdient at the top and grey at the bottom.
-;
-; Side bar -- Since the blank space is character value 0, and nothing
-; is displayed, then it does not matter if the State engine runs on 
-; that character or not, since nothing is visible.
-;
-; Init code has done setup:
-; Cleared the Game Over message memory.
-; Set left index 0 (0 - 9), set right Index 19 (19 - 10)
-; Created pointer to target text to display.
-; Establish pointer to "currrent" left/right characters in character set.
-; Set Phase 2, 3, 4 off.
-; 
-; --------------------------------------------------------------------------
-
-;GameOverTransition
-
-	; COLPF0 and COLPF1 are set by direct lookup into a table based on the
-	; current frame.   COLPF2 is multiple values (16) in a table with a 
-	; different set per frame.
-	
-;	jsr Gfx_SetupCOLPF2Index          ; Setup base index used for DLI for COLPF2
-
-;	jsr GameSetupMaskAddresss         ; Set pointer to mask based on frame number.
-
-;	jsr GameGetLeftChar               ; A = char on left
-;	bmi b_got_Exit                    ; If negative, then no character to animate.
-
-;	jsr GameSetupCsetAddresss         ; Setup pointer to source character
-;	jsr Gfx_MaskAndCopyCharImageLeft  ; Mask it into the stand-in char's bitmap.
-
-;	jsr GameGetRightChar              ; A = char on right
-;	jsr GameSetupCsetAddresss         ; Setup pointer to source character
-;	jsr Gfx_MaskAndCopyCharImageRight ; Mask it into the stand-in char's bitmap.
-
-;b_got_Exit
-;	rts
-
-
-; ==========================================================================
 ; GET LEFT CHAR
 ; ==========================================================================
 ; Given the current character index, get the character on the left 
@@ -1888,133 +1817,53 @@ b_ggrc_Exit_Failure
 
 
 ; ==========================================================================
-; SUPPPORT - SETUP CSET ADDR 
+; RUN OSS MENUS
 ; ==========================================================================
-; Called by VBI.
+; Manage Option/Select/Start Menus.
 ;
-; setup the address for the source character in the character set.
+; If menu scroll is in progress, then skip this.  Nothing to do .
 ;
-; Multiply character by 8.  Add to base address of custom character set.
+; If scroll just finished make then copy the right buffer to left buffer
+; and reset LMS to point to left buffer.
 ;
-; A == the character value.
+; If the input timer expires (reaches 0) then erase the menu and 
+; reset everything off.
+; 
+; gOSS_ScrollState  .byte 0 ; Status of scrolling behavior.  1, scrolling. 0, no scroll. -1 scroll just stopped. 
+;
+; gOSS_Mode         .byte 0 ; 0 is Off.  1 option menu.  2 is select menu.
+;
+; gOSS_Timer        .byte 0 ; Counts to wait for text.   If no input when this reaches 0, then erase menu.
+;
+; gLastOptionMenu   .byte 0 ; When in OPTION mode and SELECT is pressed then remember the current Option menu. 
+;
+; gCurrentMenuEntry .byte 0 ; Menu entry number for Option and/or  Select.
+;
+; gCurrentMenuText  .word 0 ; pointer to text for the menu 
+;
 ; --------------------------------------------------------------------------
 
-;GameSetupCsetAddresss
+GameRunOSSMenus
 
-;	ldx #0
-;	stx zGO_CSET_C_ADDR
-;	stx zGO_CSET_C_ADDR+1
+	lda gOSS_ScrollState
+	beq b_grom_ProcessOrNot ; (0) No scrolling, so is there an menu for processing?
 
-;	clc
+	bpl b_grom_Exit         ; (>0) Scrolling in progress.   Nothing else to do.
 
-;	asl
-;	rol zGO_CSET_C_ADDR+1 ; times 2
-;	asl
-;	rol zGO_CSET_C_ADDR+1 ; times 4
-;	asl
-;	rol zGO_CSET_C_ADDR+1 ; times 8
+	; (<0) process of elimination.   Last choice.  The scrolling just stopped now.
+	jsr Gfx_ResetOSSText    ; Copy right buffer to left, reset the LMS, reset scroll state.
+	beq b_grom_Exit         ; Above code ends by setting scroll state to 0, so, BEQ.
 
-;	sta zGO_CSET_C_ADDR
-
-;	clc
-;	lda #>CHARACTER_SET
-;	adc zGO_CSET_C_ADDR+1
-;	sta zGO_CSET_C_ADDR+1
-
-;	rts
+b_grom_ProcessOrNot
+	lda gOSS_Timer          ; Has the timer reached 0?
+	bne b_grom_CheckInput   ; No.  Continue with input checking.
+	jsr Gfx_ClearOSSText    ; Yes, erase menu.  Shut it all off.
+	beq b_grom_Exit         ; Above code ends by setting scroll state to 0, so, BEQ.
 
 
-; ==========================================================================
-; SUPPPORT - SETUP MASK ADDR 
-; ==========================================================================
-; Called by VBI.
-;
-; Setup the address for the mask table based on the frame number.
-;
-; Multiply frame number by 8.  Add to base address of mask image array.
-; --------------------------------------------------------------------------
-
-;GameSetupMaskAddresss
-
-;	ldx #0
-;	stx zGO_MASK_ADDR
-;	stx zGO_MASK_ADDR+1
-
-;	lda zGO_FRAME 
-
-;	clc
-
-;	asl
-;	rol zGO_MASK_ADDR+1 ; times 2
-;	asl
-;	rol zGO_MASK_ADDR+1 ; times 4
-;	asl
-;	rol zGO_MASK_ADDR+1 ; times 8
-
-;	clc
-;	adc #<TABLE_GAME_OVER_MASK_FRAMES
-;	sta zGO_MASK_ADDR
-;	lda #>TABLE_GAME_OVER_MASK_FRAMES
-;	adc zGO_MASK_ADDR+1
-;	sta zGO_MASK_ADDR+1
-
-;	rts
+b_grom_CheckInput
 
 
-
-; ==========================================================================
-; SUPPPORT - MEMSET
-; ==========================================================================
-; Assuming Dst have been set up in zMemSet var.
-;
-; Y ==  real number of bytes.  (min 1, max 128)
-; A ==  value to write.
-;
-; Return Value:
-; Neg flag = error
-; Z flag   = success.
-; --------------------------------------------------------------------------
-
-libMemSet
-
-	dey                 ;  turn 1 to 128 into 0 to 127
-	bmi b_lms_Exit      ; 0 became -1 (or using other out of range value.)
-
-b_lms_Loop
-	sta (zMemSet_Dst),y
-	dey
-	bpl b_lms_Loop      ; Continue through Y = 0.  Stop at Y = -1
-	ldy #0              ; Set Z flag, Clear negative flag.
-
-b_lms_Exit
+b_grom_Exit
 	rts
-
-
-; ==========================================================================
-; SUPPPORT - MEMCPY
-; ==========================================================================
-; Assuming Src and Dst have been set up in zMemCpy vars.
-;
-; Y ==  real number of bytes.  (min 1, max 128)
-;
-; Return Value:
-; Neg flag = error
-; Z flag   = success.
-; --------------------------------------------------------------------------
-
-libMemCpy
-
-	dey                 ;  turn 1 to 128 into 0 to 127
-	bmi b_lmc_Exit      ; 0 became -1 (or using other out of range value.)
-
-b_lmc_Loop
-	lda (zMemCpy_Src),y
-	sta (zMemCpy_Dst),y
-	dey
-	bpl b_lmc_Loop      ; Continue through Y = 0.  Stop at Y = -1
-	ldy #0
-
-b_lmc_Exit
-	rts
-
 

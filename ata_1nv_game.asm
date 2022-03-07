@@ -422,7 +422,7 @@ GameSetupTitle
 	sta gOSS_Mode         ; 0 == Option Menu.
 	sta gLastOptionMenu
 	sta gCurrentMenuEntry
-	lda #$FE
+	lda #$FE              ; Not $FF or $00 so other things do not get confused.
 	sta gOSS_Timer
 
 	; ===== Update scores, text. =====
@@ -486,6 +486,9 @@ b_gt_ExitTitleAnimation
 ; Note that the VBI handles everything about the fine scrolling lines for the 
 ; author credits, the documentation, and the scrolling land.
 
+; ===== Run the Option/Select/Start menu system.
+
+	jsr GameRunOSSMenus
 
 ; ===== Player management for Title screen.   
 

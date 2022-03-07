@@ -9,106 +9,11 @@
 ;
 ; Miscellaneous:
 ; Timer ranges
-; Joystick input,
 ; Tick Tock values,
 ; Count downs,
 ; DLI and VBI routines.
 ;
 ; --------------------------------------------------------------------------
-
-
-;==============================================================================
-;                                                      ANY JOYSTICK BUTTON  A
-;==============================================================================
-; Subroutine to verify no player is pressing the joystick button,
-; and then  for any player to press a button.
-;
-; Return A == debounce 
-;            1 waiting for debounce, 
-;            0 debounce occurred,
-;           -1 button pressed after debounce cleared.
-;==============================================================================
-
-gDEBOUNCE_JOY_BUTTONS .byte 0 ; Flag to make sure joystick buttons are released.
-
-libAnyJoystickButton          ; get joystick button and debounce it.
-
-	lda STRIG0
-	and STRIG1                ; 0 means one or both buttons are pressed.
-	bne b_ClearDebounce       ; 1 means both buttons are not pressed.
-	
-	; A button is pressed 
-	lda gDEBOUNCE_JOY_BUTTONS ; If debounce flag is on 
-	bne b_AnyButton_Exit      ; then ignore the button. 
-
-	lda #$ff                  ; A button is pressed when debounce is off.
-	rts
-
-b_ClearDebounce               ; Nobody is pressing a button.
-	lda #0                    ; Since the buttons are released
-	sta gDEBOUNCE_JOY_BUTTONS ; then remove the debounce flag 
-
-b_AnyButton_Exit
-	rts
-
-
-;==============================================================================
-;                                                       ANY CONSOLE BUTTON A
-;==============================================================================
-; Subroutine to wait for all console key to be released, and then 
-; collect the button pressed the first time. 
-;
-; Return A == debounce 
-;            1 waiting for debounce, 
-;            0 debounce occurred,
-;           -1 button pressed after debounce cleared.
-;==============================================================================
-
-gDEBOUNCE_OSS      .byte 0 ; Flag that Option/Select/Start are released. 
-gOSS_KEYS          .byte 0 ; Current Option/Select/Start bits.
-
-libAnyConsoleButton        ; get Function buttons and debounce them.
-
-	lda CONSOL             ; console keys 0 when pressed
-	and #CONSOLE_KEYS      ; just keep the Option/Select/Start bits.
-	sta gOSS_KEYS          ; save for later
-	cmp #CONSOLE_KEYS      ; If keys is the same value as mask...
-	beq b_ClearOSSDebounce ; then none of the buttons are pressed.
-
-	; A button is pressed 
-	lda gDEBOUNCE_OSS      ; If debounce flag is on (1)
-	bne b_OSSButton_Exit   ; then ignore the buttons. 
-
-	lda #$ff               ; A button is pressed when debounce is off.
-	rts
-
-b_ClearOSSDebounce         ; Nobody is pressing a button.
-	lda #0                 ; Since the buttons are released
-	sta gDEBOUNCE_OSS      ; then remove the debounce flag 
-
-b_OSSButton_Exit
-	rts
-
-
-;==============================================================================
-;                                                           SCREENWAITFRAME  A
-;==============================================================================
-; Subroutine to wait for the current frame to finish display.
-;
-; ScreenWaitFrame  uses A
-;==============================================================================
-
-libScreenWaitFrame
-
-	pha                 ; Save A, so caller is not disturbed.
-	lda RTCLOK60        ; Read the jiffy clock incremented during vertical blank.
-
-bLoopWaitFrame
-	cmp RTCLOK60        ; Is it still the same?
-	beq bLoopWaitFrame  ; Yes.  Then the frame has not ended.
-
-	pla                 ; restore A
-	rts                 ; No.  Clock changed means frame ended.  exit.
 
 
 ;==============================================================================
@@ -395,17 +300,7 @@ b_mdv_EndDocsScrolling
 ; 2) If motion ends here, then set the menu delay timer.
 
 
-; gOSS_ScrollState  .byte 0 ; Status of scrolling behavior. 
 
-; gOSS_Mode         .byte 0 ; 0 is option menu.  1 is select menu.
-
-; gOSS_Timer        .byte 0 ; Counts to wait for text.   If no input when this reaches 0, then erase menu.
-
-; gLastOptionMenu   .byte 0 ; When in OPTION mode and SELECT is pressed then remember the current Option menu. 
-
-; gCurrentMenuEntry .byte 0 ; Menu entry number for Option and Select.
-
-; gCurrentMenuText  .word 0 ; pointer to text for the menu 
 
 b_mdv_ManageMenus
 
