@@ -306,11 +306,13 @@ TABLE_GFX_TAG_LMS
 
 gOSS_ScrollState  .byte 0 ; Status of scrolling behavior.  1, scrolling. 0, no scroll. -1 scroll just stopped. 
 
-gOSS_Mode         .byte 0 ; 0 is Off.  1 option menu.  2 is select menu.
+gOSS_Mode         .byte 0 ; 0 is Off.  -1 option menu.  +1 is select menu.
 
 gOSS_Timer        .byte 0 ; Counts to wait for text.   If no input when this reaches 0, then erase menu.
 
-gLastOptionMenu   .byte 0 ; When in OPTION mode and SELECT is pressed then remember the current Option menu. 
+gCurrentOption    .byte 0 ; Remember OPTION we looked at last.
+
+gCurrentSelect    .byte 0 ; Remember SELECT entery we looked at last.
 
 gCurrentMenuEntry .byte 0 ; Menu entry number for Option and Select.
 

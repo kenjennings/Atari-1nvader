@@ -1831,13 +1831,15 @@ b_ggrc_Exit_Failure
 ; 
 ; gOSS_ScrollState  .byte 0 ; Status of scrolling behavior.  1, scrolling. 0, no scroll. -1 scroll just stopped. 
 ;
-; gOSS_Mode         .byte 0 ; 0 is Off.  1 option menu.  2 is select menu.
+; gOSS_Mode         .byte 0 ; 0 is Off.  -1 option menu.  +1 is select menu.
 ;
 ; gOSS_Timer        .byte 0 ; Counts to wait for text.   If no input when this reaches 0, then erase menu.
 ;
-; gLastOptionMenu   .byte 0 ; When in OPTION mode and SELECT is pressed then remember the current Option menu. 
+; gCurrentOption    .byte 0 ; Remember OPTION we looked at last.
 ;
-; gCurrentMenuEntry .byte 0 ; Menu entry number for Option and/or  Select.
+; gCurrentSelect    .byte 0 ; Remember SELECT entery we looked at last.
+;
+; gCurrentMenuEntry .byte 0 ; Menu entry number for Option and Select.
 ;
 ; gCurrentMenuText  .word 0 ; pointer to text for the menu 
 ;
@@ -1846,7 +1848,7 @@ b_ggrc_Exit_Failure
 GameRunOSSMenus
 
 	lda gOSS_ScrollState
-	beq b_grom_ProcessOrNot ; (0) No scrolling, so is there an menu for processing?
+	beq b_grom_ProcessOrNot ; (0) No scrolling, so is there a menu for processing?
 
 	bpl b_grom_Exit         ; (>0) Scrolling in progress.   Nothing else to do.
 
@@ -1862,6 +1864,39 @@ b_grom_ProcessOrNot
 
 
 b_grom_CheckInput
+	lda gDEBOUNCE_OSS       ; If debounce >=0  ?
+	bpl b_grom_Exit         ; No debounce, no input, so skip to end.
+;	bmi a key is pressed
+	lda #1
+	sta gDEBOUNCE_OSS       ; Put the VBI back into waiting for debounce.
+
+	lda #$FF                ; Since a key is (should be) pressed now
+	sta gOSS_Timer          ; then reset the input timer.
+
+	lda gOSS_KEYS
+	tay                     ; Save for the next checks.
+	and #CONSOLE_OPTION
+	beq b_grom_OptionKey    ; Option is pressed.   Do it.
+
+	tya 
+	and #CONSOLE_SELECT
+	beq b_grom_SelectKey    ; Select is pressed.   Do it.
+
+	tya 
+	and #CONSOLE_START
+	beq b_grom_StartKey    ; Start is pressed.   Do it.
+	rts
+
+b_grom_OptionKey
+
+
+
+b_grom_SelectKey
+
+
+
+b_grom_StartKey
+
 
 
 b_grom_Exit

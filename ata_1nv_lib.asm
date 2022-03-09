@@ -85,6 +85,8 @@ b_ClearOSSDebounce         ; Nobody is pressing a button.
 	sta gDEBOUNCE_OSS      ; then remove the debounce flag 
 
 b_OSSButton_Exit
+	lda #0                 ; waiting for debounce.
+	sta gOSS_KEYS          ; make it look like all keys are pressed.
 	rts
 
 
