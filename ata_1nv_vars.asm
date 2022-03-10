@@ -344,7 +344,12 @@ TABLE_OPTIONS_SELECTMENUS
 	.byte 0  ; Go back to first menu.
 
 
-; Table: 0 in high byte means use low byte as the new index entry.
+; Table of pointers to strings for the Mode 6 text.  
+; 0 in high byte means use low byte as the new index entry.
+; All  T H I S   makes only this part of the declarations 
+; look clean.   The actual code now needs to take the 
+; option entry index number and multiply by two every time
+; it wants to index into the table.
 
 TABLE_OPTIONS
 	.word GFX_OPTION_1 ; 0

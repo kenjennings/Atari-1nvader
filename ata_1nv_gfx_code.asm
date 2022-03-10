@@ -1910,6 +1910,42 @@ Gfx_CopyOptionRightToLeftBuffer
 
 
 ; ==========================================================================
+; COPY OPTION TO RIGHT BUFFER
+; ==========================================================================
+; Used to load up graphics with the text for the new menu item.
+; Save Y.
+; Get Address for Mode 6 text.
+; Copy text.
+; Using Y again, get address for mode 2 text.
+; Copy text.
+; --------------------------------------------------------------------------
+
+g_cotrb_tempY .byte 0
+
+Gfx_CopyOptionToRightBuffer
+
+	sty g_cotrb_tempY
+
+	lda TABLE_OPTIONS,Y
+	sta gCurrentMenuText
+	lda TABLE_OPTIONS+1,Y
+	sta gCurrentMenuText+1
+
+	mMemcpyM GFX_OPTION_RIGHT,gCurrentMenuText,20
+
+	ldy g_cotrb_tempY
+
+	lda TABLE_OPTIONS_TEXT,Y
+	sta gCurrentMenuText
+	lda TABLE_OPTIONS_TEXT+1,Y
+	sta gCurrentMenuText+1
+
+	mMemcpyM GFX_OPTION_TEXT_RIGHT,gCurrentMenuText,20
+
+	rts
+
+
+; ==========================================================================
 ; DISPLAY ON/OFF TEXT
 ; ==========================================================================
 ; Display ON or Off indication for the current feature FROM A SELECT 
@@ -2072,7 +2108,7 @@ Gfx_SetLeftOSSText
 ; Note the Title Screen Init must also set values for:
 ; gOSS_Mode         ; 0 is option menu.  1 is select menu.
 ; gOSS_Timer        ; Timer until removing text.
-; gLastOptionMenu   ; Last Option Menu used. 
+; gCurrentOption    ; Last Option Menu used. 
 ; gCurrentMenuEntry ; Menu entry number for Option and Select.
 ; --------------------------------------------------------------------------
 

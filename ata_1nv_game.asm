@@ -419,8 +419,8 @@ GameSetupTitle
 
 	jsr Gfx_ClearOSSText
 	lda #0
-	sta gOSS_Mode         ; 0 == Option Menu.
-	sta gLastOptionMenu
+	sta gOSS_Mode         ; 0 == Menu off.
+	sta gCurrentOption
 	sta gCurrentMenuEntry
 	lda #$FE              ; Not $FF or $00 so other things do not get confused.
 	sta gOSS_Timer

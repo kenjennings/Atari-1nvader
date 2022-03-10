@@ -1885,9 +1885,39 @@ b_grom_CheckInput
 	tya 
 	and #CONSOLE_START
 	beq b_grom_StartKey    ; Start is pressed.   Do it.
-	rts
+	rts                    ; How did we get here?   I don't know.
 
 b_grom_OptionKey
+	lda gCurrentOption     ; Prep current value as index into pointer table.
+	asl                    ; A = A * 2 for index into table of words.
+	tay                    ; Y = A   to use as index.  Duh.
+
+	lda gOSS_Mode          ; What's the current condition of the menus?
+	beq b_grom_ShowOption  ; Menu off. Go Show current (last) option menu
+	bpl b_grom_ShowOption  ; Select entry.  Go show the current (last) option menu.
+
+	ldx gCurrentOption     ; Go to next Option Menu.
+	inx                    ; Next entry.
+	txa                    ; A = X
+	asl                    ; A = A * 2 (index to point to an address) 
+	tay                    ; So, now Y = A (or Y = X * 2)
+	lda TABLE_OPTIONS+1,Y  ; Get hi byte from address of string
+	bne b_grom_ShowOption  ; High byte <> 0.  So, use this entry.
+	ldx TABLE_OPTIONS,Y    ; High Byte is 0.  Use low byte as new index.
+	stx gCurrentOption     ; Update current entry
+	txa                    ; A = X
+	asl                    ; Again, A = A * 2 for index into table of words.
+	tay                    ; Y = A   to use as index. 
+
+b_grom_ShowOption
+	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
+
+	lda #1
+	sta gOSS_ScrollState ; Turn on scrolling
+	lda #$ff 
+	sta gOSS_Mode        ; Let everyone know we're now in option menu mode
+	; the input timer no longer matters until the scroll is finished.
+	rts
 
 
 
