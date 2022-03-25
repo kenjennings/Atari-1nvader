@@ -27,13 +27,21 @@
 ; 
 ; The joy of this is that this code, and all the other position code 
 ; doesn't care if we're in PAL or NTSC.  Everything is driven by 
-; table data.  Once the initalization code set PAL or NTSC, then 
+; table data.  Once the initalization code determined  PAL or NTSC, then 
 ; everything after becomes automatic.
+;
+; This is "common" and called all the time regardless of screen state to 
+; mitigate against stuttering that may happen when timer work starts and
+; stops.   Also, this could be extended to cover any as yet unknown
+; timing situations due to further embelishments.
 ; --------------------------------------------------------------------------
 
 gFrameAsIndex .byte $00
 
 FrameManagement
+
+	lda #0                  ; Lazy way of turning off attract mode.
+	sta ATRACT              ; Because I'm too lazy to EOR everything.
 
 	inc zTHIS_FRAME         ; Next Frame value
 	lda zTHIS_FRAME          
@@ -42,30 +50,27 @@ FrameManagement
 
 	lda #0
 	sta zTHIS_FRAME         ; Reset Frame value
+
 b_fm_SkipFrameReset
 
-	; Frame counter times two...
-	asl                     ; Frame value times 2
-	sta gFrameAsIndex      ; Save for later
+	asl                     ; Frame counter value times 2
+	sta gFrameAsIndex       ; Save for later
 	tax
 
-	; Plus 0 or 1 for video mode...
-	lda zNTSCorPAL
+	lda zNTSCorPAL          ; Plus 0 or 1 for video mode...
 	beq b_fm_SkipIncIndex   ; If 0 (PAL), then no increment
 	inx
 	stx gFrameAsIndex
+
 b_fm_SkipIncIndex
 
-	; Determine Player X increment/decrement
-	lda TABLE_PLAYER_CONTROL,x
+	lda TABLE_PLAYER_CONTROL,x ; Determine Player X increment/decrement
 	sta zINC_PLAYER_X
 
-	; Determine shot Y decrement
-	lda TABLE_LASER_CONTROL,x
+	lda TABLE_LASER_CONTROL,x ; Determine shot Y decrement
 	sta zINC_LASER_Y
 
-	; Determine Mothership X increment
-	jsr FrameControlMothershipSpeed
+	jsr FrameControlMothershipSpeed ; Determine Mothership X increment
 
 	rts
 
@@ -1896,7 +1901,7 @@ b_grom_OptionKey
 	beq b_grom_ShowOption  ; Menu off. Go Show current (last) option menu
 	bpl b_grom_ShowOption  ; Select entry.  Go show the current (last) option menu.
 
-	ldx gCurrentOption     ; Go to next Option Menu.
+	ldx gCurrentOption     ; (BMI) Go to next Option Menu.
 	inx                    ; Next entry.
 	txa                    ; A = X
 	asl                    ; A = A * 2 (index to point to an address) 

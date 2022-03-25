@@ -1940,7 +1940,7 @@ Gfx_CopyOptionToRightBuffer
 	lda TABLE_OPTIONS_TEXT+1,Y
 	sta gCurrentMenuText+1
 
-	mMemcpyM GFX_OPTION_TEXT_RIGHT,gCurrentMenuText,20
+	mMemcpyM GFX_OPTION_TEXT_RIGHT,gCurrentMenuText,40
 
 	rts
 
@@ -2087,7 +2087,7 @@ Gfx_ResetOSSText
 Gfx_SetLeftOSSText
 
 	lda #<GFX_OPTION_LEFT       ; Set the LMS pointing to the Option text
-	lda DL_LMS_OPTION           
+	sta DL_LMS_OPTION           
 
 	lda  #<GFX_OPTION_TEXT_LEFT ; Set the LMS pointing to the Option description text
 	sta DL_LMS_OPTION_TEXT 

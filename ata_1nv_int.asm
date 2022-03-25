@@ -91,54 +91,127 @@ ExitMyImmediateVBI
 ;==============================================================================
 ; Deferred Vertical Blank Interrupt.
 ;
-; Tasks that tolerate more laziness.  In fact, most of the screen activity
-; occurs here.
-;
-; TITLE SCREEN AND COUNTDOWN ACTIVITIES:
-; 1) Mothership if moving up.
-; 2) 3, 2, 1 GO, if in progress.
-; 3) Animate Missiles for Title logo
-; 4) Author scrolling
-; 5) Documentation Scrolling
-; 6) Mountain Background Scrolling.
-;
-;
-; GAME PLAY ACTIVITIES
-;
-;
-;
-; GAME OVER ACTIVITIES
-;
+; This is the highest level that just examines the current screen 
+; and calls the larger function that does the logic.
 ;
 ;==============================================================================
 
 MyDeferredVBI
 
-	lda zCurrentEvent           ; Is this is still 0 (INIT)? 
+	lda zCurrentEvent           ; Is this still 0 (INIT)? 
 	bne b_mdv_DoMyDeferredVBI   ; No.   Continue the Deferred VBI
 
 	jmp XITVBV                  ; Yes.  We should not be here.  End now.  Return to OS.
 
 
+; ======== Beginning - global for all ========
+; Kill Attract mode.  Process PAL v NTSC frame for timing.
+
 b_mdv_DoMyDeferredVBI
 
-; ======== Beginning - global for all ========
-; Kill Attract mode.  Process PAL v NTSC frame,
+	jsr FrameManagement ; Figure out NTSC v PAL timing 
 
-	lda #0
-	sta ATRACT
-
-	jsr FrameManagement
 
 ; ======== TITLE SCREEN AND COUNTDOWN ACTIVIES  ========
 ; ======================================================
+
 	lda zCurrentEvent               ; Get current state
 ;	cmp #[EVENT_COUNTDOWN+1]        
 	cmp #[EVENT_SETUP_GAME+1]       ; Is it TITLE or COUNTDOWN
-	bcc b_mdv_DoBigMothership       ; Yes. Less Than < SETUP is correct
+;	bcc b_mdv_DoTitleAndCountdown   ; Yes. Less Than < SETUP is correct
+	bcs b_mdv_DoGameManagement      ; No. Greater Than > COUNTDOWN is GAME or GAMEOVER
+;	jmp b_mdv_DoGameManagement      ; No. Greater Than > COUNTDOWN is GAME or GAMEOVER
 
-	jmp b_mdv_DoGameManagement      ; No. Greater Than > COUNTDOWN is GAME or GAMEOVER
+b_mdv_DoTitleAndCountdown
 
+	jsr vbiDoTitleAndCountdown
+
+	jmp EndOfMyDeferredVBI ; END OF TITLE SCREEN AND COUNTDOWN 
+
+
+; ====================  GAME SCREEN  ===================
+; ======================================================
+
+b_mdv_DoGameManagement
+
+;	lda zCurrentEvent         ; Get current state
+	cmp #EVENT_GAME           ; Is it The Game?
+;	beq b_mdv_DoTheGame       ; Yes. Do the Game
+	bne b_mdv_DoGameOver      ; No. Check if doing  Game Over routine Greater Than > COUNTDOWN is GAME or GAMEOVER
+
+;	jmp b_mdv_DoGameOver      ; No. Check if doing  Game Over routine Greater Than > COUNTDOWN is GAME or GAMEOVER
+
+b_mdv_DoTheGame
+
+	jsr vbiDoTheGame
+
+	jmp EndOfMyDeferredVBI ; END OF GAME SCREEN
+
+
+; =====================  GAME OVER  ====================
+; ======================================================
+
+; Use the index as found in the variables. 
+; Increment at the end.  On entry, -1 means increment.
+
+b_mdv_DoGameOver
+
+;	lda zCurrentEvent              ; Get current state
+	cmp  #EVENT_GAMEOVER           ; Are we doing Game Over
+;	beq b_mdv_DoGameOverTransition ; Yes. Do the Game Over animation
+;	jmp EndOfMyDeferredVBI          ; No. Done here.
+	bne EndOfMyDeferredVBI          ; No. Done here.
+
+b_mdv_DoGameOverTransition         ; Let's animate text being displayed.
+
+	jsr vbiDoGameOverTransition 
+
+;	jmp EndOfMyDeferredVBI ; END OF GAME OVER SCREEN 
+
+
+; ====================  END OF VBI  ====================
+; ======================================================
+; All the following run all the time on all displays.
+
+EndOfMyDeferredVBI
+
+; ======== NEW SHADOW REGISTERS  ========
+; The main line code will do the extra work of updating the P/M graphics
+; to starting Horizontal position (these fake Shadow regs).
+; The game relies on the DLIs to cut up Players/Missiles to their proper 
+; horizontal positions.
+
+;b_mdv_ReloadFromShadow
+
+	lda SHPOSP0  ; VBI Copy SHPOSP0 to HPOSP0
+	sta HPOSP0   ; VBI Copy SHPOSP0 to HPOSP0
+	lda SHPOSP1  ; VBI Copy SHPOSP1 to HPOSP1
+	sta HPOSP1   ; VBI Copy SHPOSP1 to HPOSP1
+	lda SHPOSP2  ; blah blah
+	sta HPOSP2
+	lda SHPOSP3
+	sta HPOSP3
+	lda SHPOSM0  ; etc etc etc
+	sta HPOSM0
+	lda SHPOSM1
+	sta HPOSM1
+	lda SHPOSM2
+	sta HPOSM2
+	lda SHPOSM3
+	sta HPOSM3
+
+	jsr Gfx_RunScrollingLand      ; Animated 24/7 on all screens
+
+DoCheesySoundService              ; World's most inept sound sequencer.
+	jsr SoundService
+
+	jmp XITVBV                    ; Return to OS.  SYSVBV for Immediate interrupt.
+
+
+
+;==============================================================================
+;====================  TITLE SCREEN AND COUNTDOWN ACTIVIES ====================
+;==============================================================================
 
 ; For the Title and Countdown the work that needs to occur:
 ; 1) Mothership if moving up.
@@ -147,6 +220,8 @@ b_mdv_DoMyDeferredVBI
 ; 4) Author scrolling
 ; 5) Documentation Scrolling
 ; 6) Mountain Background Scrolling.
+
+vbiDoTitleAndCountdown
 
 
 ; ======== 1) MANAGE TITLE MOTHERSHIP MOVING UP  ========
@@ -296,16 +371,27 @@ b_mdv_EndDocsScrolling
 
 ; ======== 6) MANAGE OPTION, SELECT, START MENUS ========
 
+; gOSS_ScrollState  .byte 0 ; Status of scrolling behavior.  1= scrolling. 0= no scroll. -1 scroll just stopped. 
+;
+; gOSS_Mode         .byte 0 ; 0 is Off.  -1 option menu.  +1 is select menu.
+;
+; gOSS_Timer        .byte 0 ; Counts to wait for text.   If no input when this reaches 0, then erase menu.
+;
+; gCurrentOption    .byte 0 ; Remember OPTION we looked at last.
+;
+; gCurrentSelect    .byte 0 ; Remember SELECT entery we looked at last.
+;
+; gCurrentMenuEntry .byte 0 ; Menu entry number for Option and Select.
+;
+; gCurrentMenuText  .word 0 ; pointer to text for the menu 
+
 ; 1) If menu is in motion, continue the motion.
 ; 2) If motion ends here, then set the menu delay timer.
 
-
-
-
 b_mdv_ManageMenus
 
-	lda gOSS_ScrollState   ; Is menu in motion?
-	beq b_mdv_OptNotMoving ; 0 == Nope. Go do the timer and console button reading.
+	lda gOSS_ScrollState   ; Status of scrolling behavior.  1, scrolling. 0, no scroll. -1 scroll just stopped. 
+	beq b_mdv_OptNotMoving ; 0, no scroll. Go do the timer and console button reading.
 
 	jsr Gfx_ScrollOSSText     ; update the LMS in the display list to coarse scroll
 	bne b_mdv_EndManageMenus  ; Always non-zero exit from Gfx_ScrollOSSTest
@@ -314,10 +400,10 @@ b_mdv_OptNotMoving
 	jsr libAnyConsoleButton     ; Is a console key pressed?
 	bmi b_mdv_GoodConsoleInput  ; -1 == yes. 0 or 1 == Nope
 	dec gOSS_Timer              ; when this is 0, Main code erases text.
-	bpl b_mdv_EndManageMenus
+	jmp b_mdv_EndManageMenus    
 	
 b_mdv_GoodConsoleInput
-	lda #$fe                    ; A console key was pressed.  Main will take care 
+	lda #$ff                    ; A console key was pressed.  Main will take care 
 	sta gOSS_Timer              ; of it.  Restart the timer in case, but not at #255 which is special.
 
 b_mdv_EndManageMenus
@@ -340,7 +426,7 @@ b_mdv_EndManageMenus
 ; b_mdv_EndLandScrolling
 
 
-; ======== MANAGE PLAYER MOVEMENT  ========
+; ======== 8) MANAGE PLAYER MOVEMENT  ========
 
 ; The main code provided updates to player state for the New Y position.
 ; If the New Y does not match the old Player Y player then update Y.
@@ -355,21 +441,17 @@ b_mdv_EndPlayerMovement
 
 ; ========  END OF TITLE SCREEN  ========
 
-	jmp ExitMyDeferredVBI
+	rts
 
 
-; ====================  GAME SCREEN  ===================
-; ======================================================
-
-b_mdv_DoGameManagement
-
-	lda zCurrentEvent         ; Get current state
-	cmp #EVENT_GAME           ; Is it The Game?
-	beq b_mdv_DoTheGame       ; Yes. Do the Game
-	jmp b_mdv_DoGameOver      ; No. Check if doing  Game Over routine Greater Than > COUNTDOWN is GAME or GAMEOVER
 
 
-b_mdv_DoTheGame
+;==============================================================================
+;================================  GAME SCREEN  ===============================
+;==============================================================================
+
+vbiDoTheGame
+
 	lda #0
 	sta zDLIStarLinecounter        ; reset DLI counter.
 
@@ -385,25 +467,16 @@ b_mdv_DoTheGame
 
 	jsr Pmg_ManagePlayersMovement  ; Handles guns for Title and Game displays.
 
-; ========  END OF GAME SCREEN  ========
-
-	jmp ExitMyDeferredVBI
+	rts
 
 
-; =====================  GAME OVER  ====================
-; ======================================================
 
-; Use the index as found in the variables. 
-; Increment at the end.  On entry, -1 means increment.
+;==============================================================================
+;=============================  GAME OVER SCREEN  =============================
+;==============================================================================
 
-b_mdv_DoGameOver
+vbiDoGameOverTransition
 
-	lda zCurrentEvent              ; Get current state
-	cmp  #EVENT_GAMEOVER           ; Are we doing Game Over
-	beq b_mdv_DoGameOverTransition ; Yes. Do the Game Over animation
-	jmp ExitMyDeferredVBI          ; No. Done here.
-
-b_mdv_DoGameOverTransition         ; Let's animate text being displayed.
 	lda zGO_CHAR_INDEX             ; 0 to 9 [12] (-1 is starting state) 13 is end.
 	cmp #13 
 	beq b_EndofEndofGameOver       ; Animation is over when char index reaches 13.
@@ -422,56 +495,10 @@ b_mdv_DoGameOverTransition         ; Let's animate text being displayed.
 
 b_mdv_DoGameOverAnimation
 	jsr Gfx_SetupCOLPF2Index       ; Setup base index used for DLI for COLPF2
-;	jmp b_EndofEndofGameOver
-
-; ======================================================
-; Something else, etc.  maybe.
-
 
 b_EndofEndofGameOver
+	rts
 
-; ========  END OF GAME OVER SCREEN  ========
-
-	jmp ExitMyDeferredVBI                    ; Return to OS.
-
-
-; ====================  END OF VBI  ====================
-; ======================================================
-; All the following run all the time on all displays.
-
-ExitMyDeferredVBI
-
-; ======== NEW SHADOW REGISTERS  ========
-; The main line code will do the extra work of updating the P/M graphics
-; to starting Horizontal position (these fake Shadow regs).
-; The game relies on the DLIs to cut up Players/Missiles to their proper 
-; horizontal positions.
-
-;b_mdv_ReloadFromShadow
-
-	lda SHPOSP0  ; VBI Copy SHPOSP0 to HPOSP0
-	sta HPOSP0   ; VBI Copy SHPOSP0 to HPOSP0
-	lda SHPOSP1  ; VBI Copy SHPOSP1 to HPOSP1
-	sta HPOSP1   ; VBI Copy SHPOSP1 to HPOSP1
-	lda SHPOSP2  ; blah blah
-	sta HPOSP2
-	lda SHPOSP3
-	sta HPOSP3
-	lda SHPOSM0  ; etc etc etc
-	sta HPOSM0
-	lda SHPOSM1
-	sta HPOSM1
-	lda SHPOSM2
-	sta HPOSM2
-	lda SHPOSM3
-	sta HPOSM3
-
-	jsr Gfx_RunScrollingLand      ; Animated 24/7 on all screens
-
-DoCheesySoundService              ; World's most inept sound sequencer.
-	jsr SoundService
-
-	jmp XITVBV                    ; Return to OS.  SYSVBV for Immediate interrupt.
 
 
 ;==============================================================================

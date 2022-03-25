@@ -62,7 +62,7 @@ b_AnyButton_Exit
 ;           -1 button pressed after debounce cleared.
 ;==============================================================================
 
-gDEBOUNCE_OSS      .byte 0 ; Flag that Option/Select/Start are released. 
+gDEBOUNCE_OSS      .byte 0 ; Flag that Option/Select/Start are released.
 gOSS_KEYS          .byte 0 ; Current Option/Select/Start bits.
 
 libAnyConsoleButton        ; get Function buttons and debounce them.
@@ -78,6 +78,8 @@ libAnyConsoleButton        ; get Function buttons and debounce them.
 	bne b_OSSButton_Exit   ; then ignore the buttons. 
 
 	lda #$ff               ; A button is pressed when debounce is off.
+	sta gDEBOUNCE_OSS      ; let code know key(s) are recorded.
+	sta gOSS_Timer         ; then reset the input timer.
 	rts
 
 b_ClearOSSDebounce         ; Nobody is pressing a button.
@@ -85,8 +87,8 @@ b_ClearOSSDebounce         ; Nobody is pressing a button.
 	sta gDEBOUNCE_OSS      ; then remove the debounce flag 
 
 b_OSSButton_Exit
-	lda #0                 ; waiting for debounce.
-	sta gOSS_KEYS          ; make it look like all keys are pressed.
+;	lda #0                 ; waiting for debounce.
+;	sta gOSS_KEYS          ; make it look like all keys are pressed.
 	rts
 
 
