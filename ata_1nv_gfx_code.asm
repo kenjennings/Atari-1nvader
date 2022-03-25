@@ -2106,7 +2106,7 @@ Gfx_SetLeftOSSText
 ; Clear the scroll flags.
 ;
 ; Note the Title Screen Init must also set values for:
-; gOSS_Mode         ; 0 is option menu.  1 is select menu.
+; gOSS_Mode         ; ; 0 is Off.  -1 option menu.  +1 is select menu.
 ; gOSS_Timer        ; Timer until removing text.
 ; gCurrentOption    ; Last Option Menu used. 
 ; gCurrentMenuEntry ; Menu entry number for Option and Select.
@@ -2134,6 +2134,7 @@ b_gcot_ClearOptionText_Loop
     
 	lda #$00
 	sta gOSS_ScrollState            ; Officially scrolling is now off.
-
+	sta gOSS_Mode                   ; And the mode says no men u is displayed
+	
 	rts
 

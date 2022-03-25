@@ -1907,8 +1907,10 @@ b_grom_OptionKey
 	asl                    ; A = A * 2 (index to point to an address) 
 	tay                    ; So, now Y = A (or Y = X * 2)
 	lda TABLE_OPTIONS+1,Y  ; Get hi byte from address of string
-	bne b_grom_ShowOption  ; High byte <> 0.  So, use this entry.
+	bne b_grom_UseOption   ; High byte <> 0.  So, use this entry.
 	ldx TABLE_OPTIONS,Y    ; High Byte is 0.  Use low byte as new index.
+
+b_grom_UseOption
 	stx gCurrentOption     ; Update current entry
 	txa                    ; A = X
 	asl                    ; Again, A = A * 2 for index into table of words.
