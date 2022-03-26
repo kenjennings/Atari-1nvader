@@ -1753,7 +1753,6 @@ b_grtl_SkipDecPF1
 
 
 
-
 ; ==========================================================================
 ; MENUS, SELECTIONS, OPTIONS
 ; ==========================================================================
@@ -1793,6 +1792,9 @@ Gfx_RunMenu_VBI
 ; ==========================================================================
 ; CLEAR OPTION RIGHT BUFFER
 ; ==========================================================================
+; Erase the right side of the scroll buffer (which by default is the 
+; part off screen.).
+;
 ; Set memset address
 ; Set Memset Length
 ; Call Memset.
@@ -1800,35 +1802,21 @@ Gfx_RunMenu_VBI
 
 Gfx_ClearOptionsRightBuffer
 
-;	lda #<GFX_OPTION_RIGHT
-;	sta zMemSet_Dst
-;	lda #>GFX_OPTION_RIGHT
-;	sta zMemSet_Dst+1
-
-;	ldy #20
-;	lda #INTERNAL_BLANKSPACE ; $00
-
-;	jsr libMemSet
-
 	mMemset GFX_OPTION_RIGHT,20,INTERNAL_BLANKSPACE
-
-;	lda #<GFX_OPTION_TEXT_RIGHT
-;	sta zMemSet_Dst
-;	lda #>GFX_OPTION_TEXT_RIGHT
-;	sta zMemSet_Dst+1
-
-;	ldy #40
-;	lda #CHAR_MODE2_BLANK ; @ sign for blanks on mode 2
-
-;	jsr libMemSet
 
 	mMemset GFX_OPTION_TEXT_RIGHT,40,CHAR_MODE2_BLANK
 
 	rts
 
+
 ; ==========================================================================
 ; CLEAR OPTION LEFT BUFFER
 ; ==========================================================================
+; Erase the left side of the scroll buffer (which by default is the 
+; part on screen  EXCEPT after a scroll has completed.) 
+; This would be used to erase the left side of the buffer before 
+; resetting the display to show the left (default) position.
+;
 ; Set memset address
 ; Set Memset Length
 ; Call Memset.
@@ -1836,27 +1824,7 @@ Gfx_ClearOptionsRightBuffer
 
 Gfx_ClearOptionsLeftBuffer
 
-;	lda #<GFX_OPTION_LEFT
-;	sta zMemSet_Dst
-;	lda #>GFX_OPTION_LEFT
-;	sta zMemSet_Dst+1
-
-;	ldy #20
-;	lda #INTERNAL_BLANKSPACE ; $00
-	
-;	jsr libMemSet
-
 	mMemset GFX_OPTION_LEFT,20,INTERNAL_BLANKSPACE
-
-;	lda #<GFX_OPTION_TEXT_LEFT
-;	sta zMemSet_Dst
-;	lda #>GFX_OPTION_TEXT_LEFT
-;	sta zMemSet_Dst+1
-
-;	ldy #40
-;	lda #CHAR_MODE2_BLANK ; @ sign for blanks on mode 2
-
-;	jsr libMemSet
 
 	mMemset GFX_OPTION_TEXT_LEFT,40,CHAR_MODE2_BLANK
 
@@ -1872,39 +1840,9 @@ Gfx_ClearOptionsLeftBuffer
 
 Gfx_CopyOptionRightToLeftBuffer
 
-;	lda #<GFX_OPTION_RIGHT
-;	sta zMemCpy_Src
-;	lda #>GFX_OPTION_RIGHT
-;	sta zMemCpy_Src+1
-
-;	lda #<GFX_OPTION_LEFT
-;	sta zMemSet_Dst
-;	lda #>GFX_OPTION_LEFT
-;	sta zMemSet_Dst+1
-
-;	ldy #20
-
-;	jsr libMemCpy 
-
 	mMemcpy GFX_OPTION_LEFT,GFX_OPTION_RIGHT,20
 
-
-;	lda #<GFX_OPTION_TEXT_RIGHT
-;	sta zMemCpy_Src
-;	lda #>GFX_OPTION_TEXT_RIGHT
-;	sta zMemCpy_Src+1
-
-;	lda #<GFX_OPTION_TEXT_LEFT
-;	sta zMemSet_Dst
-;	lda #>GFX_OPTION_TEXT_LEFT
-;	sta zMemSet_Dst+1
-
-;	ldy #40
-
-;	jsr libMemCpy
-
 	mMemcpy GFX_OPTION_TEXT_LEFT,GFX_OPTION_TEXT_RIGHT,40
-
 
 	rts
 
@@ -1912,12 +1850,19 @@ Gfx_CopyOptionRightToLeftBuffer
 ; ==========================================================================
 ; COPY OPTION TO RIGHT BUFFER
 ; ==========================================================================
-; Used to load up graphics with the text for the new menu item.
+; Used to load up graphics with the text for the new menu item 
+; to begin scrolling.
+;
+; Y is an index to a word (address) in the arrays of pointers 
+; to the menu texts.
+;
 ; Save Y.
 ; Get Address for Mode 6 text.
 ; Copy text.
 ; Using Y again, get address for mode 2 text.
 ; Copy text.
+; 
+; Turn on flag to tel VBI to run scrolling.
 ; --------------------------------------------------------------------------
 
 g_cotrb_tempY .byte 0
@@ -1941,6 +1886,9 @@ Gfx_CopyOptionToRightBuffer
 	sta gCurrentMenuText+1
 
 	mMemcpyM GFX_OPTION_TEXT_RIGHT,gCurrentMenuText,40
+	
+	lda #1               ; We're here to setup text for scrolling,
+	sta gOSS_ScrollState ;  so turn on scrolling.
 
 	rts
 

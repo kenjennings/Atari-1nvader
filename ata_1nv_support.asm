@@ -1885,18 +1885,6 @@ b_grom_OptionKey
 	rts
 
 b_grom_SelectKey
-;	lda #65
-;	sta GFX_OPTION_RIGHT
-;	sta GFX_OPTION_RIGHT+2
-;	sta GFX_OPTION_RIGHT+4
-;	sta GFX_OPTION_RIGHT+6
-
-;;	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
-
-;	lda #1
-;	sta gOSS_ScrollState ; Turn on scrolling 
-;	sta gOSS_Mode        ; Let everyone know we're now in select menu mode
-
 	jsr GameSelectMenu     ; Process Select key input.
 	rts
 
@@ -1929,41 +1917,27 @@ b_grom_Exit
 ; --------------------------------------------------------------------------
 
 GameOptionMenu
-	lda gCurrentOption     ; Prep current value as index into pointer table.
-	tax
-	asl                    ; A = A * 2 for index into table of words.
-	tay                    ; Y = A   to use as index.  Duh.
-	lda TABLE_OPTIONS_SELECTMENUS,X ; Also, force Select menu back to the ...
-	sta gCurrentSelect              ; ... first entry under this Option.
+	ldx gCurrentOption      ; Prep current value as index into pointer table.
 
-	lda gOSS_Mode          ; What's the current condition of the menus?
-	beq b_gom_ShowOption   ; Menu off. Go Show current (last) option menu
-	bpl b_gom_ShowOption   ; Select entry.  Go show the current (last) option menu.
+	lda gOSS_Mode           ; What's the current condition of the menus?
+	beq b_gom_ShowOption    ; Menu off. Go Show current/last option menu
+	bpl b_gom_ShowOption    ; Select mode. Go show the current/last option menu.
 
-	ldx gCurrentOption     ; (BMI) Go to next Option Menu.
-	inx                    ; Next entry.
-	txa                    ; A = X
-	asl                    ; A = A * 2 (index to point to an address) 
-	tay                    ; So, now Y = A (or Y = X * 2)
-	lda TABLE_OPTIONS+1,Y  ; Get hi byte from address of string
-	bne b_gom_UseOption    ; High byte <> 0.  So, use this entry.
-	ldx TABLE_OPTIONS,Y    ; High Byte is 0.  Use low byte as new index.
-
-b_gom_UseOption
-	stx gCurrentOption              ; Update current entry
-	lda TABLE_OPTIONS_SELECTMENUS,X ; Also, force Select menu back to the ...
-	sta gCurrentSelect              ; ... first entry under this Option.
-	txa                             ; A = X
-	asl                             ; Again, A = A * 2 for index into table of words.
-	tay                             ; Y = A   to use as index. 
+	jsr GameNextMenuOrReset ; Next Option menu or reset the Option menu.
+	stx gCurrentOption      ; Save updated Option index.
 
 b_gom_ShowOption
+	lda TABLE_OPTIONS_SELECTMENUS,X ; Force Select menu back to the ...
+	sta gCurrentSelect              ; ... first entry under this Option.
+
+	txa                     ; A = X     (new index)
+	asl                     ; A = A * 2 (index to point to a table of words (an address)) 
+	tay                     ; Y = A     (or Y = X * 2) to use as word index.
+
 	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
 
-	lda #1
-	sta gOSS_ScrollState ; Turn on scrolling
 	lda #$ff 
-	sta gOSS_Mode        ; Let everyone know we're now in option menu mode
+	sta gOSS_Mode           ; Let everyone know we're now in option menu mode
 
 	rts
 
@@ -1991,38 +1965,59 @@ b_gom_ShowOption
 ; --------------------------------------------------------------------------
 
 GameSelectMenu
-	lda gCurrentSelect       ; Prep current value as index into pointer table.
-	asl                      ; A = A * 2 for index into table of words.
-	tay                      ; Y = A   to use as index.  Duh.
+	ldx gCurrentSelect       ; Prep current value as index into pointer table.
 
 	lda gOSS_Mode            ; What's the current condition of the menus?
 	beq b_gsem_EndSelectMenu ; Menu off. Must be in Option or Select modes to change Select Menu.
 	bmi b_gsem_ShowSelect    ; In Option Mode. Switch to Select. Show the current (last) select menu.
 
-	ldx gCurrentSelect       ; (BPL) Go to next Select Menu.
-	inx                      ; Next entry.
-	txa                      ; A = X
-	asl                      ; A = A * 2 (index to point to an address) 
-	tay                      ; So, now Y = A (or Y = X * 2)
-	lda TABLE_OPTIONS+1,Y    ; Get hi byte from address of string
-	bne b_gsem_UseSelect     ; High byte <> 0.  So, use this entry.
-	ldx TABLE_OPTIONS,Y      ; High Byte is 0.  Use low byte as new index.
-
-b_gsem_UseSelect
-	stx gCurrentSelect              ; Update current entry
-	txa                             ; A = X
-	asl                             ; Again, A = A * 2 for index into table of words.
-	tay                             ; Y = A   to use as index. 
+	jsr GameNextMenuOrReset  ; Next Select menu or reset the Select menu.
+	stx gCurrentSelect       ; Update current entry
 
 b_gsem_ShowSelect
+	txa                    ; A = X     (new index)
+	asl                    ; A = A * 2 (index to point to a table of words (an address)) 
+	tay                    ; Y = A     (or Y = X * 2) to use as word index.
+
 	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
 
 	lda #1
-	sta gOSS_ScrollState ; Turn on scrolling 
 	sta gOSS_Mode        ; Let everyone know we're now in select menu mode
 
 b_gsem_EndSelectMenu
 	rts
+
+
+
+; ==========================================================================
+;                                                        NEXT MENU OR RESET
+; ==========================================================================
+; Manage Moving to next menu entry...
+;
+; Input is value in X for the current menu index. 
+;
+; Increment the value and look at the next entry in the menu table. 
+;
+; If the menu table entry represents a forced reset, get the new value. 
+;
+; Return new menu index in X.
+; --------------------------------------------------------------------------
+
+GameNextMenuOrReset
+
+	inx                    ; (BPL) Go to next Menu entry
+
+	txa                    ; A = X     (the new index)
+	asl                    ; A = A * 2 (index to point to a table of words (an address)) 
+	tay                    ; Y = A     (or Y = X * 2) to use as word index.
+	
+	lda TABLE_OPTIONS+1,Y  ; Get hi byte from address of string
+	bne b_gnmor_SkipReset  ; High byte <> 0.  So, use this entry.
+	ldx TABLE_OPTIONS,Y    ; High Byte is 0.  Use low byte as new index.
+
+b_gnmor_SkipReset
+	rts
+
 
 
 ;
