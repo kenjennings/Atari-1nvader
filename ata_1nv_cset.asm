@@ -1405,7 +1405,8 @@ CHAR_MODE2_BLANK=$60
 
 
 ;GAME_HYPHEN_CHAR=$1D
-GAME_HYPHEN_CHAR=$3B
+;GAME_HYPHEN_CHAR=$3B
+GAME_HYPHEN_CHAR=$7B
 ; Char $7B: ctrl-;    ; A new hyphen
 	.byte $00,$00,$00,$3c,$00,$00,$00,$00
 ; $00: . . . . . . . . 
@@ -1417,7 +1418,8 @@ GAME_HYPHEN_CHAR=$3B
 ; $00: . . . . . . . . 
 ; $00: . . . . . . . . 
 
-CHAR_ALT_BANG=$3c ; ($7c - $40 == $3c)
+;CHAR_ALT_BANG=$3c ; ($7c - $40 == $3c)
+CHAR_ALT_BANG=$7c
 ; Char $7C:   |    
 	.byte $00,$18,$18,$18,$18,$00,$18,$00
 ; $00: . . . . . . . . 

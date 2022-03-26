@@ -1833,20 +1833,8 @@ b_ggrc_Exit_Failure
 ;
 ; If the input timer expires (reaches 0) then erase the menu and 
 ; reset everything off.
-; 
-; gOSS_ScrollState  .byte 0 ; Status of scrolling behavior.  1, scrolling. 0, no scroll. -1 scroll just stopped. 
 ;
-; gOSS_Mode         .byte 0 ; 0 is Off.  -1 option menu.  +1 is select menu.
-;
-; gOSS_Timer        .byte 0 ; Counts to wait for text.   If no input when this reaches 0, then erase menu.
-;
-; gCurrentOption    .byte 0 ; Remember OPTION we looked at last.
-;
-; gCurrentSelect    .byte 0 ; Remember SELECT entery we looked at last.
-;
-; gCurrentMenuEntry .byte 0 ; Menu entry number for Option and Select.
-;
-; gCurrentMenuText  .word 0 ; pointer to text for the menu 
+; Collect console key input, and if any, then process key.
 ;
 ; --------------------------------------------------------------------------
 
@@ -1866,7 +1854,6 @@ b_grom_ProcessOrNot
 	bne b_grom_CheckInput   ; No.  Continue with input checking.
 	jsr Gfx_ClearOSSText    ; Yes, erase menu.  Shut it all off.
 	beq b_grom_Exit         ; Above code ends by setting scroll state to 0, so, BEQ.
-
 
 b_grom_CheckInput
 	lda gDEBOUNCE_OSS       ; If debounce >=0  ?
@@ -1892,14 +1879,66 @@ b_grom_CheckInput
 	beq b_grom_StartKey    ; Start is pressed.   Do it.
 	rts                    ; How did we get here?   I don't know.
 
+
 b_grom_OptionKey
+	jsr GameOptionMenu     ; Process Option key input.
+	rts
+
+b_grom_SelectKey
+;	lda #65
+;	sta GFX_OPTION_RIGHT
+;	sta GFX_OPTION_RIGHT+2
+;	sta GFX_OPTION_RIGHT+4
+;	sta GFX_OPTION_RIGHT+6
+
+;;	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
+
+;	lda #1
+;	sta gOSS_ScrollState ; Turn on scrolling 
+;	sta gOSS_Mode        ; Let everyone know we're now in select menu mode
+
+	jsr GameSelectMenu     ; Process Select key input.
+	rts
+
+b_grom_StartKey
+
+
+b_grom_Exit
+	rts
+
+
+; ==========================================================================
+; OPTION MENU
+; ==========================================================================
+; Manage Option Menu.
+;
+; If menu is off or showing Select menu, then go to display the last 
+; Option Menu and text.
+;
+; If already displaying an Option Menu then increment to the next Option
+; Menu.
+;
+; If the next Option Menu is not a menu item, but points elsewhere, then
+; follow the direction to jump to the given Option entry.
+;
+; Setup Option Menu to begin scrolling on the screen. (VBI does that work.)  
+;
+; Reset the current Select Menu entry to the first entry for the Option 
+; Menu's list of Select Menu entries.
+;
+; --------------------------------------------------------------------------
+
+GameOptionMenu
 	lda gCurrentOption     ; Prep current value as index into pointer table.
+	tax
 	asl                    ; A = A * 2 for index into table of words.
 	tay                    ; Y = A   to use as index.  Duh.
+	lda TABLE_OPTIONS_SELECTMENUS,X ; Also, force Select menu back to the ...
+	sta gCurrentSelect              ; ... first entry under this Option.
 
 	lda gOSS_Mode          ; What's the current condition of the menus?
-	beq b_grom_ShowOption  ; Menu off. Go Show current (last) option menu
-	bpl b_grom_ShowOption  ; Select entry.  Go show the current (last) option menu.
+	beq b_gom_ShowOption   ; Menu off. Go Show current (last) option menu
+	bpl b_gom_ShowOption   ; Select entry.  Go show the current (last) option menu.
 
 	ldx gCurrentOption     ; (BMI) Go to next Option Menu.
 	inx                    ; Next entry.
@@ -1907,35 +1946,98 @@ b_grom_OptionKey
 	asl                    ; A = A * 2 (index to point to an address) 
 	tay                    ; So, now Y = A (or Y = X * 2)
 	lda TABLE_OPTIONS+1,Y  ; Get hi byte from address of string
-	bne b_grom_UseOption   ; High byte <> 0.  So, use this entry.
+	bne b_gom_UseOption    ; High byte <> 0.  So, use this entry.
 	ldx TABLE_OPTIONS,Y    ; High Byte is 0.  Use low byte as new index.
 
-b_grom_UseOption
-	stx gCurrentOption     ; Update current entry
-	txa                    ; A = X
-	asl                    ; Again, A = A * 2 for index into table of words.
-	tay                    ; Y = A   to use as index. 
+b_gom_UseOption
+	stx gCurrentOption              ; Update current entry
+	lda TABLE_OPTIONS_SELECTMENUS,X ; Also, force Select menu back to the ...
+	sta gCurrentSelect              ; ... first entry under this Option.
+	txa                             ; A = X
+	asl                             ; Again, A = A * 2 for index into table of words.
+	tay                             ; Y = A   to use as index. 
 
-b_grom_ShowOption
+b_gom_ShowOption
 	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
 
 	lda #1
 	sta gOSS_ScrollState ; Turn on scrolling
 	lda #$ff 
 	sta gOSS_Mode        ; Let everyone know we're now in option menu mode
-	; the input timer no longer matters until the scroll is finished.
+
 	rts
 
 
 
-b_grom_SelectKey
+; ==========================================================================
+; SELECT MENU
+; ==========================================================================
+; Manage Select Menu.
+;
+; If menu is off or showing Select menu, then go to display the last 
+; Option Menu and text.
+;
+; If already displaying an Option Menu then increment to the next Option
+; Menu.
+;
+; If the next Option Menu is not a menu item, but points elsewhere, then
+; follow the direction to jump to the given Option entry.
+;
+; Setup Option Menu to begin scrolling on the screen. (VBI does that work.)  
+;
+; Reset the current Select Menu entry to the first entry for the Option 
+; Menu's list of Select Menu entries.
+;
+; --------------------------------------------------------------------------
 
+GameSelectMenu
+	lda gCurrentSelect       ; Prep current value as index into pointer table.
+	asl                      ; A = A * 2 for index into table of words.
+	tay                      ; Y = A   to use as index.  Duh.
 
+	lda gOSS_Mode            ; What's the current condition of the menus?
+	beq b_gsem_EndSelectMenu ; Menu off. Must be in Option or Select modes to change Select Menu.
+	bmi b_gsem_ShowSelect    ; In Option Mode. Switch to Select. Show the current (last) select menu.
 
-b_grom_StartKey
+	ldx gCurrentSelect       ; (BPL) Go to next Select Menu.
+	inx                      ; Next entry.
+	txa                      ; A = X
+	asl                      ; A = A * 2 (index to point to an address) 
+	tay                      ; So, now Y = A (or Y = X * 2)
+	lda TABLE_OPTIONS+1,Y    ; Get hi byte from address of string
+	bne b_gsem_UseSelect     ; High byte <> 0.  So, use this entry.
+	ldx TABLE_OPTIONS,Y      ; High Byte is 0.  Use low byte as new index.
 
+b_gsem_UseSelect
+	stx gCurrentSelect              ; Update current entry
+	txa                             ; A = X
+	asl                             ; Again, A = A * 2 for index into table of words.
+	tay                             ; Y = A   to use as index. 
 
+b_gsem_ShowSelect
+	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
 
-b_grom_Exit
+	lda #1
+	sta gOSS_ScrollState ; Turn on scrolling 
+	sta gOSS_Mode        ; Let everyone know we're now in select menu mode
+
+b_gsem_EndSelectMenu
 	rts
+
+
+;
+;gOSS_ScrollState  .byte 0 ; Status of scrolling: 1=scrolling. 0=not scrolling. -1=scroll just stopped. 
+;
+;gOSS_Mode         .byte 0 ; 0=Off  -1=option menu  +1=is select menu.
+;
+;gOSS_Timer        .byte 0 ; Counts to wait for text.  When this reaches 0 without input, then erase menu.
+;
+;gCurrentOption    .byte 0 ; Remember the OPTION we looked at last.
+;
+;gCurrentSelect    .byte 0 ; Remember the SELECT entery we looked at last.
+;
+;gCurrentMenuEntry .byte 0 ; Menu entry number for Option and Select.
+;
+;gCurrentMenuText  .word 0 ; pointer to text for the menu 
+;
 
