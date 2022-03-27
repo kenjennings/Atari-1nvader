@@ -1889,7 +1889,7 @@ b_grom_SelectKey
 	rts
 
 b_grom_StartKey
-
+	jsr GameStartAction    ; Process Start key input.
 
 b_grom_Exit
 	rts
@@ -1935,6 +1935,7 @@ b_gom_ShowOption
 	tay                     ; Y = A     (or Y = X * 2) to use as word index.
 
 	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
+	jsr GameGetOnOrOffOption
 
 	lda #$ff 
 	sta gOSS_Mode           ; Let everyone know we're now in option menu mode
@@ -1990,11 +1991,50 @@ b_gsem_EndSelectMenu
 
 
 ; ==========================================================================
+; START ACTION
+; ==========================================================================
+; Manage turning on/off the current selected item
+;
+; The menu must be on a Selected menu item, not the top level Option.
+;
+; Mutually exclusive items -- if the option is off, then turn it on,
+; making sure all other parallel options are off. 
+;
+; --------------------------------------------------------------------------
+
+GameStartAction
+	ldx gCurrentSelect       ; Prep current value as index into pointer table.
+
+	lda gOSS_Mode            ; What's the current condition of the menus?
+	beq b_gsa_EndStartAction ; Menu off. Must be Select modes to change Select Menu.
+	bmi b_gsa_EndStartAction ; In Option Mode. Must be Select modes to change Select Menu.
+
+	rts
+	
+;	jsr GameNextMenuOrReset  ; Next Select menu or reset the Select menu.
+;	stx gCurrentSelect       ; Update current entry
+
+;b_gsem_ShowSelect
+;	txa                    ; A = X     (new index)
+;	asl                    ; A = A * 2 (index to point to a table of words (an address)) 
+;	tay                    ; Y = A     (or Y = X * 2) to use as word index.
+
+;	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
+
+;	lda #1
+;	sta gOSS_Mode        ; Let everyone know we're now in select menu mode
+
+b_gsa_EndStartAction
+	rts
+
+
+
+; ==========================================================================
 ;                                                        NEXT MENU OR RESET
 ; ==========================================================================
 ; Manage Moving to next menu entry...
 ;
-; Input is value in X for the current menu index. 
+; Input is value in X register for the current menu index. 
 ;
 ; Increment the value and look at the next entry in the menu table. 
 ;
@@ -2035,4 +2075,40 @@ b_gnmor_SkipReset
 ;
 ;gCurrentMenuText  .word 0 ; pointer to text for the menu 
 ;
+
+
+; ==========================================================================
+;                                                     GET ON OR OFF OPTION
+; ==========================================================================
+; Given the current Select menu determine if that option is 
+; on or off.
+;
+; Input is value in X register for the current menu index. 
+;
+; Increment the value and look at the next entry in the menu table. 
+;
+; If the menu table entry represents a forced reset, get the new value. 
+;
+; Return new menu index in X.
+; --------------------------------------------------------------------------
+
+GameGetOnOrOffOption
+
+	lda gCurrentSelect           ; A = Current Select Menu being viewed
+	asl                          ; A = A * 2 (index to point to a table of words (an address)) 
+	tax                          ; X = A     (or X = index * 2) to use as word index.
+
+	lda TABLE_GET_FUNCTIONS,x    ; Get pointer low byte
+	ora TABLE_GET_FUNCTIONS+1,x  ; OR with pointer high byte
+	beq b_EndGetOnOrOffOption    ; 0 value is NULL pointer, so  nothing to do.
+
+	lda TABLE_GET_FUNCTIONS+1,x  ; Get pointer high byte 
+	pha                          ; Push to stack
+	lda TABLE_GET_FUNCTIONS,x    ; Get pointer low byte
+	pha                          ; Push to stack
+
+b_EndGetOnOrOffOption
+	rts
+	; When the called routine ends with rts, it will return to the place 
+	; that called this routine which is up in SELECT key handling.
 
