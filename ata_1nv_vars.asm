@@ -475,12 +475,12 @@ TABLE_GET_FUNCTIONS
 	.word 0 ; 6 
 	.word 0                     ; 7  Return to Option entry 0
 	; (SELECT Laser Restart Menu)
-	.word 0 ; getLaserRestart-1 ; 8   Regular Laser Auto Restart (Default)
-	.word 0 ; getLaserRestart-1 ; 9   Short Laser Auto Restart
-	.word 0 ; getLaserRestart-1 ; 10  Long Laser Auto Restart
-	.word 0 ; getLaserRestart-1 ; 11  Regular Laser Manual Restart
-	.word 0 ; getLaserRestart-1 ; 12  Short Laser Manual Restart
-	.word 0 ; getLaserRestart-1 ; 13  Long Laser Manual Restart
+	.word getLaserRestart-1 ; 8   Regular Laser Auto Restart (Default)
+	.word getLaserRestart-1 ; 9   Short Laser Auto Restart
+	.word getLaserRestart-1 ; 10  Long Laser Auto Restart
+	.word getLaserRestart-1 ; 11  Regular Laser Manual Restart
+	.word getLaserRestart-1 ; 12  Short Laser Manual Restart
+	.word getLaserRestart-1 ; 13  Long Laser Manual Restart
 	.word 8                     ; 14  Return to Select entry 8
 	; (SELECT Laser Speed Menu)
 	.word 0 ; getLaserSpeed-1   ; 15  Regular laser speed
@@ -579,6 +579,10 @@ TABLE_SET_FUNCTIONS
 	.word 42                    ; 45 Return to Select entry 42
 
 
+; Laser Restart: 0= regular height, 1=short height, 2= long height, then $00= manual, $80=Automatic
+
+CONFIG_LASER_RESTART .byte $00
+
 ; Data/Flag passed to routine to set the value or match the current value.
 
 TABLE_OPTION_ARGUMENTS
@@ -589,15 +593,15 @@ TABLE_OPTION_ARGUMENTS
 	.word 0 ; 4
 	.word 0 ; 5
 	.word 0 ; 6 
-	.word 0                       ; 7  Return to Option entry 0
+	.word 0                        ; 7  Return to Option entry 0
 	; (SELECT Laser Restart Menu)
-	.word 0   ; setLaserRestart-1   ; 8   Regular Laser Auto Restart (Default)
-	.word 1   ; setLaserRestart-1   ; 9   Short Laser Auto Restart
-	.word 2   ; setLaserRestart-1   ; 10  Long Laser Auto Restart
-	.word 128 ; setLaserRestart-1 ; 11  Regular Laser Manual Restart
-	.word 129 ; setLaserRestart-1 ; 12  Short Laser Manual Restart
-	.word 130 ; setLaserRestart-1 ; 13  Long Laser Manual Restart
-	.word 8                       ; 14  Return to Select entry 8
+	.word 0   ; setLaserRestart-1  ; 8   Regular Laser Auto Restart (Default)
+	.word 1   ; setLaserRestart-1  ; 9   Short Laser Auto Restart
+	.word 2   ; setLaserRestart-1  ; 10  Long Laser Auto Restart
+	.word 128 ; setLaserRestart-1  ; 11  Regular Laser Manual Restart
+	.word 129 ; setLaserRestart-1  ; 12  Short Laser Manual Restart
+	.word 130 ; setLaserRestart-1  ; 13  Long Laser Manual Restart
+	.word 8                        ; 14  Return to Select entry 8
 	; (SELECT Laser Speed Menu)
 	.word 0 ; setLaserSpeed-1   ; 15  Regular laser speed
 	.word 1 ; setLaserSpeed-1   ; 16  Fast laser speed (+2)

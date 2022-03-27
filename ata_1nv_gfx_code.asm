@@ -1899,7 +1899,8 @@ Gfx_CopyOptionToRightBuffer
 ; Display ON or Off indication for the current feature FROM A SELECT 
 ; MENU ENTRY.  (OPTION entries do not have an ON/OFF)
 ;
-; A register indicates if the entry state is on or off.
+; Processor status indicates if the entry state is on or off.
+; Z = ON, !Z = OFF
 ;
 ; X register provides offset for location into either the left side 
 ; or the right side of the scroll buffer. 
@@ -1916,12 +1917,12 @@ Gfx_CopyOptionToRightBuffer
 ;	.sb +$80,"HERE  "   ; 6 == 20   ; Red
 ;
 ; X register is left or right offset position.
-; A indicates OFF (0)  or ON (1).  (This should also be the Z flag.) 
+; A indicates ON (0)  or OFF (1).  (This should also be the Z flag.) 
 ; --------------------------------------------------------------------------
 
 Gfx_Display_OnOff_Option
 
-	beq b_gdooo_Do_Off ; Foolishly trust that lda occurred right before this.
+	bne b_gdooo_Do_Off ; Foolishly trust that lda occurred right before this.
 
 	; Display the text for "ON" in green.
 	

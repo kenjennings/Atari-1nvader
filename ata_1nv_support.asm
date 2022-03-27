@@ -1981,6 +1981,7 @@ b_gsem_ShowSelect
 	tay                    ; Y = A     (or Y = X * 2) to use as word index.
 
 	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
+	jsr DetermineOnOffRightBuffer   ; Add ON or OFF indicator to the menu item to scroll
 
 	lda #1
 	sta gOSS_Mode        ; Let everyone know we're now in select menu mode
@@ -2076,6 +2077,32 @@ b_gnmor_SkipReset
 ;gCurrentMenuText  .word 0 ; pointer to text for the menu 
 ;
 
+; ==========================================================================
+;                                                     GET ON OR OFF OPTION
+; ==========================================================================
+; Given the current Select menu determine if that option is 
+; on or off.
+;
+; Write the ON/OFF status in the right buffer.
+;
+; Result is comparison of the current select menu configuration value to 
+; the actual configuration variable.
+;
+; Result:
+; BEQ == Current Select item is the current config.
+; BNE == Current Select item is not the current config value
+; --------------------------------------------------------------------------
+
+DetermineOnOffRightBuffer
+
+	jsr GameGetOnOrOffOption
+	php
+	ldx #37 ; LEFT + 20 == Right Buffer.  +17 for start position.
+	plp
+	jsr Gfx_Display_OnOff_Option
+
+	rts
+
 
 ; ==========================================================================
 ;                                                     GET ON OR OFF OPTION
@@ -2083,13 +2110,12 @@ b_gnmor_SkipReset
 ; Given the current Select menu determine if that option is 
 ; on or off.
 ;
-; Input is value in X register for the current menu index. 
+; Result is comparison of the current select menu configuration value to 
+; the actual configuration variable.
 ;
-; Increment the value and look at the next entry in the menu table. 
-;
-; If the menu table entry represents a forced reset, get the new value. 
-;
-; Return new menu index in X.
+; Result:
+; BEQ == Current Select item is the current config.
+; BNE == Current Select item is not the current config value
 ; --------------------------------------------------------------------------
 
 GameGetOnOrOffOption
@@ -2112,3 +2138,30 @@ b_EndGetOnOrOffOption
 	; When the called routine ends with rts, it will return to the place 
 	; that called this routine which is up in SELECT key handling.
 
+
+
+; ==========================================================================
+;                                                     GET LASER RESTART
+; ==========================================================================
+; Get value of this menu entry and compare to 
+; current laser restart configuration.
+;
+; Result of comparison determines whether or not to 
+; display ON or OFF text.
+; --------------------------------------------------------------------------
+
+getLaserRestart
+
+	lda gCurrentSelect
+	asl
+	tax
+	lda TABLE_OPTION_ARGUMENTS,X
+	cmp CONFIG_LASER_RESTART
+
+
+;	lda #[CSET_MODE67_COLPF1|INTERNAL_UPPER_Z]
+;	sta GFX_OPTION_LEFT+39
+
+	rts
+	
+	
