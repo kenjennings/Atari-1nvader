@@ -1930,10 +1930,6 @@ b_gom_ShowOption
 	lda TABLE_OPTIONS_SELECTMENUS,X ; Force Select menu back to the ...
 	sta gCurrentSelect              ; ... first entry under this Option.
 
-	txa                     ; A = X     (new index)
-	asl                     ; A = A * 2 (index to point to a table of words (an address)) 
-	tay                     ; Y = A     (or Y = X * 2) to use as word index.
-
 	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
 	jsr GameGetOnOrOffOption
 
@@ -1966,21 +1962,17 @@ b_gom_ShowOption
 ; --------------------------------------------------------------------------
 
 GameSelectMenu
-	ldx gCurrentSelect       ; Prep current value as index into pointer table.
-
 	lda gOSS_Mode            ; What's the current condition of the menus?
 	beq b_gsem_EndSelectMenu ; Menu off. Must be in Option or Select modes to change Select Menu.
 	bmi b_gsem_ShowSelect    ; In Option Mode. Switch to Select. Show the current (last) select menu.
 
+	ldx gCurrentSelect       ; Prep current value as index into pointer table.
 	jsr GameNextMenuOrReset  ; Next Select menu or reset the Select menu.
 	stx gCurrentSelect       ; Update current entry
 
-b_gsem_ShowSelect
-	txa                    ; A = X     (new index)
-	asl                    ; A = A * 2 (index to point to a table of words (an address)) 
-	tay                    ; Y = A     (or Y = X * 2) to use as word index.
 
-	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
+b_gsem_ShowSelect
+	jsr Gfx_CopyOptionToRightBuffer ; Using X as index, copy text via pointers to screen ram.
 	jsr DetermineOnOffRightBuffer   ; Add ON or OFF indicator to the menu item to scroll
 
 	lda #1
@@ -2004,26 +1996,13 @@ b_gsem_EndSelectMenu
 ; --------------------------------------------------------------------------
 
 GameStartAction
-	ldx gCurrentSelect       ; Prep current value as index into pointer table.
-
 	lda gOSS_Mode            ; What's the current condition of the menus?
 	beq b_gsa_EndStartAction ; Menu off. Must be Select modes to change Select Menu.
-	bmi b_gsa_EndStartAction ; In Option Mode. Must be Select modes to change Select Menu.
+	bmi b_gsa_EndStartAction ; In Option Mode. Must be in Select mode to change Select Menu.
 
-	rts
-	
-;	jsr GameNextMenuOrReset  ; Next Select menu or reset the Select menu.
-;	stx gCurrentSelect       ; Update current entry
-
-;b_gsem_ShowSelect
-;	txa                    ; A = X     (new index)
-;	asl                    ; A = A * 2 (index to point to a table of words (an address)) 
-;	tay                    ; Y = A     (or Y = X * 2) to use as word index.
-
-;	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
-
-;	lda #1
-;	sta gOSS_Mode        ; Let everyone know we're now in select menu mode
+;	ldx gCurrentSelect       ; Prep current value as index into pointer table.
+	jsr GameSetConfigOption  ; Set config to current option.
+	jsr DetermineOnOffLeftBuffer   ; Add ON or OFF indicator to the menu item on screen
 
 b_gsa_EndStartAction
 	rts
@@ -2046,15 +2025,13 @@ b_gsa_EndStartAction
 
 GameNextMenuOrReset
 
-	inx                    ; (BPL) Go to next Menu entry
-
-	txa                    ; A = X     (the new index)
-	asl                    ; A = A * 2 (index to point to a table of words (an address)) 
-	tay                    ; Y = A     (or Y = X * 2) to use as word index.
+	inx                    ; Go to next Menu entry
 	
-	lda TABLE_OPTIONS+1,Y  ; Get hi byte from address of string
+	lda TABLE_OPTIONS_HI,X  ; Get hi byte from address of string
 	bne b_gnmor_SkipReset  ; High byte <> 0.  So, use this entry.
-	ldx TABLE_OPTIONS,Y    ; High Byte is 0.  Use low byte as new index.
+
+	lda TABLE_OPTIONS_LO,X    ; High Byte is 0.  Use low byte as new index.
+	tax
 
 b_gnmor_SkipReset
 	rts
@@ -2078,12 +2055,12 @@ b_gnmor_SkipReset
 ;
 
 ; ==========================================================================
-;                                                     GET ON OR OFF OPTION
+;                                            DETERMINE ON OFF RIGHT BUFFER
 ; ==========================================================================
 ; Given the current Select menu determine if that option is 
 ; on or off.
 ;
-; Write the ON/OFF status in the right buffer.
+; Write the ON/OFF status in the RIGHT buffer. (to be scrolled)
 ;
 ; Result is comparison of the current select menu configuration value to 
 ; the actual configuration variable.
@@ -2097,7 +2074,34 @@ DetermineOnOffRightBuffer
 
 	jsr GameGetOnOrOffOption
 	php
-	ldx #37 ; LEFT + 20 == Right Buffer.  +17 for start position.
+	ldx #37 ; +17 for Left position. Then +20 more == Right Buffer. 
+	plp
+	jsr Gfx_Display_OnOff_Option
+
+	rts
+
+
+; ==========================================================================
+;                                            DETERMINE ON OFF LEFT BUFFER
+; ==========================================================================
+; Given the current Select menu determine if that option is 
+; on or off.
+;
+; Write the ON/OFF status in the LEFT buffer. (currently displayed)
+;
+; Result is comparison of the current select menu configuration value to 
+; the actual configuration variable.
+;
+; Result:
+; BEQ == Current Select item is the current config.
+; BNE == Current Select item is not the current config value
+; --------------------------------------------------------------------------
+
+DetermineOnOffLeftBuffer
+
+	jsr GameGetOnOrOffOption
+	php
+	ldx #17 ; +17 for Left position. Then +20 more == Right Buffer. 
 	plp
 	jsr Gfx_Display_OnOff_Option
 
@@ -2120,20 +2124,49 @@ DetermineOnOffRightBuffer
 
 GameGetOnOrOffOption
 
-	lda gCurrentSelect           ; A = Current Select Menu being viewed
-	asl                          ; A = A * 2 (index to point to a table of words (an address)) 
-	tax                          ; X = A     (or X = index * 2) to use as word index.
+	ldx gCurrentSelect           ; X = Current Select Menu being viewed
 
-	lda TABLE_GET_FUNCTIONS,x    ; Get pointer low byte
-	ora TABLE_GET_FUNCTIONS+1,x  ; OR with pointer high byte
+	lda TABLE_GET_FUNCTIONS_LO,x    ; Get pointer low byte
+	ora TABLE_GET_FUNCTIONS_HI,x  ; OR with pointer high byte
 	beq b_EndGetOnOrOffOption    ; 0 value is NULL pointer, so  nothing to do.
 
-	lda TABLE_GET_FUNCTIONS+1,x  ; Get pointer high byte 
+	lda TABLE_OPTION_ARGUMENTS,X  ; get config value for this menu.
+	pha                           ; push to stack for set()/get() function to use.
+	lda TABLE_GET_FUNCTIONS_HI,x  ; Get pointer high byte 
 	pha                          ; Push to stack
-	lda TABLE_GET_FUNCTIONS,x    ; Get pointer low byte
+	lda TABLE_GET_FUNCTIONS_LO,x    ; Get pointer low byte
 	pha                          ; Push to stack
 
 b_EndGetOnOrOffOption
+	rts
+	; When the called routine ends with rts, it will return to the place 
+	; that called this routine which is up in SELECT key handling.
+
+
+
+; ==========================================================================
+;                                                     SET CONFIG OPTION
+; ==========================================================================
+; Given the current Select menu item engage the function to set the
+; config to the value associated to this Select menu item
+; --------------------------------------------------------------------------
+
+GameSetConfigOption
+
+	ldx gCurrentSelect           ; X = Current Select Menu being viewed
+
+	lda TABLE_SET_FUNCTIONS_LO,x    ; Get pointer low byte
+	ora TABLE_SET_FUNCTIONS_HI,x  ; OR with pointer high byte
+	beq b_EndSetConfigOption    ; 0 value is NULL pointer, so  nothing to do.
+
+	lda TABLE_OPTION_ARGUMENTS,X  ; get config value for this menu.
+	pha                           ; push to stack for set()/get() function to use.
+	lda TABLE_SET_FUNCTIONS_HI,x  ; Get pointer high byte 
+	pha                          ; Push to stack
+	lda TABLE_SET_FUNCTIONS_LO,x    ; Get pointer low byte
+	pha                          ; Push to stack
+
+b_EndSetConfigOption
 	rts
 	; When the called routine ends with rts, it will return to the place 
 	; that called this routine which is up in SELECT key handling.
@@ -2152,16 +2185,22 @@ b_EndGetOnOrOffOption
 
 getLaserRestart
 
-	lda gCurrentSelect
-	asl
-	tax
-	lda TABLE_OPTION_ARGUMENTS,X
-	cmp CONFIG_LASER_RESTART
-
-
-;	lda #[CSET_MODE67_COLPF1|INTERNAL_UPPER_Z]
-;	sta GFX_OPTION_LEFT+39
+	pla                      ; Get the canned version of this menu's value from the stack.
+	cmp CONFIG_LASER_RESTART ; compare to the actual config value
 
 	rts
-	
-	
+
+; ==========================================================================
+;                                                     SET LASER RESTART
+; ==========================================================================
+; Set value of the laser restart configuration to the value associated 
+; to the current Select menu entry.
+; --------------------------------------------------------------------------
+
+setLaserRestart
+
+	pla                      ; Get the canned version of this menu's value from the stack.
+	sta CONFIG_LASER_RESTART ; save it as the new config value
+
+	rts
+

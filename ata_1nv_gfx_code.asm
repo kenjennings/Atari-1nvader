@@ -1853,36 +1853,36 @@ Gfx_CopyOptionRightToLeftBuffer
 ; Used to load up graphics with the text for the new menu item 
 ; to begin scrolling.
 ;
-; Y is an index to a word (address) in the arrays of pointers 
+; X is an index to a word (address) in the arrays of pointers 
 ; to the menu texts.
 ;
-; Save Y.
+; Save X.
 ; Get Address for Mode 6 text.
 ; Copy text.
-; Using Y again, get address for mode 2 text.
+; Using X again, get address for mode 2 text.
 ; Copy text.
 ; 
 ; Turn on flag to tel VBI to run scrolling.
 ; --------------------------------------------------------------------------
 
-g_cotrb_tempY .byte 0
+g_cotrb_tempX .byte 0
 
 Gfx_CopyOptionToRightBuffer
 
-	sty g_cotrb_tempY
+	stx g_cotrb_tempX
 
-	lda TABLE_OPTIONS,Y
+	lda TABLE_OPTIONS_LO,X
 	sta gCurrentMenuText
-	lda TABLE_OPTIONS+1,Y
+	lda TABLE_OPTIONS_HI,X
 	sta gCurrentMenuText+1
 
 	mMemcpyM GFX_OPTION_RIGHT,gCurrentMenuText,20
 
-	ldy g_cotrb_tempY
+	ldx g_cotrb_tempX
 
-	lda TABLE_OPTIONS_TEXT,Y
+	lda TABLE_OPTIONS_TEXT_LO,X
 	sta gCurrentMenuText
-	lda TABLE_OPTIONS_TEXT+1,Y
+	lda TABLE_OPTIONS_TEXT_HI,X
 	sta gCurrentMenuText+1
 
 	mMemcpyM GFX_OPTION_TEXT_RIGHT,gCurrentMenuText,40
@@ -1944,7 +1944,7 @@ b_gdooo_Do_Off
 	lda #[CSET_MODE67_COLPF2|INTERNAL_UPPER_F]
 	sta GFX_OPTION_LEFT+1,X
 
-	lda #[CSET_MODE67_COLPF2|INTERNAL_UPPER_F]
+;	lda #[CSET_MODE67_COLPF2|INTERNAL_UPPER_F]
 	sta GFX_OPTION_LEFT+2,X
 
 	rts
