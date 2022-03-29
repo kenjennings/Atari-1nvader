@@ -1931,7 +1931,7 @@ b_gom_ShowOption
 	sta gCurrentSelect              ; ... first entry under this Option.
 
 	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
-	jsr GameGetOnOrOffOption
+;	jsr CheckConfigMatchesMenu
 
 	lda #$ff 
 	sta gOSS_Mode           ; Let everyone know we're now in option menu mode
@@ -1962,18 +1962,18 @@ b_gom_ShowOption
 ; --------------------------------------------------------------------------
 
 GameSelectMenu
+	ldx gCurrentSelect       ; Prep current value as index into pointer table.
+
 	lda gOSS_Mode            ; What's the current condition of the menus?
 	beq b_gsem_EndSelectMenu ; Menu off. Must be in Option or Select modes to change Select Menu.
 	bmi b_gsem_ShowSelect    ; In Option Mode. Switch to Select. Show the current (last) select menu.
 
-	ldx gCurrentSelect       ; Prep current value as index into pointer table.
 	jsr GameNextMenuOrReset  ; Next Select menu or reset the Select menu.
 	stx gCurrentSelect       ; Update current entry
 
-
 b_gsem_ShowSelect
 	jsr Gfx_CopyOptionToRightBuffer ; Using X as index, copy text via pointers to screen ram.
-	jsr DetermineOnOffRightBuffer   ; Add ON or OFF indicator to the menu item to scroll
+	jsr DisplayOnOffRightBuffer   ; Add ON or OFF indicator to the menu item to scroll
 
 	lda #1
 	sta gOSS_Mode        ; Let everyone know we're now in select menu mode
@@ -2002,7 +2002,7 @@ GameStartAction
 
 ;	ldx gCurrentSelect       ; Prep current value as index into pointer table.
 	jsr GameSetConfigOption  ; Set config to current option.
-	jsr DetermineOnOffLeftBuffer   ; Add ON or OFF indicator to the menu item on screen
+	jsr DisplayOnOffLeftBuffer   ; Add ON or OFF indicator to the menu item on screen
 
 b_gsa_EndStartAction
 	rts
@@ -2070,9 +2070,9 @@ b_gnmor_SkipReset
 ; BNE == Current Select item is not the current config value
 ; --------------------------------------------------------------------------
 
-DetermineOnOffRightBuffer
+DisplayOnOffRightBuffer
 
-	jsr GameGetOnOrOffOption
+	jsr CheckConfigMatchesMenu
 	php
 	ldx #37 ; +17 for Left position. Then +20 more == Right Buffer. 
 	plp
@@ -2097,9 +2097,9 @@ DetermineOnOffRightBuffer
 ; BNE == Current Select item is not the current config value
 ; --------------------------------------------------------------------------
 
-DetermineOnOffLeftBuffer
+DisplayOnOffLeftBuffer
 
-	jsr GameGetOnOrOffOption
+	jsr CheckConfigMatchesMenu
 	php
 	ldx #17 ; +17 for Left position. Then +20 more == Right Buffer. 
 	plp
@@ -2109,7 +2109,7 @@ DetermineOnOffLeftBuffer
 
 
 ; ==========================================================================
-;                                                     GET ON OR OFF OPTION
+;                                              CHECK CONFIG MATCHES MENU
 ; ==========================================================================
 ; Given the current Select menu determine if that option is 
 ; on or off.
@@ -2122,7 +2122,9 @@ DetermineOnOffLeftBuffer
 ; BNE == Current Select item is not the current config value
 ; --------------------------------------------------------------------------
 
-GameGetOnOrOffOption
+CheckConfigMatchesMenu
+
+;GameGetOnOrOffOption
 
 	ldx gCurrentSelect           ; X = Current Select Menu being viewed
 
@@ -2130,7 +2132,11 @@ GameGetOnOrOffOption
 	ora TABLE_GET_FUNCTIONS_HI,x  ; OR with pointer high byte
 	beq b_EndGetOnOrOffOption    ; 0 value is NULL pointer, so  nothing to do.
 
-	lda TABLE_OPTION_ARGUMENTS,X  ; get config value for this menu.
+	jsr MenuGenericConAddr1
+	beq b_EndGetOnOrOffOption    ; 0 value is NULL pointer, so  nothing to do.
+
+	jsr MenuGenericConAddr2
+
 	pha                           ; push to stack for set()/get() function to use.
 	lda TABLE_GET_FUNCTIONS_HI,x  ; Get pointer high byte 
 	pha                          ; Push to stack
@@ -2155,15 +2161,19 @@ GameSetConfigOption
 
 	ldx gCurrentSelect           ; X = Current Select Menu being viewed
 
-	lda TABLE_SET_FUNCTIONS_LO,x    ; Get pointer low byte
-	ora TABLE_SET_FUNCTIONS_HI,x  ; OR with pointer high byte
-	beq b_EndSetConfigOption    ; 0 value is NULL pointer, so  nothing to do.
+	lda TABLE_SET_FUNCTIONS_LO,X ; Get pointer low byte
+	ora TABLE_SET_FUNCTIONS_HI,X ; OR with pointer high byte
+	beq b_EndSetConfigOption     ; 0 value is NULL pointer, so  nothing to do.
 
-	lda TABLE_OPTION_ARGUMENTS,X  ; get config value for this menu.
-	pha                           ; push to stack for set()/get() function to use.
-	lda TABLE_SET_FUNCTIONS_HI,x  ; Get pointer high byte 
+	jsr MenuGenericConAddr1      ; Common set for addr.
+	beq b_EndSetConfigOption     ; 0 value is NULL pointer, so  nothing to do.
+
+	jsr MenuGenericConAddr2      ; Finish Addr setup and get config value from array
+
+	pha                          ; push to stack for set()/get() function to use.
+	lda TABLE_SET_FUNCTIONS_HI,X ; Get pointer high byte 
 	pha                          ; Push to stack
-	lda TABLE_SET_FUNCTIONS_LO,x    ; Get pointer low byte
+	lda TABLE_SET_FUNCTIONS_LO,X ; Get pointer low byte
 	pha                          ; Push to stack
 
 b_EndSetConfigOption
@@ -2171,6 +2181,22 @@ b_EndSetConfigOption
 	; When the called routine ends with rts, it will return to the place 
 	; that called this routine which is up in SELECT key handling.
 
+
+; ==========================================================================
+; Common setup for the low byte and null value test
+
+MenuGenericConAddr1
+	lda TABLE_CONFIG_ADDRESS_LO,X    ; Get variable pointer low byte
+	sta zMenuConfigAddress
+	ora TABLE_CONFIG_ADDRESS_HI,X  ; OR with pointer high byte
+	rts
+
+MenuGenericConAddr2
+	lda TABLE_CONFIG_ADDRESS_HI,X  ; Get variable pointer high byte
+	sta zMenuConfigAddress+1
+
+	lda TABLE_OPTION_ARGUMENTS,X  ; get config value for this menu.
+	rts
 
 
 ; ==========================================================================
@@ -2183,12 +2209,12 @@ b_EndSetConfigOption
 ; display ON or OFF text.
 ; --------------------------------------------------------------------------
 
-getLaserRestart
+;getLaserRestart
 
-	pla                      ; Get the canned version of this menu's value from the stack.
-	cmp CONFIG_LASER_RESTART ; compare to the actual config value
+;	pla                      ; Get the canned version of this menu's value from the stack.
+;	cmp gConfigSomething  ; compare to the actual config value
 
-	rts
+;	rts
 
 ; ==========================================================================
 ;                                                     SET LASER RESTART
@@ -2197,10 +2223,54 @@ getLaserRestart
 ; to the current Select menu entry.
 ; --------------------------------------------------------------------------
 
-setLaserRestart
+;setLaserRestart
 
+;	pla                      ; Get the canned version of this menu's value from the stack.
+;	sta gConfigSomething   ; save it as the new config value
+
+;	rts
+
+; ==========================================================================
+;                                           GET GENERIC EXCLUSIVE CONFIG
+; ==========================================================================
+; Generic function to GET the value of a configure variable and compare 
+; it to the canned value.
+;
+; The resulting comparison value (CPU flags) describes this as equal to 
+; or not equal to the current menu entry.
+;
+; In most cases the comparison result is used to update the display 
+; to present the ON or OFF indicator.
+;
+; This is generally the function to use for a config that is assigned
+; one value from a mutually exclusive list of entries.  e.g. a set 
+; of menu items that each assign a value from the list: 1,2,3,4,5...
+; --------------------------------------------------------------------------
+
+getGenericExclusiveConfig
+
+	ldy #0
 	pla                      ; Get the canned version of this menu's value from the stack.
-	sta CONFIG_LASER_RESTART ; save it as the new config value
+	cmp (zMenuConfigAddress),Y  ; compare to the actual config value
 
 	rts
+
+; ==========================================================================
+;                                           SET GENERIC EXCLUSIVE CONFIG
+; ==========================================================================
+; Generic function to SET the value of a configure variable.
+;
+; This is generally the function to use for a config that is assigned
+; one value from a mutually exclusive list of entries.  e.g. a set 
+; of menu items that each assign a value from the list: 1,2,3,4,5...
+; --------------------------------------------------------------------------
+
+setGenericExclusiveConfig
+
+	ldy #0
+	pla                      ; Get the canned version of this menu's value from the stack.
+	sta (zMenuConfigAddress),Y   ; save it as the new config value
+
+	rts
+
 

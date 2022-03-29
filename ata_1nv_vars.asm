@@ -320,7 +320,7 @@ gCurrentMenuText  .word 0 ; pointer to text for the menu
 
 
 ; ==========================================================================
-; MENUS, SELECTIONS, OPTIONS
+; MENUMATIC -- MENUS, SELECTIONS, OPTIONS
 ; ==========================================================================
 ; Press OPTION key to cycle through top level menu. 
 ; Press SELECT key to cycle through SELECT menu lists.
@@ -328,7 +328,6 @@ gCurrentMenuText  .word 0 ; pointer to text for the menu
 ;
 ; OPTION entries point to first entry on SELECT menu.
 ; SELECT entries point to *function() to set/unset item.
-;
 ; --------------------------------------------------------------------------
 
 ; Where to go from OPTION when SELECT is pressed...
@@ -588,49 +587,49 @@ TABLE_GET_FUNCTIONS_LO
 	.byte 0 ; 6 
 	.byte 0                     ; 7  Return to Option entry 0
 	; (SELECT Laser Restart Menu)
-	.byte <[getLaserRestart-1] ; 8   Regular Laser Auto Restart (Default)
-	.byte <[getLaserRestart-1] ; 9   Short Laser Auto Restart
-	.byte <[getLaserRestart-1] ; 10  Long Laser Auto Restart
-	.byte <[getLaserRestart-1] ; 11  Regular Laser Manual Restart
-	.byte <[getLaserRestart-1] ; 12  Short Laser Manual Restart
-	.byte <[getLaserRestart-1] ; 13  Long Laser Manual Restart
+	.byte <[getGenericExclusiveConfig-1] ; 8   Regular Laser Auto Restart (Default)
+	.byte <[getGenericExclusiveConfig-1] ; 9   Short Laser Auto Restart
+	.byte <[getGenericExclusiveConfig-1] ; 10  Long Laser Auto Restart
+	.byte <[getGenericExclusiveConfig-1] ; 11  Regular Laser Manual Restart
+	.byte <[getGenericExclusiveConfig-1] ; 12  Short Laser Manual Restart
+	.byte <[getGenericExclusiveConfig-1] ; 13  Long Laser Manual Restart
 	.byte 0                     ; 14  Return to Select entry 8
 	; (SELECT Laser Speed Menu)
-	.byte 0 ; getLaserSpeed-1   ; 15  Regular laser speed
-	.byte 0 ; getLaserSpeed-1   ; 16  Fast laser speed (+2)
-	.byte 0 ; getLaserSpeed-1   ; 17  Slow laser speed (-2)
+	.byte <[getGenericExclusiveConfig-1]  ; 15  Regular laser speed
+	.byte <[getGenericExclusiveConfig-1] ; 16  Fast laser speed (+2)
+	.byte <[getGenericExclusiveConfig-1]  ; 17  Slow laser speed (-2)
 	.byte 0                    ; 18 Return to Select entry 15
 	; (SELECT 1NVADER Startup Menu)
-	.byte 0 ; getMSStartSpeed-1 ; 19 1nvader Start Speed 1 (Default)
-	.byte 0 ; getMSStartSpeed-1 ; 20 1nvader Start Speed 3
-	.byte 0 ; getMSStartSpeed-1 ; 21 1nvader Start Speed 5
-	.byte 0 ; getMSStartSpeed-1 ; 22 1nvader Start Speed 7
-	.byte 0 ; getMSStartSpeed-1 ; 23 1nvader Start Speed MAX
+	.byte <[getGenericExclusiveConfig-1] ; 19 1nvader Start Speed 1 (Default)
+	.byte <[getGenericExclusiveConfig-1]; 20 1nvader Start Speed 3
+	.byte <[getGenericExclusiveConfig-1] ; 21 1nvader Start Speed 5
+	.byte <[getGenericExclusiveConfig-1] ; 22 1nvader Start Speed 7
+	.byte <[getGenericExclusiveConfig-1] ; 23 1nvader Start Speed MAX
 	.byte 0                    ; 24 Return to Select entry 19
 	; (SELECT 1NVADER Speedup Menu)
-	.byte 0 ; getMSHitCounter-1 ; 25 1nvader speed up every 10 hits (Default)
-	.byte 0 ; getMSHitCounter-1 ; 26 1nvader speed up every 7 hits
-	.byte 0 ; getMSHitCounter-1 ; 27 1nvader speed up every 5 hits
-	.byte 0 ; getMSHitCounter-1 ; 28 1nvader speed up every 3 hits 
-	.byte 0 ; getMSHitCounter-1 ; 29 1nvader speed up progressive 10,9,8,7,6...
-	.byte 0 ; getMSHitCounter-1 ; 30 1nvader speed up no speedup
+	.byte <[getGenericExclusiveConfig-1] ; 25 1nvader speed up every 10 hits (Default)
+	.byte <[getGenericExclusiveConfig-1] ; 26 1nvader speed up every 7 hits
+	.byte <[getGenericExclusiveConfig-1] ; 27 1nvader speed up every 5 hits
+	.byte <[getGenericExclusiveConfig-1]; 28 1nvader speed up every 3 hits 
+	.byte <[getGenericExclusiveConfig-1] ; 29 1nvader speed up progressive 10,9,8,7,6...
+	.byte <[getGenericExclusiveConfig-1] ; 30 1nvader speed up no speedup
 	.byte 0                    ; 31 Return to Select entry 25
 	; (SELECT 1NVADER Max Speed Menu)
-	.byte 0 ; getMSMaxSpeed-1   ; 32 Max speed 1
-	.byte 0 ; getMSMaxSpeed-1   ; 33 Max speed 3
-	.byte 0 ; getMSMaxSpeed-1   ; 34 Max speed 5
-	.byte 0 ; getMSMaxSpeed-1   ; 35 Max speed MAX (Default)
+	.byte <[getGenericExclusiveConfig-1]  ; 32 Max speed 1
+	.byte <[getGenericExclusiveConfig-1]  ; 33 Max speed 3
+	.byte <[getGenericExclusiveConfig-1]  ; 34 Max speed 5
+	.byte <[getGenericExclusiveConfig-1]   ; 35 Max speed MAX (Default)
 	.byte 0                    ; 36 Return to Select entry 32
 	; (SELECT Two Player Modes Menu)
-	.byte 0 ; get2PMode         ; 37 FR1GULAR - Guns bounce off each other. (Default)
-	.byte 0 ; get2PMode         ; 38 FR1GNORE - Guns do not bounce off each other.
-	.byte 0 ; get2PMode         ; 39 FRENEM1ES - Guns attached to each other.           
-	.byte 0 ; get2PMode         ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.byte <[getGenericExclusiveConfig-1]  ; 37 FR1GULAR - Guns bounce off each other. (Default)
+	.byte <[getGenericExclusiveConfig-1]  ; 38 FR1GNORE - Guns do not bounce off each other.
+	.byte <[getGenericExclusiveConfig-1]     ; 39 FRENEM1ES - Guns attached to each other.           
+	.byte <[getGenericExclusiveConfig-1]    ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
 	.byte 0                    ; 41 Return to Select entry 37
 	; (SELECT Other things Menu)
-	.byte 0 ; getOnesieMode     ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte 0 ;                   ; 43 Reset all values to defaults
-	.byte 0 ; getCheatMode      ; 44 Cheat Mode - 1nvader never reaches bottom row.
+	.byte <[getGenericExclusiveConfig-1]    ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
+	.byte <[getGenericExclusiveConfig-1]    ; 43 Reset all values to defaults
+	.byte <[getGenericExclusiveConfig-1]    ; 44 Cheat Mode - 1nvader never reaches bottom row.
 	.byte 0                    ; 45 Return to Select entry 42
 
 TABLE_GET_FUNCTIONS_HI
@@ -643,49 +642,49 @@ TABLE_GET_FUNCTIONS_HI
 	.byte 0 ; 6 
 	.byte 0                     ; 7  Return to Option entry 0
 	; (SELECT Laser Restart Menu)
-	.byte >[getLaserRestart-1] ; 8   Regular Laser Auto Restart (Default)
-	.byte >[getLaserRestart-1] ; 9   Short Laser Auto Restart
-	.byte >[getLaserRestart-1] ; 10  Long Laser Auto Restart
-	.byte >[getLaserRestart-1] ; 11  Regular Laser Manual Restart
-	.byte >[getLaserRestart-1] ; 12  Short Laser Manual Restart
-	.byte >[getLaserRestart-1] ; 13  Long Laser Manual Restart
+	.byte >[getGenericExclusiveConfig-1] ; 8   Regular Laser Auto Restart (Default)
+	.byte >[getGenericExclusiveConfig-1] ; 9   Short Laser Auto Restart
+	.byte >[getGenericExclusiveConfig-1] ; 10  Long Laser Auto Restart
+	.byte >[getGenericExclusiveConfig-1] ; 11  Regular Laser Manual Restart
+	.byte >[getGenericExclusiveConfig-1] ; 12  Short Laser Manual Restart
+	.byte >[getGenericExclusiveConfig-1] ; 13  Long Laser Manual Restart
 	.byte 0                     ; 14  Return to Select entry 8
 	; (SELECT Laser Speed Menu)
-	.byte 0 ; getLaserSpeed-1   ; 15  Regular laser speed
-	.byte 0 ; getLaserSpeed-1   ; 16  Fast laser speed (+2)
-	.byte 0 ; getLaserSpeed-1   ; 17  Slow laser speed (-2)
+	.byte >[getGenericExclusiveConfig-1]  ; 15  Regular laser speed
+	.byte >[getGenericExclusiveConfig-1] ; 16  Fast laser speed (+2)
+	.byte >[getGenericExclusiveConfig-1]  ; 17  Slow laser speed (-2)
 	.byte 0                    ; 18 Return to Select entry 15
 	; (SELECT 1NVADER Startup Menu)
-	.byte 0 ; getMSStartSpeed-1 ; 19 1nvader Start Speed 1 (Default)
-	.byte 0 ; getMSStartSpeed-1 ; 20 1nvader Start Speed 3
-	.byte 0 ; getMSStartSpeed-1 ; 21 1nvader Start Speed 5
-	.byte 0 ; getMSStartSpeed-1 ; 22 1nvader Start Speed 7
-	.byte 0 ; getMSStartSpeed-1 ; 23 1nvader Start Speed MAX
+	.byte >[getGenericExclusiveConfig-1] ; 19 1nvader Start Speed 1 (Default)
+	.byte >[getGenericExclusiveConfig-1]; 20 1nvader Start Speed 3
+	.byte >[getGenericExclusiveConfig-1] ; 21 1nvader Start Speed 5
+	.byte >[getGenericExclusiveConfig-1] ; 22 1nvader Start Speed 7
+	.byte >[getGenericExclusiveConfig-1] ; 23 1nvader Start Speed MAX
 	.byte 0                    ; 24 Return to Select entry 19
 	; (SELECT 1NVADER Speedup Menu)
-	.byte 0 ; getMSHitCounter-1 ; 25 1nvader speed up every 10 hits (Default)
-	.byte 0 ; getMSHitCounter-1 ; 26 1nvader speed up every 7 hits
-	.byte 0 ; getMSHitCounter-1 ; 27 1nvader speed up every 5 hits
-	.byte 0 ; getMSHitCounter-1 ; 28 1nvader speed up every 3 hits 
-	.byte 0 ; getMSHitCounter-1 ; 29 1nvader speed up progressive 10,9,8,7,6...
-	.byte 0 ; getMSHitCounter-1 ; 30 1nvader speed up no speedup
+	.byte >[getGenericExclusiveConfig-1] ; 25 1nvader speed up every 10 hits (Default)
+	.byte >[getGenericExclusiveConfig-1] ; 26 1nvader speed up every 7 hits
+	.byte >[getGenericExclusiveConfig-1] ; 27 1nvader speed up every 5 hits
+	.byte >[getGenericExclusiveConfig-1]; 28 1nvader speed up every 3 hits 
+	.byte >[getGenericExclusiveConfig-1] ; 29 1nvader speed up progressive 10,9,8,7,6...
+	.byte >[getGenericExclusiveConfig-1] ; 30 1nvader speed up no speedup
 	.byte 0                    ; 31 Return to Select entry 25
 	; (SELECT 1NVADER Max Speed Menu)
-	.byte 0 ; getMSMaxSpeed-1   ; 32 Max speed 1
-	.byte 0 ; getMSMaxSpeed-1   ; 33 Max speed 3
-	.byte 0 ; getMSMaxSpeed-1   ; 34 Max speed 5
-	.byte 0 ; getMSMaxSpeed-1   ; 35 Max speed MAX (Default)
+	.byte >[getGenericExclusiveConfig-1]  ; 32 Max speed 1
+	.byte >[getGenericExclusiveConfig-1]  ; 33 Max speed 3
+	.byte >[getGenericExclusiveConfig-1]  ; 34 Max speed 5
+	.byte >[getGenericExclusiveConfig-1]   ; 35 Max speed MAX (Default)
 	.byte 0                    ; 36 Return to Select entry 32
 	; (SELECT Two Player Modes Menu)
-	.byte 0 ; get2PMode         ; 37 FR1GULAR - Guns bounce off each other. (Default)
-	.byte 0 ; get2PMode         ; 38 FR1GNORE - Guns do not bounce off each other.
-	.byte 0 ; get2PMode         ; 39 FRENEM1ES - Guns attached to each other.           
-	.byte 0 ; get2PMode         ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.byte >[getGenericExclusiveConfig-1]  ; 37 FR1GULAR - Guns bounce off each other. (Default)
+	.byte >[getGenericExclusiveConfig-1]  ; 38 FR1GNORE - Guns do not bounce off each other.
+	.byte >[getGenericExclusiveConfig-1]     ; 39 FRENEM1ES - Guns attached to each other.           
+	.byte >[getGenericExclusiveConfig-1]    ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
 	.byte 0                    ; 41 Return to Select entry 37
 	; (SELECT Other things Menu)
-	.byte 0 ; getOnesieMode     ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte 0 ;                   ; 43 Reset all values to defaults
-	.byte 0 ; getCheatMode      ; 44 Cheat Mode - 1nvader never reaches bottom row.
+	.byte >[getGenericExclusiveConfig-1]    ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
+	.byte >[getGenericExclusiveConfig-1]    ; 43 Reset all values to defaults
+	.byte >[getGenericExclusiveConfig-1]    ; 44 Cheat Mode - 1nvader never reaches bottom row.
 	.byte 0                    ; 45 Return to Select entry 42
 
 
@@ -701,49 +700,49 @@ TABLE_SET_FUNCTIONS_LO
 	.byte 0 ; 6 
 	.byte 0                     ; 7  Return to Option entry 0
 	; (SELECT Laser Restart Menu)
-	.byte <[setLaserRestart-1] ; 8   Regular Laser Auto Restart (Default)
-	.byte <[setLaserRestart-1] ; 9   Short Laser Auto Restart
-	.byte <[setLaserRestart-1] ; 10  Long Laser Auto Restart
-	.byte <[setLaserRestart-1] ; 11  Regular Laser Manual Restart
-	.byte <[setLaserRestart-1] ; 12  Short Laser Manual Restart
-	.byte <[setLaserRestart-1] ; 13  Long Laser Manual Restart
+	.byte <[setGenericExclusiveConfig-1] ; 8   Regular Laser Auto Restart (Default)
+	.byte <[setGenericExclusiveConfig-1] ; 9   Short Laser Auto Restart
+	.byte <[setGenericExclusiveConfig-1] ; 10  Long Laser Auto Restart
+	.byte <[setGenericExclusiveConfig-1] ; 11  Regular Laser Manual Restart
+	.byte <[setGenericExclusiveConfig-1] ; 12  Short Laser Manual Restart
+	.byte <[setGenericExclusiveConfig-1] ; 13  Long Laser Manual Restart
 	.byte 0                     ; 14  Return to Select entry 8
 	; (SELECT Laser Speed Menu)
-	.byte 0 ; setLaserSpeed-1   ; 15  Regular laser speed
-	.byte 0 ; setLaserSpeed-1   ; 16  Fast laser speed (+2)
-	.byte 0 ; setLaserSpeed-1   ; 17  Slow laser speed (-2)
+	.byte <[setGenericExclusiveConfig-1]  ; 15  Regular laser speed
+	.byte <[setGenericExclusiveConfig-1] ; 16  Fast laser speed (+2)
+	.byte <[setGenericExclusiveConfig-1]  ; 17  Slow laser speed (-2)
 	.byte 0                    ; 18 Return to Select entry 15
 	; (SELECT 1NVADER Startup Menu)
-	.byte 0 ; setMSStartSpeed-1 ; 19 1nvader Start Speed 1 (Default)
-	.byte 0 ; setMSStartSpeed-1 ; 20 1nvader Start Speed 3
-	.byte 0 ; setMSStartSpeed-1 ; 21 1nvader Start Speed 5
-	.byte 0 ; setMSStartSpeed-1 ; 22 1nvader Start Speed 7
-	.byte 0 ; setMSStartSpeed-1 ; 23 1nvader Start Speed MAX
+	.byte <[setGenericExclusiveConfig-1] ; 19 1nvader Start Speed 1 (Default)
+	.byte <[setGenericExclusiveConfig-1]; 20 1nvader Start Speed 3
+	.byte <[setGenericExclusiveConfig-1] ; 21 1nvader Start Speed 5
+	.byte <[setGenericExclusiveConfig-1] ; 22 1nvader Start Speed 7
+	.byte <[setGenericExclusiveConfig-1] ; 23 1nvader Start Speed MAX
 	.byte 0                    ; 24 Return to Select entry 19
 	; (SELECT 1NVADER Speedup Menu)
-	.byte 0 ; setMSHitCounter-1 ; 25 1nvader speed up every 10 hits (Default)
-	.byte 0 ; setMSHitCounter-1 ; 26 1nvader speed up every 7 hits
-	.byte 0 ; setMSHitCounter-1 ; 27 1nvader speed up every 5 hits
-	.byte 0 ; setMSHitCounter-1 ; 28 1nvader speed up every 3 hits 
-	.byte 0 ; setMSHitCounter-1 ; 29 1nvader speed up progressive 10,9,8,7,6...
-	.byte 0 ; setMSHitCounter-1 ; 30 1nvader speed up no speedup
+	.byte <[setGenericExclusiveConfig-1] ; 25 1nvader speed up every 10 hits (Default)
+	.byte <[setGenericExclusiveConfig-1] ; 26 1nvader speed up every 7 hits
+	.byte <[setGenericExclusiveConfig-1] ; 27 1nvader speed up every 5 hits
+	.byte <[setGenericExclusiveConfig-1]; 28 1nvader speed up every 3 hits 
+	.byte <[setGenericExclusiveConfig-1] ; 29 1nvader speed up progressive 10,9,8,7,6...
+	.byte <[setGenericExclusiveConfig-1] ; 30 1nvader speed up no speedup
 	.byte 0                    ; 31 Return to Select entry 25
 	; (SELECT 1NVADER Max Speed Menu)
-	.byte 0 ; setMSMaxSpeed-1   ; 32 Max speed 1
-	.byte 0 ; setMSMaxSpeed-1   ; 33 Max speed 3
-	.byte 0 ; setMSMaxSpeed-1   ; 34 Max speed 5
-	.byte 0 ; setMSMaxSpeed-1   ; 35 Max speed MAX (Default)
+	.byte <[setGenericExclusiveConfig-1]  ; 32 Max speed 1
+	.byte <[setGenericExclusiveConfig-1]  ; 33 Max speed 3
+	.byte <[setGenericExclusiveConfig-1]  ; 34 Max speed 5
+	.byte <[setGenericExclusiveConfig-1]   ; 35 Max speed MAX (Default)
 	.byte 0                    ; 36 Return to Select entry 32
 	; (SELECT Two Player Modes Menu)
-	.byte 0 ; set2PMode         ; 37 FR1GULAR - Guns bounce off each other. (Default)
-	.byte 0 ; set2PMode         ; 38 FR1GNORE - Guns do not bounce off each other.
-	.byte 0 ; set2PMode         ; 39 FRENEM1ES - Guns attached to each other.           
-	.byte 0 ; set2PMode         ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.byte <[setGenericExclusiveConfig-1]  ; 37 FR1GULAR - Guns bounce off each other. (Default)
+	.byte <[setGenericExclusiveConfig-1]  ; 38 FR1GNORE - Guns do not bounce off each other.
+	.byte <[setGenericExclusiveConfig-1]     ; 39 FRENEM1ES - Guns attached to each other.           
+	.byte <[setGenericExclusiveConfig-1]    ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
 	.byte 0                    ; 41 Return to Select entry 37
 	; (SELECT Other things Menu)
-	.byte 0 ; setOnesieMode     ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte 0 ; setAllDefaults    ; 43 Reset all values to defaults
-	.byte 0 ; setCheatMode      ; 44 Cheat Mode - 1nvader never reaches bottom row.
+	.byte <[setGenericExclusiveConfig-1]    ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
+	.byte <[setGenericExclusiveConfig-1]    ; 43 Reset all values to defaults
+	.byte <[setGenericExclusiveConfig-1]    ; 44 Cheat Mode - 1nvader never reaches bottom row.
 	.byte 0                    ; 45 Return to Select entry 42
 
 TABLE_SET_FUNCTIONS_HI
@@ -756,61 +755,77 @@ TABLE_SET_FUNCTIONS_HI
 	.byte 0 ; 6 
 	.byte 0                     ; 7  Return to Option entry 0
 	; (SELECT Laser Restart Menu)
-	.byte 0 >[setLaserRestart-1] ; 8   Regular Laser Auto Restart (Default)
-	.byte 0 >[setLaserRestart-1] ; 9   Short Laser Auto Restart
-	.byte 0 >[setLaserRestart-1] ; 10  Long Laser Auto Restart
-	.byte 0 >[setLaserRestart-1] ; 11  Regular Laser Manual Restart
-	.byte 0 >[setLaserRestart-1] ; 12  Short Laser Manual Restart
-	.byte 0 >[setLaserRestart-1] ; 13  Long Laser Manual Restart
+	.byte >[setGenericExclusiveConfig-1] ; 8   Regular Laser Auto Restart (Default)
+	.byte >[setGenericExclusiveConfig-1] ; 9   Short Laser Auto Restart
+	.byte >[setGenericExclusiveConfig-1] ; 10  Long Laser Auto Restart
+	.byte >[setGenericExclusiveConfig-1] ; 11  Regular Laser Manual Restart
+	.byte >[setGenericExclusiveConfig-1] ; 12  Short Laser Manual Restart
+	.byte >[setGenericExclusiveConfig-1] ; 13  Long Laser Manual Restart
 	.byte 0                     ; 14  Return to Select entry 8
 	; (SELECT Laser Speed Menu)
-	.byte 0 ; setLaserSpeed-1   ; 15  Regular laser speed
-	.byte 0 ; setLaserSpeed-1   ; 16  Fast laser speed (+2)
-	.byte 0 ; setLaserSpeed-1   ; 17  Slow laser speed (-2)
+	.byte >[setGenericExclusiveConfig-1]  ; 15  Regular laser speed
+	.byte >[setGenericExclusiveConfig-1] ; 16  Fast laser speed (+2)
+	.byte >[setGenericExclusiveConfig-1]  ; 17  Slow laser speed (-2)
 	.byte 0                    ; 18 Return to Select entry 15
 	; (SELECT 1NVADER Startup Menu)
-	.byte 0 ; setMSStartSpeed-1 ; 19 1nvader Start Speed 1 (Default)
-	.byte 0 ; setMSStartSpeed-1 ; 20 1nvader Start Speed 3
-	.byte 0 ; setMSStartSpeed-1 ; 21 1nvader Start Speed 5
-	.byte 0 ; setMSStartSpeed-1 ; 22 1nvader Start Speed 7
-	.byte 0 ; setMSStartSpeed-1 ; 23 1nvader Start Speed MAX
+	.byte >[setGenericExclusiveConfig-1] ; 19 1nvader Start Speed 1 (Default)
+	.byte >[setGenericExclusiveConfig-1]; 20 1nvader Start Speed 3
+	.byte >[setGenericExclusiveConfig-1] ; 21 1nvader Start Speed 5
+	.byte >[setGenericExclusiveConfig-1] ; 22 1nvader Start Speed 7
+	.byte >[setGenericExclusiveConfig-1] ; 23 1nvader Start Speed MAX
 	.byte 0                    ; 24 Return to Select entry 19
 	; (SELECT 1NVADER Speedup Menu)
-	.byte 0 ; setMSHitCounter-1 ; 25 1nvader speed up every 10 hits (Default)
-	.byte 0 ; setMSHitCounter-1 ; 26 1nvader speed up every 7 hits
-	.byte 0 ; setMSHitCounter-1 ; 27 1nvader speed up every 5 hits
-	.byte 0 ; setMSHitCounter-1 ; 28 1nvader speed up every 3 hits 
-	.byte 0 ; setMSHitCounter-1 ; 29 1nvader speed up progressive 10,9,8,7,6...
-	.byte 0 ; setMSHitCounter-1 ; 30 1nvader speed up no speedup
+	.byte >[setGenericExclusiveConfig-1] ; 25 1nvader speed up every 10 hits (Default)
+	.byte >[setGenericExclusiveConfig-1] ; 26 1nvader speed up every 7 hits
+	.byte >[setGenericExclusiveConfig-1] ; 27 1nvader speed up every 5 hits
+	.byte >[setGenericExclusiveConfig-1]; 28 1nvader speed up every 3 hits 
+	.byte >[setGenericExclusiveConfig-1] ; 29 1nvader speed up progressive 10,9,8,7,6...
+	.byte >[setGenericExclusiveConfig-1] ; 30 1nvader speed up no speedup
 	.byte 0                    ; 31 Return to Select entry 25
 	; (SELECT 1NVADER Max Speed Menu)
-	.byte 0 ; setMSMaxSpeed-1   ; 32 Max speed 1
-	.byte 0 ; setMSMaxSpeed-1   ; 33 Max speed 3
-	.byte 0 ; setMSMaxSpeed-1   ; 34 Max speed 5
-	.byte 0 ; setMSMaxSpeed-1   ; 35 Max speed MAX (Default)
+	.byte >[setGenericExclusiveConfig-1]  ; 32 Max speed 1
+	.byte >[setGenericExclusiveConfig-1]  ; 33 Max speed 3
+	.byte >[setGenericExclusiveConfig-1]  ; 34 Max speed 5
+	.byte >[setGenericExclusiveConfig-1]   ; 35 Max speed MAX (Default)
 	.byte 0                    ; 36 Return to Select entry 32
 	; (SELECT Two Player Modes Menu)
-	.byte 0 ; set2PMode         ; 37 FR1GULAR - Guns bounce off each other. (Default)
-	.byte 0 ; set2PMode         ; 38 FR1GNORE - Guns do not bounce off each other.
-	.byte 0 ; set2PMode         ; 39 FRENEM1ES - Guns attached to each other.           
-	.byte 0 ; set2PMode         ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.byte >[setGenericExclusiveConfig-1]  ; 37 FR1GULAR - Guns bounce off each other. (Default)
+	.byte >[setGenericExclusiveConfig-1]  ; 38 FR1GNORE - Guns do not bounce off each other.
+	.byte >[setGenericExclusiveConfig-1]     ; 39 FRENEM1ES - Guns attached to each other.           
+	.byte >[setGenericExclusiveConfig-1]    ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
 	.byte 0                    ; 41 Return to Select entry 37
 	; (SELECT Other things Menu)
-	.byte 0 ; setOnesieMode     ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte 0 ; setAllDefaults    ; 43 Reset all values to defaults
-	.byte 0 ; setCheatMode      ; 44 Cheat Mode - 1nvader never reaches bottom row.
+	.byte >[setGenericExclusiveConfig-1]    ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
+	.byte >[setGenericExclusiveConfig-1]    ; 43 Reset all values to defaults
+	.byte >[setGenericExclusiveConfig-1]    ; 44 Cheat Mode - 1nvader never reaches bottom row.
 	.byte 0                    ; 45 Return to Select entry 42
 
 
 
-; Laser Restart: 0= regular height, 1=short height, 2= long height, then $00= manual, $80=Automatic
+; The Actual Variables that hold the currently configured values.
 
-CONFIG_LASER_RESTART .byte $00
+gConfigLaserRestart      .byte $00
+
+gConfigLaserSpeed        .byte $00
+
+gConfig1nvaderStartSpeed .byte $01
+
+gConfig1nvaderHitCounter .byte 10
+
+gConfig1nvaderMaxSpeed   .byte 9
+
+gConfigTwoPlayerMode     .byte $00
+
+gConfigOnesieMode        .byte $00
+
+gConfigSetAllDefaults    .byte $00 ; A variable still needed for the custom Set code.
+
+gConfigCheatMode         .byte $00
 
 
-; Data/Flag passed to routine to set the value or match the current value.
+; Address Pointers to the config variable associated to each menu item. 
 
-TABLE_OPTION_ARGUMENTS
+TABLE_CONFIG_ADDRESS_LO
 	.byte 0 ; 0
 	.byte 0 ; 1 
 	.byte 0 ; 2
@@ -818,52 +833,166 @@ TABLE_OPTION_ARGUMENTS
 	.byte 0 ; 4
 	.byte 0 ; 5
 	.byte 0 ; 6 
-	.byte 0                        ; 7  Return to Option entry 0
+	.byte 0                     ; 7  Return to Option entry 0
 	; (SELECT Laser Restart Menu)
-	.byte $00   ; setLaserRestart-1  ; 8   Regular Laser Auto Restart (Default)
-	.byte $01   ; setLaserRestart-1  ; 9   Short Laser Auto Restart
-	.byte $02   ; setLaserRestart-1  ; 10  Long Laser Auto Restart
-	.byte $80 ; setLaserRestart-1  ; 11  Regular Laser Manual Restart
-	.byte $81 ; setLaserRestart-1  ; 12  Short Laser Manual Restart
-	.byte $82 ; setLaserRestart-1  ; 13  Long Laser Manual Restart
-	.byte 0                        ; 14  Return to Select entry 8
+	.byte <gConfigLaserRestart ; 8   Regular Laser Auto Restart (Default)
+	.byte <gConfigLaserRestart ; 9   Short Laser Auto Restart
+	.byte <gConfigLaserRestart ; 10  Long Laser Auto Restart
+	.byte <gConfigLaserRestart ; 11  Regular Laser Manual Restart
+	.byte <gConfigLaserRestart ; 12  Short Laser Manual Restart
+	.byte <gConfigLaserRestart ; 13  Long Laser Manual Restart
+	.byte 0                     ; 14  Return to Select entry 8
 	; (SELECT Laser Speed Menu)
-	.byte $00 ; setLaserSpeed-1   ; 15  Regular laser speed
-	.byte $01 ; setLaserSpeed-1   ; 16  Fast laser speed (+2)
-	.byte $02 ; setLaserSpeed-1   ; 17  Slow laser speed (-2)
+	.byte <gConfigLaserSpeed   ; 15  Regular laser speed
+	.byte <gConfigLaserSpeed    ; 16  Fast laser speed (+2)
+	.byte <gConfigLaserSpeed    ; 17  Slow laser speed (-2)
 	.byte 0                    ; 18 Return to Select entry 15
 	; (SELECT 1NVADER Startup Menu)
-	.byte $01 ; setMSStartSpeed-1 ; 19 1nvader Start Speed 1 (Default)
-	.byte $03 ; setMSStartSpeed-1 ; 20 1nvader Start Speed 3
-	.byte $05 ; setMSStartSpeed-1 ; 21 1nvader Start Speed 5
-	.byte $07 ; setMSStartSpeed-1 ; 22 1nvader Start Speed 7
-	.byte $09 ; setMSStartSpeed-1 ; 23 1nvader Start Speed MAX
+	.byte <gConfig1nvaderStartSpeed ; 19 1nvader Start Speed 1 (Default)
+	.byte <gConfig1nvaderStartSpeed ; 20 1nvader Start Speed 3
+	.byte <gConfig1nvaderStartSpeed ; 21 1nvader Start Speed 5
+	.byte <gConfig1nvaderStartSpeed ; 22 1nvader Start Speed 7
+	.byte <gConfig1nvaderStartSpeed ; 23 1nvader Start Speed MAX
 	.byte 0                    ; 24 Return to Select entry 19
 	; (SELECT 1NVADER Speedup Menu)
-	.byte 10  ; setMSHitCounter-1 ; 25 1nvader speed up every 10 hits (Default)
-	.byte 7   ; setMSHitCounter-1 ; 26 1nvader speed up every 7 hits
-	.byte 5   ; setMSHitCounter-1 ; 27 1nvader speed up every 5 hits
-	.byte 3   ; setMSHitCounter-1 ; 28 1nvader speed up every 3 hits 
-	.byte 128 ; setMSHitCounter-1 ; 29 1nvader speed up progressive 10,9,8,7,6...
-	.byte 0   ; setMSHitCounter-1 ; 30 1nvader speed up no speedup
+	.byte <gConfig1nvaderHitCounter ; 25 1nvader speed up every 10 hits (Default)
+	.byte <gConfig1nvaderHitCounter ; 26 1nvader speed up every 7 hits
+	.byte <gConfig1nvaderHitCounter ; 27 1nvader speed up every 5 hits
+	.byte <gConfig1nvaderHitCounter ; 28 1nvader speed up every 3 hits 
+	.byte <gConfig1nvaderHitCounter ; 29 1nvader speed up progressive 10,9,8,7,6...
+	.byte <gConfig1nvaderHitCounter ; 30 1nvader speed up no speedup
 	.byte 0                    ; 31 Return to Select entry 25
 	; (SELECT 1NVADER Max Speed Menu)
-	.byte $01 ; setMSMaxSpeed-1   ; 32 Max speed 1
-	.byte $03 ; setMSMaxSpeed-1   ; 33 Max speed 3
-	.byte $05 ; setMSMaxSpeed-1   ; 34 Max speed 5
-	.byte $09 ; setMSMaxSpeed-1   ; 35 Max speed MAX (Default)
+	.byte <gConfig1nvaderMaxSpeed   ; 32 Max speed 1
+	.byte <gConfig1nvaderMaxSpeed   ; 33 Max speed 3
+	.byte <gConfig1nvaderMaxSpeed  ; 34 Max speed 5
+	.byte <gConfig1nvaderMaxSpeed   ; 35 Max speed MAX (Default)
 	.byte 0                    ; 36 Return to Select entry 32
 	; (SELECT Two Player Modes Menu)
-	.byte $00 ; set2PMode         ; 37 FR1GULAR - Guns bounce off each other. (Default)
-	.byte $01 ; set2PMode         ; 38 FR1GNORE - Guns do not bounce off each other.
-	.byte $02 ; set2PMode         ; 39 FRENEM1ES - Guns attached to each other.           
-	.byte $03 ; set2PMode         ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.byte <gConfigTwoPlayerMode        ; 37 FR1GULAR - Guns bounce off each other. (Default)
+	.byte <gConfigTwoPlayerMode        ; 38 FR1GNORE - Guns do not bounce off each other.
+	.byte <gConfigTwoPlayerMode        ; 39 FRENEM1ES - Guns attached to each other.           
+	.byte <gConfigTwoPlayerMode       ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
 	.byte 0                    ; 41 Return to Select entry 37
 	; (SELECT Other things Menu)
-	.byte 0 ; setOnesieMode     ; 42 TOGGLE - ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte 0 ; setAllDefaults    ; 43 Reset all values to defaults
-	.byte 0 ; setCheatMode      ; 44 TOGGLE - Cheat Mode - 1nvader never reaches bottom row.
+	.byte <gConfigOnesieMode   ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
+	.byte <gConfigSetAllDefaults    ; 43 Reset all values to defaults
+	.byte <gConfigCheatMode      ; 44 Cheat Mode - 1nvader never reaches bottom row.
 	.byte 0                    ; 45 Return to Select entry 42
+
+TABLE_CONFIG_ADDRESS_HI
+	.byte 0 ; 0
+	.byte 0 ; 1 
+	.byte 0 ; 2
+	.byte 0 ; 3 
+	.byte 0 ; 4
+	.byte 0 ; 5
+	.byte 0 ; 6 
+	.byte 0                     ; 7  Return to Option entry 0
+	; (SELECT Laser Restart Menu)
+	.byte >gConfigLaserRestart ; 8   Regular Laser Auto Restart (Default)
+	.byte >gConfigLaserRestart ; 9   Short Laser Auto Restart
+	.byte >gConfigLaserRestart ; 10  Long Laser Auto Restart
+	.byte >gConfigLaserRestart ; 11  Regular Laser Manual Restart
+	.byte >gConfigLaserRestart ; 12  Short Laser Manual Restart
+	.byte >gConfigLaserRestart ; 13  Long Laser Manual Restart
+	.byte 0                     ; 14  Return to Select entry 8
+	; (SELECT Laser Speed Menu)
+	.byte >gConfigLaserSpeed    ; 15  Regular laser speed
+	.byte >gConfigLaserSpeed    ; 16  Fast laser speed (+2)
+	.byte >gConfigLaserSpeed    ; 17  Slow laser speed (-2)
+	.byte 0                    ; 18 Return to Select entry 15
+	; (SELECT 1NVADER Startup Menu)
+	.byte >gConfig1nvaderStartSpeed ; 19 1nvader Start Speed 1 (Default)
+	.byte >gConfig1nvaderStartSpeed ; 20 1nvader Start Speed 3
+	.byte >gConfig1nvaderStartSpeed ; 21 1nvader Start Speed 5
+	.byte >gConfig1nvaderStartSpeed ; 22 1nvader Start Speed 7
+	.byte >gConfig1nvaderStartSpeed ; 23 1nvader Start Speed MAX
+	.byte 0                    ; 24 Return to Select entry 19
+	; (SELECT 1NVADER Speedup Menu)
+	.byte >gConfig1nvaderHitCounter ; 25 1nvader speed up every 10 hits (Default)
+	.byte >gConfig1nvaderHitCounter ; 26 1nvader speed up every 7 hits
+	.byte >gConfig1nvaderHitCounter ; 27 1nvader speed up every 5 hits
+	.byte >gConfig1nvaderHitCounter ; 28 1nvader speed up every 3 hits 
+	.byte >gConfig1nvaderHitCounter ; 29 1nvader speed up progressive 10,9,8,7,6...
+	.byte >gConfig1nvaderHitCounter ; 30 1nvader speed up no speedup
+	.byte 0                    ; 31 Return to Select entry 25
+	; (SELECT 1NVADER Max Speed Menu)
+	.byte >gConfig1nvaderMaxSpeed   ; 32 Max speed 1
+	.byte >gConfig1nvaderMaxSpeed   ; 33 Max speed 3
+	.byte >gConfig1nvaderMaxSpeed  ; 34 Max speed 5
+	.byte >gConfig1nvaderMaxSpeed   ; 35 Max speed MAX (Default)
+	.byte 0                    ; 36 Return to Select entry 32
+	; (SELECT Two Player Modes Menu)
+	.byte >gConfigTwoPlayerMode        ; 37 FR1GULAR - Guns bounce off each other. (Default)
+	.byte >gConfigTwoPlayerMode        ; 38 FR1GNORE - Guns do not bounce off each other.
+	.byte >gConfigTwoPlayerMode        ; 39 FRENEM1ES - Guns attached to each other.           
+	.byte >gConfigTwoPlayerMode       ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.byte 0                    ; 41 Return to Select entry 37
+	; (SELECT Other things Menu)
+	.byte >gConfigOnesieMode  ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
+	.byte >gConfigSetAllDefaults   ; 43 Reset all values to defaults
+	.byte >gConfigCheatMode    ; 44 Cheat Mode - 1nvader never reaches bottom row.
+	.byte 0                    ; 45 Return to Select entry 42
+
+
+
+; Data/Flag passed to routine to set the value or match the current value.
+
+TABLE_OPTION_ARGUMENTS
+	.byte 0   ; 0
+	.byte 0   ; 1 
+	.byte 0   ; 2
+	.byte 0   ; 3 
+	.byte 0   ; 4
+	.byte 0   ; 5
+	.byte 0   ; 6 
+	.byte 0                              ; 7  Return to Option entry 0
+	; (SELECT Laser Restart Menu)
+	.byte $00 ; gConfigLaserRestart      ; 8   Regular Laser Auto Restart (Default)
+	.byte $01 ; gConfigLaserRestart      ; 9   Short Laser Auto Restart
+	.byte $02 ; gConfigLaserRestart      ; 10  Long Laser Auto Restart
+	.byte $80 ; gConfigLaserRestart      ; 11  Regular Laser Manual Restart
+	.byte $81 ; gConfigLaserRestart      ; 12  Short Laser Manual Restart
+	.byte $82 ; gConfigLaserRestart      ; 13  Long Laser Manual Restart
+	.byte 0                              ; 14  Return to Select entry 8
+	; (SELECT Laser Speed Menu)
+	.byte $00 ; gConfigLaserSpeed        ; 15  Regular laser speed (Default)
+	.byte $01 ; gConfigLaserSpeed        ; 16  Fast laser speed (+2)
+	.byte $02 ; gConfigLaserSpeed        ; 17  Slow laser speed (-2)
+	.byte 0                              ; 18 Return to Select entry 15
+	; (SELECT 1NVADER Startup Menu)
+	.byte $01 ; gConfig1nvaderStartSpeed ; 19 1nvader Start Speed 1 (Default)
+	.byte $03 ; gConfig1nvaderStartSpeed ; 20 1nvader Start Speed 3
+	.byte $05 ; gConfig1nvaderStartSpeed ; 21 1nvader Start Speed 5
+	.byte $07 ; gConfig1nvaderStartSpeed ; 22 1nvader Start Speed 7
+	.byte $09 ; gConfig1nvaderStartSpeed ; 23 1nvader Start Speed MAX
+	.byte 0                              ; 24 Return to Select entry 19
+	; (SELECT 1NVADER Speedup Menu)
+	.byte 10  ; gConfig1nvaderHitCounter ; 25 1nvader speed up every 10 hits (Default)
+	.byte 7   ; gConfig1nvaderHitCounter ; 26 1nvader speed up every 7 hits
+	.byte 5   ; gConfig1nvaderHitCounter ; 27 1nvader speed up every 5 hits
+	.byte 3   ; gConfig1nvaderHitCounter ; 28 1nvader speed up every 3 hits 
+	.byte 128 ; gConfig1nvaderHitCounter ; 29 1nvader speed up progressive 10,9,8,7,6...
+	.byte 0   ; gConfig1nvaderHitCounter ; 30 1nvader speed up no speedup
+	.byte 0                              ; 31 Return to Select entry 25
+	; (SELECT 1NVADER Max Speed Menu)
+	.byte $01 ; gConfig1nvaderMaxSpeed   ; 32 Max speed 1
+	.byte $03 ; gConfig1nvaderMaxSpeed   ; 33 Max speed 3
+	.byte $05 ; gConfig1nvaderMaxSpeed   ; 34 Max speed 5
+	.byte $09 ; gConfig1nvaderMaxSpeed   ; 35 Max speed MAX (Default)
+	.byte 0                              ; 36 Return to Select entry 32
+	; (SELECT Two Player Modes Menu)
+	.byte $00 ; gConfigTwoPlayerMode     ; 37 FR1GULAR - Guns bounce off each other. (Default)
+	.byte $01 ; gConfigTwoPlayerMode     ; 38 FR1GNORE - Guns do not bounce off each other.
+	.byte $02 ; gConfigTwoPlayerMode     ; 39 FRENEM1ES - Guns attached to each other.           
+	.byte $03 ; gConfigTwoPlayerMode     ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.byte 0                              ; 41 Return to Select entry 37
+	; (SELECT Other things Menu)
+	.byte 0   ; gConfigOnesieMode        ; 42 TOGGLE - ONES1ES - 2P take turns shooting. (Default - Off)
+	.byte 0   ; gConfigSetAllDefaults    ; 43 Reset all values to defaults
+	.byte 0   ; gConfigCheatMode         ; 44 TOGGLE - Cheat Mode - 1nvader never reaches bottom row.
+	.byte 0                              ; 45 Return to Select entry 42
 
 
 ; ==========================================================================

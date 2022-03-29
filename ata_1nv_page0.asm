@@ -27,6 +27,11 @@ zMemSet_Dst
 zMemCpy_Dst .word $0000
 
 
+; Menumatic ==================================================================
+
+zMenuConfigAddress     .word $0000 ; Address the generic code uses to get the current menu's configurable variable.
+
+
 ; Game State Control Values ==================================================
 
 zCurrentEvent      .byte $00 ; Global Current Game Behavior.
