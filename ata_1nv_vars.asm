@@ -330,6 +330,7 @@ gCurrentMenuText  .word 0 ; pointer to text for the menu
 ; SELECT entries point to *function() to set/unset item.
 ; --------------------------------------------------------------------------
 
+
 ; Where to go from OPTION when SELECT is pressed...
 
 TABLE_OPTIONS_SELECTMENUS
@@ -816,11 +817,11 @@ gConfig1nvaderMaxSpeed   .byte 9
 
 gConfigTwoPlayerMode     .byte $00
 
-gConfigOnesieMode        .byte $00
+gConfigOnesieMode        .byte $00 ; Toggle on/off
 
 gConfigSetAllDefaults    .byte $00 ; A variable still needed for the custom Set code.
 
-gConfigCheatMode         .byte $00
+gConfigCheatMode         .byte $00 
 
 
 ; Address Pointers to the config variable associated to each menu item. 
