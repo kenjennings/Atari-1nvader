@@ -88,10 +88,12 @@ DL_LMS_SCROLL_DOCS = [ * + 1 ]
 	mDL_LMS   DL_TEXT_6|DL_HSCROLL,GFX_SCROLL_DOCS          ; 15 (136 - 143) (6) Fine scrolling docs
 
 	mDL_BLANK DL_BLANK_4|DL_DLI                             ; 16 (144 - 147) Blank 4 (DLI 4.5 -- COLPF0/1/2 options) and options docs.
+; MENUTASTIC GFX ASSET ==================================================================
 DL_LMS_OPTION = [ * + 1 ]   
 	mDL_LMS   DL_TEXT_6,GFX_OPTION_LEFT                     ; 17 (148 - 155) (6) Options name
 DL_LMS_OPTION_TEXT = [ * + 1 ]  
 	mDL_LMS   DL_TEXT_2,GFX_OPTION_TEXT_LEFT                ; 18 (156 - 163) (2) Options documentation
+; MENUTASTIC GFX ASSET ==================================================================
 	mDL_BLANK DL_BLANK_1                                    ; 16 (164 - 164) Blank 1
 
 
@@ -301,6 +303,8 @@ GFX_SCROLL_CREDIT2; 20 + 11 + 20 == 51
 	.align $0100
 
 
+; MENUTASTIC GFX ASSET ==================================================================
+;
 ; --------------------------------------------------------------------------
 ; OPTION key menu text.
 ; Press OPTION to show choices.
@@ -336,187 +340,7 @@ GFX_OPTION_TEXT_LEFT
 	.sb +$40,"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" ; 40 for left side.
 GFX_OPTION_TEXT_RIGHT
 	.sb +$40,"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" ; another 40 blanks to allow the description to scroll right to left
-
-
-	.align $0100
-
-
-GFX_OPTION_1                 ; OPTION MENUS
-	.sb "LASER RESTART MENU  "
-GFX_OPTION_2
-	.sb "LASER SPEED MENU    "
-GFX_OPTION_3
-	.sb "1NVADER STARTUP MENU"
-GFX_OPTION_4
-	.sb "1NVADER SPEEDUP MENU"
-GFX_OPTION_5
-	.sb "1NVADER SPEED MENU  "
-GFX_OPTION_6
-	.sb "TWO PLAYER MENU     "
-GFX_OPTION_7
-	.sb "OTHER STUFF MENU    "
-
-GFX_OPTION_1_TEXT
-	.sb +$40,"SET@THE@HEIGHT@THE@LASER@CAN@RESTART@@@@"
-GFX_OPTION_2_TEXT
-	.sb +$40,"SET@THE@SPEED@OF@THE@LASER@SHOTS@@@@@@@@"
-GFX_OPTION_3_TEXT
-	.sb +$40,"SET@THE@START@SPEED@FOR@THE@1NVADER@@@@@"
-GFX_OPTION_4_TEXT
-	.sb +$40,"SET@THE@NUMBER@OF@HITS@FOR@SPEEDUP@@@@@@"
-GFX_OPTION_5_TEXT
-	.sb +$40,"SET@THE@MAX@SPEED@OF@1NVADER@@@@@@@@@@@@"
-GFX_OPTION_6_TEXT
-	.sb +$40,"CHOOSE@THE@TWO@PLAYER@GAME@MODE@@@@@@@@@"
-GFX_OPTION_7_TEXT
-	.sb +$40,"MISCELLANEOUS@OTHER@THINGS@@@@@@@@@@@@@@" 
-
-
-GFX_MENU_1_1                 ; SELECT Laser Restart Menu
-	.sb "MID AUTO SHOT       "
-GFX_MENU_1_2
-	.sb "SHORT AUTO SHOT     "
-GFX_MENU_1_3
-	.sb "FAR AUTO SHOT       "
-GFX_MENU_1_4
-	.sb "MID SHOT            "
-GFX_MENU_1_5
-	.sb "SHORT SHOT          "
-GFX_MENU_1_6
-	.sb "FAR SHOT            "
-
-GFX_MENU_1_1_TEXT
-	.sb +$40,"AUTO@RESTART@LASER@HALF@WAY@UP@SCREEN@@@"
-GFX_MENU_1_2_TEXT
-	.sb +$40,"AUTO@RESTART@LASER@NEAR@BOTTOM@OF@SCREEN"
-GFX_MENU_1_3_TEXT
-	.sb +$40,"AUTO@RESTART@LASER@NEAR@TOP@OF@SCREEN@@@"
-GFX_MENU_1_4_TEXT
-	.sb +$40,"MUST@RELEASE@BUTTON@TO@RESTART@LASER@@@@"
-GFX_MENU_1_5_TEXT
-	.sb +$40,"MUST@RELEASE@BUTTON@TO@RESTART@LASER@@@@"
-GFX_MENU_1_6_TEXT
-	.sb +$40,"MUST@RELEASE@BUTTON@TO@RESTART@LASER@@@@"
- 
-GFX_MENU_2_1                 ; SELECT Laser Speed Menu
-	.sb "REGULAR LASERS      "
-GFX_MENU_2_2 
-	.sb "FAST LASERS         "
-GFX_MENU_2_3 
-	.sb "SLOW LASERS         "
-
-GFX_MENU_2_1_TEXT
-	.sb +$40,"THE@NORMAL@DEFAULT@SPEED@FOR@LASERS@@@@@"
-GFX_MENU_2_2_TEXT
-	.sb +$40,"FASTER@LASERS@MAY@NOT@HELP@SO@MUCH@@@@@@"
-GFX_MENU_2_3_TEXT
-	.sb +$40,"PAINFULLY@SLOW@LASERS@@@@@@@@@@@@@@@@@@@"
-
-
-GFX_MENU_3_1                 ; SELECT 1NVADER Startup Menu
-	.sb "REGULAR START 1     "
-GFX_MENU_3_2 
-	.sb "START AT 3          "
-GFX_MENU_3_3 
-	.sb "START AT 5          "
-GFX_MENU_3_4 
-	.sb "START AT 7          "
-GFX_MENU_3_5 
-	.sb "START AT MAX        "
-
-GFX_MENU_3_1_TEXT
-	.sb +$40,"NORMAL@DEFAULT@1NVADER@START@SPEED@@@@@@"
-GFX_MENU_3_2_TEXT
-	.sb +$40,"1NVADER@STARTS@AT@SPEED@3@@@@@@@@@@@@@@@"
-GFX_MENU_3_3_TEXT
-	.sb +$40,"1NVADER@STARTS@AT@SPEED@5@@@@@@@@@@@@@@@"
-GFX_MENU_3_4_TEXT
-	.sb +$40,"1NVADER@STARTS@AT@SPEED@7@@@@@@@@@@@@@@@"
-GFX_MENU_3_5_TEXT
-	.sb +$40,"1NVADER@AT@MAXIMUM@SPEED@LIKE@A@BOSS@@@@"
-
-
-GFX_MENU_4_1                 ; SELECT 1NVADER Speedup Menu
-	.sb "EVERY 10 HITS       "
-GFX_MENU_4_2
-	.sb "EVERY 7 HITS        "
-GFX_MENU_4_3
-	.sb "EVERY 5 HITS        "
-GFX_MENU_4_4
-	.sb "EVERY 3 HITS        "
-GFX_MENU_4_5
-	.sb "EVERY 10,9,8...     "
-GFX_MENU_4_6
-	.sb "NO SPEEDUP          "
-
-GFX_MENU_4_1_TEXT
-	.sb +$40,"DEFAULT@"
-	.byte GAME_HYPHEN_CHAR
-	.sb +$40,"@SPEEDUP@EVERY@TEN@HITS@@@@@@@@"
-GFX_MENU_4_2_TEXT
-	.sb +$40,"SPEED@UP@EVERY@SEVEN@HITS@@@@@@@@@@@@@@@"
-GFX_MENU_4_3_TEXT
-	.sb +$40,"SPEED@UP@EVERY@FIVE@HITS@@@@@@@@@@@@@@@@"
-GFX_MENU_4_4_TEXT
-	.sb +$40,"SPEED@UP@EVERY@THREE@HITS@@@@@@@@@@@@@@@"
-GFX_MENU_4_5_TEXT
-	.sb +$40,"PROGRESSIVELY@FEWER@SHOTS@PER@INCRMENT@@"
-GFX_MENU_4_6_TEXT
-	.sb +$40,"REMAIN@AT@STARTUP@SPEED@@@@@@@@@@@@@@@@@"
-
-
-GFX_MENU_5_1                 ; SELECT 1NVADER Max Speed Menu
-	.sb "1NVADER SPEED 1     "
-GFX_MENU_5_2               
-	.sb "1NVADER SPEED 3     "
-GFX_MENU_5_3               
-	.sb "1NVADER SPEED 5     "
-GFX_MENU_5_4               
-	.sb "MAXIMUM SPEED       "
-
-GFX_MENU_5_1_TEXT
-	.sb +$40,"SLOWEST@MAXIMUM@SPEED@@@@@@@@@@@@@@@@@@@"
-GFX_MENU_5_2_TEXT
-	.sb +$40,"SPEEDUP@TO@THREE@@@@@@@@@@@@@@@@@@@@@@@@"
-GFX_MENU_5_3_TEXT
-	.sb +$40,"SPEEDUP@TO@FIVE@@@@@@@@@@@@@@@@@@@@@@@@@"
-GFX_MENU_5_4_TEXT
-	.sb +$40,"UP@TO@MAXIMUM@SPEED@@@@@@@@@@@@@@@@@@@@@"
-
-
-GFX_MENU_6_1                   ; SELECT Two Player Modes Menu
-	.sb "FR1GULAR            " ; guns bounce
-GFX_MENU_6_2 
-	.sb "FR1GNORE            " ; guns ignore each other
-GFX_MENU_6_3                 
-	.sb "FRENEM1ES           " ; Attached to each other
-GFX_MENU_6_4 
-	.sb "FRE1GHBORS          " ; Separated in center
-
-GFX_MENU_6_1_TEXT
-	.sb +$40,"GUNS@BOUNCE@OFF@EACH@OTHER@@@@@@@@@@@@@@"
-GFX_MENU_6_2_TEXT
-	.sb +$40,"GUNS@IGNORE@EACH@OTHER@@@@@@@@@@@@@@@@@@"
-GFX_MENU_6_3_TEXT
-	.sb +$40,"GUNS@ARE@ATTACHED@TO@EACH@OTHER@@@@@@@@@"
-GFX_MENU_6_4_TEXT
-	.sb +$40,"STAY@IN@YOUR@OWN@YARD@AND@OFF@MY@LAWN@@@"
-
-
-GFX_MENU_7_1                   ; SELECT Other things Menu
-	.sb "ONES1ES             " ; 2P - Take turns shooting
-GFX_MENU_7_2 
-	.sb "RESET ALL           " ; Return all game value to default
-GFX_MENU_7_3 
-	.sb "CHEAT MODE          " ; Alien never reaches bottom.
-
-GFX_MENU_7_1_TEXT
-	.sb +$40,"TWO@PLAYERS@TAKE@TURNS@SHOOTING@@@@@@@@@"
-GFX_MENU_7_2_TEXT
-	.sb +$40,"RESTORE@ALL@SETTINGS@TO@DEFAULTS@@@@@@@@"
-GFX_MENU_7_3_TEXT
-	.sb +$40,"ALIEN@NEVER@REACHES@BOTTOM@@@@@@U@R@LAME"
-
+; MENUTASTIC GFX ASSET ==================================================================
 
 
 	.align $0100

@@ -370,23 +370,14 @@ b_mdv_EndDocsScrolling
 
 
 ; ======== 6) MANAGE OPTION, SELECT, START MENUS ========
+; MENUTASTIC ============================================================================
 
-; gOSS_ScrollState  .byte 0 ; Status of scrolling behavior.  1= scrolling. 0= no scroll. -1 scroll just stopped. 
-;
-; gOSS_Mode         .byte 0 ; 0 is Off.  -1 option menu.  +1 is select menu.
-;
-; gOSS_Timer        .byte 0 ; Counts to wait for text.   If no input when this reaches 0, then erase menu.
-;
-; gCurrentOption    .byte 0 ; Remember OPTION we looked at last.
-;
-; gCurrentSelect    .byte 0 ; Remember SELECT entery we looked at last.
-;
-; gCurrentMenuEntry .byte 0 ; Menu entry number for Option and Select.
-;
-; gCurrentMenuText  .word 0 ; pointer to text for the menu 
+; 1) If menu is in motion, continue the motion.  End.
+; 2) If menu is not in motion, collect input from Option/Select/Start keys
+; 3) If there is input, restart the input timer.
+; 4) If there is no input, decrement the input timer.  End.
 
-; 1) If menu is in motion, continue the motion.
-; 2) If motion ends here, then set the menu delay timer.
+;	jsr vbi_ManageMenutastic  ; Does all of what is below.
 
 b_mdv_ManageMenus
 
@@ -407,6 +398,8 @@ b_mdv_GoodConsoleInput
 	sta gOSS_Timer              ; of it.  Restart the timer in case, but not at #255 which is special.
 
 b_mdv_EndManageMenus
+
+; MENUTASTIC ============================================================================
 
 
 ; ======== 7) MANAGE TERRAIN SCROLLING ========
