@@ -72,6 +72,17 @@ MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on re
 ;          MENU_ONDISPLAY ID.  (Display On/OFF)
 ; --------------------------------------------------------------------------
 
+; OFFSET values for structure.
+;
+; e.g.   lda [TABLE_CONFIG_VARIABLE+CONFIG_VAR_VALUE],X  
+; where  X  is the variable number * 8.  (See CONFIG_* below).
+
+CONFIG_VAR_VALUE     = 0
+CONFIG_VAR_DEFAULT   = 1
+CONFIG_VAR_SETVALUE  = 2
+CONFIG_VAR_CMPVALUE  = 4
+CONFIG_VAR_ONDISPLAY = 6
+
 ; Declare all the User's variables....
 
 TABLE_CONFIG_VARIABLES
@@ -174,181 +185,224 @@ gConfigCheatMode
 ;
 ; Presenting options and descriptions is done by copying the text declared 
 ; below into the scrolling buffer.
+; 
+; The first 20 bytes is the line of Mode 6 Menu Title text.   
+; The next 40 bytes is a line of Mode 2 text for more verbose description.
+;
 ; --------------------------------------------------------------------------
 
-GFX_OPTION_1                 ; OPTION MENUS
-	.sb "LASER RESTART MENU  "
-GFX_OPTION_2
-	.sb "LASER SPEED MENU    "
-GFX_OPTION_3
-	.sb "1NVADER STARTUP MENU"
-GFX_OPTION_4
-	.sb "1NVADER SPEEDUP MENU"
-GFX_OPTION_5
-	.sb "1NVADER SPEED MENU  "
-GFX_OPTION_6
-	.sb "TWO PLAYER MENU     "
-GFX_OPTION_7
-	.sb "OTHER STUFF MENU    "
+; OPTION MENUS ================================================
 
+GFX_OPTION_1                 
+	.sb "LASER RESTART MENU  "
 GFX_OPTION_1_TEXT
 	.sb +$40,"SET@THE@HEIGHT@THE@LASER@CAN@RESTART@@@@"
+
+GFX_OPTION_2
+	.sb "LASER SPEED MENU    "
 GFX_OPTION_2_TEXT
 	.sb +$40,"SET@THE@SPEED@OF@THE@LASER@SHOTS@@@@@@@@"
+
+GFX_OPTION_3
+	.sb "1NVADER STARTUP MENU"
 GFX_OPTION_3_TEXT
 	.sb +$40,"SET@THE@START@SPEED@FOR@THE@1NVADER@@@@@"
+
+GFX_OPTION_4
+	.sb "1NVADER SPEEDUP MENU"
 GFX_OPTION_4_TEXT
 	.sb +$40,"SET@THE@NUMBER@OF@HITS@FOR@SPEEDUP@@@@@@"
+
+GFX_OPTION_5
+	.sb "1NVADER SPEED MENU  "
 GFX_OPTION_5_TEXT
 	.sb +$40,"SET@THE@MAX@SPEED@OF@1NVADER@@@@@@@@@@@@"
+
+GFX_OPTION_6
+	.sb "TWO PLAYER MENU     "
 GFX_OPTION_6_TEXT
 	.sb +$40,"CHOOSE@THE@TWO@PLAYER@GAME@MODE@@@@@@@@@"
+
+GFX_OPTION_7
+	.sb "OTHER STUFF MENU    "
 GFX_OPTION_7_TEXT
 	.sb +$40,"MISCELLANEOUS@OTHER@THINGS@@@@@@@@@@@@@@" 
 
 
-GFX_MENU_1_1                 ; SELECT Laser Restart Menu
-	.sb "MID AUTO SHOT       "
-GFX_MENU_1_2
-	.sb "SHORT AUTO SHOT     "
-GFX_MENU_1_3
-	.sb "FAR AUTO SHOT       "
-GFX_MENU_1_4
-	.sb "MID SHOT            "
-GFX_MENU_1_5
-	.sb "SHORT SHOT          "
-GFX_MENU_1_6
-	.sb "FAR SHOT            "
+; SELECT Laser Restart Menu ===================================
 
+GFX_MENU_1_1                 
+	.sb "MID AUTO SHOT       "
 GFX_MENU_1_1_TEXT
 	.sb +$40,"AUTO@RESTART@LASER@HALF@WAY@UP@SCREEN@@@"
+
+GFX_MENU_1_2
+	.sb "SHORT AUTO SHOT     "
 GFX_MENU_1_2_TEXT
 	.sb +$40,"AUTO@RESTART@LASER@NEAR@BOTTOM@OF@SCREEN"
+
+GFX_MENU_1_3
+	.sb "FAR AUTO SHOT       "
 GFX_MENU_1_3_TEXT
 	.sb +$40,"AUTO@RESTART@LASER@NEAR@TOP@OF@SCREEN@@@"
+
+GFX_MENU_1_4
+	.sb "MID SHOT            "
 GFX_MENU_1_4_TEXT
 	.sb +$40,"MUST@RELEASE@BUTTON@TO@RESTART@LASER@@@@"
+
+GFX_MENU_1_5
+	.sb "SHORT SHOT          "
 GFX_MENU_1_5_TEXT
 	.sb +$40,"MUST@RELEASE@BUTTON@TO@RESTART@LASER@@@@"
+
+GFX_MENU_1_6
+	.sb "FAR SHOT            "
 GFX_MENU_1_6_TEXT
 	.sb +$40,"MUST@RELEASE@BUTTON@TO@RESTART@LASER@@@@"
  
-GFX_MENU_2_1                 ; SELECT Laser Speed Menu
-	.sb "REGULAR LASERS      "
-GFX_MENU_2_2 
-	.sb "FAST LASERS         "
-GFX_MENU_2_3 
-	.sb "SLOW LASERS         "
+ 
+; SELECT Laser Speed Menu =====================================
 
+GFX_MENU_2_1                 
+	.sb "REGULAR LASERS      "
 GFX_MENU_2_1_TEXT
 	.sb +$40,"THE@NORMAL@DEFAULT@SPEED@FOR@LASERS@@@@@"
+
+GFX_MENU_2_2 
+	.sb "FAST LASERS         "
 GFX_MENU_2_2_TEXT
 	.sb +$40,"FASTER@LASERS@MAY@NOT@HELP@SO@MUCH@@@@@@"
+
+GFX_MENU_2_3 
+	.sb "SLOW LASERS         "
 GFX_MENU_2_3_TEXT
 	.sb +$40,"PAINFULLY@SLOW@LASERS@@@@@@@@@@@@@@@@@@@"
 
 
-GFX_MENU_3_1                 ; SELECT 1NVADER Startup Menu
-	.sb "REGULAR START 1     "
-GFX_MENU_3_2 
-	.sb "START AT 3          "
-GFX_MENU_3_3 
-	.sb "START AT 5          "
-GFX_MENU_3_4 
-	.sb "START AT 7          "
-GFX_MENU_3_5 
-	.sb "START AT MAX        "
+; SELECT 1NVADER Startup Menu =================================
 
+GFX_MENU_3_1                 
+	.sb "REGULAR START 1     "
 GFX_MENU_3_1_TEXT
 	.sb +$40,"NORMAL@DEFAULT@1NVADER@START@SPEED@@@@@@"
+
+GFX_MENU_3_2 
+	.sb "START AT 3          "
 GFX_MENU_3_2_TEXT
 	.sb +$40,"1NVADER@STARTS@AT@SPEED@3@@@@@@@@@@@@@@@"
+
+GFX_MENU_3_3 
+	.sb "START AT 5          "
 GFX_MENU_3_3_TEXT
 	.sb +$40,"1NVADER@STARTS@AT@SPEED@5@@@@@@@@@@@@@@@"
+
+GFX_MENU_3_4 
+	.sb "START AT 7          "
 GFX_MENU_3_4_TEXT
 	.sb +$40,"1NVADER@STARTS@AT@SPEED@7@@@@@@@@@@@@@@@"
+
+GFX_MENU_3_5 
+	.sb "START AT MAX        "
 GFX_MENU_3_5_TEXT
 	.sb +$40,"1NVADER@AT@MAXIMUM@SPEED@LIKE@A@BOSS@@@@"
 
 
-GFX_MENU_4_1                 ; SELECT 1NVADER Speedup Menu
-	.sb "EVERY 10 HITS       "
-GFX_MENU_4_2
-	.sb "EVERY 7 HITS        "
-GFX_MENU_4_3
-	.sb "EVERY 5 HITS        "
-GFX_MENU_4_4
-	.sb "EVERY 3 HITS        "
-GFX_MENU_4_5
-	.sb "EVERY 10,9,8...     "
-GFX_MENU_4_6
-	.sb "NO SPEEDUP          "
+; SELECT 1NVADER Speedup Menu =================================
 
+GFX_MENU_4_1                 
+	.sb "EVERY 10 HITS       "
 GFX_MENU_4_1_TEXT
 	.sb +$40,"DEFAULT@"
 	.byte GAME_HYPHEN_CHAR
 	.sb +$40,"@SPEEDUP@EVERY@TEN@HITS@@@@@@@@"
+
+GFX_MENU_4_2
+	.sb "EVERY 7 HITS        "
 GFX_MENU_4_2_TEXT
 	.sb +$40,"SPEED@UP@EVERY@SEVEN@HITS@@@@@@@@@@@@@@@"
+
+GFX_MENU_4_3
+	.sb "EVERY 5 HITS        "
 GFX_MENU_4_3_TEXT
 	.sb +$40,"SPEED@UP@EVERY@FIVE@HITS@@@@@@@@@@@@@@@@"
+
+GFX_MENU_4_4
+	.sb "EVERY 3 HITS        "
 GFX_MENU_4_4_TEXT
 	.sb +$40,"SPEED@UP@EVERY@THREE@HITS@@@@@@@@@@@@@@@"
+
+GFX_MENU_4_5
+	.sb "EVERY 10,9,8...     "
 GFX_MENU_4_5_TEXT
 	.sb +$40,"PROGRESSIVELY@FEWER@SHOTS@PER@INCRMENT@@"
+
+GFX_MENU_4_6
+	.sb "NO SPEEDUP          "
 GFX_MENU_4_6_TEXT
 	.sb +$40,"REMAIN@AT@STARTUP@SPEED@@@@@@@@@@@@@@@@@"
 
 
-GFX_MENU_5_1                 ; SELECT 1NVADER Max Speed Menu
-	.sb "1NVADER SPEED 1     "
-GFX_MENU_5_2               
-	.sb "1NVADER SPEED 3     "
-GFX_MENU_5_3               
-	.sb "1NVADER SPEED 5     "
-GFX_MENU_5_4               
-	.sb "MAXIMUM SPEED       "
+; SELECT 1NVADER Max Speed Menu ===============================
 
+GFX_MENU_5_1                 
+	.sb "1NVADER SPEED 1     "
 GFX_MENU_5_1_TEXT
 	.sb +$40,"SLOWEST@MAXIMUM@SPEED@@@@@@@@@@@@@@@@@@@"
+
+GFX_MENU_5_2               
+	.sb "1NVADER SPEED 3     "
 GFX_MENU_5_2_TEXT
 	.sb +$40,"SPEEDUP@TO@THREE@@@@@@@@@@@@@@@@@@@@@@@@"
+
+GFX_MENU_5_3               
+	.sb "1NVADER SPEED 5     "
 GFX_MENU_5_3_TEXT
 	.sb +$40,"SPEEDUP@TO@FIVE@@@@@@@@@@@@@@@@@@@@@@@@@"
+
+GFX_MENU_5_4               
+	.sb "MAXIMUM SPEED       "
 GFX_MENU_5_4_TEXT
 	.sb +$40,"UP@TO@MAXIMUM@SPEED@@@@@@@@@@@@@@@@@@@@@"
 
 
-GFX_MENU_6_1                   ; SELECT Two Player Modes Menu
-	.sb "FR1GULAR            " ; guns bounce
-GFX_MENU_6_2 
-	.sb "FR1GNORE            " ; guns ignore each other
-GFX_MENU_6_3                 
-	.sb "FRENEM1ES           " ; Attached to each other
-GFX_MENU_6_4 
-	.sb "FRE1GHBORS          " ; Separated in center
+; SELECT Two Player Modes Menu ================================
 
+GFX_MENU_6_1                   
+	.sb "FR1GULAR            " ; guns bounce
 GFX_MENU_6_1_TEXT
 	.sb +$40,"GUNS@BOUNCE@OFF@EACH@OTHER@@@@@@@@@@@@@@"
+
+GFX_MENU_6_2 
+	.sb "FR1GNORE            " ; guns ignore each other
 GFX_MENU_6_2_TEXT
 	.sb +$40,"GUNS@IGNORE@EACH@OTHER@@@@@@@@@@@@@@@@@@"
+
+GFX_MENU_6_3                 
+	.sb "FRENEM1ES           " ; Attached to each other
 GFX_MENU_6_3_TEXT
 	.sb +$40,"GUNS@ARE@ATTACHED@TO@EACH@OTHER@@@@@@@@@"
+
+GFX_MENU_6_4 
+	.sb "FRE1GHBORS          " ; Separated in center
 GFX_MENU_6_4_TEXT
 	.sb +$40,"STAY@IN@YOUR@OWN@YARD@AND@OFF@MY@LAWN@@@"
 
 
-GFX_MENU_7_1                   ; SELECT Other things Menu
-	.sb "ONES1ES             " ; 2P - Take turns shooting
-GFX_MENU_7_2 
-	.sb "RESET ALL           " ; Return all game value to default
-GFX_MENU_7_3 
-	.sb "CHEAT MODE          " ; Alien never reaches bottom.
+; SELECT Other things Menu ====================================
 
+GFX_MENU_7_1                   
+	.sb "ONES1ES             " ; 2P - Take turns shooting
 GFX_MENU_7_1_TEXT
 	.sb +$40,"TWO@PLAYERS@TAKE@TURNS@SHOOTING@@@@@@@@@"
+
+GFX_MENU_7_2 
+	.sb "RESET ALL           " ; Return all game value to default
 GFX_MENU_7_2_TEXT
 	.sb +$40,"RESTORE@ALL@SETTINGS@TO@DEFAULTS@@@@@@@@"
+
+GFX_MENU_7_3 
+	.sb "CHEAT MODE          " ; Alien never reaches bottom.
 GFX_MENU_7_3_TEXT
 	.sb +$40,"ALIEN@NEVER@REACHES@BOTTOM@@@@@@U@R@LAME"
 
@@ -370,7 +424,7 @@ GFX_MENU_7_3_TEXT
 ; List of the variables used for the SELECT menus
 
 TABLE_CONFIG_VARIABLES
-	.byte 0                        ; 0 - Option menu list, not Select entries
+	.byte 0                        ; 0 - Option menu list are not Select menu entries
 	.byte 0                        ; 1 
 	.byte 0                        ; 2
 	.byte 0                        ; 3 
@@ -429,7 +483,7 @@ TABLE_CONFIG_VARIABLES
 ; Data/Value/Flag passed to routines to set the value or match the current value.
 
 TABLE_OPTION_ARGUMENTS
-	.byte 0                              ; 0 - Option menu list, not Select entries
+	.byte 0                              ; 0 - Option menu list are not Select menu entries
 	.byte 0                              ; 1 
 	.byte 0                              ; 2
 	.byte 0                              ; 3 
@@ -485,7 +539,7 @@ TABLE_OPTION_ARGUMENTS
 
 
 
-; Where to go from OPTION when SELECT is pressed...
+; Control path -- Where to go from OPTION menu when SELECT is pressed...
 
 TABLE_OPTIONS_SELECTMENUS
 	.byte 8  ; 8  SELECT Laser Restart Menu
@@ -498,7 +552,13 @@ TABLE_OPTIONS_SELECTMENUS
 	.byte 0  ; Go back to first menu.
 
 
-; Table of pointers to strings for the Mode 6 text.
+; Table of pointers to strings for displayed text.
+;                   A N D
+; Control paths for looping from end back to start of a menu.
+;
+; The first 20 bytes is the line of Mode 6 Menu Title text.   
+; The next 40 bytes is a line of Mode 2 text for more verbose description.
+;
 ; This table implements special behavior:  If the HIGH byte
 ; of a pointer is 0, then the low byte is the new index
 ; value to use.   This allows a forward iteration through 
@@ -614,120 +674,6 @@ TABLE_OPTIONS_HI
 	.byte >GFX_MENU_7_2 ; 43 Reset all values to defaults
 	.byte >GFX_MENU_7_3 ; 44 Cheat Mode - 1nvader never reaches bottom row.
 	.byte 0             ; 45 Return to Select entry 42
-
-
-; Text for the mode 2 line to explain the option/entry.
-
-TABLE_OPTIONS_TEXT_LO
-	.byte <GFX_OPTION_1_TEXT ; 0
-	.byte <GFX_OPTION_2_TEXT ; 1 
-	.byte <GFX_OPTION_3_TEXT ; 2
-	.byte <GFX_OPTION_4_TEXT ; 3 
-	.byte <GFX_OPTION_5_TEXT ; 4
-	.byte <GFX_OPTION_6_TEXT ; 5
-	.byte <GFX_OPTION_7_TEXT ; 6 
-	.byte 0                  ; 7   Return to Option entry 0
-	; (SELECT Laser Restart Menu)
-	.byte <GFX_MENU_1_1_TEXT ; 8   Regular Laser Auto Restart (Default)
-	.byte <GFX_MENU_1_2_TEXT ; 9   Short Laser Auto Restart
-	.byte <GFX_MENU_1_3_TEXT ; 10  Long Laser Auto Restart
-	.byte <GFX_MENU_1_4_TEXT ; 11  Regular Laser Manual Restart
-	.byte <GFX_MENU_1_5_TEXT ; 12  Short Laser Manual Restart
-	.byte <GFX_MENU_1_6_TEXT ; 13  Long Laser Manual Restart
-	.byte 0                  ; 14  Return to Select entry 8
-	; (SELECT Laser Speed Menu)
-	.byte <GFX_MENU_2_1_TEXT ; 15  Regular laser speed   (Default)
-	.byte <GFX_MENU_2_2_TEXT ; 16  Fast laser speed (+2)
-	.byte <GFX_MENU_2_3_TEXT ; 17  Slow laser speed (-2)
-	.byte 0                  ; 18 Return to Select entry 15
-	; (SELECT 1NVADER Startup Menu)
-	.byte <GFX_MENU_3_1_TEXT ; 19 1nvader Start Speed 1  (Default)
-	.byte <GFX_MENU_3_2_TEXT ; 20 1nvader Start Speed 3
-	.byte <GFX_MENU_3_3_TEXT ; 21 1nvader Start Speed 5
-	.byte <GFX_MENU_3_4_TEXT ; 22 1nvader Start Speed 7
-	.byte <GFX_MENU_3_5_TEXT ; 23 1nvader Start Speed MAX
-	.byte 0                  ; 24 Return to Select entry 19
-	; (SELECT 1NVADER Speedup Menu)
-	.byte <GFX_MENU_4_1_TEXT ; 25 1nvader speed up every 10 hits (Default)
-	.byte <GFX_MENU_4_2_TEXT ; 26 1nvader speed up every 7 hits
-	.byte <GFX_MENU_4_3_TEXT ; 27 1nvader speed up every 5 hits
-	.byte <GFX_MENU_4_4_TEXT ; 28 1nvader speed up every 3 hits 
-	.byte <GFX_MENU_4_5_TEXT ; 29 1nvader speed up progressive 10,9,8,7,6...
-	.byte <GFX_MENU_4_6_TEXT ; 30 1nvader speed up no speedup
-	.byte 0                  ; 31 Return to Select entry 25
-	; (SELECT 1NVADER Max Speed Menu)
-	.byte <GFX_MENU_5_1_TEXT ; 32 Max speed 1
-	.byte <GFX_MENU_5_2_TEXT ; 33 Max speed 3
-	.byte <GFX_MENU_5_3_TEXT ; 34 Max speed 5
-	.byte <GFX_MENU_5_4_TEXT ; 35 Max speed MAX (Default)
-	.byte 0                  ; 36 Return to Select entry 32
-	; (SELECT Two Player Modes Menu)
-	.byte <GFX_MENU_6_1_TEXT ; 37 FR1GULAR - Guns bounce off each other. (Default)
-	.byte <GFX_MENU_6_2_TEXT ; 38 FR1GNORE - Guns do not bounce off each other.
-	.byte <GFX_MENU_6_3_TEXT ; 39 FRENEM1ES - Guns attached to each other.           
-	.byte <GFX_MENU_6_4_TEXT ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
-	.byte 0                  ; 41 Return to Select entry 37
-	; (SELECT Other things Menu)
-	.byte <GFX_MENU_7_1_TEXT ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte <GFX_MENU_7_2_TEXT ; 43 Reset all values to defaults
-	.byte <GFX_MENU_7_3_TEXT ; 44 Cheat Mode - 1nvader never reaches bottom row.
-	.byte 0                  ; 45 Return to Select entry 42
-
-TABLE_OPTIONS_TEXT_HI
-	.byte >GFX_OPTION_1_TEXT ; 0
-	.byte >GFX_OPTION_2_TEXT ; 1 
-	.byte >GFX_OPTION_3_TEXT ; 2
-	.byte >GFX_OPTION_4_TEXT ; 3 
-	.byte >GFX_OPTION_5_TEXT ; 4
-	.byte >GFX_OPTION_6_TEXT ; 5
-	.byte >GFX_OPTION_7_TEXT ; 6 
-	.byte 0                  ; 7   Return to Option entry 0
-	; (SELECT Laser Restart Menu)
-	.byte >GFX_MENU_1_1_TEXT ; 8   Regular Laser Auto Restart (Default)
-	.byte >GFX_MENU_1_2_TEXT ; 9   Short Laser Auto Restart
-	.byte >GFX_MENU_1_3_TEXT ; 10  Long Laser Auto Restart
-	.byte >GFX_MENU_1_4_TEXT ; 11  Regular Laser Manual Restart
-	.byte >GFX_MENU_1_5_TEXT ; 12  Short Laser Manual Restart
-	.byte >GFX_MENU_1_6_TEXT ; 13  Long Laser Manual Restart
-	.byte 0                  ; 14  Return to Select entry 8
-	; (SELECT Laser Speed Menu)
-	.byte >GFX_MENU_2_1_TEXT ; 15  Regular laser speed   (Default)
-	.byte >GFX_MENU_2_2_TEXT ; 16  Fast laser speed (+2)
-	.byte >GFX_MENU_2_3_TEXT ; 17  Slow laser speed (-2)
-	.byte 0                  ; 18 Return to Select entry 15
-	; (SELECT 1NVADER Startup Menu)
-	.byte >GFX_MENU_3_1_TEXT ; 19 1nvader Start Speed 1  (Default)
-	.byte >GFX_MENU_3_2_TEXT ; 20 1nvader Start Speed 3
-	.byte >GFX_MENU_3_3_TEXT ; 21 1nvader Start Speed 5
-	.byte >GFX_MENU_3_4_TEXT ; 22 1nvader Start Speed 7
-	.byte >GFX_MENU_3_5_TEXT ; 23 1nvader Start Speed MAX
-	.byte 0                  ; 24 Return to Select entry 19
-	; (SELECT 1NVADER Speedup Menu)
-	.byte >GFX_MENU_4_1_TEXT ; 25 1nvader speed up every 10 hits (Default)
-	.byte >GFX_MENU_4_2_TEXT ; 26 1nvader speed up every 7 hits
-	.byte >GFX_MENU_4_3_TEXT ; 27 1nvader speed up every 5 hits
-	.byte >GFX_MENU_4_4_TEXT ; 28 1nvader speed up every 3 hits 
-	.byte >GFX_MENU_4_5_TEXT ; 29 1nvader speed up progressive 10,9,8,7,6...
-	.byte >GFX_MENU_4_6_TEXT ; 30 1nvader speed up no speedup
-	.byte 0                  ; 31 Return to Select entry 25
-	; (SELECT 1NVADER Max Speed Menu)
-	.byte >GFX_MENU_5_1_TEXT ; 32 Max speed 1
-	.byte >GFX_MENU_5_2_TEXT ; 33 Max speed 3
-	.byte >GFX_MENU_5_3_TEXT ; 34 Max speed 5
-	.byte >GFX_MENU_5_4_TEXT ; 35 Max speed MAX (Default)
-	.byte 0                  ; 36 Return to Select entry 32
-	; (SELECT Two Player Modes Menu)
-	.byte >GFX_MENU_6_1_TEXT ; 37 FR1GULAR - Guns bounce off each other. (Default)
-	.byte >GFX_MENU_6_2_TEXT ; 38 FR1GNORE - Guns do not bounce off each other.
-	.byte >GFX_MENU_6_3_TEXT ; 39 FRENEM1ES - Guns attached to each other.           
-	.byte >GFX_MENU_6_4_TEXT ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
-	.byte 0                  ; 41 Return to Select entry 37
-	; (SELECT Other things Menu)
-	.byte >GFX_MENU_7_1_TEXT ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte >GFX_MENU_7_2_TEXT ; 43 Reset all values to defaults
-	.byte >GFX_MENU_7_3_TEXT ; 44 Cheat Mode - 1nvader never reaches bottom row.
-	.byte 0                  ; 45 Return to Select entry 42
-
 
 
 ; ==========================================================================
@@ -881,7 +827,7 @@ b_gom_ShowOption
 	lda TABLE_OPTIONS_SELECTMENUS,X ; Force Select menu back to the ...
 	sta gCurrentSelect              ; ... first entry under this Option.
 
-	jsr Gfx_CopyOptionToRightBuffer ; Using Y as index, copy text via pointers to screen ram.
+	jsr Gfx_CopyOptionToRightBuffer ; Using X as menu entry index, copy text via pointers to screen ram.
 
 	lda #$ff 
 	sta gOSS_Mode           ; Let everyone know we're now in option menu mode
@@ -922,7 +868,7 @@ GameSelectMenu
 	stx gCurrentSelect       ; Update current entry
 
 b_gsem_ShowSelect
-	jsr Gfx_CopyOptionToRightBuffer ; Using X as index, copy text via pointers to screen ram.
+	jsr Gfx_CopyOptionToRightBuffer ; Using X as menu entry index, copy text via pointers to screen ram.
 	jsr DisplayOnOffRightBuffer   ; Add ON or OFF indicator to the menu item to scroll
 
 	lda #1
@@ -1067,18 +1013,47 @@ DisplayOnOffLeftBuffer
 ; Result is comparison of the current select menu configuration value to 
 ; the actual configuration variable.
 ;
+; Given Select Menu X, get Variable number Y
+;
 ; Result:
 ; BEQ == Current Select item is the current config.
 ; BNE == Current Select item is not the current config value
 ; --------------------------------------------------------------------------
 
+; e.g.   lda [TABLE_CONFIG_VARIABLE+CONFIG_VAR_VALUE],X  
+; where  X  is the variable number * 8.  (See CONFIG_* below).
+
+CONFIG_VAR_VALUE     = 0
+CONFIG_VAR_DEFAULT   = 1
+CONFIG_VAR_SETVALUE  = 2
+CONFIG_VAR_CMPVALUE  = 4
+CONFIG_VAR_ONDISPLAY = 6
+
+; Declare all the User's variables....
+
+TABLE_CONFIG_VARIABLES
+
+
+
 CheckConfigMatchesMenu
 
 	ldx gCurrentSelect           ; X = Current Select Menu being viewed
+	ldy TABLE_CONFIG_VARIABLES,X ; FYI, 0 is entirely valid, but we should never end up here from an Option menu.
 
-	lda TABLE_GET_FUNCTIONS_LO,x    ; Get pointer low byte
-	ora TABLE_GET_FUNCTIONS_HI,x  ; OR with pointer high byte
-	beq b_EndGetOnOrOffOption    ; 0 value is NULL pointer, so  nothing to do.
+;	lda TABLE_GET_FUNCTIONS_LO,x    
+;	ora TABLE_GET_FUNCTIONS_HI,x  
+	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_CMPVALUE],Y      ; Get pointer low byte
+	ora [TABLE_CONFIG_VARIABLES + CONFIG_VAR_CMPVALUE + 1],Y  ; OR with pointer high byte
+	beq b_EndGetOnOrOffOption            ; 0 value is NULL pointer, so  nothing to do.
+
+	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_CMPVALUE + 1],Y  ; Get pointer high byte
+	bne b_ccmm_CustomGetFunction                              ; High Byte <> 0, so it is a real function.
+	; High Byte is 0, so low byte is the Get Function Pointer .
+
+	jsr LoadGenericGetFunction  ; Given Y, Get function ID, and load pointer address
+;	beq or something here to skip over th call for custom load.
+	
+b_ccmm_CustomGetFunction
 
 	jsr MenuGenericConAddr1
 	beq b_EndGetOnOrOffOption    ; 0 value is NULL pointer, so  nothing to do.
@@ -1350,12 +1325,20 @@ Gfx_CopyOptionToRightBuffer
 
 	mMemcpyM GFX_OPTION_RIGHT,gCurrentMenuText,20
 
+	clc
+	lda gCurrentMenuText
+	adc #20
+	sta gCurrentMenuText
+	bcc b_gcotrb_SkipTextHighByte
+	inc gCurrentMenuText+1
+b_gcotrb_SkipTextHighByte
+
 	ldx g_cotrb_tempX
 
-	lda TABLE_OPTIONS_TEXT_LO,X
-	sta gCurrentMenuText
-	lda TABLE_OPTIONS_TEXT_HI,X
-	sta gCurrentMenuText+1
+;	lda TABLE_OPTIONS_TEXT_LO,X
+;	sta gCurrentMenuText
+;	lda TABLE_OPTIONS_TEXT_HI,X
+;	sta gCurrentMenuText+1
 
 	mMemcpyM GFX_OPTION_TEXT_RIGHT,gCurrentMenuText,40
 	

@@ -377,25 +377,9 @@ b_mdv_EndDocsScrolling
 ; 3) If there is input, restart the input timer.
 ; 4) If there is no input, decrement the input timer.  End.
 
-;	jsr vbi_ManageMenutastic  ; Does all of what is below.
-
 b_mdv_ManageMenus
 
-	lda gOSS_ScrollState   ; Status of scrolling behavior.  1, scrolling. 0, no scroll. -1 scroll just stopped. 
-	beq b_mdv_OptNotMoving ; 0, no scroll. Go do the timer and console button reading.
-
-	jsr Gfx_ScrollOSSText     ; update the LMS in the display list to coarse scroll
-	bne b_mdv_EndManageMenus  ; Always non-zero exit from Gfx_ScrollOSSTest
-
-b_mdv_OptNotMoving
-	jsr libAnyConsoleButton     ; Is a console key pressed?
-	bmi b_mdv_GoodConsoleInput  ; -1 == yes. 0 or 1 == Nope
-	dec gOSS_Timer              ; when this is 0, Main code erases text.
-	jmp b_mdv_EndManageMenus    
-	
-b_mdv_GoodConsoleInput
-	lda #$ff                    ; A console key was pressed.  Main will take care 
-	sta gOSS_Timer              ; of it.  Restart the timer in case, but not at #255 which is special.
+	jsr vbi_ManageMenutastic
 
 b_mdv_EndManageMenus
 
