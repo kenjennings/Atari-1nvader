@@ -30,7 +30,9 @@ gOSS_ScrollState  .byte 0 ; Status of scrolling: 1=scrolling. 0=not scrolling. -
 
 gOSS_Mode         .byte 0 ; 0=Off  -1=option menu  +1=is select menu.
 
-gOSS_Timer        .byte 0 ; Counts to wait for text.  When this reaches 0 without input, then erase menu.
+OSS_TIMER_EXTEND = 2      ; restart value for gOSS_TimeExt
+gOSS_TimeExt      .byte 0 ; 255 jiffies is not enough to read menus and debate
+gOSS_Timer        .byte 0 ; Counts 255 to 0 waiting for reading comprehension and input.  When this reaches 0 without input, then erase menu.
 
 gCurrentOption    .byte 0 ; Remember the last OPTION visited.
 
@@ -77,11 +79,11 @@ MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on re
 ; e.g.   lda [TABLE_CONFIG_VARIABLE+CONFIG_VAR_VALUE],X  
 ; where  X  is the variable number * 8.  (See CONFIG_* below).
 
-CONFIG_VAR_VALUE     = 0
-CONFIG_VAR_DEFAULT   = 1
-CONFIG_VAR_SETVALUE  = 2
-CONFIG_VAR_CMPVALUE  = 4
-CONFIG_VAR_ONDISPLAY = 6
+CONFIG_VAR_VALUE     = 0 ; Actual configuration variable byte value.
+CONFIG_VAR_DEFAULT   = 1 ; Configuration default byte value.
+CONFIG_VAR_SETVALUE  = 2 ; Word-1 address of Set Value function OR Menutastic function ID
+CONFIG_VAR_CMPVALUE  = 4 ; Word-1 address of Set Value function OR Menutastic function ID
+CONFIG_VAR_ONDISPLAY = 6 ; Word-1 address of Set Value function OR Menutastic function ID
 
 ; Declare all the User's variables....
 
@@ -186,10 +188,15 @@ gConfigCheatMode
 ; Presenting options and descriptions is done by copying the text declared 
 ; below into the scrolling buffer.
 ; 
+; The Menu text has two parts.  They are expected to be contiguous:
 ; The first 20 bytes is the line of Mode 6 Menu Title text.   
 ; The next 40 bytes is a line of Mode 2 text for more verbose description.
 ;
 ; --------------------------------------------------------------------------
+
+; Left Buffer v Right Buffer for GFX indicator that this value is ON or OFF.
+OSS_ONOFF_LEFT  = 17 ; offset from first position to print ON or OFF state.
+OSS_ONOFF_RIGHT = 37 ; offset from first position to print ON or OFF state.
 
 ; OPTION MENUS ================================================
 
@@ -409,7 +416,7 @@ GFX_MENU_7_3_TEXT
 
 
 ; ==========================================================================
-; MENUMATIC -- MENUS, SELECTIONS, OPTIONS
+; MENUTASTIC -- MENUS, SELECTIONS, OPTIONS
 ; ==========================================================================
 ; Press OPTION key to cycle through top level menu. 
 ; Press SELECT key to cycle through SELECT menu lists.
@@ -419,12 +426,10 @@ GFX_MENU_7_3_TEXT
 ; SELECT entries point to *function() to set/unset item.
 ; --------------------------------------------------------------------------
 
+; List of the variables IDs utilized for each of the SELECT menus entries
 
-
-; List of the variables used for the SELECT menus
-
-TABLE_CONFIG_VARIABLES
-	.byte 0                        ; 0 - Option menu list are not Select menu entries
+TABLE_MENU_CONFIG_VARIABLES
+	.byte 0                        ; 0 - Top level Option menu list are not Select menu entries
 	.byte 0                        ; 1 
 	.byte 0                        ; 2
 	.byte 0                        ; 3 
@@ -483,7 +488,7 @@ TABLE_CONFIG_VARIABLES
 ; Data/Value/Flag passed to routines to set the value or match the current value.
 
 TABLE_OPTION_ARGUMENTS
-	.byte 0                              ; 0 - Option menu list are not Select menu entries
+	.byte 0                              ; 0 - Top level Option menu list are not Select menu entries
 	.byte 0                              ; 1 
 	.byte 0                              ; 2
 	.byte 0                              ; 3 
@@ -556,14 +561,15 @@ TABLE_OPTIONS_SELECTMENUS
 ;                   A N D
 ; Control paths for looping from end back to start of a menu.
 ;
+; The Menu text has two parts.  They are expected to be contiguous:
 ; The first 20 bytes is the line of Mode 6 Menu Title text.   
 ; The next 40 bytes is a line of Mode 2 text for more verbose description.
 ;
 ; This table implements special behavior:  If the HIGH byte
 ; of a pointer is 0, then the low byte is the new index
 ; value to use.   This allows a forward iteration through 
-; the list to be reset to the previous entry for that 
-; group of Select menu entries.
+; the list to be reset to the first entry for that group of 
+; Select menu entries.
 
 TABLE_OPTIONS_LO
 	.byte <GFX_OPTION_1 ; 0
@@ -679,8 +685,9 @@ TABLE_OPTIONS_HI
 ; ==========================================================================
 ; MENUTASTIC - VBI MANAGEMENT
 ; ==========================================================================
-; 
-; Called by  V B I.
+; Manage Option/Select/Start Menus.
+;
+; This is the part called by the Vertical Blank Interrupt.
 ;
 ; This manages scrolling if text is in motion, collects input if 
 ; there is no scrolling motion, and manager the input timout timer.
@@ -697,21 +704,28 @@ TABLE_OPTIONS_HI
 
 vbi_ManageMenutastic 
 
-	lda gOSS_ScrollState   ; Status of scrolling behavior.  1, scrolling. 0, no scroll. -1 scroll just stopped. 
-	beq b_vmm_OptNotMoving ; 0, no scroll. Go do the timer and console button reading.
+	lda gOSS_ScrollState       ; Scrolling status.  1, scrolling. 0, no scroll. -1 scroll just stopped. 
+	beq b_vmm_OptNotMoving     ; 0, no scroll. Go do the timer and console button reading.
 
-	jsr Gfx_ScrollOSSText     ; update the LMS in the display list to coarse scroll
-	bne b_vmm_EndManageMenus  ; Always non-zero exit from Gfx_ScrollOSSTest
+	jsr Gfx_ScrollOSSText      ; update the LMS in the display list to coarse scroll
+	bne b_vmm_EndManageMenus   ; Always non-zero exit from Gfx_ScrollOSSTest
 
 b_vmm_OptNotMoving
-	jsr libAnyConsoleButton     ; Is a console key pressed?
-	bmi b_vmm_GoodConsoleInput  ; -1 == yes. 0 or 1 == Nope
-	dec gOSS_Timer              ; when this is 0, Main code erases text.
+	jsr libAnyConsoleButton    ; Is a console key pressed?
+	bmi b_vmm_GoodConsoleInput ; -1 == yes. 0 or 1 == Nope
+
+	dec gOSS_TimeExt           ; 255 jiffies is not enough time for reading comprehension.
+	bpl b_vmm_SkipJiffyClock   ; Did not go negative, so don't 
+
+	lda #OSS_TIMER_EXTEND      ; Reset the timer extention.
+	sta gOSS_TimeExt
+	dec gOSS_Timer             ; when this is 0, Main code erases text.
+
+b_vmm_SkipJiffyClock
 	jmp b_vmm_EndManageMenus    
 	
 b_vmm_GoodConsoleInput
-	lda #$ff                    ; A console key was pressed.  Main will take care 
-	sta gOSS_Timer              ; of it.  Restart the timer in case, but not at #255 which is special.
+	jsr RestartMenutasticTimer ; A console key was pressed.  Restart the timer.
 
 b_vmm_EndManageMenus
 	rts
@@ -719,9 +733,11 @@ b_vmm_EndManageMenus
 
 
 ; ==========================================================================
-; RUN OSS MENUS
+;                                                     MAIN DO MENUTASTIC
 ; ==========================================================================
 ; Manage Option/Select/Start Menus.
+;
+; This is the part called by the main line code.
 ;
 ; If menu scroll is in progress, then skip this.  Nothing to do .
 ;
@@ -732,63 +748,79 @@ b_vmm_EndManageMenus
 ; reset everything off.
 ;
 ; Collect console key input, and if any, then process key.
-;
 ; --------------------------------------------------------------------------
 
-GameRunOSSMenus
+Main_DoMenutastic
 
 	lda gOSS_ScrollState
-	beq b_grom_ProcessOrNot ; (0) No scrolling, so is there a menu for processing?
+	beq b_mdm_ProcessOrNot     ; (0) No scrolling, so is there a menu for processing?
+	bpl b_mdm_Exit             ; (>0) Scrolling in progress.   Nothing else to do.
 
-	bpl b_grom_Exit         ; (>0) Scrolling in progress.   Nothing else to do.
+	; (<0) process of elimination.  Last choice.  The scrolling just stopped now.
+	jsr Gfx_ResetOSSText       ; Copy right buffer to left, reset the LMS, reset scroll state.
+	beq b_mdm_Exit             ; Above code ends by setting scroll state to 0, so, BEQ.
 
-	; (<0) process of elimination.   Last choice.  The scrolling just stopped now.
-	jsr Gfx_ResetOSSText    ; Copy right buffer to left, reset the LMS, reset scroll state.
-	beq b_grom_Exit         ; Above code ends by setting scroll state to 0, so, BEQ.
+b_mdm_ProcessOrNot
+	lda gOSS_Timer             ; Has the timer reached 0?
+	bne b_mdm_CheckInput       ; No.  Continue with input checking.
+	jsr Gfx_ClearOSSText       ; Yes, erase menu.  Shut it all off.
+	beq b_mdm_Exit             ; Above code ends by setting scroll state to 0, so, BEQ.
 
-b_grom_ProcessOrNot
-	lda gOSS_Timer          ; Has the timer reached 0?
-	bne b_grom_CheckInput   ; No.  Continue with input checking.
-	jsr Gfx_ClearOSSText    ; Yes, erase menu.  Shut it all off.
-	beq b_grom_Exit         ; Above code ends by setting scroll state to 0, so, BEQ.
-
-b_grom_CheckInput
-	lda gDEBOUNCE_OSS       ; If debounce >=0  ?
-	bpl b_grom_Exit         ; No debounce, no input, so skip to end.
+b_mdm_CheckInput
+	lda gDEBOUNCE_OSS          ; If debounce >=0  ?
+	bpl b_mdm_Exit             ; No debounce, no input, so skip to end.
 ;	bmi a key is pressed
 	lda #1
-	sta gDEBOUNCE_OSS       ; Put the VBI back into waiting for debounce.
+	sta gDEBOUNCE_OSS          ; Put the VBI back into waiting for debounce.
 
-	lda #$FF                ; Since a key is (should be) pressed now
-	sta gOSS_Timer          ; then reset the input timer.
+	jsr RestartMenutasticTimer ; Since a key should be pressed now then reset the input timer.
 
 	lda gOSS_KEYS
-	tay                     ; Save for the next checks.
+	tay                        ; Save for the next checks.
 	and #CONSOLE_OPTION
-	beq b_grom_OptionKey    ; Option is pressed.   Do it.
+	beq b_mdm_OptionKey        ; Option is pressed.   Do it.
 
 	tya 
 	and #CONSOLE_SELECT
-	beq b_grom_SelectKey    ; Select is pressed.   Do it.
+	beq b_mdm_SelectKey        ; Select is pressed.   Do it.
 
 	tya 
 	and #CONSOLE_START
-	beq b_grom_StartKey    ; Start is pressed.   Do it.
-	rts                    ; How did we get here?   I don't know.
+	beq b_mdm_StartKey         ; Start is pressed.   Do it.
+	rts                        ; How did we get here?   I don't know.
 
 
-b_grom_OptionKey
-	jsr GameOptionMenu     ; Process Option key input.
+b_mdm_OptionKey
+	jsr GameOptionMenu         ; Process Option key input.
 	rts
 
-b_grom_SelectKey
-	jsr GameSelectMenu     ; Process Select key input.
+b_mdm_SelectKey
+	jsr GameSelectMenu         ; Process Select key input.
 	rts
 
-b_grom_StartKey
-	jsr GameStartAction    ; Process Start key input.
+b_mdm_StartKey
+	jsr GameStartAction        ; Process Start key input.
 
-b_grom_Exit
+b_mdm_Exit
+	rts
+
+
+; ==========================================================================
+;                                               RESTART MENUTASTIC TIMER
+; ==========================================================================
+; Initialize timer waiting for reading comprehension and input.
+;
+; Two bytes are used, because 255 jiffies is not enough time to 
+; read the menu text and respond sometimes.
+; --------------------------------------------------------------------------
+
+RestartMenutasticTimer
+
+	lda #$ff                   ; A console key was pressed.  Main will take care 
+	sta gOSS_Timer             ; of it.  Restart the timer in case.
+	lda #OSS_TIMER_EXTEND      ; 255 jiffies is not enough time for reading comprehension.
+	sta gOSS_TimeExt
+
 	rts
 
 
@@ -814,14 +846,15 @@ b_grom_Exit
 ; --------------------------------------------------------------------------
 
 GameOptionMenu
-	ldx gCurrentOption      ; Prep current value as index into pointer table.
 
-	lda gOSS_Mode           ; What's the current condition of the menus?
-	beq b_gom_ShowOption    ; Menu off. Go Show current/last option menu
-	bpl b_gom_ShowOption    ; Select mode. Go show the current/last option menu.
+	ldx gCurrentOption              ; Prep current value as index into pointer table.
 
-	jsr GameNextMenuOrReset ; Next Option menu or reset the Option menu.
-	stx gCurrentOption      ; Save updated Option index.
+	lda gOSS_Mode                   ; What's the current condition of the menus?
+	beq b_gom_ShowOption            ; Menu off. Go Show current/last option menu
+	bpl b_gom_ShowOption            ; Select mode. Go show the current/last option menu.
+
+	jsr GameNextMenuOrReset         ; Next Option menu or reset the Option menu.
+	stx gCurrentOption              ; Save updated Option index.
 
 b_gom_ShowOption
 	lda TABLE_OPTIONS_SELECTMENUS,X ; Force Select menu back to the ...
@@ -830,7 +863,7 @@ b_gom_ShowOption
 	jsr Gfx_CopyOptionToRightBuffer ; Using X as menu entry index, copy text via pointers to screen ram.
 
 	lda #$ff 
-	sta gOSS_Mode           ; Let everyone know we're now in option menu mode
+	sta gOSS_Mode                   ; Let everyone know we're now in option menu mode
 
 	rts
 
@@ -858,21 +891,22 @@ b_gom_ShowOption
 ; --------------------------------------------------------------------------
 
 GameSelectMenu
-	ldx gCurrentSelect       ; Prep current value as index into pointer table.
 
-	lda gOSS_Mode            ; What's the current condition of the menus?
-	beq b_gsem_EndSelectMenu ; Menu off. Must be in Option or Select modes to change Select Menu.
-	bmi b_gsem_ShowSelect    ; In Option Mode. Switch to Select. Show the current (last) select menu.
+	ldx gCurrentSelect              ; Prep current value as index into pointer table.
 
-	jsr GameNextMenuOrReset  ; Next Select menu or reset the Select menu.
-	stx gCurrentSelect       ; Update current entry
+	lda gOSS_Mode                   ; What's the current condition of the menus?
+	beq b_gsem_EndSelectMenu        ; Menu off. Must be in Option or Select modes to change Select Menu.
+	bmi b_gsem_ShowSelect           ; In Option Mode. Switch to Select. Show the current (last) select menu.
+
+	jsr GameNextMenuOrReset         ; Next Select menu or reset the Select menu.
+	stx gCurrentSelect              ; Update current entry
 
 b_gsem_ShowSelect
 	jsr Gfx_CopyOptionToRightBuffer ; Using X as menu entry index, copy text via pointers to screen ram.
-	jsr DisplayOnOffRightBuffer   ; Add ON or OFF indicator to the menu item to scroll
+	jsr DisplayOnOffRightBuffer     ; Add ON or OFF indicator to the menu item to scroll
 
 	lda #1
-	sta gOSS_Mode        ; Let everyone know we're now in select menu mode
+	sta gOSS_Mode                   ; Let everyone know we're now in select menu mode
 
 b_gsem_EndSelectMenu
 	rts
@@ -892,13 +926,14 @@ b_gsem_EndSelectMenu
 ; --------------------------------------------------------------------------
 
 GameStartAction
-	lda gOSS_Mode            ; What's the current condition of the menus?
-	beq b_gsa_EndStartAction ; Menu off. Must be Select modes to change Select Menu.
-	bmi b_gsa_EndStartAction ; In Option Mode. Must be in Select mode to change Select Menu.
 
-;	ldx gCurrentSelect       ; Prep current value as index into pointer table.
-	jsr GameSetConfigOption  ; Set config to current option.
-	jsr DisplayOnOffLeftBuffer   ; Add ON or OFF indicator to the menu item on screen
+	lda gOSS_Mode              ; What's the current condition of the menus?
+	beq b_gsa_EndStartAction   ; Menu off. Must be Select modes to change Select Menu.
+	bmi b_gsa_EndStartAction   ; In Option Mode. Must be in Select mode to change Select Menu.
+
+;	ldx gCurrentSelect         ; Prep current value as index into pointer table.
+	jsr GameSetConfigOption    ; Set config to current option.
+	jsr DisplayOnOffLeftBuffer ; Add ON or OFF indicator to the menu item on screen
 
 b_gsa_EndStartAction
 	rts
@@ -913,7 +948,6 @@ b_gsa_EndStartAction
 ; Input is value in X register for the current menu index. 
 ;
 ; Increment the value and look at the next entry in the menu table. 
-;
 ; If the menu table entry represents a forced reset, get the new value. 
 ;
 ; Return new menu index in X.
@@ -923,14 +957,120 @@ GameNextMenuOrReset
 
 	inx                    ; Go to next Menu entry
 	
-	lda TABLE_OPTIONS_HI,X  ; Get hi byte from address of string
+	lda TABLE_OPTIONS_HI,X ; Get hi byte from address of string
 	bne b_gnmor_SkipReset  ; High byte <> 0.  So, use this entry.
 
-	lda TABLE_OPTIONS_LO,X    ; High Byte is 0.  Use low byte as new index.
+	lda TABLE_OPTIONS_LO,X ; High Byte is 0.  Use low byte as new index.
 	tax
 
 b_gnmor_SkipReset
 	rts
+
+
+
+
+; ==========================================================================
+;                                          MENUTASTIC STANDARD FUNCTIONS
+; ==========================================================================
+; A variable need not provide its own function for access and comparison
+; if it follows a standard set of behaviors.  Rather than provide 
+; addresses for the set, get/compare, and display values, the variable 
+; can provide a handle ID.
+;
+; Real functions are assumed to have a non-zero high byte. 
+;
+; Library common functions enumerated here are small integers with a 
+; zero byte for the high byte value.
+;
+; The library recognizes what choice is in use and calls the variable's
+; function or the standard library call accordingly.
+;
+; MENU_SETVALUE  = 0 ; ID for generic library function to set config value to current menu item
+; MENU_SETTOGGLE = 1 ; ID for generic library function to flip a value between 2 values
+; MENU_GETITEM   = 2 ; ID for generic library function to report if config variable matches current menu item
+; MENU_GETTOGGLE = 3 ; ID for generic library function to report if toggle is set on or off. 
+; MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+; --------------------------------------------------------------------------
+
+TABLE_MENUTASTIC_FUNCTIONS_LO
+	.byte <[MENU_STD_SETVALUE-1]  ; MENU_SETVALUE  = 0 ; ID for generic library function to set config value to current menu item
+	.byte <[MENU_STD_SETTOGGLE-1] ; MENU_SETTOGGLE = 1 ; ID for generic library function to flip a value between 2 values
+	.byte <[MENU_STD_GETITEM-1]   ; MENU_GETITEM   = 2 ; ID for generic library function to report if config variable matches current menu item
+	.byte <[MENU_STD_GETTOGGLE-1] ; MENU_GETTOGGLE = 3 ; ID for generic library function to report if toggle is set on or off. 
+	.byte <[MENU_STD_ONDISPLAY-1] ; MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+
+TABLE_MENUTASTIC_FUNCTIONS_HI
+	.byte >[MENU_STD_SETVALUE-1]  ; MENU_SETVALUE  = 0 ; ID for generic library function to set config value to current menu item
+	.byte >[MENU_STD_SETTOGGLE-1] ; MENU_SETTOGGLE = 1 ; ID for generic library function to flip a value between 2 values
+	.byte >[MENU_STD_GETITEM-1]   ; MENU_GETITEM   = 2 ; ID for generic library function to report if config variable matches current menu item
+	.byte >[MENU_STD_GETTOGGLE-1] ; MENU_GETTOGGLE = 3 ; ID for generic library function to report if toggle is set on or off. 
+	.byte >[MENU_STD_ONDISPLAY-1] ; MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+
+
+
+; ==========================================================================
+;                                            DISPLAY ON OFF RIGHT BUFFER
+; ==========================================================================
+; Given the current Select menu determine if that option is 
+; on or off.
+;
+; Write the ON/OFF status in the RIGHT buffer. (to be scrolled)
+; --------------------------------------------------------------------------
+
+DisplayOnOffRightBuffer
+
+	ldx #OSS_ONOFF_RIGHT ; +17 for Left position. Then +20 more == Right Buffer. 
+	bpl DisplayOnOff     ; We know offset must be positive (or less than 128), right?
+
+
+; ==========================================================================
+;                                            DISPLAY ON OFF LEFT BUFFER
+; ==========================================================================
+; Given the current Select menu determine if that option is 
+; on or off.
+;
+; Write the ON/OFF status in the LEFT buffer. (currently displayed)
+; --------------------------------------------------------------------------
+
+DisplayOnOffLeftBuffer
+
+	ldx #OSS_ONOFF_LEFT  ; +17 for Left position. Then +20 more == Right Buffer. 
+	bpl DisplayOnOff     ; We know offset must be positive (or less than 128), right?
+
+
+; ==========================================================================
+;                                            DISPLAY ON OFF IN BUFFER
+; ==========================================================================
+; Given the current Select menu determine if that option is 
+; on or off.
+;
+; X is the offset position into the GFX buffer (top line of menu display)
+;
+; Write the ON/OFF status in the buffer. 
+;
+; Result is comparison of the current select menu configuration value to 
+; the actual configuration variable.
+;
+; Result:
+; BEQ == Current Select item is the current config.
+; BNE == Current Select item is not the current config value
+; --------------------------------------------------------------------------
+
+OSS_DISPLAY_OFFSET .byte 0 ; +17 for Left position. Then +20 more == Right Buffer. 
+
+DisplayOnOff
+
+	stx OSS_DISPLAY_OFFSET       ; Save, next function will use X reg.
+
+	jsr CheckConfigMatchesMenu   ; Compare config variable to current menu item
+	php                          ; Save comparison result
+	ldx OSS_DISPLAY_OFFSET       ; +17 for Left position. Then +20 more == Right Buffer. 
+	plp                          ; Get result of comparison
+	jsr Gfx_Display_OnOff_Option ; Display if on or off.
+
+	rts
+
+
 
 
 
@@ -951,57 +1091,74 @@ b_gnmor_SkipReset
 ;
 
 ; ==========================================================================
-;                                            DETERMINE ON OFF RIGHT BUFFER
+;                                           MENUTASTIC STANDARD DISPATCH
 ; ==========================================================================
-; Given the current Select menu determine if that option is 
-; on or off.
+; Given the current Select Menu Entry, and the offset to the action 
+; function (set, get/cmp, or display) then:
+; 1) Get Variable ID (offset in TABLE_CONFIG_VARIABLES)
+; 2) Get function address.
+; 3) if high byte is 0, push address of standard library routine.
+; 4) if high byte is !0, push address of function.
+; 5) call by RTS. 
 ;
-; Write the ON/OFF status in the RIGHT buffer. (to be scrolled)
+; Note that 0 is valid for Variable ID, but this function should never 
+; be reached when operating in Option mode menu display.
 ;
-; Result is comparison of the current select menu configuration value to 
-; the actual configuration variable.
-;
-; Result:
-; BEQ == Current Select item is the current config.
-; BNE == Current Select item is not the current config value
+; A = offset to action.
 ; --------------------------------------------------------------------------
 
-DisplayOnOffRightBuffer
+; e.g.   lda [TABLE_CONFIG_VARIABLE+CONFIG_VAR_VALUE],X  
+; where  X  is the variable number * 8.  (See CONFIG_* below).
 
-	jsr CheckConfigMatchesMenu
-	php
-	ldx #37 ; +17 for Left position. Then +20 more == Right Buffer. 
-	plp
-	jsr Gfx_Display_OnOff_Option
+CONFIG_VAR_VALUE     = 0 ; Actual configuration variable byte value.
+CONFIG_VAR_DEFAULT   = 1 ; Configuration default byte value.
+CONFIG_VAR_SETVALUE  = 2 ; Word-1 address of Set Value function OR Menutastic function ID
+CONFIG_VAR_CMPVALUE  = 4 ; Word-1 address of Set Value function OR Menutastic function ID
+CONFIG_VAR_ONDISPLAY = 6 ; Word-1 address of Set Value function OR Menutastic function ID
+
+
+
+MENU_SETVALUE  = 0 ; ID for generic library function to set config value to current menu item
+MENU_SETTOGGLE = 1 ; ID for generic library function to flip a value between 2 values
+MENU_GETITEM   = 2 ; ID for generic library function to report if config variable matches current menu item
+MENU_GETTOGGLE = 3 ; ID for generic library function to report if toggle is set on or off. 
+MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+
+
+; Declare all the User's variables....
+
+TABLE_CONFIG_VARIABLES
+
+
+
+MenutasticStandardDispatch
+
+	ldx gCurrentSelect                ; X = Current Select Menu being viewed
+	clc
+	adc TABLE_MENU_CONFIG_VARIABLES,X ; A = [TABLE_CONFIG_VARIABLES OFFSET + ACTION OFFSET (in A)]
+	tay                               ; Y = Variable ID + Action  (Offset) 
+
+	lda [TABLE_CONFIG_VARIABLES + 1],Y  ; Get pointer high byte
+	beq MenutasticLoadStandardFunction  ; Given Y, Get function ID, and load pointer address
+
+	pha                           ; push to stack - custom function high byte
+	lda TABLE_CONFIG_VARIABLES,Y ; Get custom function pointer low byte
+	pha                          ; Push to stack
 
 	rts
 
+MenutasticLoadStandardFunction
+	ldx TABLE_CONFIG_VARIABLES,Y ; get the function ID from low byte.
 
-; ==========================================================================
-;                                            DETERMINE ON OFF LEFT BUFFER
-; ==========================================================================
-; Given the current Select menu determine if that option is 
-; on or off.
-;
-; Write the ON/OFF status in the LEFT buffer. (currently displayed)
-;
-; Result is comparison of the current select menu configuration value to 
-; the actual configuration variable.
-;
-; Result:
-; BEQ == Current Select item is the current config.
-; BNE == Current Select item is not the current config value
-; --------------------------------------------------------------------------
+	lda TABLE_MENUTASTIC_FUNCTIONS_HI,x
+	pha
+	lda TABLE_MENUTASTIC_FUNCTIONS_LO,x
+	pha
 
-DisplayOnOffLeftBuffer
-
-	jsr CheckConfigMatchesMenu
-	php
-	ldx #17 ; +17 for Left position. Then +20 more == Right Buffer. 
-	plp
-	jsr Gfx_Display_OnOff_Option
-
+b_EndGetOnOrOffOption
 	rts
+
+
 
 
 ; ==========================================================================
@@ -1020,28 +1177,12 @@ DisplayOnOffLeftBuffer
 ; BNE == Current Select item is not the current config value
 ; --------------------------------------------------------------------------
 
-; e.g.   lda [TABLE_CONFIG_VARIABLE+CONFIG_VAR_VALUE],X  
-; where  X  is the variable number * 8.  (See CONFIG_* below).
-
-CONFIG_VAR_VALUE     = 0
-CONFIG_VAR_DEFAULT   = 1
-CONFIG_VAR_SETVALUE  = 2
-CONFIG_VAR_CMPVALUE  = 4
-CONFIG_VAR_ONDISPLAY = 6
-
-; Declare all the User's variables....
-
-TABLE_CONFIG_VARIABLES
-
-
 
 CheckConfigMatchesMenu
 
-	ldx gCurrentSelect           ; X = Current Select Menu being viewed
-	ldy TABLE_CONFIG_VARIABLES,X ; FYI, 0 is entirely valid, but we should never end up here from an Option menu.
+	ldx gCurrentSelect                ; X = Current Select Menu being viewed
+	ldy TABLE_MENU_CONFIG_VARIABLES,X ; Y = Variable ID (Offset) (0 is entirely valid, but we should never end up here from an Option menu.
 
-;	lda TABLE_GET_FUNCTIONS_LO,x    
-;	ora TABLE_GET_FUNCTIONS_HI,x  
 	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_CMPVALUE],Y      ; Get pointer low byte
 	ora [TABLE_CONFIG_VARIABLES + CONFIG_VAR_CMPVALUE + 1],Y  ; OR with pointer high byte
 	beq b_EndGetOnOrOffOption            ; 0 value is NULL pointer, so  nothing to do.
@@ -1450,7 +1591,7 @@ b_gsot_CheckOptionText
 b_gsot_SetOptionWait
 	lda #$FF
 	sta gOSS_ScrollState        ; Turn off scrolling, flag that main should reset text.
-	sta gOSS_Timer              ; Set jiffy wait timer for menu display.
+	jsr RestartMenutasticTimer  ; Set jiffy wait timer for menu display.
 
 b_gsot_End
 	rts
@@ -1541,4 +1682,14 @@ b_gcot_ClearOptionText_Loop
 	sta gOSS_Mode                   ; And the mode says no men u is displayed
 	
 	rts
+
+
+
+MENU_SETVALUE  = 0 ; ID for generic library function to set config value to current menu item
+MENU_SETTOGGLE = 1 ; ID for generic library function to flip a value between 2 values
+MENU_GETITEM   = 2 ; ID for generic library function to report if config variable matches current menu item
+MENU_GETTOGGLE = 3 ; ID for generic library function to report if toggle is set on or off. 
+MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+
+
 

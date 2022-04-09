@@ -489,7 +489,7 @@ b_gt_ExitTitleAnimation
 
 ; MENUTASTIC ============================================================================
 
-	jsr GameRunOSSMenus  ; ===== Run the Option/Select/Start menu system.
+	jsr Main_DoMenutastic  ; ===== Run the Option/Select/Start menu system.
 
 ; MENUTASTIC ============================================================================
 
