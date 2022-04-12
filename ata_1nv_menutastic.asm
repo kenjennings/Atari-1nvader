@@ -48,11 +48,13 @@ gCurrentMenuText  .word 0 ; pointer to text for the menu
 ; MENUTASTIC - ENUMERATE STANDARD FUNCTIONS
 ; ==========================================================================
 
-MENU_SETVALUE  = 0 ; ID for generic library function to set config value to current menu item
-MENU_SETTOGGLE = 1 ; ID for generic library function to flip a value between 2 values
-MENU_GETITEM   = 2 ; ID for generic library function to report if config variable matches current menu item
-MENU_GETTOGGLE = 3 ; ID for generic library function to report if toggle is set on or off. 
-MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+MENU_DONOTHING  = 0 ; ID for generic library to do nothing, but will return Z flag (BEQ)
+MENU_DOONETHING = 1 ; ID for generic library to do nothing, but will return !Z flag (BNE)
+MENU_SETVALUE   = 2 ; ID for generic library function to set config value to current menu item
+MENU_SETTOGGLE  = 3 ; ID for generic library function to flip a value between 2 values
+MENU_GETITEM    = 4 ; ID for generic library function to report if config variable matches current menu item
+MENU_GETTOGGLE  = 5 ; ID for generic library function to report if toggle is set on or off. 
+MENU_ONDISPLAY  = 6 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
 
 
 
@@ -776,33 +778,31 @@ b_mdm_CheckInput
 	jsr RestartMenutasticTimer ; Since a key should be pressed now then reset the input timer.
 
 	lda gOSS_KEYS
-	tay                        ; Save for the next checks.
-	and #CONSOLE_OPTION
-	beq b_mdm_OptionKey        ; Option is pressed.   Do it.
+	ror                       ;  Rotate and push out START bit
+	bcc b_mdm_StartKey        ; 0 == Start button pressed
 
-	tya 
-	and #CONSOLE_SELECT
-	beq b_mdm_SelectKey        ; Select is pressed.   Do it.
+	ror                       ;  Rotate and push out SELECT bit
+	bcc b_mdm_SelectKey       ; 0 == SELECT button pressed
+	
+	ror                        ;  Rotate and push out OPTION bit
+	bcc b_mdm_OptionKey       ; 0 == OPTION button pressed
 
-	tya 
-	and #CONSOLE_START
-	beq b_mdm_StartKey         ; Start is pressed.   Do it.
 	rts                        ; How did we get here?   I don't know.
 
-
-b_mdm_OptionKey
-	jsr GameOptionMenu         ; Process Option key input.
+b_mdm_StartKey
+	jsr GameStartAction        ; Process Start key input.
 	rts
 
 b_mdm_SelectKey
 	jsr GameSelectMenu         ; Process Select key input.
 	rts
 
-b_mdm_StartKey
-	jsr GameStartAction        ; Process Start key input.
-
+b_mdm_OptionKey
+	jsr GameOptionMenu         ; Process Option key input.
+	
 b_mdm_Exit
 	rts
+
 
 
 ; ==========================================================================
@@ -985,26 +985,32 @@ b_gnmor_SkipReset
 ; The library recognizes what choice is in use and calls the variable's
 ; function or the standard library call accordingly.
 ;
-; MENU_SETVALUE  = 0 ; ID for generic library function to set config value to current menu item
-; MENU_SETTOGGLE = 1 ; ID for generic library function to flip a value between 2 values
-; MENU_GETITEM   = 2 ; ID for generic library function to report if config variable matches current menu item
-; MENU_GETTOGGLE = 3 ; ID for generic library function to report if toggle is set on or off. 
-; MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+; MENU_DONOTHING  = 0 ; ID for generic library to do nothing, but will return Z flag (BEQ)
+; MENU_DOONETHING = 1 ; ID for generic library to do nothing, but will return !Z flag (BNE)
+; MENU_SETVALUE   = 2 ; ID for generic library function to set config value to current menu item
+; MENU_SETTOGGLE  = 3 ; ID for generic library function to flip a value between 2 values
+; MENU_GETITEM    = 4 ; ID for generic library function to report if config variable matches current menu item
+; MENU_GETTOGGLE  = 5 ; ID for generic library function to report if toggle is set on or off. 
+; MENU_ONDISPLAY  = 6 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
 ; --------------------------------------------------------------------------
 
 TABLE_MENUTASTIC_FUNCTIONS_LO
-	.byte <[MENU_STD_SETVALUE-1]  ; MENU_SETVALUE  = 0 ; ID for generic library function to set config value to current menu item
-	.byte <[MENU_STD_SETTOGGLE-1] ; MENU_SETTOGGLE = 1 ; ID for generic library function to flip a value between 2 values
-	.byte <[MENU_STD_GETITEM-1]   ; MENU_GETITEM   = 2 ; ID for generic library function to report if config variable matches current menu item
-	.byte <[MENU_STD_GETTOGGLE-1] ; MENU_GETTOGGLE = 3 ; ID for generic library function to report if toggle is set on or off. 
-	.byte <[MENU_STD_ONDISPLAY-1] ; MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+	.byte <[MENU_STD_DONOTHING-1]  ; MENU_DONOTHING  = 0 ; ID for generic library to do nothing, but will return Z flag (BEQ)
+	.byte <[MENU_STD_DOONETHING-1] ; MENU_DOONETHING = 1 ; ID for generic library to do nothing, but will return !Z flag (BNE)
+	.byte <[MENU_STD_SETVALUE-1]   ; MENU_SETVALUE   = 2 ; ID for generic library function to set config value to current menu item
+	.byte <[MENU_STD_SETTOGGLE-1]  ; MENU_SETTOGGLE  = 3 ; ID for generic library function to flip a value between 2 values
+	.byte <[MENU_STD_GETITEM-1]    ; MENU_GETITEM    = 4 ; ID for generic library function to report if config variable matches current menu item
+	.byte <[MENU_STD_GETTOGGLE-1]  ; MENU_GETTOGGLE  = 5 ; ID for generic library function to report if toggle is set on or off. 
+	.byte <[MENU_STD_ONDISPLAY-1]  ; MENU_ONDISPLAY  = 6 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
 
 TABLE_MENUTASTIC_FUNCTIONS_HI
-	.byte >[MENU_STD_SETVALUE-1]  ; MENU_SETVALUE  = 0 ; ID for generic library function to set config value to current menu item
-	.byte >[MENU_STD_SETTOGGLE-1] ; MENU_SETTOGGLE = 1 ; ID for generic library function to flip a value between 2 values
-	.byte >[MENU_STD_GETITEM-1]   ; MENU_GETITEM   = 2 ; ID for generic library function to report if config variable matches current menu item
-	.byte >[MENU_STD_GETTOGGLE-1] ; MENU_GETTOGGLE = 3 ; ID for generic library function to report if toggle is set on or off. 
-	.byte >[MENU_STD_ONDISPLAY-1] ; MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+	.byte >[MENU_STD_DONOTHING-1]  ; MENU_DONOTHING  = 0 ; ID for generic library to do nothing, but will return Z flag (BEQ)
+	.byte >[MENU_STD_DOONETHING-1] ; MENU_DOONETHING = 1 ; ID for generic library to do nothing, but will return !Z flag (BNE)
+	.byte >[MENU_STD_SETVALUE-1]   ; MENU_SETVALUE   = 2 ; ID for generic library function to set config value to current menu item
+	.byte >[MENU_STD_SETTOGGLE-1]  ; MENU_SETTOGGLE  = 3 ; ID for generic library function to flip a value between 2 values
+	.byte >[MENU_STD_GETITEM-1]    ; MENU_GETITEM    = 4 ; ID for generic library function to report if config variable matches current menu item
+	.byte >[MENU_STD_GETTOGGLE-1]  ; MENU_GETTOGGLE  = 5 ; ID for generic library function to report if toggle is set on or off. 
+	.byte >[MENU_STD_ONDISPLAY-1]  ; MENU_ONDISPLAY  = 6 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
 
 
 
@@ -1118,11 +1124,14 @@ CONFIG_VAR_ONDISPLAY = 6 ; Word-1 address of Set Value function OR Menutastic fu
 
 
 
-MENU_SETVALUE  = 0 ; ID for generic library function to set config value to current menu item
-MENU_SETTOGGLE = 1 ; ID for generic library function to flip a value between 2 values
-MENU_GETITEM   = 2 ; ID for generic library function to report if config variable matches current menu item
-MENU_GETTOGGLE = 3 ; ID for generic library function to report if toggle is set on or off. 
-MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+MENU_DONOTHING  = 0 ; ID for generic library to do nothing, but will return Z flag (BEQ)
+MENU_DOONETHING = 1 ; ID for generic library to do nothing, but will return !Z flag (BNE)
+MENU_SETVALUE   = 2 ; ID for generic library function to set config value to current menu item
+MENU_SETTOGGLE  = 3 ; ID for generic library function to flip a value between 2 values
+MENU_GETITEM    = 4 ; ID for generic library function to report if config variable matches current menu item
+MENU_GETTOGGLE  = 5 ; ID for generic library function to report if toggle is set on or off. 
+MENU_ONDISPLAY  = 6 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+
 
 
 ; Declare all the User's variables....
@@ -1685,11 +1694,14 @@ b_gcot_ClearOptionText_Loop
 
 
 
-MENU_SETVALUE  = 0 ; ID for generic library function to set config value to current menu item
-MENU_SETTOGGLE = 1 ; ID for generic library function to flip a value between 2 values
-MENU_GETITEM   = 2 ; ID for generic library function to report if config variable matches current menu item
-MENU_GETTOGGLE = 3 ; ID for generic library function to report if toggle is set on or off. 
-MENU_ONDISPLAY = 4 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+MENU_DONOTHING  = 0 ; ID for generic library to do nothing, but will return Z flag (BEQ)
+MENU_DOONETHING = 1 ; ID for generic library to do nothing, but will return !Z flag (BNE)
+MENU_SETVALUE   = 2 ; ID for generic library function to set config value to current menu item
+MENU_SETTOGGLE  = 3 ; ID for generic library function to flip a value between 2 values
+MENU_GETITEM    = 4 ; ID for generic library function to report if config variable matches current menu item
+MENU_GETTOGGLE  = 5 ; ID for generic library function to report if toggle is set on or off. 
+MENU_ONDISPLAY  = 6 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+
 
 
 
