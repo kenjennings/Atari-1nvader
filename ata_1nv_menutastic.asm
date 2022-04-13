@@ -26,22 +26,25 @@
 ; MENUTASTIC - TITLE SCREEN OPTIONS MANAGEMENT VARIABLES . . .
 ; ==========================================================================
 
-gOSS_ScrollState  .byte 0 ; Status of scrolling: 1=scrolling. 0=not scrolling. -1=scroll just stopped. 
+gOSS_ScrollState   .byte 0 ; Status of scrolling: 1=scrolling. 0=not scrolling. -1=scroll just stopped. 
 
-gOSS_Mode         .byte 0 ; 0=Off  -1=option menu  +1=is select menu.
+gOSS_Mode          .byte 0 ; 0=Off  -1=option menu  +1=is select menu.
 
 OSS_TIMER_EXTEND = 2      ; restart value for gOSS_TimeExt
-gOSS_TimeExt      .byte 0 ; 255 jiffies is not enough to read menus and debate
-gOSS_Timer        .byte 0 ; Counts 255 to 0 waiting for reading comprehension and input.  When this reaches 0 without input, then erase menu.
+gOSS_TimeExt       .byte 0 ; 255 jiffies is not enough to read menus and debate
+gOSS_Timer         .byte 0 ; Counts 255 to 0 waiting for reading comprehension and input.  When this reaches 0 without input, then erase menu.
 
-gCurrentOption    .byte 0 ; Remember the last OPTION visited.
+gCurrentOption     .byte 0 ; Remember the last OPTION visited.
 
-gCurrentSelect    .byte 0 ; Remember the last SELECT visited.
+gCurrentSelect     .byte 0 ; Remember the last SELECT visited.
 
-gCurrentMenuEntry .byte 0 ; Menu entry number for Option and Select.
+gCurrentMenuEntry  .byte 0 ; Menu entry number for Option and Select.
 
-gCurrentMenuText  .word 0 ; pointer to text for the menu 
+gCurrentMenuText   .word 0 ; pointer to text for the menu 
 
+gOSSCompareResult  .byte 0 ; Set by the compare() function if current menu is the variable value.
+
+gOSSDisplayOffset  .byte 0 ; +17 for Left position. Then +20 more == Right Buffer. 
 
 
 ; ==========================================================================
@@ -778,28 +781,26 @@ b_mdm_CheckInput
 	jsr RestartMenutasticTimer ; Since a key should be pressed now then reset the input timer.
 
 	lda gOSS_KEYS
-	ror                       ;  Rotate and push out START bit
-	bcc b_mdm_StartKey        ; 0 == Start button pressed
+	ror                        ; Rotate and push out START bit
+	bcc b_mdm_StartKey         ; 0 == START button pressed
 
-	ror                       ;  Rotate and push out SELECT bit
-	bcc b_mdm_SelectKey       ; 0 == SELECT button pressed
+	ror                        ; Rotate and push out SELECT bit
+	bcc b_mdm_SelectKey        ; 0 == SELECT button pressed
 	
-	ror                        ;  Rotate and push out OPTION bit
-	bcc b_mdm_OptionKey       ; 0 == OPTION button pressed
+	ror                        ; Rotate and push out OPTION bit
+	bcs b_mdm_Exit             ; 1 == OPTION button NOT pressed.  Done testing keys.
 
-	rts                        ; How did we get here?   I don't know.
-
-b_mdm_StartKey
-	jsr GameStartAction        ; Process Start key input.
+b_mdm_OptionKey
+	jsr GameOptionMenu         ; Process Option key input.
 	rts
 
 b_mdm_SelectKey
 	jsr GameSelectMenu         ; Process Select key input.
 	rts
 
-b_mdm_OptionKey
-	jsr GameOptionMenu         ; Process Option key input.
-	
+b_mdm_StartKey
+	jsr GameStartAction        ; Process Start key input.
+
 b_mdm_Exit
 	rts
 
@@ -1062,17 +1063,19 @@ DisplayOnOffLeftBuffer
 ; BNE == Current Select item is not the current config value
 ; --------------------------------------------------------------------------
 
-OSS_DISPLAY_OFFSET .byte 0 ; +17 for Left position. Then +20 more == Right Buffer. 
 
 DisplayOnOff
 
-	stx OSS_DISPLAY_OFFSET       ; Save, next function will use X reg.
+	stx gOSSDisplayOffset          ; Save for use later.  +17 for Left position. Then +20 more == Right Buffer. 
 
-	jsr CheckConfigMatchesMenu   ; Compare config variable to current menu item
-	php                          ; Save comparison result
-	ldx OSS_DISPLAY_OFFSET       ; +17 for Left position. Then +20 more == Right Buffer. 
-	plp                          ; Get result of comparison
-	jsr Gfx_Display_OnOff_Option ; Display if on or off.
+	lda #CONFIG_VAR_CMPVALUE       ; Call Compare for current SELECT menu entry
+	jsr MenutasticStandardDispatch ; Grand Unified Theorem
+	
+	lda #CONFIG_VAR_ONDISPLAY      ; Call Draw ON/OFF based on gOSSCompareResult
+	jsr MenutasticStandardDispatch ; Call the display code.
+
+;	ldx gOSSDisplayOffset       
+;	jsr Gfx_Display_OnOff_Option ; Display if on or off.
 
 	rts
 
@@ -1139,34 +1142,158 @@ MENU_ONDISPLAY  = 6 ; ID for gfx function to display ON/OFF for value based on r
 TABLE_CONFIG_VARIABLES
 
 
+; ==========================================================================
+;                                           MENUTASTIC STANDARD DISPATCH
+; ==========================================================================
+; The General Function Caller.
+;
+; A = the action to perform in the variable.   It should be one of these:
+; CONFIG_VAR_SETVALUE  = 2 ; Word-1 address of Set Value function OR Menutastic function ID
+; CONFIG_VAR_CMPVALUE  = 4 ; Word-1 address of Set Value function OR Menutastic function ID
+; CONFIG_VAR_ONDISPLAY = 6 ; Word-1 address of Set Value function OR Menutastic function ID
+;
+; The current variable is the index taken from the current SELECT item.
+;
+; Add A (Action) to the offset for the current variable to get the 
+; offset/index to the function specified by Action.
+;
+; If the function high byte is 0, then the low byte is an ID value for a 
+; standard library function.  Load the address for the standard function.
+;
+; If the function high byte is non-zero, then the variable has the 
+; address of a custom function.  Load that instead.
+; --------------------------------------------------------------------------
 
 MenutasticStandardDispatch
 
-	ldx gCurrentSelect                ; X = Current Select Menu being viewed
+	ldx gCurrentSelect                  ; X = Current Select Menu being viewed
 	clc
-	adc TABLE_MENU_CONFIG_VARIABLES,X ; A = [TABLE_CONFIG_VARIABLES OFFSET + ACTION OFFSET (in A)]
-	tay                               ; Y = Variable ID + Action  (Offset) 
+	adc TABLE_MENU_CONFIG_VARIABLES,X   ; A = [TABLE_MENU_CONFIG_VARIABLES OFFSET + ACTION OFFSET (in A)]
+	tay                                 ; Y = Variable offset + Action  (Offset) 
 
 	lda [TABLE_CONFIG_VARIABLES + 1],Y  ; Get pointer high byte
-	beq MenutasticLoadStandardFunction  ; Given Y, Get function ID, and load pointer address
+	beq b_msd_LoadStandardFunction      ; Given Y, Get function ID, and load pointer address
 
-	pha                           ; push to stack - custom function high byte
-	lda TABLE_CONFIG_VARIABLES,Y ; Get custom function pointer low byte
-	pha                          ; Push to stack
+	pha                                 ; push to stack - custom function high byte
+	lda TABLE_CONFIG_VARIABLES,Y        ; Get custom function pointer low byte
+	pha                                 ; Push to stack
 
 	rts
 
-MenutasticLoadStandardFunction
-	ldx TABLE_CONFIG_VARIABLES,Y ; get the function ID from low byte.
+b_msd_LoadStandardFunction
+	ldx TABLE_CONFIG_VARIABLES,Y        ; get the function ID from low byte.
 
-	lda TABLE_MENUTASTIC_FUNCTIONS_HI,x
-	pha
-	lda TABLE_MENUTASTIC_FUNCTIONS_LO,x
-	pha
+	lda TABLE_MENUTASTIC_FUNCTIONS_HI,x ; Get library function pointer high byte
+	pha                                 ; Push to stack
+	lda TABLE_MENUTASTIC_FUNCTIONS_LO,x ; Get library function pointer high byte
+	pha                                 ; Push to stack
 
-b_EndGetOnOrOffOption
 	rts
 
+
+; ==========================================================================
+;                                                    MENU STD DO NOTHING
+; ==========================================================================
+; Technically, do nothing.
+;
+; Actually, force the compare status to Zero.
+; This may be useful on a toggle-like variable and cheat the compare
+; to force it to zero.  Did that make sense?  Maybe not.
+; --------------------------------------------------------------------------
+
+MENU_STD_DONOTHING ; MENU_DONOTHING  = 0 ; ID for generic library to do nothing, but will return Z flag (BEQ)
+
+	lda #0
+	sta gOSSCompareResult
+
+	rts
+
+
+; ==========================================================================
+;                                                  MENU STD DO ONE THING
+; ==========================================================================
+; Technically, do nothing.
+;
+; Actually, force the compare status to One.
+; This may be useful on a toggle-like variable and cheat the compare
+; to force it to one.  Did that make sense?  Maybe not.
+; --------------------------------------------------------------------------
+
+MENU_STD_DOONETHING ; MENU_DOONETHING = 1 ; ID for generic library to do nothing, but will return !Z flag (BNE)
+
+	lda #1
+	sta gOSSCompareResult
+
+	rts
+
+
+; ==========================================================================
+;                                                     MENU STD SET VALUE
+; ==========================================================================
+
+MENU_STD_SETVALUE   ; MENU_SETVALUE   = 2 ; ID for generic library function to set config value to current menu item
+	rts
+
+; ==========================================================================
+;                                                    MENU STD SET TOGGLE
+; ==========================================================================
+
+MENU_STD_SETTOGGLE  ; MENU_SETTOGGLE  = 3 ; ID for generic library function to flip a value between 2 values
+	rts
+
+; ==========================================================================
+;                                                 MENU STANDARD GET ITEM
+; ==========================================================================
+; Given the current Select menu determine if that option is 
+; on or off.
+;
+; Result is comparison of the current select menu configuration value to 
+; the actual configuration variable.   Save in gOSSCompareResult.
+;
+; Given Select Menu X, get Variable number (offset) Y.
+;
+; Given Variable number (offset) Y, Get value from variable.
+;
+; Result:
+; BEQ == Current Select item is the current config.
+; BNE == Current Select item is not the current config value
+; --------------------------------------------------------------------------
+
+MENU_STD_GETITEM    ; MENU_GETITEM    = 4 ; ID for generic library function to report if config variable matches current menu item
+
+	ldx gCurrentSelect                ; X = Current Select Menu being viewed
+	ldy TABLE_MENU_CONFIG_VARIABLES,X ; Y = Variable ID (Offset) (0 is entirely valid, but we should never end up here from an Option menu.
+
+	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Get variable value. 
+	cmp TABLE_OPTION_ARGUMENTS,X                      ; compare to current SELECT menu item.
+
+	beq b_MSGI_ReturnZero                             ; Equal.  Return Zero. (BEQ)
+
+	lda #1                                            ; NOT Equal. Return One. (BNE)
+	sta gOSSCompareResult
+	rts
+	
+
+b_MSGI_ReturnZero
+
+	lda #0
+	sta gOSSCompareResult
+	rts
+
+
+; ==========================================================================
+;                                              CHECK CONFIG MATCHES MENU
+; ==========================================================================
+
+MENU_STD_GETTOGGLE  ; MENU_GETTOGGLE  = 5 ; ID for generic library function to report if toggle is set on or off. 
+	rts
+
+; ==========================================================================
+;                                              CHECK CONFIG MATCHES MENU
+; ==========================================================================
+
+MENU_STD_ONDISPLAY  ; MENU_ONDISPLAY  = 6 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+	rts
 
 
 
@@ -1185,7 +1312,6 @@ b_EndGetOnOrOffOption
 ; BEQ == Current Select item is the current config.
 ; BNE == Current Select item is not the current config value
 ; --------------------------------------------------------------------------
-
 
 CheckConfigMatchesMenu
 
