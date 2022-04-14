@@ -1162,6 +1162,8 @@ TABLE_CONFIG_VARIABLES
 ;
 ; If the function high byte is non-zero, then the variable has the 
 ; address of a custom function.  Load that instead.
+;
+; On exit (rts == function call) X will be the index of the current menu.
 ; --------------------------------------------------------------------------
 
 MenutasticStandardDispatch
@@ -1178,7 +1180,7 @@ MenutasticStandardDispatch
 	lda TABLE_CONFIG_VARIABLES,Y        ; Get custom function pointer low byte
 	pha                                 ; Push to stack
 
-	rts
+	jmp b_msd_InvokeFunction
 
 b_msd_LoadStandardFunction
 	ldx TABLE_CONFIG_VARIABLES,Y        ; get the function ID from low byte.
@@ -1188,12 +1190,19 @@ b_msd_LoadStandardFunction
 	lda TABLE_MENUTASTIC_FUNCTIONS_LO,x ; Get library function pointer high byte
 	pha                                 ; Push to stack
 
+b_msd_InvokeFunction
+	ldx gCurrentSelect                  ; X = Current Select Menu being viewed
+	ldy TABLE_MENU_CONFIG_VARIABLES,X   ; Y = Variable ID (Offset)
+
 	rts
 
 
 ; ==========================================================================
 ;                                                    MENU STD DO NOTHING
 ; ==========================================================================
+; MENU_DONOTHING  = 0 
+; ID for generic library to do nothing, but will return Z flag (BEQ)
+;
 ; Technically, do nothing.
 ;
 ; Actually, force the compare status to Zero.
@@ -1201,7 +1210,7 @@ b_msd_LoadStandardFunction
 ; to force it to zero.  Did that make sense?  Maybe not.
 ; --------------------------------------------------------------------------
 
-MENU_STD_DONOTHING ; MENU_DONOTHING  = 0 ; ID for generic library to do nothing, but will return Z flag (BEQ)
+MENU_STD_DONOTHING 
 
 	lda #0
 	sta gOSSCompareResult
@@ -1212,6 +1221,9 @@ MENU_STD_DONOTHING ; MENU_DONOTHING  = 0 ; ID for generic library to do nothing,
 ; ==========================================================================
 ;                                                  MENU STD DO ONE THING
 ; ==========================================================================
+; MENU_DOONETHING = 1 
+; ID for generic library to do nothing, but will return !Z flag (BNE)
+;
 ; Technically, do nothing.
 ;
 ; Actually, force the compare status to One.
@@ -1219,7 +1231,7 @@ MENU_STD_DONOTHING ; MENU_DONOTHING  = 0 ; ID for generic library to do nothing,
 ; to force it to one.  Did that make sense?  Maybe not.
 ; --------------------------------------------------------------------------
 
-MENU_STD_DOONETHING ; MENU_DOONETHING = 1 ; ID for generic library to do nothing, but will return !Z flag (BNE)
+MENU_STD_DOONETHING 
 
 	lda #1
 	sta gOSSCompareResult
@@ -1230,25 +1242,117 @@ MENU_STD_DOONETHING ; MENU_DOONETHING = 1 ; ID for generic library to do nothing
 ; ==========================================================================
 ;                                                     MENU STD SET VALUE
 ; ==========================================================================
+; MENU_SETVALUE   = 2 
+; ID for generic library function to set config value to current menu item
+;
+; Given the current Select menu copy the menu value to 
+; the associated variable.
+;
+; Given Select Menu X, get Variable number (offset) Y.
+;
+; Get value from Menu X, store in variable number (offset) Y.
+; --------------------------------------------------------------------------
 
-MENU_STD_SETVALUE   ; MENU_SETVALUE   = 2 ; ID for generic library function to set config value to current menu item
+MENU_STD_SETVALUE   
+
+;	ldx gCurrentSelect                                ; X = Current Select Menu being viewed
+;	ldy TABLE_MENU_CONFIG_VARIABLES,X                 ; Y = Variable ID (Offset) 
+
+	lda TABLE_OPTION_ARGUMENTS,X                      ; Get current SELECT menu item value.
+	sta [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Set variable value. 
+
 	rts
+
 
 ; ==========================================================================
 ;                                                    MENU STD SET TOGGLE
 ; ==========================================================================
+; MENU_SETTOGGLE  = 3 
+; ID for generic library function to flip a value between 2 values
+;
+; Given the current Select menu toggle the value of the associated variable.
+;
+; Given Select Menu X, get Variable number (offset) Y.
+;
+; Get value from Menu X, rewrite.  
+; 0 become 1.   1 becomes 0.
+; --------------------------------------------------------------------------
 
-MENU_STD_SETTOGGLE  ; MENU_SETTOGGLE  = 3 ; ID for generic library function to flip a value between 2 values
+MENU_STD_SETTOGGLE
+
+;	ldx gCurrentSelect                                ; X = Current Select Menu being viewed
+;	ldy TABLE_MENU_CONFIG_VARIABLES,X                 ; Y = Variable ID (Offset) 
+
+	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Get variable value. 
+	beq b_MSST_SetOne
+
+	lda #0
+	sta [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Set variable value. 
 	rts
+
+b_MSST_SetOne
+	lda #1
+	sta [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Set variable value. 
+
+	rts
+
 
 ; ==========================================================================
 ;                                                 MENU STANDARD GET ITEM
 ; ==========================================================================
+; MENU_GETITEM    = 4 
+; ID for generic library function to report if config 
+; variable matches current menu item
+;
+; Given the current Select menu determine if the associated 
+; variable has the same value as the menu item.
+;
+; Result is comparison of the current select menu configuration value
+; to the actual configuration variable.   
+; Save in gOSSCompareResult. (and by extension, the CPU Z flag.)
+;
+; Given Select Menu X, get Variable number (offset) Y.
+;
+; Given Variable number (offset) Y, Get value from variable.
+;
+; Result:
+; 0/BEQ == Current Select item is the current config.
+; 1/BNE == Current Select item is not the current config value
+; --------------------------------------------------------------------------
+
+MENU_STD_GETITEM                                      
+
+	lda #0                                            ; Clear the return value to 0, aka "equal match"
+	sta gOSSCompareResult
+	
+;	ldx gCurrentSelect                                ; X = Current Select Menu being viewed
+;	ldy TABLE_MENU_CONFIG_VARIABLES,X                 ; Y = Variable ID (Offset)
+
+	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Get variable value. 
+	cmp TABLE_OPTION_ARGUMENTS,X                      ; compare to current SELECT menu item.
+
+	beq b_MSGI_Exit                                   ; Equal.  Return Zero. (BEQ)
+
+	inc gOSSCompareResult                             ; NOT Equal. Return One. (BNE)
+
+b_MSGI_Exit
+	rts
+
+
+
+; ==========================================================================
+;                                               MENU STANDARD GET TOGGLE
+; ==========================================================================
+; MENU_GETTOGGLE  = 5 
+; ID for generic library function to report if toggle is set on or off. 
+;
 ; Given the current Select menu determine if that option is 
 ; on or off.
 ;
-; Result is comparison of the current select menu configuration value to 
-; the actual configuration variable.   Save in gOSSCompareResult.
+; Result is just zero or nonzero state of the toggled variable.
+; No actual comparison here.
+; Save in gOSSCompareResult. (and by extension, the CPU Z flag.)
+;
 ;
 ; Given Select Menu X, get Variable number (offset) Y.
 ;
@@ -1259,40 +1363,32 @@ MENU_STD_SETTOGGLE  ; MENU_SETTOGGLE  = 3 ; ID for generic library function to f
 ; BNE == Current Select item is not the current config value
 ; --------------------------------------------------------------------------
 
-MENU_STD_GETITEM    ; MENU_GETITEM    = 4 ; ID for generic library function to report if config variable matches current menu item
+MENU_STD_GETTOGGLE
 
-	ldx gCurrentSelect                ; X = Current Select Menu being viewed
-	ldy TABLE_MENU_CONFIG_VARIABLES,X ; Y = Variable ID (Offset) (0 is entirely valid, but we should never end up here from an Option menu.
+	lda #0                                            ; Clear the return value to 0, aka "equal match"
+	sta gOSSCompareResult
+	
+;	ldx gCurrentSelect                                ; X = Current Select Menu being viewed
+;	ldy TABLE_MENU_CONFIG_VARIABLES,X                 ; Y = Variable ID (Offset)
 
 	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Get variable value. 
-	cmp TABLE_OPTION_ARGUMENTS,X                      ; compare to current SELECT menu item.
+	beq b_MSGT_Exit                                   ; Equal.  Return Zero. (BEQ)
 
-	beq b_MSGI_ReturnZero                             ; Equal.  Return Zero. (BEQ)
+	inc gOSSCompareResult                             ; NOT Equal. Return One. (BNE)
 
-	lda #1                                            ; NOT Equal. Return One. (BNE)
-	sta gOSSCompareResult
-	rts
-	
-
-b_MSGI_ReturnZero
-
-	lda #0
-	sta gOSSCompareResult
+b_MSGT_Exit
 	rts
 
 
 ; ==========================================================================
 ;                                              CHECK CONFIG MATCHES MENU
 ; ==========================================================================
+; MENU_ONDISPLAY  = 6 
+; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
+; --------------------------------------------------------------------------
 
-MENU_STD_GETTOGGLE  ; MENU_GETTOGGLE  = 5 ; ID for generic library function to report if toggle is set on or off. 
-	rts
+MENU_STD_ONDISPLAY  
 
-; ==========================================================================
-;                                              CHECK CONFIG MATCHES MENU
-; ==========================================================================
-
-MENU_STD_ONDISPLAY  ; MENU_ONDISPLAY  = 6 ; ID for gfx function to display ON/OFF for value based on result of MENU_GET results.
 	rts
 
 
