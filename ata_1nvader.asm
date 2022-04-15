@@ -55,10 +55,11 @@
 	icl "ata_1nv_audio.asm"           ; The world's lamest sound sequencer.
 
 	icl "ata_1nv_support.asm"         ; The bulk of the game logic code.
-	
+
+	icl "ata_1nv_menutastic_user.asm" ; The user's data (and code) 
+
 	icl "ata_1nv_menutastic.asm"      ; The library code for the menus.
 
-	icl "ata_inv_menutastic_user.asm" ; The user's data (and code) 
 
 
 	icl "ata_1nv_game.asm"            ; Code for game event loop.

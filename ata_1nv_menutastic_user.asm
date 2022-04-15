@@ -43,6 +43,14 @@
 TABLE_CONFIG_VARIABLES  ; see menutastic.asm for structure description.
 ; ==========================================================================
 
+CONFIG_VARIABLE_VALUE    =[TABLE_CONFIG_VARIABLES+CONFIG_VAR_VALUE]
+CONFIG_VARIABLE_DEFAULT  =[TABLE_CONFIG_VARIABLES+CONFIG_VAR_DEFAULT]
+CONFIG_VARIABLE_SETVALUE =[TABLE_CONFIG_VARIABLES+CONFIG_VAR_SETVALUE]
+CONFIG_VARIABLE_CMPVALUE =[TABLE_CONFIG_VARIABLES+CONFIG_VAR_CMPVALUE]
+CONFIG_VARIABLE_ONDISPLAY=[TABLE_CONFIG_VARIABLES+CONFIG_VAR_ONDISPLAY]
+
+CONFIG_VARIABLE_FUNC_HI  = [TABLE_CONFIG_VARIABLES+1] ; goofiness for function retrieval
+
 ; Define a convenient "handle" that is the real offset into this table.
 ; Note that each is +8 bytes and in this iteration of menu handling 
 ; it will be used as a byte value.  Thus this system allows up to 32

@@ -642,6 +642,7 @@ DisplayOnOff
 ; On exit (rts == function call) X will be the index of the current menu.
 ; --------------------------------------------------------------------------
 
+
 MenutasticStandardDispatch
 
 	ldx gCurrentSelect                  ; X = Current Select Menu being viewed
@@ -649,7 +650,7 @@ MenutasticStandardDispatch
 	adc TABLE_MENU_CONFIG_VARIABLES,X   ; A = [TABLE_MENU_CONFIG_VARIABLES OFFSET + ACTION OFFSET (in A)]
 	tay                                 ; Y = Variable offset + Action  (Offset) 
 
-	lda [TABLE_CONFIG_VARIABLES + 1],Y  ; Get pointer high byte
+	lda CONFIG_VARIABLE_FUNC_HI,Y       ; Get pointer high byte (tweaking offset + 1 byte) 
 	beq b_msd_LoadStandardFunction      ; Given Y, Get function ID, and load pointer address
 
 	pha                                 ; push to stack - custom function high byte
@@ -734,8 +735,8 @@ MENU_STD_SETVALUE
 ;	ldx gCurrentSelect                                ; X = Current Select Menu being viewed
 ;	ldy TABLE_MENU_CONFIG_VARIABLES,X                 ; Y = Variable ID (Offset) 
 
-	lda TABLE_OPTION_ARGUMENTS,X                      ; Get current SELECT menu item value.
-	sta [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Set variable value. 
+	lda TABLE_OPTION_ARGUMENTS,X  ; Get current SELECT menu item value.
+	sta CONFIG_VARIABLE_VALUE,Y   ; Set variable value. 
 
 	rts
 
@@ -759,16 +760,17 @@ MENU_STD_SETTOGGLE
 ;	ldx gCurrentSelect                                ; X = Current Select Menu being viewed
 ;	ldy TABLE_MENU_CONFIG_VARIABLES,X                 ; Y = Variable ID (Offset) 
 
-	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Get variable value. 
+	lda CONFIG_VARIABLE_VALUE,Y ; Get variable value. 
 	beq b_MSST_SetOne
 
 	lda #0
-	sta [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Set variable value. 
-	rts
+	beq b_MSST_SaveVariable
 
 b_MSST_SetOne
 	lda #1
-	sta [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Set variable value. 
+	
+b_MSST_SaveVariable
+	sta CONFIG_VARIABLE_VALUE,Y ; Set variable value. 
 
 	rts
 
@@ -808,7 +810,7 @@ MENU_STD_GETITEM
 ;	ldx gCurrentSelect                                ; X = Current Select Menu being viewed
 ;	ldy TABLE_MENU_CONFIG_VARIABLES,X                 ; Y = Variable ID (Offset)
 
-	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Get variable value. 
+	lda CONFIG_VARIABLE_VALUE,Y ; Get variable value. 
 	cmp TABLE_OPTION_ARGUMENTS,X                      ; compare to current SELECT menu item.
 
 	beq b_MSGI_Exit                                   ; Equal.  Return Zero. (BEQ)
@@ -854,7 +856,7 @@ MENU_STD_GETTOGGLE
 ;	ldx gCurrentSelect                                ; X = Current Select Menu being viewed
 ;	ldy TABLE_MENU_CONFIG_VARIABLES,X                 ; Y = Variable ID (Offset)
 
-	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_VALUE],Y ; Get variable value. 
+	lda CONFIG_VARIABLE_VALUE,Y ; Get variable value. 
 	beq b_MSGT_Exit                                   ; Equal.  Return Zero. (BEQ)
 
 	inc gOSSCompareResult                             ; NOT Equal. Return One. (BNE)
