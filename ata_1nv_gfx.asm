@@ -1,6 +1,6 @@
 ;*******************************************************************************
 ;*
-;* 1NVADER - Atari parody of C64 1NVADER game - 2021 Ken Jennings
+;* 1NVADER - Atari parody of C64 1NVADER game - 2022 Ken Jennings
 ;*
 ;*******************************************************************************
 
@@ -292,7 +292,7 @@ GFX_SCROLL_CREDIT1 ; 20 + 11 + 20 == 51
 	.sb "   ken jennings     "  ; +30, HSCROL 12
 
 GFX_SCROLL_CREDIT2; 20 + 11 + 20 == 51
-	.by $00,$52,$50,$52,$51,$00,$4D ; "2021 -"
+	.by $00,$52,$50,$52,$52,$00,$4D ; "2022 -"
 	.sb " atari "
 	.by $58,$4d                     ; "8-"
 	.sb "bits"                      ; +0, HSCROL 12
@@ -355,14 +355,16 @@ scrtxt
 	.sb +$40," FIRE"
 	.sb      " TO PLAY      "
 	.sb      " PRESS"
-	.sb +$40," OPTION"
-	.sb      ","
-	.sb +$40," SELECT"
-	.sb      ", "
-	.sb +$40,"START"
-	.sb      " TO CHOOSE GAME MODES AND OPTIONS   "
-	.sb +$40,"     FIRE"
-	.sb      " SHOOTS AND CHANGES CANNON DIRECTION "
+	.sb +$40," OPTION "
+	.sb      "TO VIEW MENUS   "
+	.sb      "PRESS "
+	.sb +$40,"SELECT"
+	.sb      " TO CYCLE THROUGH MENU ITEMS  "
+	.sb      " PRESS"
+	.sb +$40," START"
+	.sb      " TO CHOOSE MENU ITEMS "
+	.sb +$40,"      FIRE"
+	.sb      " SHOOTS AND CHANGES CANNON DIRECTION  "
 	.sb +$40,"     MORE POINTS WHEN 1NVADER IS HIGH UP  "
 	.sb      "     1NVADER SLOWS DOWN AFTER EIGHTY HITS "
 	.sb +$40,"     C64 VERSION 2019 - "
@@ -370,7 +372,7 @@ scrtxt
 	.sb +$40," @DARRENTHEFOULDS "
 	.sb      "     THX @BEDFORDLVLEXP     "
 	.sb +$40,"HI NATE AND TBONE!"
-	.sb      "     ATARI VERSION 2021 - "
+	.sb      "     ATARI VERSION 2022 - "
 	.sb +$40,"KEN JENNINGS "
 	.sb      "HTTPS://GITHUB.COM/KENJENNINGS/ATARI-1NVADER "
 	.sb +$40,"     THANKS TO ATARI PLAYTESTERS: "

@@ -1,6 +1,6 @@
 ;*******************************************************************************
 ;*
-;* 1NVADER - Atari parody of C64 1NVADER game - 2021 Ken Jennings
+;* 1NVADER - Atari parody of C64 1NVADER game - 2022 Ken Jennings
 ;*
 ;*******************************************************************************
 
@@ -612,6 +612,60 @@ DisplayOnOff
 
 
 ; ==========================================================================
+;                                                     SET CONFIG OPTION
+; ==========================================================================
+; Given the current Select menu item engage the function to set the
+; config to the value associated to this Select menu item
+; --------------------------------------------------------------------------
+
+GameSetConfigOption
+
+	lda #CONFIG_VAR_SETVALUE       ; Call the menu's variable's SET function.
+	jsr MenutasticStandardDispatch ; Grand Unified Theorem
+
+
+;	ldx gCurrentSelect           ; X = Current Select Menu being viewed
+
+;	lda TABLE_SET_FUNCTIONS_LO,X ; Get pointer low byte
+;	ora TABLE_SET_FUNCTIONS_HI,X ; OR with pointer high byte
+;	beq b_EndSetConfigOption     ; 0 value is NULL pointer, so  nothing to do.
+
+;	jsr MenuGenericConAddr1      ; Common set for addr.
+;	beq b_EndSetConfigOption     ; 0 value is NULL pointer, so  nothing to do.
+
+;	jsr MenuGenericConAddr2      ; Finish Addr setup and get config value from array
+
+;	pha                          ; push to stack for set()/get() function to use.
+;	lda TABLE_SET_FUNCTIONS_HI,X ; Get pointer high byte 
+;	pha                          ; Push to stack
+;	lda TABLE_SET_FUNCTIONS_LO,X ; Get pointer low byte
+;	pha                          ; Push to stack
+
+;b_EndSetConfigOption
+;	rts
+	; When the called routine ends with rts, it will return to the place 
+	; that called this routine which is up in SELECT key handling.
+
+
+; ==========================================================================
+; Common setup for the low byte and null value test
+
+;MenuGenericConAddr1
+;	lda TABLE_CONFIG_ADDRESS_LO,X    ; Get variable pointer low byte
+;	sta zMenuConfigAddress
+;	ora TABLE_CONFIG_ADDRESS_HI,X  ; OR with pointer high byte
+;	rts
+
+;MenuGenericConAddr2
+;	lda TABLE_CONFIG_ADDRESS_HI,X  ; Get variable pointer high byte
+;	sta zMenuConfigAddress+1
+
+;	lda TABLE_OPTION_ARGUMENTS,X  ; get config value for this menu.
+	rts
+
+
+
+; ==========================================================================
 ;                                           MENUTASTIC STANDARD DISPATCH
 ; ==========================================================================
 ; The General Function Caller.
@@ -949,54 +1003,6 @@ b_EndGetOnOrOffOption
 	; that called this routine which is up in SELECT key handling.
 
 
-
-; ==========================================================================
-;                                                     SET CONFIG OPTION
-; ==========================================================================
-; Given the current Select menu item engage the function to set the
-; config to the value associated to this Select menu item
-; --------------------------------------------------------------------------
-
-GameSetConfigOption
-
-;	ldx gCurrentSelect           ; X = Current Select Menu being viewed
-
-;	lda TABLE_SET_FUNCTIONS_LO,X ; Get pointer low byte
-;	ora TABLE_SET_FUNCTIONS_HI,X ; OR with pointer high byte
-;	beq b_EndSetConfigOption     ; 0 value is NULL pointer, so  nothing to do.
-
-;	jsr MenuGenericConAddr1      ; Common set for addr.
-;	beq b_EndSetConfigOption     ; 0 value is NULL pointer, so  nothing to do.
-
-;	jsr MenuGenericConAddr2      ; Finish Addr setup and get config value from array
-
-;	pha                          ; push to stack for set()/get() function to use.
-;	lda TABLE_SET_FUNCTIONS_HI,X ; Get pointer high byte 
-;	pha                          ; Push to stack
-;	lda TABLE_SET_FUNCTIONS_LO,X ; Get pointer low byte
-;	pha                          ; Push to stack
-
-;b_EndSetConfigOption
-;	rts
-	; When the called routine ends with rts, it will return to the place 
-	; that called this routine which is up in SELECT key handling.
-
-
-; ==========================================================================
-; Common setup for the low byte and null value test
-
-;MenuGenericConAddr1
-;	lda TABLE_CONFIG_ADDRESS_LO,X    ; Get variable pointer low byte
-;	sta zMenuConfigAddress
-;	ora TABLE_CONFIG_ADDRESS_HI,X  ; OR with pointer high byte
-;	rts
-
-;MenuGenericConAddr2
-;	lda TABLE_CONFIG_ADDRESS_HI,X  ; Get variable pointer high byte
-;	sta zMenuConfigAddress+1
-
-;	lda TABLE_OPTION_ARGUMENTS,X  ; get config value for this menu.
-	rts
 
 
 ; ==========================================================================
