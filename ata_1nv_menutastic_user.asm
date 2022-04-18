@@ -34,27 +34,43 @@
 ; ==========================================================================
 ; Declare all the User's variables....
 ;
-; MENU_* values are IDs for standard library functions.
-;
-; See  MENUTASTIC.asm - ENUMERATE STANDARD FUNCTIONS
+; MENU_* values are enumerated IDs for standard library functions.
 ; --------------------------------------------------------------------------
+;
+; MENU_DONOTHING  = 0 ; ID for generic library to do nothing, but 
+;                       will return Z flag (BEQ)
+; MENU_DOONETHING = 1 ; ID for generic library to do nothing, but 
+;                       will return !Z flag (BNE)
+; MENU_SETVALUE   = 2 ; ID for generic library function to set config 
+;                       value to current menu item
+; MENU_SETTOGGLE  = 3 ; ID for generic library function to flip a value 
+;                       between 0 and 1
+; MENU_GETITEM    = 4 ; ID for generic library function to report if 
+;                       config variable matches current menu item
+; MENU_GETTOGGLE  = 5 ; ID for generic library function to report if 
+;                       toggle is set on or off. 
+; MENU_ONDISPLAY  = 6 ; ID for gfx function to display ON/OFF for value 
+;                       based on result of MENU_GET results.
+; --------------------------------------------------------------------------
+
 
 ; ==========================================================================
 TABLE_CONFIG_VARIABLES  ; see menutastic.asm for structure description.
 ; ==========================================================================
 
-CONFIG_VARIABLE_VALUE    =[TABLE_CONFIG_VARIABLES+CONFIG_VAR_VALUE]
-CONFIG_VARIABLE_DEFAULT  =[TABLE_CONFIG_VARIABLES+CONFIG_VAR_DEFAULT]
-CONFIG_VARIABLE_SETVALUE =[TABLE_CONFIG_VARIABLES+CONFIG_VAR_SETVALUE]
-CONFIG_VARIABLE_CMPVALUE =[TABLE_CONFIG_VARIABLES+CONFIG_VAR_CMPVALUE]
-CONFIG_VARIABLE_ONDISPLAY=[TABLE_CONFIG_VARIABLES+CONFIG_VAR_ONDISPLAY]
+CONFIG_VARIABLE_VALUE     = [TABLE_CONFIG_VARIABLES+CONFIG_VAR_VALUE]
+CONFIG_VARIABLE_DEFAULT   = [TABLE_CONFIG_VARIABLES+CONFIG_VAR_DEFAULT]
+CONFIG_VARIABLE_SETVALUE  = [TABLE_CONFIG_VARIABLES+CONFIG_VAR_SETVALUE]
+CONFIG_VARIABLE_CMPVALUE  = [TABLE_CONFIG_VARIABLES+CONFIG_VAR_CMPVALUE]
+CONFIG_VARIABLE_ONDISPLAY = [TABLE_CONFIG_VARIABLES+CONFIG_VAR_ONDISPLAY]
 
-CONFIG_VARIABLE_FUNC_HI  = [TABLE_CONFIG_VARIABLES+1] ; goofiness for function retrieval
+CONFIG_VARIABLE_FUNC_HI   = [TABLE_CONFIG_VARIABLES+1] ; goofiness for function retrieval
 
 ; Define a convenient "handle" that is the real offset into this table.
 ; Note that each is +8 bytes and in this iteration of menu handling 
 ; it will be used as a byte value.  Thus this system allows up to 32
 ; values configured by menus.   We're using 9.
+
 
 CONFIG_LASERRESTART = 0       ; offset into this list of declared structures below.
 
@@ -115,27 +131,27 @@ CONFIG_ONSIEMODE = 48         ; entry occurrence * sizeof structure
 gConfigOnesieMode             ; Toggle on/off -- players take turns shooting.
 	.byte $00                 ; Value
 	.byte $00                 ; Default
-	.word MENU_SETVALUE       ; Set variable to menu item.
-	.word MENU_GETITEM        ; Compare variable to current menu item.  CHANGE THIS *************************************************
-	.word MENU_ONDISPLAY      ; Update graphics asset with ON/OFF based on GETITEM results. CHANGE THIS *****************************
+	.word MENU_SETTOGGLE      ; Set variable to menu item.
+	.word MENU_GETTOGGLE      ; Compare variable to current menu item.
+	.word MENU_ONDISPLAY      ; Update graphics asset with ON/OFF based on GETITEM results.
 
 CONFG_SETALLDEFAULTS = 56     ; entry occurrence * sizeof structure
 
 gConfigSetAllDefaults         ; A variable is still needed for the custom Set code.
 	.byte $00                 ; Value
 	.byte $00                 ; Default
-	.word MENU_SETVALUE       ; Set variable to menu item. CHANGE THIS *************************************************************
-	.word MENU_GETITEM        ; Compare variable to current menu item.
-	.word MENU_ONDISPLAY      ; Update graphics asset with ON/OFF based on GETITEM results. CHANGE THIS *****************************
+	.word CustomSetDefaults-1 ; Set variable to menu item. 
+	.word MENU_DONOTHING      ; Compare variable to current menu item.
+	.word MENU_DONOTHING      ; Update graphics asset with ON/OFF based on GETITEM results. 
 
 CONFG_CHEATMODE = 64          ; entry occurrence * sizeof structure
 
 gConfigCheatMode         
 	.byte $00                 ; Value
 	.byte $00                 ; Default
-	.word MENU_SETVALUE       ; Set variable to menu item.     CHANGE THIS **********************************
-	.word MENU_GETITEM        ; Compare variable to current menu item.
-	.word MENU_ONDISPLAY      ; Update graphics asset with ON/OFF based on GETITEM results. CHANGE THIS *****************************
+	.word MENU_SETTOGGLE      ; Set variable to menu item.  
+	.word MENU_GETTOGGLE      ; Compare variable to current menu item.
+	.word MENU_ONDISPLAY      ; Update graphics asset with ON/OFF based on GETITEM results.
 
 
 
@@ -669,4 +685,41 @@ TABLE_OPTIONS_HI
 	.byte >GFX_MENU_7_2 ; 43 Reset all values to defaults
 	.byte >GFX_MENU_7_3 ; 44 Cheat Mode - 1nvader never reaches bottom row.
 	.byte 0             ; 45 Return to Select entry 42
+
+
+
+; ==========================================================================
+;                                                    CUSTOM SET DEFAULTS
+; ==========================================================================
+; Set all variables to their default values.
+;
+; Loop through array entries and copy the default value to the 
+; variable value.
+;
+; Also, Strobe background color to 
+; --------------------------------------------------------------------------
+
+CustomSetDefaults
+
+	lda #[COLOR_GREEN|$E]         ; Flash background
+	sta COLBK
+
+	ldy #CONFIG_LASERRESTART      ; Index to first variable.
+
+b_csd_CopyDefaultToVariable
+	lda CONFIG_VARIABLE_DEFAULT,y ; Copy default value
+	sta CONFIG_VARIABLE_VALUE,y   ; to variable.
+
+	cpy #CONFG_CHEATMODE          ; Last variable.
+	beq b_csd_Exit
+
+	tya                           ; A = Y (index to config variable)
+	clc
+	adc #SIZEOF_CONFIG_VARIABLE   ; Add size of config variable structure
+	tay                           ; Y = A (indes to next config variable structure)
+	bne b_csd_CopyDefaultToVariable
+
+b_csd_Exit
+
+	rts
 

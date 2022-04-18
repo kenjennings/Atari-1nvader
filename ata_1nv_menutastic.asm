@@ -69,7 +69,7 @@ MENU_ONDISPLAY  = 6 ; ID for gfx function to display ON/OFF for value based on r
 ; 
 ; The Actual Variables that hold the currently configured values.
 ; 
-; Each is declared as an eight byte structure:
+; Each CONFIG VARIABLE is declared as an eight byte structure:
 ; .byte == actual value
 ; .byte == default for variable.  For Toggles this should be 0.
 ; .word == Set function.  jsr address for custom function 
@@ -92,6 +92,7 @@ CONFIG_VAR_SETVALUE  = 2 ; Word-1 address of Set Value function OR Menutastic fu
 CONFIG_VAR_CMPVALUE  = 4 ; Word-1 address of Set Value function OR Menutastic function ID
 CONFIG_VAR_ONDISPLAY = 6 ; Word-1 address of Set Value function OR Menutastic function ID
 
+SIZEOF_CONFIG_VARIABLE = 8 ; Number of bytes for each CONFIG VARIABLE
 
 ; ==========================================================================
 ; Declare all the User's variables....
@@ -572,8 +573,7 @@ DisplayOnOffRightBuffer
 DisplayOnOffLeftBuffer
 
 	ldx #OSS_ONOFF_LEFT  ; +17 for Left position. Then +20 more == Right Buffer. 
-;	bpl DisplayOnOff     ; We know offset must be positive (or less than 128), right?
-
+	; Fall through to DisplayOnOff....
 
 ; ==========================================================================
 ;                                            DISPLAY ON OFF IN BUFFER
@@ -604,9 +604,6 @@ DisplayOnOff
 	lda #CONFIG_VAR_ONDISPLAY      ; Call Draw ON/OFF based on gOSSCompareResult
 	jsr MenutasticStandardDispatch ; Call the display code.
 
-;	ldx gOSSDisplayOffset       
-;	jsr Gfx_Display_OnOff_Option ; Display if on or off.
-
 	rts
 
 
@@ -623,44 +620,6 @@ GameSetConfigOption
 	lda #CONFIG_VAR_SETVALUE       ; Call the menu's variable's SET function.
 	jsr MenutasticStandardDispatch ; Grand Unified Theorem
 
-
-;	ldx gCurrentSelect           ; X = Current Select Menu being viewed
-
-;	lda TABLE_SET_FUNCTIONS_LO,X ; Get pointer low byte
-;	ora TABLE_SET_FUNCTIONS_HI,X ; OR with pointer high byte
-;	beq b_EndSetConfigOption     ; 0 value is NULL pointer, so  nothing to do.
-
-;	jsr MenuGenericConAddr1      ; Common set for addr.
-;	beq b_EndSetConfigOption     ; 0 value is NULL pointer, so  nothing to do.
-
-;	jsr MenuGenericConAddr2      ; Finish Addr setup and get config value from array
-
-;	pha                          ; push to stack for set()/get() function to use.
-;	lda TABLE_SET_FUNCTIONS_HI,X ; Get pointer high byte 
-;	pha                          ; Push to stack
-;	lda TABLE_SET_FUNCTIONS_LO,X ; Get pointer low byte
-;	pha                          ; Push to stack
-
-;b_EndSetConfigOption
-;	rts
-	; When the called routine ends with rts, it will return to the place 
-	; that called this routine which is up in SELECT key handling.
-
-
-; ==========================================================================
-; Common setup for the low byte and null value test
-
-;MenuGenericConAddr1
-;	lda TABLE_CONFIG_ADDRESS_LO,X    ; Get variable pointer low byte
-;	sta zMenuConfigAddress
-;	ora TABLE_CONFIG_ADDRESS_HI,X  ; OR with pointer high byte
-;	rts
-
-;MenuGenericConAddr2
-;	lda TABLE_CONFIG_ADDRESS_HI,X  ; Get variable pointer high byte
-;	sta zMenuConfigAddress+1
-
-;	lda TABLE_OPTION_ARGUMENTS,X  ; get config value for this menu.
 	rts
 
 
@@ -897,6 +856,10 @@ b_MSGI_Exit
 ; The purpose is to set up the gOSSCompareResult flag, so that 
 ; a subsequent display routine can indicate the value of the toggle.
 ;
+; Note that 0 means ON, and 1 means OFF.  Therefore, the 
+; result of Toggle return value must be the opposite of 
+; the variable value.
+;
 ; Result:
 ; BEQ == Current Select item is the current config.
 ; BNE == Current Select item is not the current config value
@@ -911,9 +874,9 @@ MENU_STD_GETTOGGLE
 ;	ldy TABLE_MENU_CONFIG_VARIABLES,X                 ; Y = Variable ID (Offset)
 
 	lda CONFIG_VARIABLE_VALUE,Y ; Get variable value. 
-	beq b_MSGT_Exit                                   ; Equal.  Return Zero. (BEQ)
+	bne b_MSGT_Exit                                   ; Not 0, so return Zero. (BEQ)
 
-	inc gOSSCompareResult                             ; NOT Equal. Return One. (BNE)
+	inc gOSSCompareResult                             ; No1 1, so return One. (BNE)
 
 b_MSGT_Exit
 	rts
@@ -953,137 +916,6 @@ MENU_STD_ONDISPLAY
 
 
 ; ==========================================================================
-;                                              CHECK CONFIG MATCHES MENU
-; ==========================================================================
-; Given the current Select menu determine if that option is 
-; on or off.
-;
-; Result is comparison of the current select menu configuration value to 
-; the actual configuration variable.
-;
-; Given Select Menu X, get Variable number Y
-;
-; Result:
-; BEQ == Current Select item is the current config.
-; BNE == Current Select item is not the current config value
-; --------------------------------------------------------------------------
-
-CheckConfigMatchesMenu
-
-;	ldx gCurrentSelect                ; X = Current Select Menu being viewed
-;	ldy TABLE_MENU_CONFIG_VARIABLES,X ; Y = Variable ID (Offset) (0 is entirely valid, but we should never end up here from an Option menu.
-
-;	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_CMPVALUE],Y      ; Get pointer low byte
-;	ora [TABLE_CONFIG_VARIABLES + CONFIG_VAR_CMPVALUE + 1],Y  ; OR with pointer high byte
-;	beq b_EndGetOnOrOffOption            ; 0 value is NULL pointer, so  nothing to do.
-
-;	lda [TABLE_CONFIG_VARIABLES + CONFIG_VAR_CMPVALUE + 1],Y  ; Get pointer high byte
-;	bne b_ccmm_CustomGetFunction                              ; High Byte <> 0, so it is a real function.
-	; High Byte is 0, so low byte is the Get Function Pointer .
-
-;	jsr LoadGenericGetFunction  ; Given Y, Get function ID, and load pointer address
-;	beq or something here to skip over th call for custom load.
-	
-b_ccmm_CustomGetFunction
-
-;	jsr MenuGenericConAddr1
-;	beq b_EndGetOnOrOffOption    ; 0 value is NULL pointer, so  nothing to do.
-
-;	jsr MenuGenericConAddr2
-
-;	pha                           ; push to stack for set()/get() function to use.
-;	lda TABLE_GET_FUNCTIONS_HI,x  ; Get pointer high byte 
-;	pha                          ; Push to stack
-;	lda TABLE_GET_FUNCTIONS_LO,x    ; Get pointer low byte
-;	pha                          ; Push to stack
-
-b_EndGetOnOrOffOption
-	rts
-	; When the called routine ends with rts, it will return to the place 
-	; that called this routine which is up in SELECT key handling.
-
-
-
-
-; ==========================================================================
-;                                                     GET LASER RESTART
-; ==========================================================================
-; Get value of this menu entry and compare to 
-; current laser restart configuration.
-;
-; Result of comparison determines whether or not to 
-; display ON or OFF text.
-; --------------------------------------------------------------------------
-
-;getLaserRestart
-
-;	pla                      ; Get the canned version of this menu's value from the stack.
-;	cmp gConfigSomething  ; compare to the actual config value
-
-;	rts
-
-; ==========================================================================
-;                                                     SET LASER RESTART
-; ==========================================================================
-; Set value of the laser restart configuration to the value associated 
-; to the current Select menu entry.
-; --------------------------------------------------------------------------
-
-;setLaserRestart
-
-;	pla                      ; Get the canned version of this menu's value from the stack.
-;	sta gConfigSomething   ; save it as the new config value
-
-;	rts
-
-; ==========================================================================
-;                                           GET GENERIC EXCLUSIVE CONFIG
-; ==========================================================================
-; Generic function to GET the value of a configure variable and compare 
-; it to the canned value.
-;
-; The resulting comparison value (CPU flags) describes this as equal to 
-; or not equal to the current menu entry.
-;
-; In most cases the comparison result is used to update the display 
-; to present the ON or OFF indicator.
-;
-; This is generally the function to use for a config that is assigned
-; one value from a mutually exclusive list of entries.  e.g. a set 
-; of menu items that each assign a value from the list: 1,2,3,4,5...
-; --------------------------------------------------------------------------
-
-getGenericExclusiveConfig
-
-;	ldy #0
-;	pla                      ; Get the canned version of this menu's value from the stack.
-;	cmp (zMenuConfigAddress),Y  ; compare to the actual config value
-
-	rts
-
-; ==========================================================================
-;                                           SET GENERIC EXCLUSIVE CONFIG
-; ==========================================================================
-; Generic function to SET the value of a configure variable.
-;
-; This is generally the function to use for a config that is assigned
-; one value from a mutually exclusive list of entries.  e.g. a set 
-; of menu items that each assign a value from the list: 1,2,3,4,5...
-; --------------------------------------------------------------------------
-
-setGenericExclusiveConfig
-
-;	ldy #0
-;	pla                      ; Get the canned version of this menu's value from the stack.
-;	sta (zMenuConfigAddress),Y   ; save it as the new config value
-
-	rts
-
-
-
-
-
-; ==========================================================================
 ; MENUS, SELECTIONS, OPTIONS
 ; ==========================================================================
 ; Press OPTION key to cycle through top level menu. 
@@ -1113,11 +945,6 @@ setGenericExclusiveConfig
 ;	.sb +$40,"TEXT "    ; 5         ; Green
 ;	.sb +$80,"HERE  "   ; 6 == 20   ; Red
 ; --------------------------------------------------------------------------
-
-Gfx_RunMenu_VBI
-
-	rts
-
 
 ; ==========================================================================
 ; CLEAR OPTION RIGHT BUFFER
@@ -1180,7 +1007,7 @@ Gfx_CopyOptionRightToLeftBuffer
 ; ==========================================================================
 ; COPY OPTION TO RIGHT BUFFER
 ; ==========================================================================
-; Used to load up graphics with the text for the new menu item 
+; Used to load up graphics memory with the text for the new menu item 
 ; to begin scrolling.
 ;
 ; X is an index to a word (address) in the arrays of pointers 
