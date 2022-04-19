@@ -51,6 +51,49 @@ b_AnyButton_Exit
 
 
 ;==============================================================================
+;                                                      A JOYSTICK BUTTON  A
+;==============================================================================
+; Subroutine to insure a player releases the button before 
+; pressing it again.  
+;
+; X = Player of interest, (0, 1)
+;
+; Return A == debounce 
+;            1 waiting for debounce, 
+;            0 debounce occurred,
+;           -1 button pressed after debounce cleared.
+;==============================================================================
+
+; gDEBOUNCE_JOY_BUTTON .byte 0,0 ; Flags to make sure joystick buttons are released.
+
+libAJoystickButton             ; get joystick button and debounce it.
+
+	lda STRIG0,X
+	bne b_lajb_ClearDebounce   ; 1 means both buttons are not pressed.
+	
+	; A button is pressed 
+	lda zPLAYER_DEBOUNCE,X ; If debounce flag is on 
+	bne b_lajb_AnyButton_Exit  ; then ignore the button. 
+
+	lda #$ff                   ; A button is pressed when debounce is off.
+	rts
+
+b_lajb_ClearDebounce           ; Nobody is pressing a button.
+	lda #0                     ; Since the buttons are released
+	sta zPLAYER_DEBOUNCE,X ; then remove the debounce flag 
+
+b_lajb_AnyButton_Exit
+	rts
+
+
+libResetJoystickDebounce
+
+	lda #1
+	sta zPLAYER_DEBOUNCE,X
+	rts
+
+
+;==============================================================================
 ;                                                       ANY CONSOLE BUTTON A
 ;==============================================================================
 ; Subroutine to wait for all console key to be released, and then 

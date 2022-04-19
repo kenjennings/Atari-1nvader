@@ -426,8 +426,8 @@ TABLE_MENU_CONFIG_VARIABLES
 	.byte CONFIG_LASERRESTART      ; 9   Short Laser Auto Restart
 	.byte CONFIG_LASERRESTART      ; 10  Long Laser Auto Restart
 	.byte CONFIG_LASERRESTART      ; 11  Regular Laser Manual Restart
-	.byte CONFIG_LASERRESTART      ; 12  Regular Laser Manual Restart
-	.byte CONFIG_LASERRESTART      ; 13  Regular Laser Manual Restart
+	.byte CONFIG_LASERRESTART      ; 12  Short Laser Manual Restart
+	.byte CONFIG_LASERRESTART      ; 13  Long Laser Manual Restart
 	.byte 0                        ; 14  Return to Select entry 8
 	; (SELECT Laser Speed Menu)
 	.byte CONFIG_LASERSPEED        ; 15  Regular laser speed  (Default)
@@ -587,8 +587,8 @@ TABLE_OPTIONS_LO
 	.byte <GFX_MENU_1_2 ; 9   Short Laser Auto Restart
 	.byte <GFX_MENU_1_3 ; 10  Long Laser Auto Restart
 	.byte <GFX_MENU_1_4 ; 11  Regular Laser Manual Restart
-	.byte <GFX_MENU_1_5 ; 12  Regular Laser Manual Restart
-	.byte <GFX_MENU_1_6 ; 13  Regular Laser Manual Restart
+	.byte <GFX_MENU_1_5 ; 12  Short Laser Manual Restart
+	.byte <GFX_MENU_1_6 ; 13  Long Laser Manual Restart
 	.byte 8             ; 14  Return to Select entry 8
 	; (SELECT Laser Speed Menu)
 	.byte <GFX_MENU_2_1 ; 15  Regular laser speed  (Default)
@@ -645,8 +645,8 @@ TABLE_OPTIONS_HI
 	.byte >GFX_MENU_1_2 ; 9   Short Laser Auto Restart
 	.byte >GFX_MENU_1_3 ; 10  Long Laser Auto Restart
 	.byte >GFX_MENU_1_4 ; 11  Regular Laser Manual Restart
-	.byte >GFX_MENU_1_5 ; 12  Regular Laser Manual Restart
-	.byte >GFX_MENU_1_6 ; 13  Regular Laser Manual Restart
+	.byte >GFX_MENU_1_5 ; 12  Short Laser Manual Restart
+	.byte >GFX_MENU_1_6 ; 13  Long Laser Manual Restart
 	.byte 0             ; 14  Return to Select entry 8
 	; (SELECT Laser Speed Menu)
 	.byte >GFX_MENU_2_1 ; 15  Regular laser speed  (Default)
@@ -701,7 +701,7 @@ TABLE_OPTIONS_HI
 
 CustomSetDefaults
 
-	lda #[COLOR_GREEN|$E]         ; Flash background
+	lda #[COLOR_GREEN|$E]         ; Flash background this frame
 	sta COLBK
 
 	ldy #CONFIG_LASERRESTART      ; Index to first variable.
