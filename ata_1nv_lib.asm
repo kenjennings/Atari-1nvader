@@ -18,8 +18,10 @@
 ;==============================================================================
 ;                                                      ANY JOYSTICK BUTTON  A
 ;==============================================================================
-; Subroutine to verify no player is pressing the joystick button,
+; Subroutine to verify neither player is pressing the joystick button,
 ; and then  for any player to press a button.
+;
+; This is used on Title screen and Game Over screen.
 ;
 ; Return A == debounce 
 ;            1 waiting for debounce, 
@@ -56,6 +58,8 @@ b_AnyButton_Exit
 ; Subroutine to insure a player releases the button before 
 ; pressing it again.  
 ;
+; This is used during Game play as it evaluates each player independently.
+;
 ; X = Player of interest, (0, 1)
 ;
 ; Return A == debounce 
@@ -69,18 +73,18 @@ b_AnyButton_Exit
 libAJoystickButton             ; get joystick button and debounce it.
 
 	lda STRIG0,X
-	bne b_lajb_ClearDebounce   ; 1 means both buttons are not pressed.
+	bne b_lajb_ClearDebounce   ; 1 means the button not pressed.
 	
-	; A button is pressed 
-	lda zPLAYER_DEBOUNCE,X ; If debounce flag is on 
+	; 0 means the button is (still) pressed 
+	lda zPLAYER_DEBOUNCE,X     ; If debounce flag is on 
 	bne b_lajb_AnyButton_Exit  ; then ignore the button. 
 
-	lda #$ff                   ; A button is pressed when debounce is off.
+	lda #$ff                   ; A button is pressed after debounce..
 	rts
 
 b_lajb_ClearDebounce           ; Nobody is pressing a button.
 	lda #0                     ; Since the buttons are released
-	sta zPLAYER_DEBOUNCE,X ; then remove the debounce flag 
+	sta zPLAYER_DEBOUNCE,X     ; then remove the debounce flag 
 
 b_lajb_AnyButton_Exit
 	rts

@@ -945,28 +945,31 @@ CheckPlayerShooting
 	lda zPLAYER_CRASH,X          ; Is the gun crashed by alien?
 	bne b_cps_Exit               ; Yes.  Done here.
 
-	lda gConfigLaserRestart      ; If this is negative, then debounce required.
-	bmi b_cps_DBounceJS          ; Wait for debounce.
+;	lda gConfigLaserRestart      ; If this is negative, then debounce required.
+;	bmi b_cps_DBounceJS          ; Wait for debounce.
 
-	lda STRIG0,X                 ; (Read) TRIG0 - Joystick trigger (0 is pressed. 1 is not pressed)
-	beq b_cps_TryLaserShot       ; Fire button pressed.
-	bne b_cps_Exit               ; Done here.
+;	lda STRIG0,X                 ; (Read) TRIG0 - Joystick trigger (0 is pressed. 1 is not pressed)
+;	beq b_cps_TryLaserShot       ; Fire button pressed.
+;	bne b_cps_Exit               ; Done here.
 
-b_cps_DBounceJS
+;b_cps_DBounceJS
 	jsr libAJoystickButton       ; 1=wait, 0=debounced, -1=trigger
-	bmi b_cps_TryLaserShot       ; Fire button pressed.
+	bpl b_cps_Exit               ; Done here.
+
+;	bmi b_cps_TryLaserShot       ; Fire button pressed.
 
 ;	lda #0
 ;	sta zPLAYER_DEBOUNCE,X       ; Turn off debounce to allow shooting again.
 ;	beq b_cps_Exit               ; Done here.
 
-b_cps_TryLaserShot
+;b_cps_TryLaserShot
 	lda zLASER_ON,X              ; Is Laser on?
-	beq b_cps_TestDebounce       ; No.  Ok to shoot.
+	beq b_cps_StartLaser       ; No.  Ok to shoot.
 
-	lda gConfigLaserRestart      ; reduce to 0, 1, 2...
+	lda gConfigLaserRestart      ; reduce $80, $81, $82 to 0, 1, 2...
 	and #$7F                     ; ... by removing high bit
 	tay                          ; Y = index into gLASER_RESTART_HEIGHT
+
 	lda zLASER_NEW_Y,X           ; Check if Y is now less than...
 	cmp gLASER_RESTART_HEIGHT,Y  ; ... the configured height.
 	bcs b_cps_Exit               ; No, greater than/equal to. Done.
@@ -974,14 +977,19 @@ b_cps_TryLaserShot
 ;	lda zLASER_NEW_Y,X           ; Is Laser still in bottom half of screen?
 ;	bmi b_cps_Exit               ; Yes.  Done here.
 
-b_cps_TestDebounce               ; The button must have been released before shooting again.
+b_cps_StartLaser               ; The button must have been released before shooting again.
 ;	lda zPLAYER_DEBOUNCE,X       ; 1 is trigger is still held.  0 is trigger has been released.
 ;	bne b_cps_Exit               ; Nope.  No machine gunning here.  Let go the button first.
  
- 	jsr libResetJoystickDebounce ; Turn off debounce to allow shooting again.
-	bne b_cps_Exit               ; Done here.
-
 	jsr StartShot                ; Yippie-Ki-Yay Bang Bang Shoot Shoot.
+	; Note that X is still the valid player number after calling StartShot.
+
+;	lda gConfigLaserRestart      ; if debouncer is not turned on
+;	bpl b_cps_Exit               ; Done here.
+	lda gConfigLaserRestart      ; Get the laser restart config
+	bpl b_cps_Exit               ; If it is positive, then no need to debounce joystick.
+
+ 	jsr libResetJoystickDebounce ; Turn off debounce to allow shooting again.           
 
 b_cps_Exit
 	rts
@@ -1215,7 +1223,7 @@ b_gmm_Exit_MS_Move
 StartShot
 
 	inc zLASER_ON,X          ; Turn laser on for the VBI to draw.
-	inc zPLAYER_DEBOUNCE,X   ; Flag to do debounce tests on the next shot.
+;	inc zPLAYER_DEBOUNCE,X   ; Flag to do debounce tests on the next shot.
 	lda #LASER_START
 	sta zLASER_NEW_Y,X       ; New Y is set.
 
