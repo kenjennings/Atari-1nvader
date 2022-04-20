@@ -90,13 +90,27 @@ TABLE_PLAYER_CONTROL
 ; How many pixels to move the Laser each frame.  PAL, NTSC per each.
 ; Lookup X == ( THIS_FRAME * 2 ) + zNTSCorPALflag
 TABLE_LASER_CONTROL
+	.byte 2,2 ; Frame 1, PAL, NTSC
+	.byte 3,2 ; Frame 2, PAL, NTSC
+	.byte 2,2 ; Frame 3, PAL, NTSC
+	.byte 3,2 ; Frame 4, PAL, NTSC
+	.byte 2,2 ; Frame 5, PAL, NTSC
+	.byte 0,2 ; Frame 6, (-), NTSC
+	
 	.byte 5,4 ; Frame 1, PAL, NTSC
 	.byte 5,4 ; Frame 2, PAL, NTSC
 	.byte 4,4 ; Frame 3, PAL, NTSC
 	.byte 5,4 ; Frame 4, PAL, NTSC
-	.byte 4,4 ; Frame 5, PAL, NTSC
+	.byte 5,4 ; Frame 5, PAL, NTSC
 	.byte 0,4 ; Frame 6, (-), NTSC
 
+	.byte 7,6 ; Frame 1, PAL, NTSC
+	.byte 7,6 ; Frame 2, PAL, NTSC
+	.byte 8,6 ; Frame 3, PAL, NTSC
+	.byte 7,6 ; Frame 4, PAL, NTSC
+	.byte 7,6 ; Frame 5, PAL, NTSC
+	.byte 0,6 ; Frame 6, (-), NTSC
+	
 ; How many pixels to horizontally move the mothership.  Pal, NTSC per each.
 ; Since there are multiple speed values for the mothership, there 
 ; is a control table for each of the speed values.

@@ -36,8 +36,8 @@
 ; timing situations due to further embelishments.
 ; --------------------------------------------------------------------------
 
-gFrameAsIndex .byte $00
-
+gFrameAsIndex      .byte $00 ; (Frame * 2) +  PAL(0) or NTSC(1)
+gFrameAsLaserIndex .byte $00 ; Laser Speed + ( Frame * 2) + PAL(0) or NTSC(1)
 FrameManagement
 
 	lda #0                  ; Lazy way of turning off attract mode.
@@ -66,6 +66,11 @@ b_fm_SkipIncIndex
 
 	lda TABLE_PLAYER_CONTROL,x ; Determine Player X increment/decrement
 	sta zINC_PLAYER_X
+
+	lda gFrameAsIndex
+	clc
+	adc gConfigLaserSpeed
+	tax
 
 	lda TABLE_LASER_CONTROL,x ; Determine shot Y decrement
 	sta zINC_LASER_Y

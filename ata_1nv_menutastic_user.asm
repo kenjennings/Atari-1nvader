@@ -84,8 +84,8 @@ gConfigLaserRestart
 CONFIG_LASERSPEED = 8         ; entry occurrence * sizeof structure
 
 gConfigLaserSpeed        
-	.byte $00                 ; Value
-	.byte $00                 ; Default
+	.byte 12                  ; Value
+	.byte 12                  ; Default (12 * speed option) -- 0, 12, 24
 	.word MENU_SETVALUE       ; Set variable to menu item.
 	.word MENU_GETITEM        ; Compare variable to current menu item.
 	.word MENU_ONDISPLAY      ; Update graphics asset with ON/OFF based on GETITEM results.
@@ -249,20 +249,22 @@ GFX_MENU_1_6_TEXT
  
 ; SELECT Laser Speed Menu =====================================
 
-GFX_MENU_2_1                 
-	.sb "REGULAR LASERS      "
+GFX_MENU_2_1 
+	.sb "SLOW LASERS         "
 GFX_MENU_2_1_TEXT
+	.sb +$40,"PAINFULLY@SLOW@LASERS@@@@@@@@@@@@@@@@@@@"
+	
+GFX_MENU_2_2                 
+	.sb "REGULAR LASERS      "
+GFX_MENU_2_2_TEXT
 	.sb +$40,"THE@NORMAL@DEFAULT@SPEED@FOR@LASERS@@@@@"
 
-GFX_MENU_2_2 
+GFX_MENU_2_3 
 	.sb "FAST LASERS         "
-GFX_MENU_2_2_TEXT
+GFX_MENU_2_3_TEXT
 	.sb +$40,"FASTER@LASERS@MAY@NOT@HELP@SO@MUCH@@@@@@"
 
-GFX_MENU_2_3 
-	.sb "SLOW LASERS         "
-GFX_MENU_2_3_TEXT
-	.sb +$40,"PAINFULLY@SLOW@LASERS@@@@@@@@@@@@@@@@@@@"
+
 
 
 ; SELECT 1NVADER Startup Menu =================================
@@ -499,9 +501,9 @@ TABLE_OPTION_ARGUMENTS
 	.byte $82 ; gConfigLaserRestart      ; 13  Long Laser Manual Restart
 	.byte 0                              ; 14  Return to Select entry 8
 	; (SELECT Laser Speed Menu)
-	.byte $00 ; gConfigLaserSpeed        ; 15  Regular laser speed (Default)
-	.byte $01 ; gConfigLaserSpeed        ; 16  Fast laser speed (+2)
-	.byte $02 ; gConfigLaserSpeed        ; 17  Slow laser speed (-2)
+	.byte 0   ; gConfigLaserSpeed        ; 15  Slow laser speed (-2) 
+	.byte 12  ; gConfigLaserSpeed        ; 16  Regular laser speed (Default) 
+	.byte 24  ; gConfigLaserSpeed        ; 17  Fast laser speed (+2)
 	.byte 0                              ; 18 Return to Select entry 15
 	; (SELECT 1NVADER Startup Menu)
 	.byte $01 ; gConfig1nvaderStartSpeed ; 19 1nvader Start Speed 1 (Default)
