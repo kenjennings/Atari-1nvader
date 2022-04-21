@@ -93,8 +93,8 @@ gConfigLaserSpeed
 CONFIG_1NVADERSTARTSPEED = 16 ; entry occurrence * sizeof structure
 
 gConfig1nvaderStartSpeed 
-	.byte $01                 ; Value
-	.byte $01                 ; Default
+	.byte $00                 ; Value
+	.byte $00                 ; Default
 	.word MENU_SETVALUE       ; Set variable to menu item.
 	.word MENU_GETITEM        ; Compare variable to current menu item.
 	.word MENU_ONDISPLAY      ; Update graphics asset with ON/OFF based on GETITEM results.
@@ -111,8 +111,8 @@ gConfig1nvaderHitCounter
 CONFIG_1NVADERMAXSPEED  = 32  ; entry occurrence * sizeof structure
 
 gConfig1nvaderMaxSpeed   
-	.byte 9                   ; Value
-	.byte 9                   ; Default
+	.byte 7                   ; Value
+	.byte 7                   ; Default
 	.word MENU_SETVALUE       ; Set variable to menu item.
 	.word MENU_GETITEM        ; Compare variable to current menu item.
 	.word MENU_ONDISPLAY      ; Update graphics asset with ON/OFF based on GETITEM results.
@@ -333,23 +333,28 @@ GFX_MENU_4_6_TEXT
 ; SELECT 1NVADER Max Speed Menu ===============================
 
 GFX_MENU_5_1                 
-	.sb "1NVADER SPEED 1     "
+	.sb "1NVADER MAX SPEED 1 "
 GFX_MENU_5_1_TEXT
 	.sb +$40,"SLOWEST@MAXIMUM@SPEED@@@@@@@@@@@@@@@@@@@"
 
 GFX_MENU_5_2               
-	.sb "1NVADER SPEED 3     "
+	.sb "1NVADER MAX SPEED 3 "
 GFX_MENU_5_2_TEXT
 	.sb +$40,"SPEEDUP@TO@THREE@@@@@@@@@@@@@@@@@@@@@@@@"
 
 GFX_MENU_5_3               
-	.sb "1NVADER SPEED 5     "
+	.sb "1NVADER MAX SPEED 5 "
 GFX_MENU_5_3_TEXT
 	.sb +$40,"SPEEDUP@TO@FIVE@@@@@@@@@@@@@@@@@@@@@@@@@"
 
-GFX_MENU_5_4               
-	.sb "MAXIMUM SPEED       "
+GFX_MENU_5_4 
+	.sb "1NVADER MAX SPEED 7 "
 GFX_MENU_5_4_TEXT
+	.sb +$40,"1NVADER@STARTS@AT@SPEED@7@@@@@@@@@@@@@@@"
+	
+GFX_MENU_5_5               
+	.sb "MAXIMUM SPEED       "
+GFX_MENU_5_5_TEXT
 	.sb +$40,"UP@TO@MAXIMUM@SPEED@@@@@@@@@@@@@@@@@@@@@"
 
 
@@ -455,19 +460,20 @@ TABLE_MENU_CONFIG_VARIABLES
 	.byte CONFIG_1NVADERMAXSPEED   ; 32 Max speed 1
 	.byte CONFIG_1NVADERMAXSPEED   ; 33 Max speed 3
 	.byte CONFIG_1NVADERMAXSPEED   ; 34 Max speed 5
-	.byte CONFIG_1NVADERMAXSPEED   ; 35 Max speed MAX (Default)
-	.byte 0                        ; 36 Return to Select entry 32
+	.byte CONFIG_1NVADERMAXSPEED   ; 35 Max speed 7
+	.byte CONFIG_1NVADERMAXSPEED   ; 36 Max speed MAX (Default)
+	.byte 0                        ; 37 Return to Select entry 32
 	; (SELECT Two Player Modes Menu)
-	.byte CONFIG_TWOPLAYERMODE     ; 37 FR1GULAR - Guns bounce off each other. (Default)
-	.byte CONFIG_TWOPLAYERMODE     ; 38 FR1GNORE - Guns do not bounce off each other.
-	.byte CONFIG_TWOPLAYERMODE     ; 39 FRENEM1ES - Guns attached to each other.           
-	.byte CONFIG_TWOPLAYERMODE     ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
-	.byte 0                        ; 41 Return to Select entry 37
+	.byte CONFIG_TWOPLAYERMODE     ; 38 FR1GULAR - Guns bounce off each other. (Default)
+	.byte CONFIG_TWOPLAYERMODE     ; 39 FR1GNORE - Guns do not bounce off each other.
+	.byte CONFIG_TWOPLAYERMODE     ; 40 FRENEM1ES - Guns attached to each other.           
+	.byte CONFIG_TWOPLAYERMODE     ; 41 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.byte 0                        ; 42 Return to Select entry 38
 	; (SELECT Other things Menu)
-	.byte CONFIG_ONSIEMODE         ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte CONFG_SETALLDEFAULTS     ; 43 Reset all values to defaults
-	.byte CONFG_CHEATMODE          ; 44 Cheat Mode - 1nvader never reaches bottom row.
-	.byte 0                        ; 45 Return to Select entry 42
+	.byte CONFIG_ONSIEMODE         ; 43 ONES1ES - 2P take turns shooting. (Default - Off)
+	.byte CONFG_SETALLDEFAULTS     ; 44 Reset all values to defaults
+	.byte CONFG_CHEATMODE          ; 45 Cheat Mode - 1nvader never reaches bottom row.
+	.byte 0                        ; 46 Return to Select entry 43
 
 
 
@@ -506,11 +512,11 @@ TABLE_OPTION_ARGUMENTS
 	.byte 24  ; gConfigLaserSpeed        ; 17  Fast laser speed (+2)
 	.byte 0                              ; 18 Return to Select entry 15
 	; (SELECT 1NVADER Startup Menu)
-	.byte $01 ; gConfig1nvaderStartSpeed ; 19 1nvader Start Speed 1 (Default)
-	.byte $03 ; gConfig1nvaderStartSpeed ; 20 1nvader Start Speed 3
-	.byte $05 ; gConfig1nvaderStartSpeed ; 21 1nvader Start Speed 5
-	.byte $07 ; gConfig1nvaderStartSpeed ; 22 1nvader Start Speed 7
-	.byte $09 ; gConfig1nvaderStartSpeed ; 23 1nvader Start Speed MAX
+	.byte $00 ; gConfig1nvaderStartSpeed ; 19 1nvader Start Speed 1 (Default)
+	.byte $02 ; gConfig1nvaderStartSpeed ; 20 1nvader Start Speed 3
+	.byte $04 ; gConfig1nvaderStartSpeed ; 21 1nvader Start Speed 5
+	.byte $06 ; gConfig1nvaderStartSpeed ; 22 1nvader Start Speed 7
+	.byte $07 ; gConfig1nvaderStartSpeed ; 23 1nvader Start Speed MAX
 	.byte 0                              ; 24 Return to Select entry 19
 	; (SELECT 1NVADER Speedup Menu)
 	.byte 10  ; gConfig1nvaderHitCounter ; 25 1nvader speed up every 10 hits (Default)
@@ -521,22 +527,23 @@ TABLE_OPTION_ARGUMENTS
 	.byte 0   ; gConfig1nvaderHitCounter ; 30 1nvader speed up no speedup
 	.byte 0                              ; 31 Return to Select entry 25
 	; (SELECT 1NVADER Max Speed Menu)
-	.byte $01 ; gConfig1nvaderMaxSpeed   ; 32 Max speed 1
-	.byte $03 ; gConfig1nvaderMaxSpeed   ; 33 Max speed 3
-	.byte $05 ; gConfig1nvaderMaxSpeed   ; 34 Max speed 5
-	.byte $09 ; gConfig1nvaderMaxSpeed   ; 35 Max speed MAX (Default)
-	.byte 0                              ; 36 Return to Select entry 32
+	.byte $00 ; gConfig1nvaderMaxSpeed   ; 32 Max speed 1
+	.byte $02 ; gConfig1nvaderMaxSpeed   ; 33 Max speed 3
+	.byte $04 ; gConfig1nvaderMaxSpeed   ; 34 Max speed 5
+	.byte $06 ; gConfig1nvaderMaxSpeed   ; 35 Max speed 7
+	.byte $07 ; gConfig1nvaderMaxSpeed   ; 36 Max speed MAX (Default)
+	.byte 0                              ; 37 Return to Select entry 32
 	; (SELECT Two Player Modes Menu)
-	.byte $00 ; gConfigTwoPlayerMode     ; 37 FR1GULAR - Guns bounce off each other. (Default)
-	.byte $01 ; gConfigTwoPlayerMode     ; 38 FR1GNORE - Guns do not bounce off each other.
-	.byte $02 ; gConfigTwoPlayerMode     ; 39 FRENEM1ES - Guns attached to each other.           
-	.byte $03 ; gConfigTwoPlayerMode     ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
-	.byte 0                              ; 41 Return to Select entry 37
+	.byte $00 ; gConfigTwoPlayerMode     ; 38 FR1GULAR - Guns bounce off each other. (Default)
+	.byte $01 ; gConfigTwoPlayerMode     ; 39 FR1GNORE - Guns do not bounce off each other.
+	.byte $02 ; gConfigTwoPlayerMode     ; 40 FRENEM1ES - Guns attached to each other.           
+	.byte $03 ; gConfigTwoPlayerMode     ; 41 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.byte 0                              ; 42 Return to Select entry 38
 	; (SELECT Other things Menu)
-	.byte 0   ; gConfigOnesieMode        ; 42 TOGGLE - ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte 0   ; gConfigSetAllDefaults    ; 43 Reset all values to defaults
-	.byte 0   ; gConfigCheatMode         ; 44 TOGGLE - Cheat Mode - 1nvader never reaches bottom row.
-	.byte 0                              ; 45 Return to Select entry 42
+	.byte 0   ; gConfigOnesieMode        ; 43 TOGGLE - ONES1ES - 2P take turns shooting. (Default - Off)
+	.byte 0   ; gConfigSetAllDefaults    ; 44 Reset all values to defaults
+	.byte 0   ; gConfigCheatMode         ; 45 TOGGLE - Cheat Mode - 1nvader never reaches bottom row.
+	.byte 0                              ; 46 Return to Select entry 43
 
 
 ; ==========================================================================
@@ -552,8 +559,8 @@ TABLE_OPTIONS_SELECTMENUS
 	.byte 19 ; 19 SELECT 1NVADER Startup Menu
 	.byte 25 ; 25 SELECT 1NVADER Speedup Menu
 	.byte 32 ; 32 SELECT 1NVADER Max Speed Menu
-	.byte 37 ; 37 SELECT Two Player Modes Menu
-	.byte 42 ; 42 SELECT Other things Menu
+	.byte 38 ; 37 SELECT Two Player Modes Menu
+	.byte 43 ; 42 SELECT Other things Menu
 	.byte 0  ; Go back to first menu.
 
 
@@ -616,19 +623,20 @@ TABLE_OPTIONS_LO
 	.byte <GFX_MENU_5_1 ; 32 Max speed 1
 	.byte <GFX_MENU_5_2 ; 33 Max speed 3
 	.byte <GFX_MENU_5_3 ; 34 Max speed 5
-	.byte <GFX_MENU_5_4 ; 35 Max speed MAX (Default)
-	.byte 32            ; 36 Return to Select entry 32
+	.byte <GFX_MENU_5_4 ; 35 Max speed 7
+	.byte <GFX_MENU_5_5 ; 36 Max speed MAX (Default)
+	.byte 32            ; 37 Return to Select entry 32
 	; (SELECT Two Player Modes Menu)
-	.byte <GFX_MENU_6_1 ; 37 FR1GULAR - Guns bounce off each other. (Default)
-	.byte <GFX_MENU_6_2 ; 38 FR1GNORE - Guns do not bounce off each other.
-	.byte <GFX_MENU_6_3 ; 39 FRENEM1ES - Guns attached to each other.           
-	.byte <GFX_MENU_6_4 ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
-	.byte 37            ; 41 Return to Select entry 37
+	.byte <GFX_MENU_6_1 ; 38 FR1GULAR - Guns bounce off each other. (Default)
+	.byte <GFX_MENU_6_2 ; 39 FR1GNORE - Guns do not bounce off each other.
+	.byte <GFX_MENU_6_3 ; 40 FRENEM1ES - Guns attached to each other.           
+	.byte <GFX_MENU_6_4 ; 41 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.byte 38            ; 42 Return to Select entry 38
 	; (SELECT Other things Menu)
-	.byte <GFX_MENU_7_1 ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte <GFX_MENU_7_2 ; 43 Reset all values to defaults
-	.byte <GFX_MENU_7_3 ; 44 Cheat Mode - 1nvader never reaches bottom row.
-	.byte 42            ; 45 Return to Select entry 42
+	.byte <GFX_MENU_7_1 ; 43 ONES1ES - 2P take turns shooting. (Default - Off)
+	.byte <GFX_MENU_7_2 ; 44 Reset all values to defaults
+	.byte <GFX_MENU_7_3 ; 45 Cheat Mode - 1nvader never reaches bottom row.
+	.byte 43            ; 46 Return to Select entry 43
 
 
 ; ==========================================================================
@@ -674,19 +682,20 @@ TABLE_OPTIONS_HI
 	.byte >GFX_MENU_5_1 ; 32 Max speed 1
 	.byte >GFX_MENU_5_2 ; 33 Max speed 3
 	.byte >GFX_MENU_5_3 ; 34 Max speed 5
-	.byte >GFX_MENU_5_4 ; 35 Max speed MAX (Default)
-	.byte 0             ; 36 Return to Select entry 32
+	.byte >GFX_MENU_5_4 ; 35 Max speed 7
+	.byte >GFX_MENU_5_5 ; 36 Max speed MAX (Default)
+	.byte 0             ; 37 Return to Select entry 32
 	; (SELECT Two Player Modes Menu)
-	.byte >GFX_MENU_6_1 ; 37 FR1GULAR - Guns bounce off each other. (Default)
-	.byte >GFX_MENU_6_2 ; 38 FR1GNORE - Guns do not bounce off each other.
-	.byte >GFX_MENU_6_3 ; 39 FRENEM1ES - Guns attached to each other.           
-	.byte >GFX_MENU_6_4 ; 40 FRE1GHBORS - Center barrier.  Guns have half screen.
-	.byte 0             ; 41 Return to Select entry 37
+	.byte >GFX_MENU_6_1 ; 38 FR1GULAR - Guns bounce off each other. (Default)
+	.byte >GFX_MENU_6_2 ; 39 FR1GNORE - Guns do not bounce off each other.
+	.byte >GFX_MENU_6_3 ; 40 FRENEM1ES - Guns attached to each other.           
+	.byte >GFX_MENU_6_4 ; 41 FRE1GHBORS - Center barrier.  Guns have half screen.
+	.byte 0             ; 42 Return to Select entry 38
 	; (SELECT Other things Menu)
-	.byte >GFX_MENU_7_1 ; 42 ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte >GFX_MENU_7_2 ; 43 Reset all values to defaults
-	.byte >GFX_MENU_7_3 ; 44 Cheat Mode - 1nvader never reaches bottom row.
-	.byte 0             ; 45 Return to Select entry 42
+	.byte >GFX_MENU_7_1 ; 43 ONES1ES - 2P take turns shooting. (Default - Off)
+	.byte >GFX_MENU_7_2 ; 44 Reset all values to defaults
+	.byte >GFX_MENU_7_3 ; 45 Cheat Mode - 1nvader never reaches bottom row.
+	.byte 0             ; 46 Return to Select entry 43
 
 
 

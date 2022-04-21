@@ -717,6 +717,15 @@ GameSetupMain
 
 	; M O T H E R S H I P 
 
+; Enforce sanity for start speed and max speed.
+; If start speed > max speed then max speed == start speed.
+
+	lda gConfig1nvaderStartSpeed ; Get start speed
+	cmp gConfig1nvaderMaxSpeed   ; Is is less than max speed?
+	bcc b_gsm_SkipFixMSSpeed     ; Yes.  No need to reset Max.
+	sta gConfig1nvaderMaxSpeed   ; Less than: Make Max speed == Start speed.
+
+b_gsm_SkipFixMSSpeed
 	jsr GameResetHitCounter         ; initilize hit counter and speed
                                     
 	jsr GameRandomizeMothership     ; Set the starting X position and random direction.

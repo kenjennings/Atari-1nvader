@@ -69,6 +69,7 @@ zMOTHERSHIP_MOVEMENT        .byte $00 ; Value to add/subtract from Mothership X
 
 zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed index into speed table 0, 2, 4, ..., 14 
 zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
+zMOTHERSHIP_PROGRESSIVE     .byte $00 ; Counts 10, 9, 8, 7, 6...
 
 ; Run-time config for frame limits for PAL or NTSC video modes. Index by zNTSCorPAL.
 TABLE_NTSC_OR_PAL_FRAMES     

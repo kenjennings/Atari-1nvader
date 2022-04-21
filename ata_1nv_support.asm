@@ -1571,6 +1571,29 @@ b_gmspfp_CopyLoop
 
 
 ; ==========================================================================
+; RESET SPEEDUP COUNTER
+; ==========================================================================
+; Set the speedup counter based on the configured 
+; choice, gConfig1nvaderHitCounter.
+;
+; If the value is negative, then this is progressive counting.
+; --------------------------------------------------------------------------
+
+GameSetSpeedupCounter
+
+	lda gConfig1nvaderHitCounter
+	bpl b_gssc_AssignSpeedup
+
+	lda #10                     ; Negative means we're doing 10, 9, 8...
+	sta zMOTHERSHIP_PROGRESSIVE
+
+b_gssc_AssignSpeedup
+	sta zMOTHERSHIP_SPEEDUP_COUNTER
+
+	rts
+
+
+; ==========================================================================
 ; RESET HIT COUNTER
 ; ==========================================================================
 ; Reset the byte counter, and reset the two-byte BCD-like version 
@@ -1588,8 +1611,11 @@ GameResetHitCounter
 	lda #$00
 	sta zSHIP_HITS_AS_DIGITS+1      ; Ones digit is "0"
 
+	jsr GameSetSpeedupCounter
+;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; Zero speed offset
+
+	lda gConfig1nvaderStartSpeed    ; Get configured starting speed
 	sta zMOTHERSHIP_MOVE_SPEED      ; Zero move speed.
-	sta zMOTHERSHIP_SPEEDUP_COUNTER ; Zero speed offset
 
 	rts
 
@@ -1610,16 +1636,52 @@ GameDecrementHitCounter
 	beq GameResetHitCounter      ; go up to reset counter (will not return here.)
 
 	dec zSHIP_HITS_AS_DIGITS+1   ; Subtract from ones place digit.
-	beq b_gdhc_CheckSpeedControl ; If ones is 0, then go to next mothership speed.
-	bpl b_gdhc_Exit              ; Some other non-zero digit.  Done here.
+	bpl b_gdhc_DoSpeedupCounter  ; It did not go -1
+	
+	
+;	beq b_gdhc_CheckSpeedControl ; If ones is 0, then go to next mothership speed.
+;	bpl b_gdhc_Exit              ; Some other non-zero digit.  Done here.
 
 	lda #$9                      ; Ones digit went to -1
 	sta zSHIP_HITS_AS_DIGITS+1   ; Reset ones to 9
 	dec zSHIP_HITS_AS_DIGITS     ; Subtract 1 from tens position.
-	rts
+;	rts
+
+b_gdhc_DoSpeedupCounter
+	lda gConfig1nvaderHitCounter ; Check config for speedups.
+	beq b_gdhc_Exit              ; 0 means no speedups.
+
+	lda zMOTHERSHIP_SPEEDUP_COUNTER
+	beq b_gdhc_Exit                 ; It arrived here at 0, so no more speedups.
+
+	dec zMOTHERSHIP_SPEEDUP_COUNTER ; Hit counter - 1
+	bne b_gdhc_Exit                 ; Not 0 means no speedup yet.
+
+	; Counter decremented to 0 , so do a speedup. First restart the counter.
+	lda gConfig1nvaderHitCounter 
+	bpl b_gdhc_SetHitCounter     ; Not negative, just use value to restart counter.
+
+	; Negative means use the progressive counter.
+
+	lda zMOTHERSHIP_PROGRESSIVE
+	beq b_gdhc_Exit   ; Progressive counter reached 0  already.  
+	
+	dec zMOTHERSHIP_PROGRESSIVE
+	lda zMOTHERSHIP_PROGRESSIVE
+	
+;	dec zMOTHERSHIP_SPEEDUP_COUNTER ; Hit counter - 1
+;	bne b_gdhc_Exit
+
+b_gdhc_SetHitCounter
+	sta zMOTHERSHIP_SPEEDUP_COUNTER
+	beq b_gdhc_Exit                  ; This reduced to 0, so no speedup.
 
 b_gdhc_CheckSpeedControl        ; Need to add +2 for 2 entries for hpos+ entries.
-	inc  zMOTHERSHIP_MOVE_SPEED ; Speedup++
+	lda zMOTHERSHIP_MOVE_SPEED   ; Get current speed
+	cmp gConfig1nvaderMaxSpeed   ; Compare to max speed 
+	beq b_gdhc_Exit              ; If at max, then nothing else to do.
+
+	inc zMOTHERSHIP_MOVE_SPEED ; Speedup++
 	jsr FrameControlMothershipSpeed  ; Maybe overkill.  VBI will also do this.
 
 b_gdhc_Exit
