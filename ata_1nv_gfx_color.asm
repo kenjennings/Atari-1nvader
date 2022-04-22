@@ -52,17 +52,17 @@ b_gsnopc_CopyLoopPAL
 	bne b_gsnopc_CopyLoopPAL
 
 ; HACKERY TO BE REMOVED AFTER DEBUGGING VISUALS 
-	ldx #2
-b_gnsopc_PromptPAL
-	lda PAL_PROMPT,x
-	sta GFX_SCORE_HI-6,X
-	dex
-	bpl b_gnsopc_PromptPAL
+;	ldx #2
+;b_gnsopc_PromptPAL
+;	lda PAL_PROMPT,x
+;	sta GFX_SCORE_HI-6,X
+;	dex
+;	bpl b_gnsopc_PromptPAL
 
 b_gsnopc_Exit
 	rts
 
-PAL_PROMPT .sb "PAL"
+;PAL_PROMPT .sb "PAL"
 
 
 ; ==========================================================================

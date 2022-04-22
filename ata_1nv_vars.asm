@@ -383,14 +383,14 @@ gTEMP_NEW_STAR_ROW .byte 0 ; Row number for star 0 to 17.
 
 CHEAT_CLOCK = 60
 
-gSTARS_CHEAT_CLOCK .byte CHEAT_CLOCK ; countodown to change graphic
+gSTARS_CHEAT_CLOCK .byte 0           ; countodown to change graphic
 
-gSTARS_OR_CHEAT    .byte 0           ; 0 = normal.   1-5 current cheat char.
+gCHEAT_IMAGE_INDEX .byte $ff         ; 0-4 current cheat char.
 
-gSTARS_OR_CHEAT_TABLE                ; gSTARS_OR_CHEAT * 8 is index.
+gCHEAT_IMAGE_TABLE                   ; gCHEAT_IMAGE_INDEX * 8 is index.
 
 ; Char $0A:   *                      ; Revise Star again for Atari for Mode 6 color
-	.byte $08,$00,$08,$2A,$08,$00,$08,$00
+;	.byte $08,$00,$08,$2A,$08,$00,$08,$00
 ; $08: . . . . # . . . 
 ; $00: . . . . . . . . 
 ; $08: . . . . # . . . 

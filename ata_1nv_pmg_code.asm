@@ -795,58 +795,71 @@ Pmg_EraseMothership
 ; Draw 8 bytes at Y position.
 ;
 ; Y == Vertical position to target
+;
+; Optimized with direct value loads instead of reading image from 
+; declared table.
 ; --------------------------------------------------------------------------
 
 Pmg_DrawMothership
 
-	lda PMG_IMG_MOTHERSHIP_P2
+;	lda PMG_IMG_MOTHERSHIP_P2
+	lda #$18
 	sta PLAYERADR2,Y
 
-	lda PMG_IMG_MOTHERSHIP_P2+1
+;	lda PMG_IMG_MOTHERSHIP_P2+1
+	lda #$3c
 	sta PLAYERADR2+1,Y
 
-	lda PMG_IMG_MOTHERSHIP_P2+2
+;	lda PMG_IMG_MOTHERSHIP_P2+2
+	lda #$7e
 	sta PLAYERADR2+2,Y
 
-	lda PMG_IMG_MOTHERSHIP_P2+3
+;	lda PMG_IMG_MOTHERSHIP_P2+3
 	sta PLAYERADR2+3,Y
 
-	lda PMG_IMG_MOTHERSHIP_P2+4
-	sta PLAYERADR2+4,Y
-	
-	lda PMG_IMG_MOTHERSHIP_P2+5
-	sta PLAYERADR2+5,Y
-
-	lda PMG_IMG_MOTHERSHIP_P2+6
-	sta PLAYERADR2+6,Y
-
-	lda PMG_IMG_MOTHERSHIP_P2+7
-	sta PLAYERADR2+7,Y
-
-
-	lda PMG_IMG_MOTHERSHIP_P3
-	sta PLAYERADR3,Y
-
-	lda PMG_IMG_MOTHERSHIP_P3+1
-	sta PLAYERADR3+1,Y
-
-	lda PMG_IMG_MOTHERSHIP_P3+2
-	sta PLAYERADR3+2,Y
-
-	lda PMG_IMG_MOTHERSHIP_P3+3
-	sta PLAYERADR3+3,Y
-
-	lda PMG_IMG_MOTHERSHIP_P3+4
-	sta PLAYERADR3+4,Y
-	
-	lda PMG_IMG_MOTHERSHIP_P3+5
-	sta PLAYERADR3+5,Y
-
-	lda PMG_IMG_MOTHERSHIP_P3+6
 	sta PLAYERADR3+6,Y
 
-	lda PMG_IMG_MOTHERSHIP_P3+7
+;	lda PMG_IMG_MOTHERSHIP_P2+4
+	lda #$aa
+	sta PLAYERADR2+4,Y
+	
+;	lda PMG_IMG_MOTHERSHIP_P2+5
+	lda #0
+	sta PLAYERADR2+5,Y
+
+;	lda PMG_IMG_MOTHERSHIP_P2+6
+	sta PLAYERADR2+6,Y
+
+;	lda PMG_IMG_MOTHERSHIP_P3
+	sta PLAYERADR3,Y
+
+;	lda PMG_IMG_MOTHERSHIP_P3+1
+	sta PLAYERADR3+1,Y
+
+;	lda PMG_IMG_MOTHERSHIP_P3+2
+	sta PLAYERADR3+2,Y
+
+;	lda PMG_IMG_MOTHERSHIP_P3+3
+	sta PLAYERADR3+3,Y
+
+;	lda PMG_IMG_MOTHERSHIP_P3+7
 	sta PLAYERADR3+7,Y
+
+;	lda PMG_IMG_MOTHERSHIP_P2+7
+	lda #$24
+	sta PLAYERADR2+7,Y
+
+;	lda PMG_IMG_MOTHERSHIP_P3+4
+	lda #$55
+	sta PLAYERADR3+4,Y
+	
+;	lda PMG_IMG_MOTHERSHIP_P3+5
+	lda #$FF
+	sta PLAYERADR3+5,Y
+
+;	lda PMG_IMG_MOTHERSHIP_P3+6
+;	sta PLAYERADR3+6,Y
+
 
 	rts
 

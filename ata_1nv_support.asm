@@ -395,6 +395,9 @@ GameCheckHighScores
 
 GameCheckHighScore
 
+	lda gConfigCheatMode           ; Is cheat mode on?
+	bne b_gchs_Exit                ; Yup.  Skip considering high score.
+
 	lda zPLAYER_ON,X
 	beq b_gchs_Exit
 
@@ -1196,6 +1199,13 @@ b_gmm_CheckLastRow
 	rts
 
 b_gmm_GoToNextRow
+	lda gConfigCheatMode     ; Are we in cheat mode?
+	beq b_gmm_DoNextRow      ; No.   go move to next row.
+	
+	cpx #21                  ; Cheat Mode.  Is this the row before the last row?
+	beq b_gmm_Exit_MS_Move   ; Yes.  Do not increment.
+
+b_gmm_DoNextRow
 	inx                      ; Next row.
 	jsr GameSetMotherShipRow ; Given Mothership row (X), update the mother ship wow and set new, target Y position. 
 

@@ -444,6 +444,8 @@ vbiDoTheGame
 
 	jsr Pmg_ManagePlayersMovement  ; Handles guns for Title and Game displays.
 
+	jsr Gfx_CheatModeStars         ; if in cheat mode, change the star image.
+
 	rts
 
 

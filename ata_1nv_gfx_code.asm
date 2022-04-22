@@ -274,10 +274,14 @@ b_gss_WriteP1Score
 b_gss_WriteP2Score
 	sta GFX_SCORE_P2,y
 
-	lda zHIGH_SCORE,y       ; Always show high score.
+	lda gConfigCheatMode    ; Are we in cheat mode?
+	bne b_gss_SkipHiScore   ; Yes.  Do not display high score.
+
+	lda zHIGH_SCORE,y       ; Show high score.
 	ora #$40                ; Turn $0 to $9 into $40 to $49
 	sta GFX_SCORE_HI,y
 
+b_gss_SkipHiScore
 	dey
 	bpl b_gss_LoopCopyScores
    
@@ -910,6 +914,78 @@ b_grgs_LookForUnusedStar
 
 b_grgs_Exit
 	rts
+
+
+
+; If not in Cheat mode this returns star to original image
+
+Gfx_SetStarImage
+
+	lda gConfigCheatMode
+	beq b_gssi_Exit
+
+	lda #0
+	sta GAME_STAR_CHAR+1
+	sta GAME_STAR_CHAR+5
+	sta GAME_STAR_CHAR+7
+	
+	lda #$08
+	sta GAME_STAR_CHAR
+	sta GAME_STAR_CHAR+2
+	sta GAME_STAR_CHAR+4
+	sta GAME_STAR_CHAR+6
+
+	lda #$2a
+	sta GAME_STAR_CHAR+3
+
+b_gssi_Exit
+	rts
+
+
+
+ ; if in cheat mode, change the star image.
+ 
+Gfx_CheatModeStars        
+
+	lda gConfigCheatMode ; are we in cheat mode ?
+	beq b_gcms_Exit      ; Nope.  exit.
+
+	lda gSTARS_CHEAT_CLOCK ; Is this zero?
+	beq g_gcms_NextCheatChar ; Yes.  Time to do next char.
+
+	dec gSTARS_CHEAT_CLOCK ; Decrement clock.
+	bpl b_gcms_Exit        ; when it reaches 0, it will be identified on next frame.
+
+g_gcms_NextCheatChar
+	lda #CHEAT_CLOCK       ; Reset the character image clock
+	sta gSTARS_CHEAT_CLOCK
+
+	ldx gCHEAT_IMAGE_INDEX     ; Get image number
+	inx                     ; increment image number
+	cpx #5                  ; Is is greater than number of characters?
+	bne b_gcms_UpdateStarImage ; Nope.  Use the new value.
+	ldx #0                  ; Yes.  Reset to first character.
+
+b_gcms_UpdateStarImage
+	stx gCHEAT_IMAGE_INDEX    ; Save updated index.
+	txa                    ; A = X
+	asl                    ; A * 2
+	asl                    ; A * 4
+	asl                    ; A * 8
+	tax                    ; X = A ; New index into table.
+
+	ldy #0
+b_gcms_Loopchar
+	lda gCHEAT_IMAGE_TABLE,x ; Get image data from table 
+	sta GAME_STAR_CHAR,y  ; Write into character set
+	inx
+	iny
+	cpy #8
+	bne b_gcms_Loopchar
+
+b_gcms_Exit
+	rts
+
 
 
 ; ==========================================================================
