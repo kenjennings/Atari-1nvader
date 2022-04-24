@@ -1926,3 +1926,135 @@ b_ggrc_Exit_Failure
 	lda #$FF
 	rts
 
+
+; Given A, update player colors for the DLI...  assumption is active.
+
+Gfx_SetActivePlayerColorsDLI
+	asl                           ; Active Player * 2
+	tax                           ; X = Active Player * 2 (to save for more math)
+	tay                           ; Y = Active Player * 2 (to be used for DLI offsets)
+
+	lda TABLE_TIMES_SIX,y         ; A = Y * 6 (proper table offset for DLI colors.)
+	tay                           ; Y = (proper table offset for DLI colors.)
+
+	txa                           ; A = Active Player * 2 (again)
+	clc                           ; + PalFlag
+	adc zNTSCorPAL                ; == 0, 1 / 2, 3
+
+	tax                           ; X = offset for player's 
+	lda TABLE_TIMES_SIX,X         ; A = X * 6  (A = proper table offset to player colors.)
+	tax                           ; X = offset for player's 
+
+	lda TABLE_COLOR_BLINE_PM_PN,X   ; Get Active Player color
+	sta TABLE_COLOR_BLINE_PM0,y     ; Save in DLI color table.
+	lda TABLE_COLOR_BLINE_PM_PN+1,X ; Get Active Player color
+	sta TABLE_COLOR_BLINE_PM0+1,y   ; Save in DLI color table.
+	lda TABLE_COLOR_BLINE_PM_PN+2,X ; Get Active Player color
+	sta TABLE_COLOR_BLINE_PM0+2,y   ; Save in DLI color table.
+	lda TABLE_COLOR_BLINE_PM_PN+3,X ; Get Active Player color
+	sta TABLE_COLOR_BLINE_PM0+3,y   ; Save in DLI color table.
+	lda TABLE_COLOR_BLINE_PM_PN+4,X ; Get Active Player color
+	sta TABLE_COLOR_BLINE_PM0+4,y   ; Save in DLI color table.
+	lda TABLE_COLOR_BLINE_PM_PN+5,X ; Get Active Player color
+	sta TABLE_COLOR_BLINE_PM0+5,y   ; Save in DLI color table.
+
+	rts
+
+
+; Given A (active shooter), negate it and set inactive shooter colors.
+
+Gfx_SetInactivePlayerColorsDLI
+	eor #$01                      ; negate player number
+
+	asl                           ; Inactive Player * 2
+	tay                           ; Y = Inactive Player * 2 (to be used for DLI offsets)
+
+	lda TABLE_TIMES_SIX,y         ; A = Y * 6 (proper table offset for DLI colors.)
+	tay                           ; Y = (proper table offset for DLI colors.
+
+	lda TABLE_COLOR_BLINE_PMOFF   ; Get Inactive Player color
+	sta TABLE_COLOR_BLINE_PM0,y   ; Save in DLI color table.
+	lda TABLE_COLOR_BLINE_PMOFF+1 ; Get Inactive Player color
+	sta TABLE_COLOR_BLINE_PM0+1,y ; Save in DLI color table.
+	lda TABLE_COLOR_BLINE_PMOFF+2 ; Get Inactive Player color
+	sta TABLE_COLOR_BLINE_PM0+2,y ; Save in DLI color table.
+	lda TABLE_COLOR_BLINE_PMOFF+3 ; Get Inactive Player color
+	sta TABLE_COLOR_BLINE_PM0+3,y ; Save in DLI color table.
+	lda TABLE_COLOR_BLINE_PMOFF+4 ; Get Inactive Player color
+	sta TABLE_COLOR_BLINE_PM0+4,y ; Save in DLI color table.
+	lda TABLE_COLOR_BLINE_PMOFF+5 ; Get Inactive Player color
+	sta TABLE_COLOR_BLINE_PM0+5,y ; Save in DLI color table.
+
+	rts
+
+
+; ==========================================================================
+; UPDATE ONSIE 
+; ==========================================================================
+; Switch the colors of the active/inactive shooter.
+; --------------------------------------------------------------------------
+
+GameUpdateOnesie
+
+	lda gConfigOnesieMode        ; Is Onsie on?
+	bne b_guo_SkipOnesie         ; Nope. Do not do anything.
+	
+	lda zPLAYER_ONE_ON           ; Are both players playing?
+	and zPLAYER_TWO_ON
+	beq b_guo_SkipOnesie         ; Nope. Do not do anything.
+
+	; Create index values to color lookup table, and DLI table.
+	
+	lda gONESIE_PLAYER         
+	jsr Gfx_SetActivePlayerColorsDLI   ; Use Onesie and set player colors.
+	lda gONESIE_PLAYER           
+	jsr Gfx_SetInactivePlayerColorsDLI ; Negate Onesie and set grey colors.
+
+b_guo_SkipOnesie
+	rts
+
+
+TABLE_TIMES_SIX
+	.byte 0,6,12,18
+
+TABLE_COLOR_BLINE_PM_PN ; PAL, NTSC values == (Player * 12) + (PALflag * 6)
+;TABLE_COLOR_BLINE_PM0  ; P0, PAL
+	.byte $44
+	.byte $46
+	.byte $48
+	.byte $4a
+	.byte $4c
+	.byte $4a
+
+;TABLE_COLOR_BLINE_PM0 ; P0, NTSC
+	.byte $54
+	.byte $56
+	.byte $58
+	.byte $5a
+	.byte $5c
+	.byte $5a
+	
+;TABLE_COLOR_BLINE_PM1 ; P1, PAL
+	.byte $84
+	.byte $86
+	.byte $88
+	.byte $8a
+	.byte $8c
+	.byte $8a
+
+;TABLE_COLOR_BLINE_PM1 ; P1, NTSC
+	.byte $94
+	.byte $96
+	.byte $98
+	.byte $9a
+	.byte $9c
+	.byte $9a
+
+TABLE_COLOR_BLINE_PMOFF
+	.byte $04
+	.byte $06
+	.byte $08
+	.byte $0a
+	.byte $0c
+	.byte $0a
+

@@ -1285,13 +1285,13 @@ DLI_ColorFilterScores
 	lda #180
 	sta HPOSP3
 
-	lda TABLE_COLOR_BLINE_PM0
-	and #$f0
-	sta COLPM2
+	lda TABLE_COLOR_BLINE_PM0 ; Get Player Color
+	and #$f0                  ; Reduce to base color (eliminate luminance.)
+	sta COLPM2                ; Save as "backgound" to tint the text.
 
-	lda TABLE_COLOR_BLINE_PM1
-	and #$f0
-	sta COLPM3
+	lda TABLE_COLOR_BLINE_PM1 ; Get Player Color
+	and #$f0                  ; Reduce to base color (eliminate luminance.)
+	sta COLPM3                ; Save as "backgound" to tint the text.
 
 	lda #PM_SIZE_QUAD
 	sta SIZEP2

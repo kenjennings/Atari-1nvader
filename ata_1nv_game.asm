@@ -737,7 +737,7 @@ b_gsm_SkipFixMSSpeed
 	lda #24
 	sta zMOTHERSHIP_Y               ; Force "old" position above the row 0 position. 
 
-	; P L A Y E R S 
+	; P L A Y E R S   H A R D W A R E
 
 	lda #PM_SIZE_NORMAL
 	sta SIZEP0
@@ -758,6 +758,13 @@ b_gsm_SkipFixMSSpeed
 	and #$01
 	sta zPLAYER_TWO_DIR             ; 0 == left to right. 1 == right to left.
 
+	; Randomize the active shooter for Onsie mode
+
+	lda RANDOM                      ; Get Random value
+	and #$01                        ; Reduce to 0 or 1
+	sta gONESIE_PLAYER              ; and keep it 
+	jsr GameUpdateOnesie            ; This will actually verify Onesie and active shooters
+	
 	; O T H E R    G A M E    V I S U A L S 
 
 	lda #$08
