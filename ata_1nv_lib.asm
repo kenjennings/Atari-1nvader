@@ -60,6 +60,10 @@ b_AnyButton_Exit
 ;
 ; This is used during Game play as it evaluates each player independently.
 ;
+; When in Onesie mode Debounce and input are processed for only the 
+; currently active shooter.  In fact, if this is not the active shooter, 
+; then keep the debounce value forced on.
+;
 ; X = Player of interest, (0, 1)
 ;
 ; Return A == debounce 
@@ -72,6 +76,20 @@ b_AnyButton_Exit
 
 libAJoystickButton             ; get joystick button and debounce it.
 
+	lda gConfigOnesieMode      ; Is Onsie on?
+	bne b_lajb_DoScan          ; Nope. Do not filter anything.
+
+	lda zPLAYER_ONE_ON         ; Are both players playing?
+	and zPLAYER_TWO_ON
+	beq b_lajb_DoScan          ; Nope. Do not filter anything.
+
+	cpx gONESIE_PLAYER         ; Is Active Onesie the current choice to scan?
+	beq b_lajb_DoScan          ; Yes.   Can do the scan.
+
+	lda #1                     ; No. Pretend waiting for debounce.
+	rts
+
+b_lajb_DoScan
 	lda STRIG0,X
 	bne b_lajb_ClearDebounce   ; 1 means the button not pressed.
 	
