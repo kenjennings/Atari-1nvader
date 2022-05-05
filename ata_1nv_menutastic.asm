@@ -819,9 +819,6 @@ MENU_STD_GETITEM
 
 	lda #0                                            ; Clear the return value to 0, aka "equal match"
 	sta gOSSCompareResult
-	
-;	ldx gCurrentSelect                                ; X = Current Select Menu being viewed
-;	ldy TABLE_MENU_CONFIG_VARIABLES,X                 ; Y = Variable ID (Offset)
 
 	lda CONFIG_VARIABLE_VALUE,Y ; Get variable value. 
 	cmp TABLE_OPTION_ARGUMENTS,X                      ; compare to current SELECT menu item.
@@ -869,14 +866,11 @@ MENU_STD_GETTOGGLE
 
 	lda #0                                            ; Clear the return value to 0, aka "equal match"
 	sta gOSSCompareResult
-	
-;	ldx gCurrentSelect                                ; X = Current Select Menu being viewed
-;	ldy TABLE_MENU_CONFIG_VARIABLES,X                 ; Y = Variable ID (Offset)
 
 	lda CONFIG_VARIABLE_VALUE,Y ; Get variable value. 
-	bne b_MSGT_Exit                                   ; Not 0, so return Zero. (BEQ)
+	bne b_MSGT_Exit                                   ; Not 0, so return Zero, CompareResult. (BEQ)
 
-	inc gOSSCompareResult                             ; No1 1, so return One. (BNE)
+	inc gOSSCompareResult                             ; No1 1, so return One, CompareResult. (BNE)
 
 b_MSGT_Exit
 	rts

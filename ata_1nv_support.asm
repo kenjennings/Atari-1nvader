@@ -1910,6 +1910,8 @@ b_ggrc_Exit_Failure
 ; Given A, update player colors for the DLI...  assumption is active.
 
 Gfx_SetActivePlayerColorsDLI
+	lda gONESIE_PLAYER           
+
 	asl                           ; Active Player * 2
 	tax                           ; X = Active Player * 2 (to save for more math)
 	tay                           ; Y = Active Player * 2 (to be used for DLI offsets)
@@ -1918,13 +1920,14 @@ Gfx_SetActivePlayerColorsDLI
 	tay                           ; Y = (proper table offset for DLI colors.)
 
 	txa                           ; A = Active Player * 2 (again)
-	clc                           ; + PalFlag
-	adc zNTSCorPAL                ; == 0, 1 / 2, 3
+	clc                           ; 
+	adc zNTSCorPAL                ; + PalFlag == 0, 1 / 2, 3
 
-	tax                           ; X = offset for player's 
+	tax                           ; X = offset for player entry
 	lda TABLE_TIMES_SIX,X         ; A = X * 6  (A = proper table offset to player colors.)
-	tax                           ; X = offset for player's 
+	tax                           ; X = offset for player's colors
 
+	lda #$FF
 	lda TABLE_COLOR_BLINE_PM_PN,X   ; Get Active Player color
 	sta TABLE_COLOR_BLINE_PM0,y     ; Save in DLI color table.
 	lda TABLE_COLOR_BLINE_PM_PN+1,X ; Get Active Player color
@@ -1944,13 +1947,8 @@ Gfx_SetActivePlayerColorsDLI
 ; Given A (active shooter), negate it and set inactive shooter colors.
 
 Gfx_SetInactivePlayerColorsDLI
-	beq b_gsipcd_Use1
-
-	lda #0
-	beq b_gsipcd_SetColors
-
-b_gsipcd_Use1
-	lda #1
+	lda gONESIE_PLAYER   
+	eor #$01
 
 b_gsipcd_SetColors
 	asl                           ; Inactive Player * 2
@@ -1959,7 +1957,8 @@ b_gsipcd_SetColors
 	lda TABLE_TIMES_SIX,y         ; A = Y * 6 (proper table offset for DLI colors.)
 	tay                           ; Y = (proper table offset for DLI colors.)
 
-	lda TABLE_COLOR_BLINE_PMOFF   ; Get Inactive Player color
+	lda #$cF
+;	lda TABLE_COLOR_BLINE_PMOFF   ; Get Inactive Player color
 	sta TABLE_COLOR_BLINE_PM0,y   ; Save in DLI color table.
 	lda TABLE_COLOR_BLINE_PMOFF+1 ; Get Inactive Player color
 	sta TABLE_COLOR_BLINE_PM0+1,y ; Save in DLI color table.
@@ -1984,18 +1983,23 @@ b_gsipcd_SetColors
 GameUpdateOnesie
 
 	lda gConfigOnesieMode        ; Is Onsie on?
-	bne b_guo_SkipOnesie         ; Nope. Do not do anything.
+	beq b_guo_SkipOnesie         ; Nope. Do not do anything.
 	
 	lda zPLAYER_ONE_ON           ; Are both players playing?
 	and zPLAYER_TWO_ON
 	beq b_guo_SkipOnesie         ; Nope. Do not do anything.
 
 	; Create index values to color lookup table, and DLI table.
-	
-	lda gONESIE_PLAYER         
+        
 	jsr Gfx_SetActivePlayerColorsDLI   ; Use Onesie and set player colors.
-	lda gONESIE_PLAYER           
+         
 	jsr Gfx_SetInactivePlayerColorsDLI ; Negate Onesie and set grey colors.
+
+
+	lda gONESIE_PLAYER
+	ora #$40
+	sta GFX_STATSLINE
+
 
 b_guo_SkipOnesie
 	rts
@@ -2004,8 +2008,12 @@ b_guo_SkipOnesie
 TABLE_TIMES_SIX
 	.byte 0,6,12,18
 
+
+; Need to duplicate PAL/NTSC colors here to swap colors during the 
+; game when operating the Onesie mode.
+
 TABLE_COLOR_BLINE_PM_PN ; PAL, NTSC values == (Player * 12) + (PALflag * 6)
-;TABLE_COLOR_BLINE_PM0  ; P0, PAL
+;TABLE_COLOR_BLINE_PM0  ; P0, PAL  ; ( ( 0 * 2 ) + 0 ) * 6 == 0
 	.byte $44
 	.byte $46
 	.byte $48
@@ -2013,7 +2021,7 @@ TABLE_COLOR_BLINE_PM_PN ; PAL, NTSC values == (Player * 12) + (PALflag * 6)
 	.byte $4c
 	.byte $4a
 
-;TABLE_COLOR_BLINE_PM0 ; P0, NTSC
+;TABLE_COLOR_BLINE_PM0 ; P0, NTSC  ; ( ( 0 * 2 ) + 1 ) * 6 == 6
 	.byte $54
 	.byte $56
 	.byte $58
@@ -2021,7 +2029,7 @@ TABLE_COLOR_BLINE_PM_PN ; PAL, NTSC values == (Player * 12) + (PALflag * 6)
 	.byte $5c
 	.byte $5a
 	
-;TABLE_COLOR_BLINE_PM1 ; P1, PAL
+;TABLE_COLOR_BLINE_PM1 ; P1, PAL   ; ( ( 1 * 2 ) + 0 ) * 6 == 12
 	.byte $84
 	.byte $86
 	.byte $88
@@ -2029,7 +2037,7 @@ TABLE_COLOR_BLINE_PM_PN ; PAL, NTSC values == (Player * 12) + (PALflag * 6)
 	.byte $8c
 	.byte $8a
 
-;TABLE_COLOR_BLINE_PM1 ; P1, NTSC
+;TABLE_COLOR_BLINE_PM1 ; P1, NTSC  ; ( ( 1 * 2 ) + 1 ) * 6 == 18
 	.byte $94
 	.byte $96
 	.byte $98

@@ -77,7 +77,7 @@ b_AnyButton_Exit
 libAJoystickButton             ; get joystick button and debounce it.
 
 	lda gConfigOnesieMode      ; Is Onsie on?
-	bne b_lajb_DoScan          ; Nope. Do not filter anything.
+	beq b_lajb_DoScan          ; Nope. Do not filter anything.
 
 	lda zPLAYER_ONE_ON         ; Are both players playing?
 	and zPLAYER_TWO_ON

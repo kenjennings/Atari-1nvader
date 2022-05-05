@@ -541,7 +541,7 @@ TABLE_OPTION_ARGUMENTS
 	.byte 0                              ; 42 Return to Select entry 38
 	; (SELECT Other things Menu)
 	.byte 0   ; gConfigOnesieMode        ; 43 TOGGLE - ONES1ES - 2P take turns shooting. (Default - Off)
-	.byte 0   ; gConfigSetAllDefaults    ; 44 Reset all values to defaults
+	.byte 0   ; gConfigSetAllDefaults    ; 44 Reset all values to defaults (Custom)
 	.byte 0   ; gConfigCheatMode         ; 45 TOGGLE - Cheat Mode - 1nvader never reaches bottom row.
 	.byte 0                              ; 46 Return to Select entry 43
 

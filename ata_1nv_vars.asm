@@ -262,7 +262,7 @@ gSCORES_ON                   .byte $01 ; Flag that scores are visible.
 ; ==========================================================================
 ; PLAYER STUFF  . . .
 
-gONESIE_PLAYER .byte 0 ; Which player is active now in Onsie mode
+gONESIE_PLAYER .byte 0 ; Which player is active now in Onesie mode
 
 
 
