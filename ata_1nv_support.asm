@@ -1907,27 +1907,25 @@ b_ggrc_Exit_Failure
 	rts
 
 
-; Given A, update player colors for the DLI...  assumption is active.
+; Given active shooter update player colors for the DLI
 
-Gfx_SetActivePlayerColorsDLI
-	lda gONESIE_PLAYER           
+Gfx_SetActivePlayerColorsDLI 
+	tay                           ; Y = Active Player  (0 or 1 -- to be used for DLI offsets)
 
 	asl                           ; Active Player * 2
 	tax                           ; X = Active Player * 2 (to save for more math)
-	tay                           ; Y = Active Player * 2 (to be used for DLI offsets)
 
 	lda TABLE_TIMES_SIX,y         ; A = Y * 6 (proper table offset for DLI colors.)
 	tay                           ; Y = (proper table offset for DLI colors.)
 
-	txa                           ; A = Active Player * 2 (again)
-	clc                           ; 
-	adc zNTSCorPAL                ; + PalFlag == 0, 1 / 2, 3
+	lda zNTSCorPAL                ; A = NTSC or Pal Flag
+	beq b_gsapcd_Skip             ; If PAL, then skip increment.
+	inx                           ; X = X + 1 (0, 2 [PAL] is now 1, 3 [NTSC])
 
-	tax                           ; X = offset for player entry
+b_gsapcd_Skip
 	lda TABLE_TIMES_SIX,X         ; A = X * 6  (A = proper table offset to player colors.)
 	tax                           ; X = offset for player's colors
 
-	lda #$FF
 	lda TABLE_COLOR_BLINE_PM_PN,X   ; Get Active Player color
 	sta TABLE_COLOR_BLINE_PM0,y     ; Save in DLI color table.
 	lda TABLE_COLOR_BLINE_PM_PN+1,X ; Get Active Player color
@@ -1944,21 +1942,17 @@ Gfx_SetActivePlayerColorsDLI
 	rts
 
 
-; Given A (active shooter), negate it and set inactive shooter colors.
+
+; Given active shooter, negate it and set inactive shooter colors.
 
 Gfx_SetInactivePlayerColorsDLI
-	lda gONESIE_PLAYER   
 	eor #$01
 
-b_gsipcd_SetColors
-	asl                           ; Inactive Player * 2
 	tay                           ; Y = Inactive Player * 2 (to be used for DLI offsets)
-
 	lda TABLE_TIMES_SIX,y         ; A = Y * 6 (proper table offset for DLI colors.)
 	tay                           ; Y = (proper table offset for DLI colors.)
 
-	lda #$cF
-;	lda TABLE_COLOR_BLINE_PMOFF   ; Get Inactive Player color
+	lda TABLE_COLOR_BLINE_PMOFF   ; Get Inactive Player color
 	sta TABLE_COLOR_BLINE_PM0,y   ; Save in DLI color table.
 	lda TABLE_COLOR_BLINE_PMOFF+1 ; Get Inactive Player color
 	sta TABLE_COLOR_BLINE_PM0+1,y ; Save in DLI color table.
@@ -1990,18 +1984,32 @@ GameUpdateOnesie
 	beq b_guo_SkipOnesie         ; Nope. Do not do anything.
 
 	; Create index values to color lookup table, and DLI table.
-        
+	lda gONESIE_PLAYER  
 	jsr Gfx_SetActivePlayerColorsDLI   ; Use Onesie and set player colors.
-         
+	lda gONESIE_PLAYER  
 	jsr Gfx_SetInactivePlayerColorsDLI ; Negate Onesie and set grey colors.
-
 
 	lda gONESIE_PLAYER
 	ora #$40
 	sta GFX_STATSLINE
 
-
 b_guo_SkipOnesie
+	rts
+
+
+; ==========================================================================
+; FIX ONSIE 
+; ==========================================================================
+; Repair the online colors for two player modes
+; --------------------------------------------------------------------------
+
+GameFixOnesie
+
+	lda #0  
+	jsr Gfx_SetActivePlayerColorsDLI   ; Use Onesie and set player colors.
+	lda #1 
+	jsr Gfx_SetActivePlayerColorsDLI   ; Use Onesie and set player colors.
+
 	rts
 
 

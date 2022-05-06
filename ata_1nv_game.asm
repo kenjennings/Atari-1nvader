@@ -415,6 +415,8 @@ GameSetupTitle
 	sta zPLAYER_ONE_REDRAW
 	sta zPLAYER_TWO_REDRAW
 
+	jsr GameFixOnesie         ; Fix active colors if onesie was in use
+
 ; ===== Setup Option/Select/Start Menu text =====
 
 	jsr Gfx_ClearOSSText
