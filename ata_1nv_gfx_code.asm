@@ -1854,7 +1854,7 @@ Gfx_BumperVisualTweaks
 
 	cmp #1                      ; 1 FR1GNORE mode, no rebounds. No bumpers.
 	bne b_tpvt_TestFrenemies    ; Not 1, try next
-	lda #$3f
+	lda #$3f|CSET_MODE67_COLPF3 ; TEMPORARY PLACEHOLDER
 	sta GFX_BUMPERLINE
 	sta GFX_BUMPERLINE+19       ; Placeholders for 
 	rts
