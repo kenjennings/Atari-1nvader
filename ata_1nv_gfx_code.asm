@@ -27,8 +27,8 @@ Gfx_SetNTSCorPAL
 
 	lda PAL
 	and #MASK_NTSCPAL_BITS ; Clear (xxxx000x) = PAL/SECAM, Set (xxxx111x) = NTSC
-	beq b_gsnop_UpdateFlag ; Value 0.  Write as-is.
-	lda #1                 ; I want this to be be only %1, not %00001110
+	beq b_gsnop_UpdateFlag ; Value %0.  Write as-is.
+	lda #1                 ; I want NTSC to be be only %1, not %00001110
 b_gsnop_UpdateFlag
 	sta zNTSCorPAL
 
@@ -1825,5 +1825,57 @@ b_grtl_SkipDecPF0
 b_grtl_SkipDecPF1
 	dex                           ; Subtract from index
 	bpl b_grtl_LoopDecCOLPF       ; Loop 7...0
+	rts
+
+
+; ==========================================================================
+; BUMPER VISUAL TWEAKS
+; ==========================================================================
+; Make adjustments to the bottom line of the screen based on the 
+; type of two-player game that is being played.  (Or not two player game.)
+; 
+; You know, FR1GNORE could be a workable game mode for single-player.
+; --------------------------------------------------------------------------
+
+Gfx_BumperVisualTweaks
+
+	lda #0                      ; Erase all bumpers
+	sta GFX_BUMPERLINE          ; Left
+	sta GFX_BUMPERLINE+19       ; Right
+	sta GFX_MIDBUMPERS          ; Center
+	sta GFX_MIDBUMPERS+1        ; and center, too.
+
+	lda zPLAYER_ONE_ON          ; Are both players playing?
+	and zPLAYER_TWO_ON
+	beq Gfx_ShowBumpers         ; Nope. Default bumpers. (and return from there).
+	
+	lda gConfigTwoPlayerMode    ; Get two-player mode
+	beq Gfx_ShowBumpers         ; 0 FR1GULAR, Show default bumpers (and return from there).
+
+	cmp #1                      ; 1 FR1GNORE mode, no rebounds. No bumpers.
+	bne b_tpvt_TestFrenemies    ; Not 1, try next
+	lda #$3f
+	sta GFX_BUMPERLINE
+	sta GFX_BUMPERLINE+19       ; Placeholders for 
+	rts
+
+b_tpvt_TestFrenemies
+	cmp #2                      ; 1 FRENEM1ES mode, Normal Bumpers
+	beq Gfx_ShowBumpers         ; Default bumpers. (and return from there).
+
+	; And 3 is FRE1GHBORS 
+	lda #CHAR_CENTER_BOUNCER    ; Add the center bumper
+	sta GFX_MIDBUMPERS
+	lda #CHAR_CENTER_BOUNCER+1
+	sta GFX_MIDBUMPERS+1        ; Fall through to show the normal bumpers.
+
+
+Gfx_ShowBumpers
+
+	lda #CHAR_LEFT_BOUNCER
+	sta GFX_BUMPERLINE
+	lda #CHAR_RIGHT_BOUNCER
+	sta GFX_BUMPERLINE+19
+
 	rts
 

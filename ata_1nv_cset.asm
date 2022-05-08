@@ -39,6 +39,7 @@ CHARACTER_SET
 ; $10: . . . # . . . . 
 ; $00: . . . . . . . . 
 
+CHAR_LEFT_BOUNCER=$02|CSET_MODE67_COLPF3
 ; Char $02:   "    ;     LEFT Bouncer the second time.
 	.byte $E0,$F0,$F0,$F0,$F0,$F0,$E0,$00
 ; $E0: # # # . . . . . 
@@ -50,6 +51,7 @@ CHARACTER_SET
 ; $E0: # # # . . . . . 
 ; $00: . . . . . . . . 
 
+CHAR_RIGHT_BOUNCER=$03|CSET_MODE67_COLPF3
 ; Char $03:   #    ;     RIGHT bouncer.   Left/Right line end.
 	.byte $07,$0F,$0F,$0F,$0F,$0F,$07,$00
 ; $07: . . . . . # # # 
@@ -334,8 +336,8 @@ GAME_STAR_CHAR  ; label is for animating cheat mode.
 ;GAME_OVER_LEFT_ADDR
 ; Char $1C:   <        ;  STAND-IN for Game Over Text during transition (LEFT)
 ; Char $1C:   <    ;     Left Side of CENTER BOUNCER
-CHAR_CENTER_BOUNCER=$1C ; and $1D
-	.byte $07,$0F,$0F,$0F,$0F,$0F,$07,$00
+CHAR_CENTER_BOUNCER=$1C|CSET_MODE67_COLPF3 ; and $1D
+	.byte $01,$03,$03,$03,$03,$03,$01,$00
 ; $01: . . . . . . . # 
 ; $03: . . . . . . # # 
 ; $03: . . . . . . # # 
@@ -349,7 +351,7 @@ CHAR_CENTER_BOUNCER=$1C ; and $1D
 ;GAME_OVER_RIGHT_ADDR
 ; Char $1D:   =    ;  STAND-IN for Game Over Text during transition (RIGHT)
 ; Char $1D:   =    ; Right side of CENTER BOUNCER
-	.byte $E0,$F0,$F0,$F0,$F0,$F0,$E0,$00
+	.byte $80,$c0,$c0,$c0,$c0,$c0,$80,$00
 ; $80: # . . . . . . .
 ; $c0: # # . . . . . .
 ; $c0: # # . . . . . .

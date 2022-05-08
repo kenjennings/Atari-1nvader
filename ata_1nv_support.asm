@@ -2054,10 +2054,10 @@ TABLE_COLOR_BLINE_PM_PN ; PAL, NTSC values == (Player * 12) + (PALflag * 6)
 	.byte $9a
 
 TABLE_COLOR_BLINE_PMOFF
+	.byte $02
 	.byte $04
 	.byte $06
 	.byte $08
 	.byte $0a
-	.byte $0c
-	.byte $0a
+	.byte $08
 

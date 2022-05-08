@@ -773,7 +773,9 @@ b_gsm_SkipFixMSSpeed
 	sta zSTATS_TEXT_COLOR           ; Turn on stats line.
 
 	jsr Gfx_SetStarImage            ; If not in Cheat mode this returns star to original image
-	
+
+	jsr Gfx_BumperVisualTweaks      ; Adjust bumpers placements per game mode)
+ 
 	jsr Gfx_ShowScreen
 
 ;	lda #2                          ; Reset the animation timer for players/left/right movement.
