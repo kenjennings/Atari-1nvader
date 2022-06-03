@@ -5,6 +5,8 @@ Darren Foulds: https://github.com/darrenfoulds
 
 1nvader For C64: https://github.com/darrenfoulds/1nvader-c64
 
+F Y I -- work is on pause as we move homes through June.   I expect to resume meaningful coding in July.
+
 ---
 
 | **Title** |
