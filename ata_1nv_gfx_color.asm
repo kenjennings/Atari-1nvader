@@ -1,6 +1,6 @@
 ;*******************************************************************************
 ;*
-;* 1NVADER - Atari parody of C64 1NVADER game - 2022 Ken Jennings
+;* 1NVADER - Atari parody of C64 1NVADER game - 2023 Ken Jennings
 ;*
 ;*******************************************************************************
 
@@ -209,112 +209,228 @@ TABLE_COLOR_OPTS2 ; Red for Off Text.
 	.byte COLOR_PINK+$a
 
 TABLE_LAND_COLPF0 ; Browns
-	.byte $0e
-	.byte $0e
-	.byte $0e
-	.byte $0e
-	.byte $0c
-	.byte $38
-	.byte $36
-	.byte $34
+	.byte COLOR_BLACK+$0e
+	.byte COLOR_BLACK+$0e
+	.byte COLOR_BLACK+$0e
+	.byte COLOR_BLACK+$0e
+	.byte COLOR_BLACK+$0c
+	.byte COLOR_RED_ORANGE+$8
+	.byte COLOR_RED_ORANGE+$6
+	.byte COLOR_RED_ORANGE+$4
 
 TABLE_LAND_COLPF1 ; Greens
-	.byte $0E
-	.byte $0e
-	.byte $0e
-	.byte $0c
-	.byte $d8
-	.byte $d6
-	.byte $d4
-	.byte $d2
+	.byte COLOR_BLACK+$0E
+	.byte COLOR_BLACK+$0e
+	.byte COLOR_BLACK+$0e
+	.byte COLOR_BLACK+$0c
+	.byte COLOR_YELLOW_GREEN+$8
+	.byte COLOR_YELLOW_GREEN+$6
+	.byte COLOR_YELLOW_GREEN+$4
+	.byte COLOR_YELLOW_GREEN+$2
 
 TABLE_LAND_COLPF2 ; Blues
-	.byte $0E
-	.byte $0C
-	.byte $9A
-	.byte $98
-	.byte $96
-	.byte $94
-	.byte $92
-	.byte $90
+	.byte COLOR_BLACK+$E
+	.byte COLOR_BLACK+$C
+	.byte COLOR_LITE_BLUE+$A
+	.byte COLOR_LITE_BLUE+$8
+	.byte COLOR_LITE_BLUE+$6
+	.byte COLOR_LITE_BLUE+$4
+	.byte COLOR_LITE_BLUE+$2
+	.byte COLOR_LITE_BLUE+$0
 
 
 TABLE_COLOR_BLINE_BUMPER
-	.byte $72
-	.byte $76
-	.byte $7A
-	.byte $7C
-	.byte $7A
-	.byte $76
-	.byte $72
+	.byte COLOR_BLUE1+$2
+	.byte COLOR_BLUE1+$6
+	.byte COLOR_BLUE1+$A
+	.byte COLOR_BLUE1+$C
+	.byte COLOR_BLUE1+$A
+	.byte COLOR_BLUE1+$6
+	.byte COLOR_BLUE1+$2
 ;	.byte $ff
 
 TABLE_COLOR_BLINE_PM0
-	.byte $54
-	.byte $56
-	.byte $58
-	.byte $5a
-	.byte $5c
-	.byte $5a
+	.byte COLOR_PURPLE+$4
+	.byte COLOR_PURPLE+$6
+	.byte COLOR_PURPLE+$8
+	.byte COLOR_PURPLE+$a
+	.byte COLOR_PURPLE+$c
+	.byte COLOR_PURPLE+$a
 ;	.byte $58
 ;	.byte $ff
 
 TABLE_COLOR_BLINE_PM1
-	.byte $94
-	.byte $96
-	.byte $98
-	.byte $9a
-	.byte $9c
-	.byte $9a
+	.byte COLOR_LITE_BLUE+$4
+	.byte COLOR_LITE_BLUE+$6
+	.byte COLOR_LITE_BLUE+$8
+	.byte COLOR_LITE_BLUE+$a
+	.byte COLOR_LITE_BLUE+$c
+	.byte COLOR_LITE_BLUE+$a
 ;	.byte $98
 ;	.byte $ff
 
 
 TABLE_COLOR_LASERS ; Interleaved, so it can be addressed by  X player index.  0 to 5
-	.byte $0F,$0F
-	.byte $3E,$6e
-	.byte $38,$68
-	.byte $32,$62
-	.byte $38,$68
-	.byte $3e,$6e
+	.byte COLOR_BLACK+$F
+	.byte COLOR_BLACK+$F
+	.byte COLOR_RED_ORANGE+$E
+	.byte COLOR_PURPLE_BLUE+$e
+	.byte COLOR_RED_ORANGE+$8
+	.byte COLOR_PURPLE_BLUE+$8
+	.byte COLOR_RED_ORANGE+$2
+	.byte COLOR_PURPLE_BLUE+$2
+	.byte COLOR_RED_ORANGE+$8
+	.byte COLOR_PURPLE_BLUE+$8
+	.byte COLOR_RED_ORANGE+$e
+	.byte COLOR_PURPLE_BLUE+$e
 
 TABLE_COLOR_EXPLOSION 
-	.byte $00
-	.byte $90
-	.byte $a2
-	.byte $a4
-	.byte $a6
-	.byte $a8
-	.byte $aE
-	.byte $0E
+	.byte COLOR_BLACK+$0
+	.byte COLOR_BLUE_GREEN+$0
+	.byte COLOR_BLUE_GREEN+$2
+	.byte COLOR_BLUE_GREEN+$4
+	.byte COLOR_BLUE_GREEN+$6
+	.byte COLOR_BLUE_GREEN+$8
+	.byte COLOR_BLUE_GREEN+$E
+	.byte COLOR_BLACK+$E
 
 
 TABLE_GAME_OVER_PF0 ; colors for initial blast-in frames in reverse
-	.byte $ca
-	.byte $cc
-	.byte $ce
-	.byte $ce
-	.byte $0e
-	.byte $0e
+	.byte COLOR_GREEN+$a
+	.byte COLOR_GREEN+$c
+	.byte COLOR_GREEN+$e
+	.byte COLOR_GREEN+$e
+	.byte COLOR_BLACK+$e
+	.byte COLOR_BLACK+$e
 
 TABLE_GAME_OVER_PF1 ; colors for next phase in reverse
-	.byte $06
-	.byte $06
-	.byte $06
-	.byte $08
-	.byte $08
-	.byte $c8
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_GREEN+$8
 
 TABLE_GAME_OVER_PF2 ; Colors for DLI transition - 16 scan lines for Mode 7 text
-	.byte $02,$02,$04,$04,$04,$06,$06,$08,$08,$c6,$c8,$ca,$cc,$cc,$cc,$ce ; 0
-	.byte $04,$04,$04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$c6,$c8,$ca,$cC ; 1
-	.byte $04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$c6,$c8,$ca ; 2
-	.byte $06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$c6,$c8 ; 3
-	.byte $06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$c6 ; 4
-	.byte $08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08 ; 5
+	.byte COLOR_BLACK+$2
+	.byte COLOR_BLACK+$2
+	.byte COLOR_BLACK+$4
+	.byte COLOR_BLACK+$4
+	.byte COLOR_BLACK+$4
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_GREEN+$6
+	.byte COLOR_GREEN+$6
+	.byte COLOR_GREEN+$8
+	.byte COLOR_GREEN+$a
+	.byte COLOR_GREEN+$c
+	.byte COLOR_GREEN+$c
+	.byte COLOR_GREEN+$e ; 0
+	
+	.byte COLOR_BLACK+$4
+	.byte COLOR_BLACK+$4
+	.byte COLOR_BLACK+$4
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_GREEN+$6
+	.byte COLOR_GREEN+$8
+	.byte COLOR_GREEN+$a
+	.byte COLOR_GREEN+$C ; 1
+	
+	.byte COLOR_BLACK+$4
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_GREEN+$6
+	.byte COLOR_GREEN+$8
+	.byte COLOR_GREEN+$a ; 2
+	
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_GREEN+$6
+	.byte COLOR_GREEN+$8 ; 3
+	
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_GREEN+$6 ; 4
+	
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8 ; 5
 	
 TABLE_GAME_OVER_PF3 ; Colors for DLI on static text - 16 scan lines for Mode 7 text
-	.byte $02,$02,$02,$04,$04,$06,$06,$08,$08,$c6,$c6,$c8,$ca,$ca,$ca,$cc
+	.byte COLOR_BLACK+$2
+	.byte COLOR_BLACK+$2
+	.byte COLOR_BLACK+$2
+	.byte COLOR_BLACK+$4
+	.byte COLOR_BLACK+$4
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$6
+	.byte COLOR_BLACK+$8
+	.byte COLOR_BLACK+$8
+	.byte COLOR_GREEN+$6
+	.byte COLOR_GREEN+$6
+	.byte COLOR_GREEN+$8
+	.byte COLOR_GREEN+$a
+	.byte COLOR_GREEN+$a
+	.byte COLOR_GREEN+$c
+	.byte COLOR_GREEN+$e
 
 COLOR_TABLE_END ; Used to calculate size of table in bytes for the copy.
 
@@ -417,131 +533,227 @@ TABLE_PAL_COLORS
 	.byte PAL_COLOR_PINK+$a
 
 ;TABLE_LAND_COLPF0 ; Browns
-	.byte $0e
-	.byte $0e
-	.byte $0e
-	.byte $0e
-	.byte $0c
-	.byte $18
-	.byte $16
-	.byte $14
+	.byte PAL_COLOR_BLACK+$e
+	.byte PAL_COLOR_BLACK+$e
+	.byte PAL_COLOR_BLACK+$e
+	.byte PAL_COLOR_BLACK+$e
+	.byte PAL_COLOR_BLACK+$c
+	.byte PAL_COLOR_ORANGE2+$8
+	.byte PAL_COLOR_ORANGE2+$6
+	.byte PAL_COLOR_ORANGE2+$4
 
 ;TABLE_LAND_COLPF1 ; Greens
-	.byte $0E
-	.byte $0e
-	.byte $0e
-	.byte $0c
-	.byte $b8
-	.byte $b6
-	.byte $b4
-	.byte $b2
+	.byte PAL_COLOR_BLACK+$E
+	.byte PAL_COLOR_BLACK+$e
+	.byte PAL_COLOR_BLACK+$e
+	.byte PAL_COLOR_BLACK+$c
+	.byte PAL_COLOR_GREEN+$8
+	.byte PAL_COLOR_GREEN+$6
+	.byte PAL_COLOR_GREEN+$4
+	.byte PAL_COLOR_GREEN+$2
 
 ;TABLE_LAND_COLPF2 ; Blues
-	.byte $0E
-	.byte $0C
-	.byte $8A
-	.byte $88
-	.byte $86
-	.byte $84
-	.byte $82
-	.byte $80
+	.byte PAL_COLOR_BLACK+$E
+	.byte PAL_COLOR_BLACK+$C
+	.byte PAL_COLOR_LITE_BLUE+$A
+	.byte PAL_COLOR_LITE_BLUE+$8
+	.byte PAL_COLOR_LITE_BLUE+$6
+	.byte PAL_COLOR_LITE_BLUE+$4
+	.byte PAL_COLOR_LITE_BLUE+$2
+	.byte PAL_COLOR_LITE_BLUE+$0
 
 
 ;TABLE_COLOR_BLINE_BUMPER
-	.byte $62
-	.byte $66
-	.byte $6A
-	.byte $6C
-	.byte $6A
-	.byte $66
-	.byte $62
+	.byte PAL_COLOR_BLUE1+$2
+	.byte PAL_COLOR_BLUE1+$6
+	.byte PAL_COLOR_BLUE1+$A
+	.byte PAL_COLOR_BLUE1+$C
+	.byte PAL_COLOR_BLUE1+$A
+	.byte PAL_COLOR_BLUE1+$6
+	.byte PAL_COLOR_BLUE1+$2
 ;	.byte $ff
 
 ;TABLE_COLOR_BLINE_PM0
-	.byte $44
-	.byte $46
-	.byte $48
-	.byte $4a
-	.byte $4c
-	.byte $4a
+	.byte PAL_COLOR_PURPLE+$4
+	.byte PAL_COLOR_PURPLE+$6
+	.byte PAL_COLOR_PURPLE+$8
+	.byte PAL_COLOR_PURPLE+$a
+	.byte PAL_COLOR_PURPLE+$c
+	.byte PAL_COLOR_PURPLE+$a
 ;	.byte $48
 ;	.byte $ff
 
 ;TABLE_COLOR_BLINE_PM1
-	.byte $84
-	.byte $86
-	.byte $88
-	.byte $8a
-	.byte $8c
-	.byte $8a
+	.byte PAL_COLOR_LITE_BLUE+$4
+	.byte PAL_COLOR_LITE_BLUE+$6
+	.byte PAL_COLOR_LITE_BLUE+$8
+	.byte PAL_COLOR_LITE_BLUE+$a
+	.byte PAL_COLOR_LITE_BLUE+$c
+	.byte PAL_COLOR_LITE_BLUE+$a
 ;	.byte $88
 ;	.byte $ff
 
 
 ;TABLE_COLOR_LASERS ; Interleaved, so it can be addressed by  X player index.  0 to 5
-	.byte $0F
-	.byte $0F
-	.byte $2E
-	.byte $5e
-	.byte $28
-	.byte $58
-	.byte $22
-	.byte $52
-	.byte $28
-	.byte $58
-	.byte $2e
-	.byte $5e
+	.byte PAL_COLOR_BLACK+$F
+	.byte PAL_COLOR_BLACK+$F
+	.byte PAL_COLOR_RED_ORANGE+$E
+	.byte PAL_COLOR_PURPLE_BLUE+$e
+	.byte PAL_COLOR_RED_ORANGE+$8
+	.byte PAL_COLOR_PURPLE_BLUE+$8
+	.byte PAL_COLOR_RED_ORANGE+$2
+	.byte PAL_COLOR_PURPLE_BLUE+$2
+	.byte PAL_COLOR_RED_ORANGE+$8
+	.byte PAL_COLOR_PURPLE_BLUE+$8
+	.byte PAL_COLOR_RED_ORANGE+$e
+	.byte PAL_COLOR_PURPLE_BLUE+$e
 
 ;TABLE_COLOR_EXPLOSION 
-	.byte $00
-	.byte $a0
-	.byte $a2
-	.byte $a4
-	.byte $a6
-	.byte $a8
-	.byte $aE
-	.byte $0E
+	.byte PAL_COLOR_BLACK+$0
+	.byte PAL_COLOR_BLUE_GREEN+$0
+	.byte PAL_COLOR_BLUE_GREEN+$2
+	.byte PAL_COLOR_BLUE_GREEN+$4
+	.byte PAL_COLOR_BLUE_GREEN+$6
+	.byte PAL_COLOR_BLUE_GREEN+$8
+	.byte PAL_COLOR_BLUE_GREEN+$E
+	.byte PAL_COLOR_BLACK+$E
 
 
 ;TABLE_GAME_OVER_PF0 ; colors for initial blast-in frames in reverse
-	.byte $ba
-	.byte $bc
-	.byte $be
-	.byte $ce
-	.byte $0e
-	.byte $0e
+	.byte PAL_COLOR_GREEN+$a
+	.byte PAL_COLOR_GREEN+$c
+	.byte PAL_COLOR_GREEN+$e
+	.byte PAL_COLOR_GREEN+$e
+	.byte PAL_COLOR_BLACK+$e
+	.byte PAL_COLOR_BLACK+$e
 
 ;TABLE_GAME_OVER_PF1 ; colors for next phase in reverse
-	.byte $06
-	.byte $06
-	.byte $06
-	.byte $08
-	.byte $08
-	.byte $b8
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_GREEN+$8
 
 ;TABLE_GAME_OVER_PF2 ; Colors for DLI transition - 16 scan lines for Mode 7 text
-	.byte $02,$02,$04,$04,$04,$06,$06,$08,$08,$b6,$b6,$b8,$ba,$bc,$bc,$be ; 0
-	.byte $04,$04,$04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$b6,$b8,$ba,$bC ; 1
-	.byte $04,$06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$b6,$b8,$ba ; 2
-	.byte $06,$06,$06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$b6,$b8 ; 3
-	.byte $06,$06,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$b6 ; 4
-	.byte $08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08 ; 5
+	.byte PAL_COLOR_BLACK+$2
+	.byte PAL_COLOR_BLACK+$2
+	.byte PAL_COLOR_BLACK+$4
+	.byte PAL_COLOR_BLACK+$4
+	.byte PAL_COLOR_BLACK+$4
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_GREEN+$6
+	.byte PAL_COLOR_GREEN+$6
+	.byte PAL_COLOR_GREEN+$8
+	.byte PAL_COLOR_GREEN+$a
+	.byte PAL_COLOR_GREEN+$c
+	.byte PAL_COLOR_GREEN+$c
+	.byte PAL_COLOR_GREEN+$e ; 0
+	
+	.byte PAL_COLOR_BLACK+$4
+	.byte PAL_COLOR_BLACK+$4
+	.byte PAL_COLOR_BLACK+$4
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_GREEN+$6
+	.byte PAL_COLOR_GREEN+$8
+	.byte PAL_COLOR_GREEN+$a
+	.byte PAL_COLOR_GREEN+$C ; 1
+	
+	.byte PAL_COLOR_BLACK+$4
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_GREEN+$6
+	.byte PAL_COLOR_GREEN+$8
+	.byte PAL_COLOR_GREEN+$a ; 2
+	
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_GREEN+$6
+	.byte PAL_COLOR_GREEN+$8 ; 3
+	
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_GREEN+$6 ; 4
+	
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8 ; 5
+	
 	
 ;TABLE_GAME_OVER_PF3 ; Colors for DLI on static text - 16 scan lines for Mode 7 text
-	.byte $02
-	.byte $02
-	.byte $02
-	.byte $04
-	.byte $04
-	.byte $06
-	.byte $06
-	.byte $08
-	.byte $08
-	.byte $b6
-	.byte $b6
-	.byte $b8
-	.byte $ba
-	.byte $ba
-	.byte $bc
-	.byte $be
+	.byte PAL_COLOR_BLACK+$2
+	.byte PAL_COLOR_BLACK+$2
+	.byte PAL_COLOR_BLACK+$2
+	.byte PAL_COLOR_BLACK+$4
+	.byte PAL_COLOR_BLACK+$4
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$6
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_BLACK+$8
+	.byte PAL_COLOR_GREEN+$6
+	.byte PAL_COLOR_GREEN+$6
+	.byte PAL_COLOR_GREEN+$8
+	.byte PAL_COLOR_GREEN+$a
+	.byte PAL_COLOR_GREEN+$a
+	.byte PAL_COLOR_GREEN+$c
+	.byte PAL_COLOR_GREEN+$e
 

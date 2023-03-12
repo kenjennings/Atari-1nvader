@@ -1,6 +1,6 @@
 ;*******************************************************************************
 ;*
-;* 1NVADER - Atari parody of C64 1NVADER game - 2022 Ken Jennings
+;* 1NVADER - Atari parody of C64 1NVADER game - 2023 Ken Jennings
 ;*
 ;*******************************************************************************
 
@@ -16,7 +16,7 @@
 	.by "fun possible. "
 	.by "** ATARI 1NVADER "
 	.by "** Atari 8-bit computer systems. "
-	.by "** Ken Jennings  2022 **"
+	.by "** Ken Jennings  2023 **"
 
 
 

@@ -1,6 +1,6 @@
 ;*******************************************************************************
 ;*
-;* 1NVADER - Atari parody of C64 1NVADER game - 2022 Ken Jennings
+;* 1NVADER - Atari parody of C64 1NVADER game - 2023 Ken Jennings
 ;*
 ;*******************************************************************************
 
@@ -292,7 +292,7 @@ GFX_SCROLL_CREDIT1 ; 20 + 11 + 20 == 51
 	.sb "   ken jennings     "  ; +30, HSCROL 12
 
 GFX_SCROLL_CREDIT2; 20 + 11 + 20 == 51
-	.by $00,$52,$50,$52,$52,$00,$4D ; "2022 -"
+	.by $00,$52,$50,$52,$53,$00,$4D ; "2023 -"
 	.sb " atari "
 	.by $58,$4d                     ; "8-"
 	.sb "bits"                      ; +0, HSCROL 12
@@ -372,7 +372,7 @@ scrtxt
 	.sb +$40," @DARRENTHEFOULDS "
 	.sb      "     THX @BEDFORDLVLEXP     "
 	.sb +$40,"HI NATE AND TBONE!"
-	.sb      "     ATARI VERSION 2022 - "
+	.sb      "     ATARI VERSION 2023 - "
 	.sb +$40,"KEN JENNINGS "
 	.sb      "HTTPS://GITHUB.COM/KENJENNINGS/ATARI-1NVADER "
 	.sb +$40,"     THANKS TO ATARI PLAYTESTERS: "

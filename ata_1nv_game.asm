@@ -1,6 +1,6 @@
 ;*******************************************************************************
 ;*
-;* 1NVADER - Atari parody of C64 1NVADER game - 2022 Ken Jennings
+;* 1NVADER - Atari parody of C64 1NVADER game - 2023 Ken Jennings
 ;*
 ;*******************************************************************************
 
@@ -948,7 +948,7 @@ GameOver
 	bne b_go_ExitGameOver    ; Not 0.  Nothing to do.
 
 b_go_SetupForTitle           ; Next frame, setup for title.
-	lda EVENT_SETUP_TITLE    ; Recycle back to the title.
+	lda #EVENT_SETUP_TITLE    ; Recycle back to the title.
 	sta zCurrentEvent          
 
 b_go_ExitGameOver
