@@ -43,13 +43,13 @@ FrameManagement
 	lda #0                  ; Lazy way of turning off attract mode.
 	sta ATRACT              ; Because I'm too lazy to EOR everything.
 
-	inc zTHIS_FRAME         ; Next Frame value
-	lda zTHIS_FRAME          
-	cmp zMaxNTSCorPALFrames ; compare to limit
+	inc gTHIS_FRAME         ; Next Frame value
+	lda gTHIS_FRAME          
+	cmp gMaxNTSCorPALFrames ; compare to limit
 	bne b_fm_SkipFrameReset ; If not at limit, continue 
 
 	lda #0
-	sta zTHIS_FRAME         ; Reset Frame value
+	sta gTHIS_FRAME         ; Reset Frame value
 
 b_fm_SkipFrameReset
 
@@ -57,7 +57,7 @@ b_fm_SkipFrameReset
 	sta gFrameAsIndex       ; Save for later
 	tax
 
-	lda zNTSCorPAL          ; Plus 0 or 1 for video mode...
+	lda gNTSCorPAL          ; Plus 0 or 1 for video mode...
 	beq b_fm_SkipIncIndex   ; If 0 (PAL), then no increment
 	inx
 	stx gFrameAsIndex
@@ -65,7 +65,7 @@ b_fm_SkipFrameReset
 b_fm_SkipIncIndex
 
 	lda TABLE_PLAYER_CONTROL,x ; Determine Player X increment/decrement
-	sta zINC_PLAYER_X
+	sta gINC_PLAYER_X
 
 	lda gFrameAsIndex
 	clc
@@ -73,7 +73,7 @@ b_fm_SkipIncIndex
 	tax
 
 	lda TABLE_LASER_CONTROL,x ; Determine shot Y decrement
-	sta zINC_LASER_Y
+	sta gINC_LASER_Y
 
 	jsr FrameControlMothershipSpeed ; Determine Mothership X increment
 
@@ -97,7 +97,7 @@ b_fm_SkipIncIndex
 FrameControlMothershipSpeed
 
 	; Determine Mothership X increment
-	ldy zMOTHERSHIP_MOVE_SPEED  ; Get speed.
+	ldy gMOTHERSHIP_MOVE_SPEED  ; Get speed.
 
 ;	; HACKERY
 ;	ldy #7
@@ -107,8 +107,8 @@ FrameControlMothershipSpeed
 	adc gFrameAsIndex           ; Add to current index (already calculated)
 	tax                         ; use as index
 	lda TABLE_SPEED_CONTROL,x   ; Get mothership speed from table.
-	sta zINC_MOTHERSHIP_X       ; Save for reference later.
-	sta zMOTHERSHIP_MOVEMENT    ; save for code to use later
+;	sta gINC_MOTHERSHIP_X       ; Save for reference later.
+	sta gMOTHERSHIP_MOVEMENT    ; save for code to use later
 
 	rts
 
@@ -338,8 +338,8 @@ b_gas_OtherPlayer
 
 b_gas_AddLoop                          ; on first entry A for carry == 0
 	clc                                ; Clear CPU carry.
-	adc zPLAYERPOINTS_TO_ADD,Y         ; Add mothership points (+ A as carry)
-	adc zPLAYER_SCORE,X                ; Add to player score
+	adc gPLAYERPOINTS_TO_ADD,Y         ; Add mothership points (+ A as carry)
+	adc gPLAYER_SCORE,X                ; Add to player score
 
 	cmp #10                            ; Did Adding go over 9? (>= 10? )
 	bcc b_gas_NoCarry                  ; No.  Do not carry.
@@ -347,12 +347,12 @@ b_gas_AddLoop                          ; on first entry A for carry == 0
 b_gas_Carried                          ; Player score carried over 9.
 	sec
 	sbc #10                            ; Subtract 10 from score
-	sta zPLAYER_SCORE,X                ; Save the adjusted score.
+	sta gPLAYER_SCORE,X                ; Save the adjusted score.
 	lda #1                             ; Setup 1 for artificial carry.
 	bne b_gas_LoopControl              ; Go to end of loop
 
 b_gas_NoCarry                          ; Player score carried over 9.
-	sta zPLAYER_SCORE,X                ; Save the added score.
+	sta gPLAYER_SCORE,X                ; Save the added score.
 	lda #0                             ; Setup 0 for artificial carry.
 
 b_gas_LoopControl    
@@ -412,8 +412,8 @@ b_ghcs_SaveX
 	stx SAVEX                      ; Need to get this X value back again later.
 
 b_gchs_CheckLoop                   ; Check while digits are equal.
-	lda zPLAYER_SCORE,X
-	cmp zHIGH_SCORE,Y              
+	lda gPLAYER_SCORE,X
+	cmp gHIGH_SCORE,Y              
 	beq b_gchs_LoopControl         ; If it is the same continue looping.
 	bcc b_gchs_Exit                ; If it is less than, then exit.  No hi score.
 
@@ -422,8 +422,8 @@ b_gchs_CheckLoop                   ; Check while digits are equal.
 	ldy #0                         ; Index into high score points.
 
 b_gchs_CopyHiScoreLoop
-	lda zPLAYER_SCORE,X            ; Copy the six 
-	sta zHIGH_SCORE,Y              ; bytes of the 
+	lda gPLAYER_SCORE,X            ; Copy the six 
+	sta gHIGH_SCORE,Y              ; bytes of the 
 	inx                            ; player score
 	iny                            ; to the 
 	cpy #6                         ; high score.
@@ -536,7 +536,7 @@ GamePlayersMovement
 ;	lda #2                ; Player movement timer expired.  
 ;	sta zAnimatePlayers   ; Reset it.
 	
-	lda zINC_PLAYER_X     ; Check if movement is allowed on this frame.
+	lda gINC_PLAYER_X     ; Check if movement is allowed on this frame.
 	beq b_gpm_Exit        ; No.  So, no need to do anything.
 
 	; First, run through the easy choices first that don't involve 
@@ -685,7 +685,7 @@ GameMovePlayerLeftToBumper
 	bne b_gmpltb_Exit   ; Yes, do not test this bounce.
 
 	ldy zPLAYER_X,X     ; Subtract one from player position.
-	dey                 ; or subtract zINC_PLAYER_X.
+	dey                 ; or subtract INC_PLAYER_X.
 
 	sty zPLAYER_NEW_X,X ; Save new position.
 	cpy #PLAYER_MIN_X   ; Has it reached the mininum?
@@ -755,7 +755,7 @@ GameMovePlayerRightToBumper
 	bne b_gmprtb_Exit   ; Yes, do not test this bounce.
 
 	ldy zPLAYER_X,X     ; Add one to player position.
-	iny                 ; or add zINC_PLAYER_X.
+	iny                 ; or add INC_PLAYER_X.
 	
 	sty zPLAYER_NEW_X,X ; Save new position.
 	cpy #PLAYER_MAX_X   ; Has it reached the maximum?
@@ -824,13 +824,13 @@ CheckNewExplosion
 	lda #0
 	sta zLASER_NEW_Y,X               ; Flag this laser to get erased.
 
-	lda zMOTHERSHIP_X              ; Set Explosion X, Y == Mothership X, Y
-	sta zEXPLOSION_X
-	lda zMOTHERSHIP_Y
-	sta zEXPLOSION_NEW_Y
+	lda gMOTHERSHIP_X              ; Set Explosion X, Y == Mothership X, Y
+	sta gEXPLOSION_X
+	lda gMOTHERSHIP_Y
+	sta gEXPLOSION_NEW_Y
 
 	lda #15 
-	sta zEXPLOSION_COUNT          ; jiffy count for explosion graphic
+	sta gEXPLOSION_COUNT          ; jiffy count for explosion graphic
 
 b_cne_Exit
 	rts
@@ -888,7 +888,7 @@ b_clip_StopLaser
 
 b_clip_DoMove
 	sec                 ; Subtract from laser Y
-	sbc zINC_LASER_Y
+	sbc gINC_LASER_Y
 ;	sbc #4
 	
 b_clip_UpdateY
@@ -1069,8 +1069,8 @@ b_cps_Exit
 
 GameMothershipMovement
 
-	lda zMOTHERSHIP_Y
-	cmp zMOTHERSHIP_NEW_Y      ; Is Y the same as NEW_Y?
+	lda gMOTHERSHIP_Y
+	cmp gMOTHERSHIP_NEW_Y      ; Is Y the same as NEW_Y?
 	beq b_gmm_RunTheMothership ; Yes.   Ok to run the mothership movement.
 	rts                        ; No.  Skip this until vertical positions match. (VBI does this).
 
@@ -1082,17 +1082,17 @@ b_gmm_RunTheMothership
 	lda zSTATS_TEXT_COLOR      ; If this is zero, mothership is on row 22.
 	bne b_gmm_SetRegularMinMax ; Set Min/Max to normal values.
 
-	lda #15                    ; Here set Min/Max off screen
-	sta zMOTHERSHIP_MIN_X
-	lda #232
-	sta zMOTHERSHIP_MAX_X
+	lda #MOTHERSHIP_MIN_OFF_X  ; Here set Min/Max off screen position
+	sta gMOTHERSHIP_MIN_X
+	lda #MOTHERSHIP_MAX_OFF_X
+	sta gMOTHERSHIP_MAX_X
 	bne b_gmm_ContinueSetSpeed
 
 b_gmm_SetRegularMinMax         ; Here use the normal values for screen width.
 	lda #MOTHERSHIP_MIN_X
-	sta zMOTHERSHIP_MIN_X
+	sta gMOTHERSHIP_MIN_X
 	lda #MOTHERSHIP_MAX_X
-	sta zMOTHERSHIP_MAX_X
+	sta gMOTHERSHIP_MAX_X
 
 ; Determine speed (distance to move) here.
 ; See discussion above.   There are two possible entries 
@@ -1100,7 +1100,7 @@ b_gmm_SetRegularMinMax         ; Here use the normal values for screen width.
 ; Toggle the counter value to create the +0/+1 offset each frame.
 
 ; This has already been determined by lookup from a table
-; during the vertical blank.  zMOTHERSHIP_MOVEMENT is ready for use.
+; during the vertical blank.  MOTHERSHIP_MOVEMENT is ready for use.
 
 b_gmm_ContinueSetSpeed
 ;	ldy zMOTHERSHIP_MOVE_SPEED      ; index into speed table.
@@ -1112,24 +1112,24 @@ b_gmm_ContinueSetSpeed
 
 b_gmm_ContinueSpeedSetup
 ;	lda TABLE_SPEED_CONTROL,y       ; A == value from speed table to add/subtract 
-;	sta zMOTHERSHIP_MOVEMENT        ; Save new value to add/subtract  
+;	sta gMOTHERSHIP_MOVEMENT        ; Save new value to add/subtract  
 
-	lda zMOTHERSHIP_X               ; A == Get current X position
+	lda gMOTHERSHIP_X               ; A == Get current X position
 
-	ldy zMOTHERSHIP_DIR      ; Test direction. ; 0 == left to right. 1 == right to left.
+	ldy gMOTHERSHIP_DIR      ; Test direction. ; 0 == left to right. 1 == right to left.
 	bne b_gmm_Mothership_R2L ; 1 = Right to Left
 
 ; Moving Left to Right
 
 	clc                      ; Doing left to right. 
-	adc zMOTHERSHIP_MOVEMENT ; A already contains the X position.  Add the movement.
-	cmp zMOTHERSHIP_MAX_X    ; Is the new value at the max?
+	adc gMOTHERSHIP_MOVEMENT ; A already contains the X position.  Add the movement.
+	cmp gMOTHERSHIP_MAX_X    ; Is the new value at the max?
 	bcc b_gmm_Save_MSX_L2R   ; A  less than max, so just save it.
-	lda zMOTHERSHIP_MAX_X    ; reset to max.
+	lda gMOTHERSHIP_MAX_X    ; reset to max.
 
 b_gmm_Save_MSX_L2R
-	sta zMOTHERSHIP_NEW_X    ; Save new Mothership X
-	cmp zMOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
+	sta gMOTHERSHIP_NEW_X    ; Save new Mothership X
+	cmp gMOTHERSHIP_MAX_X    ; Reached max means time to inc Y and reverse direction.
 	bne b_gmm_Exit_MS_Move   
 	beq b_gmm_MS_EndOfLife   ; Check if mothership reached the bottom row/end of movement 
 
@@ -1137,14 +1137,14 @@ b_gmm_Save_MSX_L2R
 
 b_gmm_Mothership_R2L 
 	sec                      ; Doing right to left. 
-	sbc zMOTHERSHIP_MOVEMENT ; A already contains the increment value, Add X
-	cmp zMOTHERSHIP_MIN_X    ; Is the new value at the min?
+	sbc gMOTHERSHIP_MOVEMENT ; A already contains the increment value, Add X
+	cmp gMOTHERSHIP_MIN_X    ; Is the new value at the min?
 	bcs b_gmm_Save_MSX_R2L   ; A >= min, so just save the new value. 
-	lda zMOTHERSHIP_MIN_X    ; reset to min.
+	lda gMOTHERSHIP_MIN_X    ; reset to min.
 	
 b_gmm_Save_MSX_R2L
-	sta zMOTHERSHIP_NEW_X    ; Save new Mothership X
-	cmp zMOTHERSHIP_MIN_X    ; Reached min means time to inc Y and reverse direction.
+	sta gMOTHERSHIP_NEW_X    ; Save new Mothership X
+	cmp gMOTHERSHIP_MIN_X    ; Reached min means time to inc Y and reverse direction.
 	bne b_gmm_Exit_MS_Move   ; Not at min.  Exit.
 
 ; Mothership has reached the end of a row.  
@@ -1160,22 +1160,22 @@ b_gmm_MS_EndOfLife
 ; Also setup Mothership to move to the next row.
 
 b_gmm_MS_ReverseDirection
-	lda zMOTHERSHIP_DIR      ; Toggle X direction.
+	lda gMOTHERSHIP_DIR      ; Toggle X direction.
 	beq b_gmm_Set_R2L        ; is 0, set 1 = Right to Left
 	lda #0
 	beq b_gmm_UpdateDirection
 b_gmm_Set_R2L
 	lda #1
 b_gmm_UpdateDirection
-	sta zMOTHERSHIP_DIR
+	sta gMOTHERSHIP_DIR
 
 b_gmm_CheckLastRow
-	ldx zMOTHERSHIP_ROW      ; Get current row.
+	ldx gMOTHERSHIP_ROW      ; Get current row.
 	cpx #22                  ; If on last row, then it has
 	bne b_gmm_GoToNextRow    ; reached the end of incrementing rows.
 
 	; Game Over
-	inc zGAME_OVER_FLAG
+	inc gGAME_OVER_FLAG
 	rts
 
 b_gmm_GoToNextRow
@@ -1322,16 +1322,16 @@ GameProcessExplosion
 	jsr GameShotStop                  ; Stop Laser that hit the mothership. . .
 
 
-	lda zMOTHERSHIP_Y                 ; Copy current mothership position to new
-	sta zEXPLOSION_NEW_Y              ; explosion position to initiate explosion.
-	lda zMOTHERSHIP_X
-	sta zEXPLOSION_X
+	lda gMOTHERSHIP_Y                 ; Copy current mothership position to new
+	sta gEXPLOSION_NEW_Y              ; explosion position to initiate explosion.
+	lda gMOTHERSHIP_X
+	sta gEXPLOSION_X
 
 	jsr Pmg_DrawExplosion             ; Start new explosion cycle.
 
 	jsr GameRandomizeMothership       ; Choose random direction, set new X accordingly.
 
-	ldx zMOTHERSHIP_ROW               ; Subtract 2
+	ldx gMOTHERSHIP_ROW               ; Subtract 2
 	dex                               ; from the
 	dex                               ; mothership row. 
 	bpl b_gpe_ContinueReset           ; If the result is positive, then update row. 
@@ -1343,14 +1343,14 @@ b_gpe_ContinueReset
 
 
 b_gpe_DoCurrentExplosion
-	lda zEXPLOSION_ON                 ; Is an explosion running?
+	lda gEXPLOSION_ON                 ; Is an explosion running?
 	beq b_gpe_Exit                    ; Nope.  Exit.
 
-	ldx zEXPLOSION_COUNT              ; Get current counter.
+	ldx gEXPLOSION_COUNT              ; Get current counter.
 	beq b_gpe_StopExplosion           ; If it is 0 now, then stop explosion
 
 	dex
-	stx zEXPLOSION_COUNT
+	stx gEXPLOSION_COUNT
 	lda TABLE_COLOR_EXPLOSION,X       ; Get color from table.
 	sta COLOR3                        ; Update OS shadow register.
 	sta COLPF3                        ; Update hardware register to be redundant.
@@ -1359,7 +1359,7 @@ b_gpe_DoCurrentExplosion
 
 b_gpe_StopExplosion
 	lda #0
-	sta zEXPLOSION_NEW_Y
+	sta gEXPLOSION_NEW_Y
 	jsr Pmg_DrawExplosion            ; Stop explosion cycle.
 
 b_gpe_Exit
@@ -1423,9 +1423,9 @@ b_gsc_Exit
 
 GameSetMotherShipRow
 	
-	stx zMOTHERSHIP_ROW              ; Save new Row.
+	stx gMOTHERSHIP_ROW              ; Save new Row.
 	lda TABLE_ROW_TO_Y,X             ; Get new target Y position.
-	sta zMOTHERSHIP_NEW_Y            ; Save for VBI to redraw mothership.
+	sta gMOTHERSHIP_NEW_Y            ; Save for VBI to redraw mothership.
 
 	cpx #22                          ; Is this the last row?
 	bne b_gsmsr_SetStats             ; No, setup the row text and points for screen.
@@ -1453,7 +1453,7 @@ GameRandomizeMothership
 
 	lda RANDOM                      ; Random starting direction for Mothership
 	and #$01
-	sta zMOTHERSHIP_DIR             ; 0 == left to right. 1 == right to left.
+	sta gMOTHERSHIP_DIR             ; 0 == left to right. 1 == right to left.
 	bne b_grm_SetMothershipMax_X    ; 1 == right to left.
 
 	lda #MOTHERSHIP_MIN_X           ; 0 == left to right.  Left == Minimum
@@ -1463,8 +1463,8 @@ b_grm_SetMothershipMax_X
 	lda #MOTHERSHIP_MAX_X           ; Right == Maximum
 
 b_grm_SetMothership_X               ; Start horizontal position coord.
-	sta zMOTHERSHIP_NEW_X
-	sta zMOTHERSHIP_X
+	sta gMOTHERSHIP_NEW_X
+	sta gMOTHERSHIP_X
 
 	rts
 
@@ -1479,7 +1479,7 @@ b_grm_SetMothership_X               ; Start horizontal position coord.
 
 GameRowNumberToDigits
 
-	ldx zMOTHERSHIP_ROW             ; Get the current Row.
+	ldx gMOTHERSHIP_ROW             ; Get the current Row.
 	lda TABLE_TO_DIGITS,X           ; Get two digits as byte/nybble
 	pha                             ; Save to do second digit.
 
@@ -1488,12 +1488,12 @@ GameRowNumberToDigits
 	lsr                             ; to move digit
 	lsr                             ; into the  
 	lsr                             ; low nybble.
-	sta zMOTHERSHIP_ROW_AS_DIGITS   ; Save as byte. 
+	sta gMOTHERSHIP_ROW_AS_DIGITS   ; Save as byte. 
 
 	pla                             ; Get value saved earlier.
 
 	and #$0F                        ; Mask to keep second digit.
-	sta zMOTHERSHIP_ROW_AS_DIGITS+1 ; Save as byte. 
+	sta gMOTHERSHIP_ROW_AS_DIGITS+1 ; Save as byte. 
 
 	rts
 
@@ -1508,7 +1508,7 @@ GameRowNumberToDigits
 
 GameMothershipPointsToDigits
 
-	lda zMOTHERSHIP_ROW             
+	lda gMOTHERSHIP_ROW             
 	asl                                ; Times 2 to index point table.
 	tax                                ; X == A for indexing.
 	ldy #2                             ; Starting offset into points as digits string
@@ -1522,13 +1522,13 @@ b_gmsptd_LoopCopyDigits
 	lsr                                ; to move digit
 	lsr                                ; into the  
 	lsr                                ; low nybble.
-	sta zMOTHERSHIP_POINTS_AS_DIGITS,Y ; Save as byte. 
+	sta gMOTHERSHIP_POINTS_AS_DIGITS,Y ; Save as byte. 
 
 	iny                                ; Next position in digits string.
 	pla                                ; Get value saved earlier.
 
 	and #$0F                           ; Mask to keep second digit.
-	sta zMOTHERSHIP_POINTS_AS_DIGITS,Y ; Save as byte. 
+	sta gMOTHERSHIP_POINTS_AS_DIGITS,Y ; Save as byte. 
 	inx                                ; Next position in table.
 	iny                                ; Next postion in digits string.
 
@@ -1551,8 +1551,8 @@ GameMothershipPointsForPlayer
 	ldx #5
 
 b_gmspfp_CopyLoop
-	lda zMOTHERSHIP_POINTS_AS_DIGITS,X ; Copy current picture of point
-	sta zPLAYERPOINTS_TO_ADD,X         ; Save to player(s) awarded value.
+	lda gMOTHERSHIP_POINTS_AS_DIGITS,X ; Copy current picture of point
+	sta gPLAYERPOINTS_TO_ADD,X         ; Save to player(s) awarded value.
 
 	dex
 	bpl b_gmspfp_CopyLoop
@@ -1575,10 +1575,10 @@ GameSetSpeedupCounter
 	bpl b_gssc_AssignSpeedup
 
 	lda #10                     ; Negative means we're doing 10, 9, 8...
-	sta zMOTHERSHIP_PROGRESSIVE
+	sta gMOTHERSHIP_PROGRESSIVE
 
 b_gssc_AssignSpeedup
-	sta zMOTHERSHIP_SPEEDUP_COUNTER
+	sta gMOTHERSHIP_SPEEDUP_COUNTER
 
 	rts
 
@@ -1594,18 +1594,18 @@ b_gssc_AssignSpeedup
 GameResetHitCounter
 
 	lda #80                         ; Just count integer 80 for hits.
-	sta zMOTHERSHIP_HITS
+	sta gMOTHERSHIP_HITS
 
 	lda #$08
-	sta zSHIP_HITS_AS_DIGITS        ; Tens digit is "8"
+	sta gSHIP_HITS_AS_DIGITS        ; Tens digit is "8"
 	lda #$00
-	sta zSHIP_HITS_AS_DIGITS+1      ; Ones digit is "0"
+	sta gSHIP_HITS_AS_DIGITS+1      ; Ones digit is "0"
 
 	jsr GameSetSpeedupCounter
 ;	sta zMOTHERSHIP_SPEEDUP_COUNTER ; Zero speed offset
 
 	lda gConfig1nvaderStartSpeed    ; Get configured starting speed
-	sta zMOTHERSHIP_MOVE_SPEED      ; Zero move speed.
+	sta gMOTHERSHIP_MOVE_SPEED      ; Zero move speed.
 
 	rts
 
@@ -1622,10 +1622,10 @@ GameResetHitCounter
 
 GameDecrementHitCounter
 
-	dec zMOTHERSHIP_HITS         ; If this goes to 0, then
+	dec gMOTHERSHIP_HITS         ; If this goes to 0, then
 	beq GameResetHitCounter      ; go up to reset counter (will not return here.)
 
-	dec zSHIP_HITS_AS_DIGITS+1   ; Subtract from ones place digit.
+	dec gSHIP_HITS_AS_DIGITS+1   ; Subtract from ones place digit.
 	bpl b_gdhc_DoSpeedupCounter  ; It did not go -1
 	
 	
@@ -1633,18 +1633,18 @@ GameDecrementHitCounter
 ;	bpl b_gdhc_Exit              ; Some other non-zero digit.  Done here.
 
 	lda #$9                      ; Ones digit went to -1
-	sta zSHIP_HITS_AS_DIGITS+1   ; Reset ones to 9
-	dec zSHIP_HITS_AS_DIGITS     ; Subtract 1 from tens position.
+	sta gSHIP_HITS_AS_DIGITS+1   ; Reset ones to 9
+	dec gSHIP_HITS_AS_DIGITS     ; Subtract 1 from tens position.
 ;	rts
 
 b_gdhc_DoSpeedupCounter
 	lda gConfig1nvaderHitCounter ; Check config for speedups.
 	beq b_gdhc_Exit              ; 0 means no speedups.
 
-	lda zMOTHERSHIP_SPEEDUP_COUNTER
+	lda gMOTHERSHIP_SPEEDUP_COUNTER
 	beq b_gdhc_Exit                 ; It arrived here at 0, so no more speedups.
 
-	dec zMOTHERSHIP_SPEEDUP_COUNTER ; Hit counter - 1
+	dec gMOTHERSHIP_SPEEDUP_COUNTER ; Hit counter - 1
 	bne b_gdhc_Exit                 ; Not 0 means no speedup yet.
 
 	; Counter decremented to 0 , so do a speedup. First restart the counter.
@@ -1653,25 +1653,25 @@ b_gdhc_DoSpeedupCounter
 
 	; Negative means use the progressive counter.
 
-	lda zMOTHERSHIP_PROGRESSIVE
+	lda gMOTHERSHIP_PROGRESSIVE
 	beq b_gdhc_Exit   ; Progressive counter reached 0  already.  
 	
-	dec zMOTHERSHIP_PROGRESSIVE
-	lda zMOTHERSHIP_PROGRESSIVE
+	dec gMOTHERSHIP_PROGRESSIVE
+	lda gMOTHERSHIP_PROGRESSIVE
 	
 ;	dec zMOTHERSHIP_SPEEDUP_COUNTER ; Hit counter - 1
 ;	bne b_gdhc_Exit
 
 b_gdhc_SetHitCounter
-	sta zMOTHERSHIP_SPEEDUP_COUNTER
+	sta gMOTHERSHIP_SPEEDUP_COUNTER
 	beq b_gdhc_Exit                  ; This reduced to 0, so no speedup.
 
 b_gdhc_CheckSpeedControl        ; Need to add +2 for 2 entries for hpos+ entries.
-	lda zMOTHERSHIP_MOVE_SPEED   ; Get current speed
+	lda gMOTHERSHIP_MOVE_SPEED   ; Get current speed
 	cmp gConfig1nvaderMaxSpeed   ; Compare to max speed 
 	beq b_gdhc_Exit              ; If at max, then nothing else to do.
 
-	inc zMOTHERSHIP_MOVE_SPEED ; Speedup++
+	inc gMOTHERSHIP_MOVE_SPEED ; Speedup++
 	jsr FrameControlMothershipSpeed  ; Maybe overkill.  VBI will also do this.
 
 b_gdhc_Exit
@@ -1713,7 +1713,7 @@ b_gzs_ZeroPlayerScore
 	ldx #5
 
 b_gzs_Loop_ZeroPlayerScore
-	sta zPLAYER_SCORE,y 
+	sta gPLAYER_SCORE,y 
 	dey
 	dex
 	bpl b_gzs_Loop_ZeroPlayerScore
@@ -1742,9 +1742,9 @@ GameAnalyzeAlienVictory
 	ldy zSTATS_TEXT_COLOR   ; Easy trick to know mothership is on row 22
 	bne b_gaav_Exit
 
-	lda zMOTHERSHIP_NEW_X   ; Get new display position of mothership
+	lda gMOTHERSHIP_NEW_X   ; Get new display position of mothership
 	
-	ldy zMOTHERSHIP_DIR     ; 0 = left to right.   1 = Right to Left
+	ldy gMOTHERSHIP_DIR     ; 0 = left to right.   1 = Right to Left
 	bne b_gaav_Test_R2L
 
 	; Tests running Left to Right - evaluate player 1, then 2
@@ -1918,7 +1918,7 @@ Gfx_SetActivePlayerColorsDLI
 	lda TABLE_TIMES_SIX,y         ; A = Y * 6 (proper table offset for DLI colors.)
 	tay                           ; Y = (proper table offset for DLI colors.)
 
-	lda zNTSCorPAL                ; A = NTSC or Pal Flag
+	lda gNTSCorPAL                ; A = NTSC or Pal Flag
 	beq b_gsapcd_Skip             ; If PAL, then skip increment.
 	inx                           ; X = X + 1 (0, 2 [PAL] is now 1, 3 [NTSC])
 

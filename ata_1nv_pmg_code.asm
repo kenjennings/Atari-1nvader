@@ -265,7 +265,7 @@ Pmg_CollectCollisions
 	lda zLASER_TWO_X      ; Start VBI. Copy Laser 2 X to SHPOSP1
 	sta SHPOSP1           ; Start VBI. Copy Laser 2 X to SHPOSP1
 
-	lda zMOTHERSHIP_ROW               ; Is the mothership in the bottom 
+	lda gMOTHERSHIP_ROW               ; Is the mothership in the bottom 
 	cmp #22                           ; row with the guns?
 	bne b_pcc_SetCollisionFlags       ; Nope.   Go collect collitions.
 	lda #0                            ; Yes, Zero the stats color
@@ -530,14 +530,14 @@ b_pslc_SkipColorReset
 
 Pmg_DrawExplosion
 
-	lda zEXPLOSION_NEW_Y      ; Get New Y postion.
+	lda gEXPLOSION_NEW_Y      ; Get New Y postion.
 	beq b_pde_RemoveExplosion ; It's 0.  Erase at current position.
 
-	cmp zEXPLOSION_Y          ; Non-zero. Does it match current postion?
+	cmp gEXPLOSION_Y          ; Non-zero. Does it match current postion?
 	beq b_pde_Exit            ; Yes.  Nothing to do here.
 
 b_pde_RemoveExplosion
-	ldy zEXPLOSION_Y          ; Get current position.
+	ldy gEXPLOSION_Y          ; Get current position.
 	beq b_pde_DrawExplosion   ; If zero, then skip this, and draw.
 	ldx #7                    ; loop counter.
 	lda #0
@@ -548,7 +548,7 @@ b_pde_EraseLoop
 	bpl b_pde_EraseLoop
 
 b_pde_DrawExplosion
-	ldy zEXPLOSION_NEW_Y      ; Is there a new position?
+	ldy gEXPLOSION_NEW_Y      ; Is there a new position?
 	beq b_pde_StopExplosion   ; No.  Stop the explosion things.
 	ldx #0                    ; loop counter.
 	txa
@@ -563,21 +563,21 @@ b_pde_DrawLoop
 ; Copy data for new Current position information and 
 ; reset the color/counter state.
 	lda #1
-	sta zEXPLOSION_ON        ; Let others know this is running.
-	lda zEXPLOSION_NEW_Y     
-	sta zEXPLOSION_Y         ; Current Y Position == New Y Position
-	ldx zEXPLOSION_X         ; To be used later at SetHardware
+	sta gEXPLOSION_ON        ; Let others know this is running.
+	lda gEXPLOSION_NEW_Y     
+	sta gEXPLOSION_Y         ; Current Y Position == New Y Position
+	ldx gEXPLOSION_X         ; To be used later at SetHardware
 	ldy #SIZEOF_EXPLOSION_TABLE
-	sty zEXPLOSION_COUNT     ; Start of explosion color cycle
+	sty gEXPLOSION_COUNT     ; Start of explosion color cycle
 	lda TABLE_COLOR_EXPLOSION+SIZEOF_EXPLOSION_TABLE; Get first color from table.
 	jmp b_pde_SetHardware
 
 b_pde_StopExplosion          ; Turn off all the running specs.
 	lda #0
-	sta zEXPLOSION_ON
-	sta zEXPLOSION_COUNT
-	sta zEXPLOSION_X
-	sta zEXPLOSION_Y
+	sta gEXPLOSION_ON
+	sta gEXPLOSION_COUNT
+	sta gEXPLOSION_X
+	sta gEXPLOSION_Y
 	tax
 
 b_pde_SetHardware
@@ -721,18 +721,18 @@ b_pdp_Exit
 Pmg_ProcessMothership
 
 	sec
-	lda zMOTHERSHIP_NEW_Y   ; New Y position
-	sbc zMOTHERSHIP_Y       ; Old Y position.
+	lda gMOTHERSHIP_NEW_Y   ; New Y position
+	sbc gMOTHERSHIP_Y       ; Old Y position.
 	beq b_pdms_DoHPOS       ; Old Y == New Y. No vertical movement. Skip redrawing.
 
 	cmp #8                  ; Is distance apart 8 (or less)?
 	beq b_pdms_ShiftDown    ; If New Y - Old Y = 8, then shift down for moving row to row
 	bcc b_pdms_ShiftDown    ; Old Y < New Y < 8.  Shifting down is in progress... 
 
-	ldy zMOTHERSHIP_Y       ; Distance apart is more than 8.  (or negative.) 
+	ldy gMOTHERSHIP_Y       ; Distance apart is more than 8.  (or negative.) 
 	jsr Pmg_EraseMothership ; Probably moving due to game start or explosion. Erase. 
-	ldy zMOTHERSHIP_NEW_Y   ; Y == New position.
-	sty zMOTHERSHIP_Y       ; Current Y is now == New Y
+	ldy gMOTHERSHIP_NEW_Y   ; Y == New position.
+	sty gMOTHERSHIP_Y       ; Current Y is now == New Y
 	jsr Pmg_DrawMothership  ; Redraw.  
 
 	jmp b_pdms_DoHPOS       ; Next to X position, and animate windows.
@@ -741,8 +741,8 @@ b_pdms_ShiftDown            ; Moving down two lines (transition from row to row)
 	jsr Pmg_ShiftMothership
 
 b_pdms_DoHPOS
-	lda zMOTHERSHIP_NEW_X   ; And set new X position
-	sta zMOTHERSHIP_X
+	lda gMOTHERSHIP_NEW_X   ; And set new X position
+	sta gMOTHERSHIP_X
 	sta SHPOSP2
 	sta SHPOSP3
 
@@ -873,7 +873,7 @@ Pmg_DrawMothership
 
 Pmg_ShiftMothership
 
-	ldy zMOTHERSHIP_Y      ; Get current mothership Y (msy) 
+	ldy gMOTHERSHIP_Y      ; Get current mothership Y (msy) 
 	lda #0
 
 	sta PLAYERADR2,Y       ; Write 0 to Y + 0 P/M memory
@@ -882,7 +882,7 @@ Pmg_ShiftMothership
 	sta PLAYERADR2,Y       ; Write 0 to Y + 1 P/M memory
 	sta PLAYERADR3,Y       ; Write 0 to Y + 0 P/M memory
 	iny                    ; Y + 1  (Or Y + 2 total)
-	sty zMOTHERSHIP_Y      ; Save as the new "current" position.
+	sty gMOTHERSHIP_Y      ; Save as the new "current" position.
 
 	jsr Pmg_DrawMothership ; Redraw at updated current Y position.
 
@@ -900,14 +900,14 @@ Pmg_ShiftMothership
 
 Pmg_AnimateMothershipWindows
 
-	dec zMOTHERSHIP_ANIM_CLOCK ; Decrement clock for animation.
+	dec gMOTHERSHIP_ANIM_CLOCK ; Decrement clock for animation.
 	bpl b_pamsw_Exit           ; If still positive, skip animation
 
 	lda #MOTHERHIP_START_ANIM  ; Reset counter.. then do animation.
-	sta zMOTHERSHIP_ANIM_CLOCK
+	sta gMOTHERSHIP_ANIM_CLOCK
 
-	ldx zMOTHERSHIP_ANIM       ; X = current windows animation frame
-	lda zMOTHERSHIP_DIR        ; Mothership direction.  0 = Left to right. 1 = Right to Left
+	ldx gMOTHERSHIP_ANIM       ; X = current windows animation frame
+	lda gMOTHERSHIP_DIR        ; Mothership direction.  0 = Left to right. 1 = Right to Left
 	beq b_pamsw_DoAnimL2R      ; 0, do Left to Right motion.
 
 	inx                        ; Right to Left.  Count up through the animation frames.
@@ -922,8 +922,8 @@ b_pamsw_DoAnimL2R              ; Left to Right.
 	ldx #4                     ; No.  Reset to begining  of this animation loop.
 
 b_pamsw_WriteAnimByte
-	stx zMOTHERSHIP_ANIM       ; Save updated animation frame.
-	ldy zMOTHERSHIP_Y          ; Get (New) position of mothership.
+	stx gMOTHERSHIP_ANIM       ; Save updated animation frame.
+	ldy gMOTHERSHIP_Y          ; Get (New) position of mothership.
 	iny                        ; Plus 3 for correct offset.
 	iny
 	iny
@@ -942,24 +942,24 @@ b_pamsw_Exit
 
 Pmg_AnimateBigMothershipWindows
 
-	dec zMOTHERSHIP_ANIM_CLOCK  ; Decrement clock for animation.
+	dec gMOTHERSHIP_ANIM_CLOCK  ; Decrement clock for animation.
 	bpl b_pabmsw_DrawAnimation  ; If still positive, do not reset clock, just draw frame
 
 	lda #MOTHERHIP_START_ANIM   ; Reset clock.
-	sta zMOTHERSHIP_ANIM_CLOCK
+	sta gMOTHERSHIP_ANIM_CLOCK
 
-	inc zMOTHERSHIP_BIG_ANIM    ; update animation frame
-	ldx zMOTHERSHIP_BIG_ANIM
+	inc gMOTHERSHIP_BIG_ANIM    ; update animation frame
+	ldx gMOTHERSHIP_BIG_ANIM
 	cpx #14                     ; Went past the end?
 	bne b_pabmsw_DrawAnimation  ; No.  Ready to use the frame.
 	ldx #0                      ; Yes, reset frame to beginning of this animation loop
-	stx zMOTHERSHIP_BIG_ANIM    ; Save reset animation frame.
+	stx gMOTHERSHIP_BIG_ANIM    ; Save reset animation frame.
 
 b_pabmsw_DrawAnimation
 	ldy zBIG_MOTHERSHIP_Y       ; Get (New) position of mothership.
 	bmi b_pabmsw_Exit           ; Don't animate if mothership is gone.
 
-	ldx zMOTHERSHIP_BIG_ANIM    ; Get (possibly updated) animation frame.
+	ldx gMOTHERSHIP_BIG_ANIM    ; Get (possibly updated) animation frame.
 	lda PMG_BIG_WINDOWS_L,X
 	sta PLAYERADR1+6,Y
 	sta PLAYERADR1+7,Y
@@ -986,31 +986,31 @@ Pmg_AnimateMothershipLights
 
 ; Run the clocks. . .
 
-	dec zMOTHERSHIP_LIGHT_CLOCK1 ; deduct from clock for Light on top of ship
+	dec gMOTHERSHIP_LIGHT_CLOCK1 ; deduct from clock for Light on top of ship
 	bpl b_pamsl_DoClock2         ; if it didn't roll negative, then no on/off change
 	lda #MOTHERSHIP_START_CLOCK1 ; clock ran out.  reset the clock
-	sta zMOTHERSHIP_LIGHT_CLOCK1
-	dec zMOTHERSHIP_LIGHT1       ; 
+	sta gMOTHERSHIP_LIGHT_CLOCK1
+	dec gMOTHERSHIP_LIGHT1       ; 
 	bpl b_pamsl_DoClock2
-	sty zMOTHERSHIP_LIGHT1
+	sty gMOTHERSHIP_LIGHT1
 
 b_pamsl_DoClock2
-	dec zMOTHERSHIP_LIGHT_CLOCK2 ; Light on left leg
+	dec gMOTHERSHIP_LIGHT_CLOCK2 ; Light on left leg
 	bpl b_pamsl_DoClock3
 	lda #MOTHERSHIP_START_CLOCK2
-	sta zMOTHERSHIP_LIGHT_CLOCK2
-	dec zMOTHERSHIP_LIGHT2
+	sta gMOTHERSHIP_LIGHT_CLOCK2
+	dec gMOTHERSHIP_LIGHT2
 	bpl b_pamsl_DoClock3
-	sty zMOTHERSHIP_LIGHT2
+	sty gMOTHERSHIP_LIGHT2
 
 b_pamsl_DoClock3
-	dec zMOTHERSHIP_LIGHT_CLOCK3 ; Light on right leg.
+	dec gMOTHERSHIP_LIGHT_CLOCK3 ; Light on right leg.
 	bpl b_pamsl_UpdateLights
 	lda #MOTHERSHIP_START_CLOCK3
-	sta zMOTHERSHIP_LIGHT_CLOCK3
-	dec zMOTHERSHIP_LIGHT3
+	sta gMOTHERSHIP_LIGHT_CLOCK3
+	dec gMOTHERSHIP_LIGHT3
 	bpl b_pamsl_UpdateLights
-	sty zMOTHERSHIP_LIGHT3
+	sty gMOTHERSHIP_LIGHT3
 
 b_pamsl_UpdateLights
 	lda zCurrentEvent
@@ -1031,7 +1031,7 @@ b_pamsl_DoBigMothership
 
 	ldy zBIG_MOTHERSHIP_Y
 	
-	ldx zMOTHERSHIP_LIGHT1     ;  light at top of mothership
+	ldx gMOTHERSHIP_LIGHT1     ;  light at top of mothership
 	lda PMG_BIG_TOP_LIGHT_L,x
 	sta PLAYERADR1,Y           ; update the image in the player.
 	sta PLAYERADR1+1,Y         ; update the image in the player.
@@ -1039,12 +1039,12 @@ b_pamsl_DoBigMothership
 	sta PLAYERADR3,Y           ; update the image in the player.
 	sta PLAYERADR3+1,Y         ; update the image in the player.
 
-	ldx zMOTHERSHIP_LIGHT2     ; light on the left leg of mothership
+	ldx gMOTHERSHIP_LIGHT2     ; light on the left leg of mothership
 	lda PMG_BIG_LIGHT_L,x
 	sta PLAYERADR1+14,Y
 	sta PLAYERADR1+15,Y
 
-	ldx zMOTHERSHIP_LIGHT3     ; light on the right leg of mothership
+	ldx gMOTHERSHIP_LIGHT3     ; light on the right leg of mothership
 	lda PMG_BIG_LIGHT_R,x
 	sta PLAYERADR3+14,Y
 	sta PLAYERADR3+15,Y
@@ -1055,17 +1055,17 @@ b_pamsl_Exit
 ; Set the lights for the small mothership.
 
 b_pamsl_DoSmallMothership
-	ldy zMOTHERSHIP_Y
-	ldx zMOTHERSHIP_LIGHT1     ;  light at top of mothership
+	ldy gMOTHERSHIP_Y
+	ldx gMOTHERSHIP_LIGHT1     ;  light at top of mothership
 	lda PMG_TOP_LIGHT,x
 	sta PLAYERADR3,Y           ; update the image in the player.
 
 	lda PLAYERADR3+7,Y         ; get the image in the player.
-	ldx zMOTHERSHIP_LIGHT2     ; light on the left leg of mothership
+	ldx gMOTHERSHIP_LIGHT2     ; light on the left leg of mothership
 	and PMG_LIGHT_L_MASK,x     ; turn off this light bit, retain other.
 	ora PMG_LIGHT_L_BIT,x      ; turn on or off this light bit.
 
-	ldx zMOTHERSHIP_LIGHT3     ; light on the right leg of mothership
+	ldx gMOTHERSHIP_LIGHT3     ; light on the right leg of mothership
 	and PMG_LIGHT_R_MASK,x     ; turn off this light bit, retain other.
 	ora PMG_LIGHT_R_BIT,x      ; turn on or off this light bit.
 

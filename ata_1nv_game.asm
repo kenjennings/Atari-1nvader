@@ -648,16 +648,16 @@ b_gc_End
 
 ; Flashy color scroll on the Countdown text.
 
-	dec zCountdownTimer
+	dec gCOUNTDOWN_TIMER
 	bne b_mdv_WaitForCountdownScanline
 
 	lda #$06
-	sta zCountdownTimer 
+	sta gCOUNTDOWN_TIMER 
 
-	lda zCountdownColor
+	lda gCOUNTDOWN_COLOR
 	clc
 	adc #$04
-	sta zCountdownColor
+	sta gCOUNTDOWN_COLOR
 
 b_mdv_WaitForCountdownScanline
 	ldy VCOUNT
@@ -665,7 +665,7 @@ b_mdv_WaitForCountdownScanline
 	bne b_mdv_WaitForCountdownScanline
 
 	ldy #12
-	lda zCountdownColor
+	lda gCOUNTDOWN_COLOR
 
 b_mdv_LoopSetCountdownColor
 	sta WSYNC ; 1
@@ -707,7 +707,7 @@ GameSetupMain
 	sta SHPOSM0
 
 	; Zero all of this stuff...
-	sta zGAME_OVER_FLAG
+	sta gGAME_OVER_FLAG
 	sta zPLAYER_ONE_BUMP
 	sta zPLAYER_TWO_BUMP
 	sta zPLAYER_ONE_CRASH
@@ -737,7 +737,7 @@ b_gsm_SkipFixMSSpeed
 	ldx #0
 	jsr GameSetMotherShipRow        ; Convert Row 0 to Y position on screen.
 	lda #24
-	sta zMOTHERSHIP_Y               ; Force "old" position above the row 0 position. 
+	sta gMOTHERSHIP_Y               ; Force "old" position above the row 0 position. 
 
 	; P L A Y E R S   H A R D W A R E
 
@@ -854,7 +854,7 @@ GameMain
 
 	jsr GameAnalyzeAlienVictory    ; 6
 
-	lda zGAME_OVER_FLAG            ; Did mothership/player motion reach end game?
+	lda gGAME_OVER_FLAG            ; Did mothership/player motion reach end game?
 	beq b_gm_EndGameLoop           ; No.   Continue game
 
 	; Hacky bit.   It turnsout that the lasers could still be visible.
@@ -903,9 +903,9 @@ GameSetupOver
 
 	; Automatic return to title screen
 	lda #0 
-	sta zGAME_OVER_FRAME          ; Frame counter 255 to 0
+	sta gGAME_OVER_FRAME          ; Frame counter 255 to 0
 	lda #15 
-	sta zGAME_OVER_TICKS          ; decrement every GAME_OVER_FRAME=0.  Large countdown.
+	sta gGAME_OVER_TICKS          ; decrement every GAME_OVER_FRAME=0.  Large countdown.
 
 
 	lda #EVENT_GAMEOVER           ; Next game loop event is game over screen
@@ -941,10 +941,10 @@ GameOver
 	bmi b_go_SetupForTitle   ; -1 means a button a pressed after debounce (0 or 1 means no input yet )
          
 	; Check for automatic return to title screen?
-	dec zGAME_OVER_FRAME     ; Frame counter 255 to 0
+	dec gGAME_OVER_FRAME     ; Frame counter 255 to 0
 	bne b_go_ExitGameOver    ; Not 0.  Nothing to do.
 
-	dec zGAME_OVER_TICKS     ; decrement every GAME_OVER_FRAME=0.  Large countdown.
+	dec gGAME_OVER_TICKS     ; decrement every GAME_OVER_FRAME=0.  Large countdown.
 	bne b_go_ExitGameOver    ; Not 0.  Nothing to do.
 
 b_go_SetupForTitle           ; Next frame, setup for title.

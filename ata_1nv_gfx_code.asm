@@ -30,14 +30,14 @@ Gfx_SetNTSCorPAL
 	beq b_gsnop_UpdateFlag ; Value %0.  Write as-is.
 	lda #1                 ; I want NTSC to be be only %1, not %00001110
 b_gsnop_UpdateFlag
-	sta zNTSCorPAL
+	sta gNTSCorPAL
 
 	tax
 
 	lda TABLE_NTSC_OR_PAL_FRAMES,x
-	sta zMaxNTSCorPALFrames
+	sta gMaxNTSCorPALFrames
 
-	lda zNTSCorPAL
+	lda gNTSCorPAL
 	rts
 
 
@@ -229,14 +229,14 @@ Gfx_ShowScreen
 b_gss_CopyStatsLoop
 	lda zSTATS_TEXT_COLOR           ; Is stats color off?  (i.e. 0?)
 	beq b_gss_WriteStatRow          ; Yes, copy 0 to screen (conveniently, blank space)
-	lda zMOTHERSHIP_ROW_AS_DIGITS,y ; No.  Get the actual digit from the score.
+	lda gMOTHERSHIP_ROW_AS_DIGITS,y ; No.  Get the actual digit from the score.
 	ora #$40                        ; Turn on bit to put it in the write char code.
 b_gss_WriteStatRow                   
 	sta GFX_STAT_ROW,y              ; Write to statistics.
 
 	lda zSTATS_TEXT_COLOR
 	beq b_gss_WriteStatHits
-	lda zSHIP_HITS_AS_DIGITS,y
+	lda gSHIP_HITS_AS_DIGITS,y
 	ora #$40
 b_gss_WriteStatHits
 	sta GFX_STAT_HITS,y
@@ -249,7 +249,7 @@ b_gss_WriteStatHits
 b_gss_CopyPointsLoop
 	lda zSTATS_TEXT_COLOR
 	beq b_gss_WritePoints
-	lda zMOTHERSHIP_POINTS_AS_DIGITS+2,y
+	lda gMOTHERSHIP_POINTS_AS_DIGITS+2,y
 	ora #$40
 b_gss_WritePoints
 	sta GFX_STAT_POINTS,y
@@ -262,14 +262,14 @@ b_gss_WritePoints
 b_gss_LoopCopyScores
 	lda zPLAYER_ONE_ON      ; If player 1 is on?
 	beq b_gss_WriteP1Score  ; No, write the zero byte (blank space) instead.
-	lda zPLAYER_ONE_SCORE,y ; Player on, get a digit from the score.
+	lda gPLAYER_ONE_SCORE,y ; Player on, get a digit from the score.
 	ora #$40                ; Turn $0 to $9 into $40 to $49
 b_gss_WriteP1Score
 	sta GFX_SCORE_P1,y
 
 	lda zPLAYER_TWO_ON      ; If player 2 is on?
 	beq b_gss_WriteP2Score  ; No, write the zero byte (blank space) instead.
-	lda zPLAYER_TWO_SCORE,y ; Player on, get a digit from the score.
+	lda gPLAYER_TWO_SCORE,y ; Player on, get a digit from the score.
 	ora #$40                ; Turn $0 to $9 into $40 to $49
 b_gss_WriteP2Score
 	sta GFX_SCORE_P2,y
@@ -277,7 +277,7 @@ b_gss_WriteP2Score
 	lda gConfigCheatMode    ; Are we in cheat mode?
 	bne b_gss_SkipHiScore   ; Yes.  Do not display high score.
 
-	lda zHIGH_SCORE,y       ; Show high score.
+	lda gHIGH_SCORE,y       ; Show high score.
 	ora #$40                ; Turn $0 to $9 into $40 to $49
 	sta GFX_SCORE_HI,y
 

@@ -201,17 +201,17 @@ zCOUNTDOWN_SECS    .byte $00 ; Countdown jiffies per tick tock event. (the 3, 2,
 
 
 
-PLAYER_PLAY_Y=212   ; Y position for gun in play
-PLAYER_IDLE_Y=220   ; Y position for gun idle on stats line
-PLAYER_SQUASH_Y=228 ; Y Position when player not playing.
+PLAYER_PLAY_Y   = 212 ; Y position for gun in play
+PLAYER_IDLE_Y   = 220 ; Y position for gun idle on stats line
+PLAYER_SQUASH_Y = 228 ; Y Position when player not playing.
 
-PLAYER_MIN_X =52  ; Farthest left next to bumper  ( Min screeen X + bumper width)
-PLAYER_MAX_X =197 ; Farthest right next to bumper ( Max screen X - bumper width - gun width)
+PLAYER_MIN_X    = 52  ; Farthest left next to bumper  ( Min screeen X + bumper width)
+PLAYER_MAX_X    = 197 ; Farthest right next to bumper ( Max screen X - bumper width - gun width)
 
-PLAYER_X_SIZE=7   ; Width of guns in color clocks.  Needed for collision evaluation.
+PLAYER_X_SIZE   = 7   ; Width of guns in color clocks.  Needed for collision evaluation.
 
-LASER_START=208   ; Player gun Y  (PLAYER_PLAY_Y) - 4.
-LASER_END_Y=36    ; also MOTHERSHIP_MIN_Y
+LASER_START     = 208 ; Player gun Y  (PLAYER_PLAY_Y) - 4.
+LASER_END_Y     = 36  ; also MOTHERSHIP_MIN_Y
 
 ; Player 1 and player 2 values are interleaved.
 ; I have a stupid idea of using an index for 
@@ -350,6 +350,8 @@ SOUND_DURATION0 .byte $00
 SOUND_DURATION1 .byte $00
 SOUND_DURATION2 .byte $00
 SOUND_DURATION3 .byte $00
+
+; ======== V B I ======== END: The world's most inept sound system.
 
 
 ; In the event stupid programming tricks means some things can't be saved on 

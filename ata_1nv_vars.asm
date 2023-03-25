@@ -24,9 +24,9 @@
 ; TIMING PER VIDEO STANDARD . . .
 ; Motion/positioning controls:
 ; At startup, the program determines the video standard and then sets 
-; zNTSCorPAL and the zMaxNTSCorPALFrames limit accordingly.
-; The VBI increments the Frame Counter (zTHIS_FRAME) up to the limits of
-; zMaxNTSCorPALFrames and resets to 0 as needed.
+; gNTSCorPAL and the gMaxNTSCorPALFrames limit accordingly.
+; The VBI increments the Frame Counter (THIS_FRAME) up to the limits of
+; gMaxNTSCorPALFrames and resets to 0 as needed.
 ;
 ; The original game on the C64 uses speed/pixel counts based on 
 ; higher resolution which required the Atari version already scale 
@@ -47,31 +47,31 @@
 ; VBI.  I judged speed scaling for these not so important.
 ;
 ; Basic lookup for Player and Laser control:
-; INDEX == ( THIS_FRAME * 2 ) + zNTSCorPALflag
+; INDEX == ( THIS_FRAME * 2 ) + gNTSCorPALflag
 ; INC_PLAYER = TABLE_PLAYER_X[ INDEX ]
 ; INC_LASER = TABLE_LASER_Y[ INDEX ]
 ;
 ; Extended lookup for Mothership:
-; INDEX == ( MOTHERSHIP_MOVE_SPEED * 12) + ( THIS_FRAME * 2 ) + zNTSCorPALflag
+; INDEX == ( MOTHERSHIP_MOVE_SPEED * 12) + ( THIS_FRAME * 2 ) + gNTSCorPALflag
 ; MOTHERSHIP_MOVEMENT = TABLE_SPEED_CONTROL[ INDEX ]
 
 PAL_FRAMES=$5
 NTSC_FRAMES=$6
 
-zNTSCorPAL                  .byte $01         ; Clear (0) = PAL/SECAM, Set (1) = NTSC
-zMaxNTSCorPALFrames         .byte NTSC_FRAMES ; Max number of frames per video standard (see tables)
+gNTSCorPAL                  .byte $01         ; Clear (0) = PAL/SECAM, Set (1) = NTSC
+gMaxNTSCorPALFrames         .byte NTSC_FRAMES ; Max number of frames per video standard (see tables)
 
-zTHIS_FRAME                 .byte $00         ; Frame counter 0 to 4 (PAL) or 0 to 5 (NTSC) 
-zINC_PLAYER_X               .byte $00         ; X Value to add this frame
-zINC_LASER_Y                .byte $00         ; Y value to add this frame
-zINC_MOTHERSHIP_X           .byte $00         ; X Value to add this frame (Speed control)
-zMOTHERSHIP_MOVEMENT        .byte $00 ; Value to add/subtract from Mothership X
+gTHIS_FRAME                 .byte $00         ; Frame counter 0 to 4 (PAL) or 0 to 5 (NTSC) 
+gINC_PLAYER_X               .byte $00         ; X Value to add this frame
+gINC_LASER_Y                .byte $00         ; Y value to add this frame
+;gINC_MOTHERSHIP_X           .byte $00         ; X Value to add this frame (Speed control)
+gMOTHERSHIP_MOVEMENT        .byte $00 ; Value to add/subtract from Mothership X
 
-zMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed index into speed table 0, 2, 4, ..., 14 
-zMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
-zMOTHERSHIP_PROGRESSIVE     .byte $00 ; Counts 10, 9, 8, 7, 6...
+gMOTHERSHIP_MOVE_SPEED      .byte $00 ; Game mothership speed index into speed table 0, 2, 4, ..., 14 
+gMOTHERSHIP_SPEEDUP_COUNTER .byte $00 ; Game mothership speed up counter 
+gMOTHERSHIP_PROGRESSIVE     .byte $00 ; Counts 10, 9, 8, 7, 6...
 
-; Run-time config for frame limits for PAL or NTSC video modes. Index by zNTSCorPAL.
+; Run-time config for frame limits for PAL or NTSC video modes. Index by gNTSCorPAL.
 TABLE_NTSC_OR_PAL_FRAMES     
 	.byte PAL_FRAMES,NTSC_FRAMES
 
@@ -79,7 +79,7 @@ TABLE_NTSC_OR_PAL_FRAMES
 ; Technically, we can simply use as flag whether or not to process
 ; horizontal movement for the player.   If this is 1, then movement
 ; can occur.
-; Lookup X == ( THIS_FRAME * 2 ) + zNTSCorPALflag
+; Lookup X == ( THIS_FRAME * 2 ) + gNTSCorPALflag
 TABLE_PLAYER_CONTROL 
 	.byte 0,0 ; Frame 1, PAL, NTSC
 	.byte 1,1 ; Frame 2, PAL, NTSC
@@ -89,7 +89,7 @@ TABLE_PLAYER_CONTROL
 	.byte 0,1 ; Frame 6, (-), NTSC
 
 ; How many pixels to move the Laser each frame.  PAL, NTSC per each.
-; Lookup X == ( THIS_FRAME * 2 ) + zNTSCorPALflag
+; Lookup X == ( THIS_FRAME * 2 ) + gNTSCorPALflag
 TABLE_LASER_CONTROL
 	.byte 2,2 ; Frame 1, PAL, NTSC
 	.byte 3,2 ; Frame 2, PAL, NTSC
@@ -118,7 +118,7 @@ TABLE_LASER_CONTROL
 ; Since there are 12 entries (6 PAL, 6 NTSC) per each mothership speed 
 ; setting the starting point of each is 12 times the mothership speed.
 ; To make the times 12 easier, provide a direct lookup.
-; Lookup X == ( MOTHERSHIP_MOVE_SPEED * 12) + ( THIS_FRAME * 2 ) + zNTSCorPALflag
+; Lookup X == ( MOTHERSHIP_MOVE_SPEED * 12) + ( THIS_FRAME * 2 ) + gNTSCorPALflag
 
 TABLE_TIMES_TWELVE
 	.byte 0,12,24,36,38,60,72,84
@@ -188,56 +188,57 @@ TABLE_SPEED_CONTROL
 ; ==========================================================================
 ; OTHER MOTHERSHIP VALUES . . .
 
-MOTHERSHIP_MIN_X = 40  ; Farthest Left off the normal width screen.
-MOTHERSHIP_MAX_X = 208 ; Farthest right off the normal width screen.
-MOTHERSHIP_MIN_Y = 36  ; starting position of mothership, last position for laser.
+MOTHERSHIP_MIN_X     = 40  ; Farthest Left off the normal width screen.
+MOTHERSHIP_MAX_X     = 208 ; Farthest right off the normal width screen.
+MOTHERSHIP_MIN_Y     = 36  ; starting position of mothership, last position for laser.
+MOTHERSHIP_MIN_OFF_X = 15  ; Completely off screen, not visible.
+MOTHERSHIP_MAX_OFF_X = 232 ; Completely off screen, not visible.
 
-zMOTHERSHIP_MIN_X           .byte MOTHERSHIP_MIN_X
-zMOTHERSHIP_MAX_X           .byte MOTHERSHIP_MAX_X
+gMOTHERSHIP_MIN_X           .byte MOTHERSHIP_MIN_X
+gMOTHERSHIP_MAX_X           .byte MOTHERSHIP_MAX_X
 
-zMOTHERSHIP_X               .byte $00 ; Game mothership X coord 
-zMOTHERSHIP_NEW_X           .byte $00 ; Game mothership X coord 
-zMOTHERSHIP_Y               .byte $00 ; Game mothership Y coord 
-zMOTHERSHIP_NEW_Y           .byte $00 ; Game mothership Y coord 
+gMOTHERSHIP_X               .byte $00 ; Game mothership X coord 
+gMOTHERSHIP_NEW_X           .byte $00 ; Game mothership X coord 
+gMOTHERSHIP_Y               .byte $00 ; Game mothership Y coord 
+gMOTHERSHIP_NEW_Y           .byte $00 ; Game mothership Y coord 
 
-zMOTHERSHIP_DIR             .byte $00 ; Mothership direction.  0 = left to right.   1 = Right to Left
+gMOTHERSHIP_DIR             .byte $00 ; Mothership direction.  0 = left to right.   1 = Right to Left
 
 MOTHERHIP_START_ANIM=3
-zMOTHERSHIP_ANIM            .byte $00 ; Animation frame for windows on small mothership
-zMOTHERSHIP_BIG_ANIM        .byte $00 ; Animation Frame for windows on big mothership. 0 to 13
-zMOTHERSHIP_ANIM_CLOCK      .byte MOTHERHIP_START_ANIM   ; delay for animation 
+gMOTHERSHIP_ANIM            .byte $00 ; Animation frame for windows on small mothership
+gMOTHERSHIP_BIG_ANIM        .byte $00 ; Animation Frame for windows on big mothership. 0 to 13
+gMOTHERSHIP_ANIM_CLOCK      .byte MOTHERHIP_START_ANIM   ; delay for animation 
 
 MOTHERSHIP_START_CLOCK1=60            ; The light on top of the ship
-zMOTHERSHIP_LIGHT_CLOCK1    .byte MOTHERSHIP_START_CLOCK1
-zMOTHERSHIP_LIGHT1          .byte $1  ; toggle $0, $1 for off and on
+gMOTHERSHIP_LIGHT_CLOCK1    .byte MOTHERSHIP_START_CLOCK1
+gMOTHERSHIP_LIGHT1          .byte $1  ; toggle $0, $1 for off and on
 
 MOTHERSHIP_START_CLOCK2=61            ; The light on the left leg 
-zMOTHERSHIP_LIGHT_CLOCK2    .byte MOTHERSHIP_START_CLOCK2
-zMOTHERSHIP_LIGHT2          .byte $1  ; toggle $0, $1 for off and on
+gMOTHERSHIP_LIGHT_CLOCK2    .byte MOTHERSHIP_START_CLOCK2
+gMOTHERSHIP_LIGHT2          .byte $1  ; toggle $0, $1 for off and on
 
 MOTHERSHIP_START_CLOCK3=62            ; The light on the right leg 
-zMOTHERSHIP_LIGHT_CLOCK3    .byte MOTHERSHIP_START_CLOCK3
-zMOTHERSHIP_LIGHT3          .byte $1  ; toggle $0, $1 for off and on
+gMOTHERSHIP_LIGHT_CLOCK3    .byte MOTHERSHIP_START_CLOCK3
+gMOTHERSHIP_LIGHT3          .byte $1  ; toggle $0, $1 for off and on
 
-zMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
-zMOTHERSHIP_HITS            .byte $00 ; Number of times the mothership is hit.
+gMOTHERSHIP_ROW             .byte $00 ; Game mothership text line row number
+gMOTHERSHIP_HITS            .byte $00 ; Number of times the mothership is hit.
 
 ;zMOTHERSHIP_SHOT_BY_ONE     .byte $0  ; Collision between PM0 (shot) and PM2
 ;zMOTHERSHIP_SHOT_BY_TWO     .byte $0  ; Collision between PM1 (shot) and PM2
 
-zEXPLOSION_ON               .byte $00 ; Explosion is present.   
-zEXPLOSION_COUNT            .byte $00 ; Timer/index for Explosion. 
-zEXPLOSION_X                .byte $00 
-zEXPLOSION_Y                .byte $00
-zEXPLOSION_NEW_Y            .byte $00
+gEXPLOSION_ON               .byte $00 ; Explosion is present.   
+gEXPLOSION_COUNT            .byte $00 ; Timer/index for Explosion. 
+gEXPLOSION_X                .byte $00 
+gEXPLOSION_Y                .byte $00
+gEXPLOSION_NEW_Y            .byte $00
 
 
 ; ==========================================================================
 ; COUNTDOWN 3, 2, 2, GO! COLOR . . .
 
-zCountdownTimer       .byte $01
-
-zCountdownColor       .byte $04
+gCOUNTDOWN_TIMER       .byte $01
+gCOUNTDOWN_COLOR       .byte $04
 
 
 
@@ -246,15 +247,15 @@ zCountdownColor       .byte $04
 
 ;zSHOW_SCORE_FLAG             .byte $00 ; Flag to update score on screen.
 
-zMOTHERSHIP_POINTS_AS_DIGITS .byte $00,$00,$00,$00,$00,$00 ; Points for current row.
+gMOTHERSHIP_POINTS_AS_DIGITS .byte $00,$00,$00,$00,$00,$00 ; Points for current row.
 
-zPLAYERPOINTS_TO_ADD         .byte $00,$00,$00,$00,$00,$00 ; Mothership points to add to player
+gPLAYERPOINTS_TO_ADD         .byte $00,$00,$00,$00,$00,$00 ; Mothership points to add to player
 
-zPLAYER_SCORE      
-zPLAYER_ONE_SCORE            .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 digit BCD 
-zPLAYER_TWO_SCORE            .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
+gPLAYER_SCORE      
+gPLAYER_ONE_SCORE            .byte $00,$00,$00,$00,$00,$00 ; Player 1 score, 6 digit BCD 
+gPLAYER_TWO_SCORE            .byte $00,$00,$00,$00,$00,$00 ; Player 2 score, 6 digits 
 
-zHIGH_SCORE                  .byte $00,$00,$00,$00,$00,$00 ; 6 digits
+gHIGH_SCORE                  .byte $00,$00,$00,$00,$00,$00 ; 6 digits
 
 gSCORES_ON                   .byte $01 ; Flag that scores are visible.
 
@@ -269,8 +270,8 @@ gONESIE_PLAYER .byte 0 ; Which player is active now in Onesie mode
 ; ==========================================================================
 ; STATISTICS . . .
 
-zSHIP_HITS_AS_DIGITS        .byte $00,$00,$00,$00 ; Remaining hits on mothership as digits.
-zMOTHERSHIP_ROW_AS_DIGITS   .byte $00,$00 ; Mothership text line row number as 2 digits for display
+gSHIP_HITS_AS_DIGITS        .byte $00,$00,$00,$00 ; Remaining hits on mothership as digits.
+gMOTHERSHIP_ROW_AS_DIGITS   .byte $00,$00 ; Mothership text line row number as 2 digits for display
 
 
 ; ==========================================================================
@@ -374,11 +375,11 @@ TABLE_STAR_LOCATION ; star
 
 DELAYED .byte 60
 
-zGAME_OVER_FLAG             .byte $00  ; The game is over?
+gGAME_OVER_FLAG             .byte $00  ; The game is over?
 
 ; Automatic return to title screen
-zGAME_OVER_FRAME            .byte 0    ; Frame counter 255 to 0
-zGAME_OVER_TICKS            .byte 0    ; decrement every GAME_OVER_FRAME=0.  Large countdown.
+gGAME_OVER_FRAME            .byte 0    ; Frame counter 255 to 0
+gGAME_OVER_TICKS            .byte 0    ; decrement every GAME_OVER_FRAME=0.  Large countdown.
 
 ; Game Screen Stars Control values ==========================================
 
